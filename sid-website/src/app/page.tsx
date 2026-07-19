@@ -25,7 +25,7 @@ export default async function HomePage() {
               <p className="font-mono text-xs uppercase tracking-[0.3em] text-red">Dossier public — accès libre</p>
               <h1 className="font-display text-5xl uppercase tracking-wide">S.I.D.</h1>
               <p className="mt-2 max-w-xl font-body text-paper/70">
-                Section d&apos;Intervention Discrète. Voici les missions ouvertes à connaissance publique.
+                Système Dictatorial S.I.D. Voici les missions ouvertes à connaissance publique.
                 Rejoignez nos rangs pour accéder au reste du dossier.
               </p>
             </div>
