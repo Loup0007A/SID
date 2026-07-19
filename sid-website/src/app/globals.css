@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: "Oswald", "Arial Narrow", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-body: "Source Serif 4", Georgia, serif;
+}
+
+body {
+  background-color: #1b1e19;
+  color: #e4dcc3;
+}
+
+/* Tampon encre - utilisé sur les statuts de quêtes / rôles */
+.stamp {
+  display: inline-flex;
+  align-items: center;
+  border: 2px solid currentColor;
+  border-radius: 3px;
+  padding: 0.15rem 0.6rem;
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transform: rotate(-2deg);
+  font-size: 0.7rem;
+}
+
+/* Carte "dossier" façon fiche de mission */
+.dossier-card {
+  background-color: #e4dcc3;
+  color: #23281f;
+  background-image: radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.06) 1px, transparent 0);
+  background-size: 4px 4px;
+  border: 1px solid #b8ac86;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.35);
+}
+
+.grain-panel {
+  background-color: #242821;
+  border: 1px solid #333a2e;
+}
+
+::selection {
+  background-color: #9b3232;
+  color: #e4dcc3;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
