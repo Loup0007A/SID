@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: "Oswald", "Arial Narrow", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-body: "Source Serif 4", Georgia, serif;
+}
+
+body {
+  background-color: #1b1e27;
+  color: #ede6d3;
+}
+
+/* Tampon encre - utilisé sur les statuts de quêtes / rôles */
+.stamp {
+  display: inline-flex;
+  align-items: center;
+  border: 2px solid currentColor;
+  border-radius: 8px;
+  padding: 0.15rem 0.6rem;
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transform: rotate(-1.5deg);
+  font-size: 0.7rem;
+}
+
+/* Carte "dossier" façon fiche de mission, coins adoucis */
+.dossier-card {
+  background-color: #ede6d3;
+  color: #2b2f28;
+  background-image: radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.05) 1px, transparent 0);
+  background-size: 4px 4px;
+  border: 1px solid #cabf9b;
+  border-radius: 1rem;
+  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.35);
+}
+
+/* Variante "vieux papier" pour les fiches de quêtes : vignette sépia,
+   coin légèrement corné, texture plus marquée */
+.quest-card {
+  position: relative;
+  background-color: #ecdfc0;
+  color: #2b2f28;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(90, 70, 40, 0.12) 1px, transparent 0),
+    radial-gradient(ellipse at top left, rgba(255, 250, 230, 0.5), transparent 60%),
+    radial-gradient(ellipse at bottom right, rgba(90, 60, 30, 0.25), transparent 65%);
+  background-size: 4px 4px, 100% 100%, 100% 100%;
+  border: 1px solid #b8a878;
+  border-radius: 0.5rem 1rem 0.5rem 1rem;
+  box-shadow: 0 10px 18px -8px rgba(40, 25, 10, 0.5), inset 0 0 30px rgba(120, 90, 50, 0.12);
+}
+
+.quest-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 22px 22px 0;
+  border-color: transparent #d8c69a transparent transparent;
+  border-radius: 0 1rem 0 0.5rem;
+  opacity: 0.8;
+}
+
+.grain-panel {
+  background-color: rgba(36, 40, 53, 0.55);
+  border: 1px solid rgba(52, 58, 74, 0.6);
+  border-radius: 1rem;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* Panneaux de verre translucides pour l'ossature du site (nav, en-têtes) */
+.glass-panel {
+  background-color: rgba(27, 30, 39, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+::selection {
+  background-color: #d99a9a;
+  color: #2b2f28;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
