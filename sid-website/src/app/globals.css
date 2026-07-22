@@ -1,0 +1,293 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: "Oswald", "Arial Narrow", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --font-body: "Source Serif 4", Georgia, serif;
+}
+
+body {
+  background-color: #262a38; /* un ton plus clair que l'ancien quasi-noir */
+  background-image:
+    radial-gradient(ellipse 70% 55% at 10% -10%, rgba(143, 179, 217, 0.38), transparent 60%),
+    radial-gradient(ellipse 65% 50% at 105% 15%, rgba(217, 154, 154, 0.34), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 15% 105%, rgba(143, 179, 217, 0.28), transparent 60%),
+    radial-gradient(ellipse 55% 45% at 100% 100%, rgba(217, 154, 154, 0.22), transparent 60%);
+  background-attachment: fixed;
+  color: #ede6d3;
+  min-height: 100vh;
+}
+
+/* Tampon encre - utilisé sur les statuts de quêtes / rôles */
+.stamp {
+  display: inline-flex;
+  align-items: center;
+  border: 2px solid currentColor;
+  border-radius: 8px;
+  padding: 0.15rem 0.6rem;
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transform: rotate(-1.5deg);
+  font-size: 0.7rem;
+}
+
+/* Carte "dossier" façon fiche de mission, coins adoucis */
+.dossier-card {
+  background-color: #ede6d3;
+  color: #2b2f28;
+  background-image: radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.05) 1px, transparent 0);
+  background-size: 4px 4px;
+  border: 1px solid #cabf9b;
+  border-radius: 1rem;
+  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.35);
+}
+
+/* Variante "vieux papier" pour les fiches de quêtes : vignette sépia,
+   coin légèrement corné, texture plus marquée */
+.quest-card {
+  position: relative;
+  background-color: #ecdfc0;
+  color: #2b2f28;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(90, 70, 40, 0.12) 1px, transparent 0),
+    radial-gradient(ellipse at top left, rgba(255, 250, 230, 0.5), transparent 60%),
+    radial-gradient(ellipse at bottom right, rgba(90, 60, 30, 0.25), transparent 65%);
+  background-size: 4px 4px, 100% 100%, 100% 100%;
+  border: 1px solid #b8a878;
+  border-radius: 0.5rem 1rem 0.5rem 1rem;
+  box-shadow: 0 10px 18px -8px rgba(40, 25, 10, 0.5), inset 0 0 30px rgba(120, 90, 50, 0.12);
+}
+
+.quest-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 22px 22px 0;
+  border-color: transparent #d8c69a transparent transparent;
+  border-radius: 0 1rem 0 0.5rem;
+  opacity: 0.8;
+}
+
+.grain-panel {
+  background-color: rgba(38, 42, 56, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+}
+
+/* =========================================================
+   Organigramme haut -> bas avec traits de liaison entre les branches
+   ========================================================= */
+.org-tree, .org-tree ul {
+  display: flex;
+  justify-content: center;
+  padding-top: 2rem;
+  position: relative;
+}
+
+.org-tree {
+  padding-top: 0;
+}
+
+.org-tree li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  list-style: none;
+  position: relative;
+  padding: 2rem 0.75rem 0 0.75rem;
+}
+
+/* trait horizontal + montant vers le parent */
+.org-tree li::before,
+.org-tree li::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 50%;
+  width: 50%;
+  height: 2rem;
+  border-top: 2px solid rgba(255, 255, 255, 0.18);
+}
+.org-tree li::after {
+  right: auto;
+  left: 50%;
+  border-left: 2px solid rgba(255, 255, 255, 0.18);
+}
+
+.org-tree > li {
+  padding-top: 0;
+}
+.org-tree > li::before,
+.org-tree > li::after {
+  display: none;
+}
+
+.org-tree li:only-child {
+  padding-top: 0;
+}
+.org-tree li:only-child::before,
+.org-tree li:only-child::after {
+  display: none;
+}
+
+.org-tree li:first-child::before,
+.org-tree li:last-child::after {
+  border: 0 none;
+}
+.org-tree li:last-child::before {
+  border-right: 2px solid rgba(255, 255, 255, 0.18);
+  border-radius: 0 6px 0 0;
+}
+.org-tree li:first-child::after {
+  border-radius: 6px 0 0 0;
+}
+
+/* trait descendant vers les enfants */
+.org-tree ul::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  border-left: 2px solid rgba(255, 255, 255, 0.18);
+  width: 0;
+  height: 2rem;
+}
+.glass-panel {
+  background-color: rgba(38, 42, 56, 0.45);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Carte "verre" générique : tout le site SAUF les quêtes (qui restent en
+   "vieux papier", voir .quest-card). Texte clair par défaut car le fond
+   est sombre et translucide. */
+.glass-card {
+  position: relative;
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.09), rgba(36, 40, 53, 0.4) 40%);
+  color: #ede6d3;
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 1rem;
+  box-shadow: 0 12px 32px -10px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+::selection {
+  background-color: #d99a9a;
+  color: #2b2f28;
+}
+
+/* =========================================================
+   Carte de rang du membre (E -> S), de plus en plus stylée
+   ========================================================= */
+.rank-card {
+  position: relative;
+  display: flex;
+  width: 9rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 1.25rem 1rem;
+  border-radius: 1rem;
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.09), rgba(38, 42, 56, 0.45) 45%);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.rank-card-letter {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  line-height: 1;
+  letter-spacing: 0.05em;
+}
+
+.rank-card-title {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(237, 230, 211, 0.65);
+}
+
+.rank-e .rank-card-letter { color: #bbd3ea; }
+.rank-e { box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.4); }
+
+.rank-d .rank-card-letter { color: #8fb3d9; }
+.rank-d { border-color: rgba(143, 179, 217, 0.35); box-shadow: 0 6px 16px -4px rgba(0, 0, 0, 0.45); }
+
+.rank-c .rank-card-letter { color: #6d93bc; }
+.rank-c {
+  border-color: rgba(109, 147, 188, 0.45);
+  box-shadow: 0 6px 18px -4px rgba(0, 0, 0, 0.5), 0 0 20px -6px rgba(143, 179, 217, 0.35);
+}
+
+.rank-b .rank-card-letter { color: #b97575; }
+.rank-b {
+  border-color: rgba(185, 117, 117, 0.45);
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.5), 0 0 22px -6px rgba(185, 117, 117, 0.4);
+}
+
+.rank-a {
+  border-color: rgba(217, 154, 154, 0.55);
+  box-shadow: 0 10px 24px -4px rgba(0, 0, 0, 0.55), 0 0 28px -4px rgba(217, 154, 154, 0.5);
+  background: linear-gradient(160deg, rgba(217, 154, 154, 0.15), rgba(27, 30, 39, 0.6));
+}
+.rank-a .rank-card-letter { color: #d99a9a; text-shadow: 0 0 12px rgba(217, 154, 154, 0.6); }
+
+/* Rang S : bordure dégradée animée + halo pulsant + texte scintillant */
+.rank-s {
+  background: linear-gradient(160deg, rgba(217, 154, 154, 0.18), rgba(143, 179, 217, 0.12), rgba(27, 30, 39, 0.65));
+  animation: rank-s-glow 3s ease-in-out infinite;
+  border: 1px solid transparent;
+}
+.rank-s::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 1rem;
+  padding: 2px;
+  background: conic-gradient(from 0deg, #d99a9a, #8fb3d9, #d99a9a, #8fb3d9, #d99a9a);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: rank-s-spin 4s linear infinite;
+}
+.rank-s .rank-card-letter {
+  background: linear-gradient(90deg, #d99a9a, #8fb3d9, #d99a9a);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: rank-s-shimmer 3s linear infinite;
+}
+
+@keyframes rank-s-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes rank-s-glow {
+  0%, 100% { box-shadow: 0 10px 26px -4px rgba(0, 0, 0, 0.55), 0 0 24px -2px rgba(217, 154, 154, 0.45); }
+  50% { box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.55), 0 0 34px -2px rgba(143, 179, 217, 0.55); }
+}
+@keyframes rank-s-shimmer {
+  to { background-position: 200% center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
