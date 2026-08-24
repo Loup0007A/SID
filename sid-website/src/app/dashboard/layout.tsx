@@ -51,9 +51,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       // Vérifie et verse le salaire du membre s'il est dû — remplace le
       // cron : ça se déclenche simplement à chaque connexion/arrivée sur
       // le tableau de bord, sans dépendance à pg_cron.
-      supabase.rpc("check_and_pay_my_salary").catch(() => {
+      try {
+        await supabase.rpc("check_and_pay_my_salary");
+      } catch {
         // silencieux : un membre sans salaire configuré tombera toujours ici
-      });
+      }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
