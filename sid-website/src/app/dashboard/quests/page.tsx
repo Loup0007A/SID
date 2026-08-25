@@ -256,7 +256,7 @@ export default function QuestsPage() {
             <div key={q.id} className="space-y-2">
               <QuestCard quest={q} participantCount={count} />
 
-              {!canManage && q.status === "open" && !alreadyIn && (
+              {q.status === "open" && !alreadyIn && (
                 <div className="glass-card space-y-2 p-3">
                   <label className={labelClass}>Récompense pour…</label>
                   <select
@@ -279,7 +279,7 @@ export default function QuestsPage() {
                 </div>
               )}
 
-              {!canManage && alreadyIn && (
+              {alreadyIn && (
                 <p className="rounded-lg w-full border border-blue/60 py-1 text-center font-mono text-xs uppercase text-blue-light">
                   Déjà prise
                 </p>
