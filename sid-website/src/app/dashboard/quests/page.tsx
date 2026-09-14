@@ -27,6 +27,7 @@ export default function QuestsPage() {
     deadline: "",
     visibility: "members" as QuestVisibility,
     maxParticipants: "",
+    fundedByCreator: true,
   });
 
   // "Pour qui je prends cette mission" par quête (avant de cliquer sur "Prendre")
@@ -35,6 +36,9 @@ export default function QuestsPage() {
   // Panneau de gestion des participants (managers uniquement)
   const [openParticipants, setOpenParticipants] = useState<string | null>(null);
   const [participants, setParticipants] = useState<QuestParticipantView[]>([]);
+
+  // Quêtes expirées "proches" de leur objectif, en attente de décision du créateur
+  const [pendingQuests, setPendingQuests] = useState<Quest[]>([]);
 
   async function refresh(uid?: string | null) {
     const activeUserId = uid !== undefined ? uid : userId;
@@ -53,6 +57,9 @@ export default function QuestsPage() {
       const { data: mine } = await supabase.from("quest_participants").select("quest_id").eq("user_id", activeUserId);
       setMyQuestIds(new Set((mine ?? []).map((m) => m.quest_id)));
     }
+
+    const { data: pending } = await supabase.rpc("list_pending_expiry_quests");
+    setPendingQuests((pending ?? []) as Quest[]);
   }
 
   useEffect(() => {
@@ -62,6 +69,17 @@ export default function QuestsPage() {
       setUserId(profile?.id ?? null);
       const { data: m } = await supabase.from("profiles").select("*").eq("status", "active");
       setMembers(m ?? []);
+
+      // Traite les quêtes dont la date limite est dépassée (validation auto
+      // si l'objectif est atteint, ou mise en attente de confirmation si on
+      // est proche) — se déclenche simplement à la consultation de la page,
+      // pas besoin de job planifié.
+      try {
+        await supabase.rpc("process_expired_quests");
+      } catch {
+        // silencieux
+      }
+
       await refresh(profile?.id ?? null);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -79,6 +97,7 @@ export default function QuestsPage() {
       deadline: form.deadline ? new Date(form.deadline).toISOString() : null,
       visibility: form.visibility,
       max_participants: form.maxParticipants ? Number(form.maxParticipants) : null,
+      funded_by_creator: form.fundedByCreator,
       created_by: userId,
     });
     if (error) {
@@ -86,7 +105,7 @@ export default function QuestsPage() {
       return;
     }
     setShowForm(false);
-    setForm({ title: "", description: "", reward: "0", difficulty: "D", contractType: "autres", deadline: "", visibility: "members", maxParticipants: "" });
+    setForm({ title: "", description: "", reward: "0", difficulty: "D", contractType: "autres", deadline: "", visibility: "members", maxParticipants: "", fundedByCreator: true });
     await refresh();
   }
 
@@ -100,11 +119,15 @@ export default function QuestsPage() {
     const choice = beneficiary[quest.id] ?? "self";
     const rewardRecipientId = choice === "self" ? null : choice;
 
+    // La capacité maximale est désormais vérifiée de façon fiable côté base
+    // (verrou + trigger), donc ce message d'erreur couvre aussi le cas où
+    // quelqu'un d'autre vient de prendre la dernière place entre-temps.
     const { error } = await supabase
       .from("quest_participants")
       .insert({ quest_id: quest.id, user_id: userId, reward_recipient_id: rewardRecipientId });
     if (error) {
       setMessage(`Impossible de prendre la mission : ${error.message}`);
+      await refresh();
       return;
     }
     setMessage(rewardRecipientId ? "Mission prise ! Récompense reversée à un autre agent." : "Mission prise !");
@@ -162,6 +185,16 @@ export default function QuestsPage() {
     setParticipants((data ?? []) as QuestParticipantView[]);
   }
 
+  async function confirmExpired(questId: string, confirmed: boolean) {
+    const { error } = await supabase.rpc("confirm_expired_quest", { p_quest_id: questId, p_confirm: confirmed });
+    if (error) {
+      setMessage(`Échec : ${error.message}`);
+      return;
+    }
+    setMessage(confirmed ? "Quête validée malgré l'objectif non atteint." : "Quête marquée en échec.");
+    await refresh();
+  }
+
   const canManage = can(permissions, "manage_quests");
 
   return (
@@ -177,6 +210,36 @@ export default function QuestsPage() {
           </button>
         )}
       </div>
+
+      {pendingQuests.length > 0 && (
+        <div className="glass-card space-y-3 border border-red/50 p-4">
+          <h2 className="font-display text-lg uppercase text-red">Décision requise — quêtes expirées proches de l&apos;objectif</h2>
+          {pendingQuests.map((q) => (
+            <div key={q.id} className="flex flex-wrap items-center justify-between gap-2 border-t border-white/10 pt-2 first:border-t-0 first:pt-0">
+              <div>
+                <p className="font-display uppercase">{q.title}</p>
+                <p className="font-mono text-xs text-paper/60">
+                  {counts.get(q.id) ?? 0} / {q.max_participants} participants — échéance dépassée
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => confirmExpired(q.id, true)}
+                  className="rounded-lg bg-blue px-3 py-1.5 font-mono text-xs uppercase text-ink hover:bg-blue-light"
+                >
+                  Valider quand même
+                </button>
+                <button
+                  onClick={() => confirmExpired(q.id, false)}
+                  className="rounded-lg border border-red px-3 py-1.5 font-mono text-xs uppercase text-red hover:bg-red hover:text-ink"
+                >
+                  Marquer en échec
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="glass-panel flex flex-wrap gap-x-4 gap-y-2 rounded-lg px-4 py-3">
         {CONTRACT_TYPES.map((t) => (
@@ -241,6 +304,14 @@ export default function QuestsPage() {
               <option value="private">Privée</option>
             </select>
           </div>
+          <label className="flex items-center gap-2 font-mono text-xs sm:col-span-2">
+            <input
+              type="checkbox" className="accent-blue"
+              checked={form.fundedByCreator}
+              onChange={(e) => setForm({ ...form, fundedByCreator: e.target.checked })}
+            />
+            La récompense est financée par moi-même (débitée de mon portefeuille à chaque validation). Décoche si c&apos;est la S.I.D. qui finance.
+          </label>
           <button type="submit" className="rounded-lg sm:col-span-2 bg-blue py-2 font-display uppercase text-ink hover:bg-blue-light">
             Publier la quête
           </button>
@@ -255,6 +326,9 @@ export default function QuestsPage() {
           return (
             <div key={q.id} className="space-y-2">
               <QuestCard quest={q} participantCount={count} />
+              {!q.funded_by_creator && (
+                <p className="text-center font-mono text-[10px] uppercase text-paper/50">Financée par la S.I.D.</p>
+              )}
 
               {q.status === "open" && !alreadyIn && (
                 <div className="glass-card space-y-2 p-3">
