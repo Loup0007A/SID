@@ -5,7 +5,9 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import clsx from "clsx";
 import { createClient } from "@/lib/supabase/client";
-import type { ChatChannel, ChatMessage, Profile } from "@/types/database";
+import type { ChatChannel, ChatMessage, Profile, DmPartner } from "@/types/database";
+
+const COLOR_PRESETS = ["#D99A9A", "#8FB3D9", "#E8C547", "#3F8F5F", "#B23B2E", ""] as const;
 
 function ChatInner() {
   const supabase = createClient();
@@ -14,15 +16,26 @@ function ChatInner() {
   const [userId, setUserId] = useState<string | null>(null);
   const [channels, setChannels] = useState<ChatChannel[]>([]);
   const [profiles, setProfiles] = useState<Map<string, Profile>>(new Map());
+  const [dmPartners, setDmPartners] = useState<Map<string, string>>(new Map()); // channel_id -> pseudo
   const [activeChannel, setActiveChannel] = useState<string | null>(searchParams.get("channel"));
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState("");
+  const [draftBold, setDraftBold] = useState(false);
+  const [draftItalic, setDraftItalic] = useState(false);
+  const [draftColor, setDraftColor] = useState<string>("");
   const [showNew, setShowNew] = useState(false);
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [groupName, setGroupName] = useState("");
   const [members, setMembers] = useState<Profile[]>([]);
   const [message, setMessage] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  // Édition d'un message existant
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState("");
+  const [editBold, setEditBold] = useState(false);
+  const [editItalic, setEditItalic] = useState(false);
+  const [editColor, setEditColor] = useState("");
 
   // Ajout de membres à un groupe existant
   const [showAddMembers, setShowAddMembers] = useState(false);
@@ -38,6 +51,9 @@ function ChatInner() {
     }
     const { data: chans } = await supabase.from("chat_channels").select("*").in("id", ids).order("created_at", { ascending: false });
     setChannels(chans ?? []);
+
+    const { data: partners } = await supabase.rpc("list_dm_partner_names");
+    setDmPartners(new Map(((partners ?? []) as DmPartner[]).map((p) => [p.channel_id, p.partner_nickname])));
   }
 
   useEffect(() => {
@@ -67,6 +83,7 @@ function ChatInner() {
     }
     loadMessages();
     setShowAddMembers(false);
+    setEditingId(null);
     refreshChannelParticipants(activeChannel!);
 
     const sub = supabase
@@ -77,6 +94,14 @@ function ChatInner() {
         (payload) => {
           setMessages((prev) => [...prev, payload.new as ChatMessage]);
           setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "chat_messages", filter: `channel_id=eq.${activeChannel}` },
+        (payload) => {
+          const updated = payload.new as ChatMessage;
+          setMessages((prev) => prev.map((m) => (m.id === updated.id ? updated : m)));
         }
       )
       .subscribe();
@@ -95,12 +120,61 @@ function ChatInner() {
   async function sendMessage(e: React.FormEvent) {
     e.preventDefault();
     if (!draft.trim() || !activeChannel || !userId) return;
-    const { error } = await supabase.from("chat_messages").insert({ channel_id: activeChannel, sender_id: userId, content: draft.trim() });
+    const { error } = await supabase.from("chat_messages").insert({
+      channel_id: activeChannel,
+      sender_id: userId,
+      content: draft.trim(),
+      is_bold: draftBold,
+      is_italic: draftItalic,
+      color: draftColor || null,
+    });
     if (error) {
       setMessage(`Message non envoyé : ${error.message}`);
       return;
     }
     setDraft("");
+  }
+
+  function startEdit(m: ChatMessage) {
+    setEditingId(m.id);
+    setEditContent(m.content);
+    setEditBold(m.is_bold);
+    setEditItalic(m.is_italic);
+    setEditColor(m.color ?? "");
+  }
+
+  async function saveEdit() {
+    if (!editingId) return;
+    if (!editContent.trim()) {
+      setMessage("Le message ne peut pas être vide.");
+      return;
+    }
+    const { error } = await supabase
+      .from("chat_messages")
+      .update({ content: editContent.trim(), is_bold: editBold, is_italic: editItalic, color: editColor || null })
+      .eq("id", editingId);
+    if (error) {
+      setMessage(`Échec de la modification : ${error.message}`);
+      return;
+    }
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === editingId
+          ? { ...m, content: editContent.trim(), is_bold: editBold, is_italic: editItalic, color: editColor || null, edited_at: new Date().toISOString() }
+          : m
+      )
+    );
+    setEditingId(null);
+  }
+
+  async function deleteMessage(id: string) {
+    if (!confirm("Supprimer ce message ?")) return;
+    const { error } = await supabase.from("chat_messages").update({ is_deleted: true }).eq("id", id);
+    if (error) {
+      setMessage(`Échec de la suppression : ${error.message}`);
+      return;
+    }
+    setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, is_deleted: true } : m)));
   }
 
   async function startDirectMessage(otherId: string) {
@@ -205,7 +279,7 @@ function ChatInner() {
 
   function channelLabel(c: ChatChannel) {
     if (c.type === "group" || c.type === "application") return c.name ?? "Discussion";
-    return "Message privé";
+    return dmPartners.get(c.id) ? `MP — ${dmPartners.get(c.id)}` : "Message privé";
   }
 
   const activeChannelObj = channels.find((c) => c.id === activeChannel);
@@ -327,31 +401,93 @@ function ChatInner() {
             )}
 
             <div className="flex-1 space-y-2 overflow-y-auto pr-2">
-              {messages.map((m) => (
-                <div key={m.id} className={`max-w-[85%] sm:max-w-md rounded-lg px-3 py-2 ${m.sender_id === userId ? "ml-auto bg-blue text-ink" : "bg-paper-dark text-ink"}`}>
-                  {m.sender_id !== userId && (
-                    <Link
-                      href={`/dashboard/profile/${m.sender_id}`}
-                      className="font-mono text-[10px] uppercase text-paper/60 hover:text-blue-light hover:underline"
-                    >
-                      {profiles.get(m.sender_id)?.nickname ?? "Agent"}
-                    </Link>
-                  )}
-                  <p className="font-body text-sm">{m.content}</p>
-                </div>
-              ))}
+              {messages.map((m) => {
+                const isMine = m.sender_id === userId;
+                const isEditing = editingId === m.id;
+                return (
+                  <div key={m.id} className={`group max-w-[85%] sm:max-w-md rounded-lg px-3 py-2 ${isMine ? "ml-auto bg-blue text-ink" : "bg-paper-dark text-ink"}`}>
+                    {!isMine && (
+                      <Link
+                        href={`/dashboard/profile/${m.sender_id}`}
+                        className="font-mono text-[10px] uppercase text-paper/60 hover:text-blue-light hover:underline"
+                      >
+                        {profiles.get(m.sender_id)?.nickname ?? "Agent"}
+                      </Link>
+                    )}
+
+                    {m.is_deleted ? (
+                      <p className="font-body text-sm italic text-ink/50">Message supprimé</p>
+                    ) : isEditing ? (
+                      <div className="space-y-2">
+                        <input
+                          value={editContent}
+                          onChange={(e) => setEditContent(e.target.value)}
+                          className="w-full rounded border border-ink/20 bg-paper px-2 py-1 font-body text-sm text-ink outline-none"
+                        />
+                        <div className="flex flex-wrap items-center gap-2">
+                          <button onClick={() => setEditBold((b) => !b)} className={clsx("rounded border px-1.5 font-bold text-xs", editBold ? "border-ink bg-ink/10" : "border-ink/30")}>G</button>
+                          <button onClick={() => setEditItalic((i) => !i)} className={clsx("rounded border px-1.5 text-xs italic", editItalic ? "border-ink bg-ink/10" : "border-ink/30")}>I</button>
+                          {COLOR_PRESETS.map((c) => (
+                            <button
+                              key={c || "none"}
+                              onClick={() => setEditColor(c)}
+                              title={c || "Aucune couleur"}
+                              className={clsx("h-4 w-4 rounded-full border", editColor === c ? "border-ink" : "border-ink/20")}
+                              style={{ backgroundColor: c || "transparent" }}
+                            />
+                          ))}
+                          <button onClick={saveEdit} className="ml-auto rounded bg-ink/80 px-2 py-0.5 font-mono text-[10px] uppercase text-paper">Enregistrer</button>
+                          <button onClick={() => setEditingId(null)} className="font-mono text-[10px] uppercase text-ink/60 underline">Annuler</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p
+                        className={clsx("font-body text-sm", m.is_bold && "font-bold", m.is_italic && "italic")}
+                        style={m.color ? { color: m.color } : undefined}
+                      >
+                        {m.content}
+                        {m.edited_at && <span className="ml-1 font-mono text-[10px] opacity-60">(modifié)</span>}
+                      </p>
+                    )}
+
+                    {isMine && !m.is_deleted && !isEditing && (
+                      <div className="mt-1 hidden gap-2 group-hover:flex">
+                        <button onClick={() => startEdit(m)} className="font-mono text-[10px] uppercase text-ink/70 underline">Modifier</button>
+                        <button onClick={() => deleteMessage(m.id)} className="font-mono text-[10px] uppercase text-ink/70 underline">Supprimer</button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
               <div ref={bottomRef} />
             </div>
-            <form onSubmit={sendMessage} className="mt-3 flex gap-2 border-t border-white/10 pt-3">
-              <input
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                placeholder="Écrire un message…"
-                className="rounded-lg flex-1 border border-paper-dark bg-paper px-3 py-2 font-body text-ink outline-none focus:border-blue"
-              />
-              <button type="submit" className="rounded-lg bg-red px-4 font-display text-sm uppercase text-ink hover:bg-red-light">
-                Envoyer
-              </button>
+
+            <form onSubmit={sendMessage} className="mt-3 space-y-2 border-t border-white/10 pt-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <button type="button" onClick={() => setDraftBold((b) => !b)} className={clsx("rounded border px-2 py-0.5 font-mono text-xs font-bold", draftBold ? "border-blue bg-blue/20 text-blue-light" : "border-white/20 text-paper/70")}>G</button>
+                <button type="button" onClick={() => setDraftItalic((i) => !i)} className={clsx("rounded border px-2 py-0.5 font-mono text-xs italic", draftItalic ? "border-blue bg-blue/20 text-blue-light" : "border-white/20 text-paper/70")}>I</button>
+                {COLOR_PRESETS.map((c) => (
+                  <button
+                    type="button"
+                    key={c || "none"}
+                    onClick={() => setDraftColor(c)}
+                    title={c || "Aucune couleur"}
+                    className={clsx("h-5 w-5 rounded-full border", draftColor === c ? "border-paper" : "border-white/20")}
+                    style={{ backgroundColor: c || "transparent" }}
+                  />
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <input
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  placeholder="Écrire un message…"
+                  className="rounded-lg flex-1 border border-paper-dark bg-paper px-3 py-2 font-body text-ink outline-none focus:border-blue"
+                />
+                <button type="submit" className="rounded-lg bg-red px-4 font-display text-sm uppercase text-ink hover:bg-red-light">
+                  Envoyer
+                </button>
+              </div>
             </form>
           </>
         )}

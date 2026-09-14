@@ -19,6 +19,9 @@ export default function EconomyAdminPage() {
   const [amounts, setAmounts] = useState<Record<string, string>>({});
   const [reasons, setReasons] = useState<Record<string, string>>({});
 
+  const [reputationAmounts, setReputationAmounts] = useState<Record<string, string>>({});
+  const [reputationMessage, setReputationMessage] = useState<string | null>(null);
+
   const [salaries, setSalaries] = useState<SalaryView[]>([]);
   const [salaryForm, setSalaryForm] = useState<{ userId: string; amount: string; frequency: SalaryFrequency }>({
     userId: "",
@@ -53,6 +56,18 @@ export default function EconomyAdminPage() {
     await supabase.rpc("adjust_wallet", { p_user_id: userId, p_amount: amount, p_reason: reasons[userId] ?? "Ajustement manuel" });
     setAmounts((a) => ({ ...a, [userId]: "" }));
     setReasons((r) => ({ ...r, [userId]: "" }));
+    refresh();
+  }
+
+  async function adjustReputation(userId: string) {
+    const amount = Number(reputationAmounts[userId]);
+    if (!amount) return;
+    const { error } = await supabase.rpc("adjust_reputation", { p_user_id: userId, p_amount: amount });
+    if (error) {
+      setReputationMessage(`Échec : ${error.message}`);
+      return;
+    }
+    setReputationAmounts((a) => ({ ...a, [userId]: "" }));
     refresh();
   }
 
@@ -105,7 +120,7 @@ export default function EconomyAdminPage() {
       <h1 className="font-display text-2xl uppercase tracking-wide text-red">Économie de la S.I.D.</h1>
 
       <section className="space-y-3">
-        <h2 className="font-display text-lg uppercase text-paper">Ajustement manuel</h2>
+        <h2 className="font-display text-lg uppercase text-paper">Ajustement manuel du solde</h2>
         {members.map((m) => (
           <div key={m.id} className="glass-card flex flex-wrap items-center gap-3 p-4">
             <div className="min-w-[10rem]">
@@ -126,6 +141,29 @@ export default function EconomyAdminPage() {
               onChange={(e) => setReasons((r) => ({ ...r, [m.id]: e.target.value }))}
             />
             <button onClick={() => adjust(m.id)} className="rounded-lg bg-red px-4 py-2 font-mono text-xs uppercase text-ink hover:bg-red-light">
+              Appliquer
+            </button>
+          </div>
+        ))}
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="font-display text-lg uppercase text-paper">Renommée</h2>
+        {reputationMessage && <p className="font-mono text-sm text-red">{reputationMessage}</p>}
+        {members.map((m) => (
+          <div key={m.id} className="glass-card flex flex-wrap items-center gap-3 p-4">
+            <div className="min-w-[10rem]">
+              <p className="font-display uppercase">{m.nickname}</p>
+              <p className="font-mono text-xs text-blue">{m.reputation.toLocaleString("fr-FR")} pts</p>
+            </div>
+            <input
+              type="number"
+              placeholder="Points (+/-)"
+              className={`${inputClass} w-32`}
+              value={reputationAmounts[m.id] ?? ""}
+              onChange={(e) => setReputationAmounts((a) => ({ ...a, [m.id]: e.target.value }))}
+            />
+            <button onClick={() => adjustReputation(m.id)} className="rounded-lg bg-blue px-4 py-2 font-mono text-xs uppercase text-ink hover:bg-blue-light">
               Appliquer
             </button>
           </div>

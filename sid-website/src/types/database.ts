@@ -15,6 +15,7 @@ export interface Profile {
   is_founder: boolean;
   member_rank: QuestDifficulty;
   is_muted: boolean;
+  reputation: number;
   hidden_fields: string[];
   reviewed_by: string | null;
   reviewed_at: string | null;
@@ -83,6 +84,8 @@ export interface Quest {
   visibility: QuestVisibility;
   max_participants: number | null;
   assigned_group_id: string | null;
+  funded_by_creator: boolean;
+  pending_expiry_confirmation: boolean;
   created_by: string | null;
   created_at: string;
 }
@@ -137,7 +140,18 @@ export interface ChatMessage {
   channel_id: string;
   sender_id: string;
   content: string;
+  edited_at: string | null;
+  is_deleted: boolean;
+  is_bold: boolean;
+  is_italic: boolean;
+  color: string | null;
   created_at: string;
+}
+
+export interface DmPartner {
+  channel_id: string;
+  partner_id: string;
+  partner_nickname: string;
 }
 
 export type SalaryFrequency = "daily" | "weekly" | "biweekly" | "monthly";
@@ -149,4 +163,12 @@ export interface SalaryView {
   frequency: SalaryFrequency;
   is_active: boolean;
   next_payment_at: string;
+}
+
+export interface LeaderboardEntry {
+  user_id: string;
+  nickname: string;
+  balance: number;
+  reputation: number;
+  quests_completed: number;
 }

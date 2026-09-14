@@ -14,6 +14,7 @@ const NAV: { href: string; label: string; perm?: PermissionKey[] }[] = [
   { href: "/dashboard/members", label: "Trombinoscope" },
   { href: "/dashboard/quests", label: "Quêtes" },
   { href: "/dashboard/shop", label: "Boutique" },
+  { href: "/dashboard/leaderboard", label: "Classement" },
   { href: "/dashboard/chat", label: "Messagerie" },
   { href: "/dashboard/profile", label: "Mon dossier" },
   { href: "/dashboard/admin/applications", label: "Recrutement", perm: ["recruit"] },
@@ -48,9 +49,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       setPermissions(permissions);
       setLoading(false);
 
-      // Vérifie et verse le salaire du membre s'il est dû — remplace le
-      // cron : ça se déclenche simplement à chaque connexion/arrivée sur
-      // le tableau de bord, sans dépendance à pg_cron.
+      // Vérifie et verse le salaire du membre s'il est dû — se déclenche
+      // simplement à chaque connexion/arrivée sur le tableau de bord, sans
+      // dépendance à pg_cron.
       try {
         await supabase.rpc("check_and_pay_my_salary");
       } catch {
