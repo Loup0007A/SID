@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { loadCurrentUser, can } from "@/lib/permissions";
 import type { Quest, QuestDifficulty, QuestVisibility, ContractType, PermissionKey, Profile, QuestParticipantView } from "@/types/database";
+import type { MapPlace, MapRoute, CharacterPosition } from "@/types/map";
 import { QuestCard } from "@/components/QuestCard";
 import { inputClass, labelClass } from "@/lib/ui";
 import { CONTRACT_TYPES } from "@/lib/contractTypes";
+import { findShortestPath } from "@/lib/pathfinding";
 
 export default function QuestsPage() {
   const supabase = createClient();
@@ -28,6 +30,7 @@ export default function QuestsPage() {
     visibility: "members" as QuestVisibility,
     maxParticipants: "",
     fundedByCreator: true,
+    placeId: "",
   });
 
   // "Pour qui je prends cette mission" par quête (avant de cliquer sur "Prendre")
@@ -39,6 +42,12 @@ export default function QuestsPage() {
 
   // Quêtes expirées "proches" de leur objectif, en attente de décision du créateur
   const [pendingQuests, setPendingQuests] = useState<Quest[]>([]);
+
+  // Carte / itinéraires (intégration sid-map)
+  const [places, setPlaces] = useState<MapPlace[]>([]);
+  const [routes, setRoutes] = useState<MapRoute[]>([]);
+  const [myPosition, setMyPosition] = useState<CharacterPosition | null>(null);
+  const [launchingId, setLaunchingId] = useState<string | null>(null);
 
   async function refresh(uid?: string | null) {
     const activeUserId = uid !== undefined ? uid : userId;
@@ -56,6 +65,9 @@ export default function QuestsPage() {
     if (activeUserId) {
       const { data: mine } = await supabase.from("quest_participants").select("quest_id").eq("user_id", activeUserId);
       setMyQuestIds(new Set((mine ?? []).map((m) => m.quest_id)));
+
+      const { data: pos } = await supabase.from("character_positions").select("*").eq("user_id", activeUserId).maybeSingle();
+      setMyPosition((pos as CharacterPosition) ?? null);
     }
 
     const { data: pending } = await supabase.rpc("list_pending_expiry_quests");
@@ -70,12 +82,25 @@ export default function QuestsPage() {
       const { data: m } = await supabase.from("profiles").select("*").eq("status", "active");
       setMembers(m ?? []);
 
+      const [{ data: p }, { data: r }] = await Promise.all([
+        supabase.from("map_places").select("id, name, type"),
+        supabase.from("map_routes").select("*"),
+      ]);
+      setPlaces(p ?? []);
+      setRoutes((r ?? []) as MapRoute[]);
+
       // Traite les quêtes dont la date limite est dépassée (validation auto
       // si l'objectif est atteint, ou mise en attente de confirmation si on
-      // est proche) — se déclenche simplement à la consultation de la page,
-      // pas besoin de job planifié.
+      // est proche) — se déclenche simplement à la consultation de la page.
       try {
         await supabase.rpc("process_expired_quests");
+      } catch {
+        // silencieux
+      }
+      // Fait avancer un trajet en cours (arrivée à destination, passage à
+      // l'étape suivante d'un trajet multi-segments…).
+      try {
+        await supabase.rpc("advance_my_travel");
       } catch {
         // silencieux
       }
@@ -98,6 +123,7 @@ export default function QuestsPage() {
       visibility: form.visibility,
       max_participants: form.maxParticipants ? Number(form.maxParticipants) : null,
       funded_by_creator: form.fundedByCreator,
+      place_id: form.placeId || null,
       created_by: userId,
     });
     if (error) {
@@ -105,7 +131,7 @@ export default function QuestsPage() {
       return;
     }
     setShowForm(false);
-    setForm({ title: "", description: "", reward: "0", difficulty: "D", contractType: "autres", deadline: "", visibility: "members", maxParticipants: "", fundedByCreator: true });
+    setForm({ title: "", description: "", reward: "0", difficulty: "D", contractType: "autres", deadline: "", visibility: "members", maxParticipants: "", fundedByCreator: true, placeId: "" });
     await refresh();
   }
 
@@ -119,9 +145,6 @@ export default function QuestsPage() {
     const choice = beneficiary[quest.id] ?? "self";
     const rewardRecipientId = choice === "self" ? null : choice;
 
-    // La capacité maximale est désormais vérifiée de façon fiable côté base
-    // (verrou + trigger), donc ce message d'erreur couvre aussi le cas où
-    // quelqu'un d'autre vient de prendre la dernière place entre-temps.
     const { error } = await supabase
       .from("quest_participants")
       .insert({ quest_id: quest.id, user_id: userId, reward_recipient_id: rewardRecipientId });
@@ -195,7 +218,42 @@ export default function QuestsPage() {
     await refresh();
   }
 
+  async function launchTravel(quest: Quest) {
+    if (!myPosition?.place_id) {
+      setMessage("Renseigne d'abord ta position actuelle depuis la page Carte.");
+      return;
+    }
+    if (!quest.place_id) return;
+    const plan = findShortestPath(routes, myPosition.place_id, quest.place_id);
+    if (!plan) {
+      setMessage("Aucun itinéraire connu entre ta position et cette quête.");
+      return;
+    }
+    if (plan.steps.length === 0) {
+      setMessage("Tu es déjà sur place !");
+      return;
+    }
+    setLaunchingId(quest.id);
+    const { error } = await supabase.rpc("start_travel", {
+      p_planned_path: plan.steps.map((s) => ({ route_id: s.route_id, to_place_id: s.to_place_id })),
+    });
+    setLaunchingId(null);
+    if (error) {
+      setMessage(`Échec du départ : ${error.message}`);
+      return;
+    }
+    setMessage(`Trajet lancé — arrivée estimée dans ${Math.round(plan.totalMinutes)} min. Suis le compte à rebours sur la page Carte.`);
+    await refresh();
+  }
+
+  function etaFor(quest: Quest): number | null {
+    if (!myPosition?.place_id || !quest.place_id) return null;
+    const plan = findShortestPath(routes, myPosition.place_id, quest.place_id);
+    return plan ? plan.totalMinutes : null;
+  }
+
   const canManage = can(permissions, "manage_quests");
+  const isTraveling = !!myPosition?.route_id;
 
   return (
     <div className="space-y-6">
@@ -239,6 +297,13 @@ export default function QuestsPage() {
             </div>
           ))}
         </div>
+      )}
+
+      {isTraveling && (
+        <p className="glass-panel rounded-lg px-4 py-2 font-mono text-xs uppercase text-blue-light">
+          🧭 Tu es actuellement en déplacement — suis le compte à rebours sur la page{" "}
+          <a href="/dashboard/map" className="underline">Carte</a>.
+        </p>
       )}
 
       <div className="glass-panel flex flex-wrap gap-x-4 gap-y-2 rounded-lg px-4 py-3">
@@ -304,6 +369,15 @@ export default function QuestsPage() {
               <option value="private">Privée</option>
             </select>
           </div>
+          <div className="space-y-1 sm:col-span-2">
+            <label className={labelClass}>Lieu sur la carte (optionnel)</label>
+            <select className={inputClass} value={form.placeId} onChange={(e) => setForm({ ...form, placeId: e.target.value })}>
+              <option value="">— Non localisée —</option>
+              {places.map((p) => (
+                <option key={p.id} value={p.id}>{p.name} ({p.type})</option>
+              ))}
+            </select>
+          </div>
           <label className="flex items-center gap-2 font-mono text-xs sm:col-span-2">
             <input
               type="checkbox" className="accent-blue"
@@ -323,11 +397,38 @@ export default function QuestsPage() {
           const count = counts.get(q.id) ?? 0;
           const isFull = q.max_participants != null && count >= q.max_participants;
           const alreadyIn = myQuestIds.has(q.id);
+          const questPlace = q.place_id ? places.find((p) => p.id === q.place_id) : null;
+          const eta = q.place_id ? etaFor(q) : null;
+
           return (
             <div key={q.id} className="space-y-2">
               <QuestCard quest={q} participantCount={count} />
               {!q.funded_by_creator && (
                 <p className="text-center font-mono text-[10px] uppercase text-paper/50">Financée par la S.I.D.</p>
+              )}
+
+              {questPlace && (
+                <div className="glass-card space-y-1 p-3 text-center">
+                  <p className="font-mono text-xs uppercase text-blue-light">🗺️ {questPlace.name}</p>
+                  {eta != null ? (
+                    <>
+                      <p className="font-mono text-[10px] text-paper/60">≈ {Math.round(eta)} min depuis ta position</p>
+                      {!isTraveling && eta > 0 && (
+                        <button
+                          onClick={() => launchTravel(q)}
+                          disabled={launchingId === q.id}
+                          className="rounded-lg w-full border border-blue py-1 font-mono text-xs uppercase text-blue hover:bg-blue hover:text-ink disabled:opacity-40"
+                        >
+                          {launchingId === q.id ? "Départ…" : "Lancer le trajet"}
+                        </button>
+                      )}
+                    </>
+                  ) : (
+                    <p className="font-mono text-[10px] text-paper/50">
+                      {myPosition?.place_id ? "Aucun itinéraire connu" : "Renseigne ta position sur la page Carte pour voir le trajet"}
+                    </p>
+                  )}
+                </div>
               )}
 
               {q.status === "open" && !alreadyIn && (
