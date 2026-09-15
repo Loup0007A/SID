@@ -132,7 +132,7 @@ export default function MapPage() {
       return;
     }
     setMessage("Position mise à jour.");
-    setMyPosition((p) => ({
+    setMyPosition({
       user_id: userId,
       place_id: placeId || null,
       building_id: buildingId || null,
@@ -143,9 +143,7 @@ export default function MapPage() {
       note: note || null,
       is_visible: isVisible,
       updated_at: new Date().toISOString(),
-      ...p,
-      route_id: null,
-    }));
+    });
     await refresh();
   }
 
