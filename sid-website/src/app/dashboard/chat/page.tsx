@@ -180,11 +180,28 @@ function ChatInner() {
   async function startDirectMessage(otherId: string) {
     if (!userId) return;
     setMessage(null);
-    // cherche un DM existant entre les deux
+
+    // Cherche un DM (uniquement type "dm", jamais un groupe partagé) déjà
+    // existant entre les deux. Bug corrigé : l'ancienne version comparait
+    // tous les salons communs, donc un groupe partagé avec cette personne
+    // empêchait à tort d'ouvrir un DM séparé.
     const { data: myChannels } = await supabase.from("chat_participants").select("channel_id").eq("user_id", userId);
     const myIds = (myChannels ?? []).map((c) => c.channel_id);
-    const { data: theirChannels } = await supabase.from("chat_participants").select("channel_id").eq("user_id", otherId).in("channel_id", myIds);
-    let channelId = theirChannels?.[0]?.channel_id as string | undefined;
+
+    let channelId: string | undefined;
+    if (myIds.length > 0) {
+      const { data: dmChannels } = await supabase.from("chat_channels").select("id").eq("type", "dm").in("id", myIds);
+      const myDmIds = (dmChannels ?? []).map((c) => c.id);
+
+      if (myDmIds.length > 0) {
+        const { data: theirChannels } = await supabase
+          .from("chat_participants")
+          .select("channel_id")
+          .eq("user_id", otherId)
+          .in("channel_id", myDmIds);
+        channelId = theirChannels?.[0]?.channel_id as string | undefined;
+      }
+    }
 
     if (!channelId) {
       const { data: channel, error: channelError } = await supabase
