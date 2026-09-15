@@ -6,6 +6,8 @@ import Link from "next/link";
 import clsx from "clsx";
 import { createClient } from "@/lib/supabase/client";
 import type { ChatChannel, ChatMessage, Profile, DmPartner } from "@/types/database";
+import { isTrollCommand, playTrollEffect, TROLL_COMMANDS } from "@/lib/trollEffects";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 
 const COLOR_PRESETS = ["#D99A9A", "#8FB3D9", "#E8C547", "#3F8F5F", "#B23B2E", ""] as const;
 
@@ -29,6 +31,8 @@ function ChatInner() {
   const [members, setMembers] = useState<Profile[]>([]);
   const [message, setMessage] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const realtimeChannelRef = useRef<RealtimeChannel | null>(null);
+  const [showCommands, setShowCommands] = useState(false);
 
   // Édition d'un message existant
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -104,10 +108,19 @@ function ChatInner() {
           setMessages((prev) => prev.map((m) => (m.id === updated.id ? updated : m)));
         }
       )
+      .on("broadcast", { event: "troll" }, ({ payload }) => {
+        // Effet "troll" reçu d'un autre participant du salon — rien n'est
+        // stocké en base, c'est purement un signal éphémère.
+        playTrollEffect((payload as { command: string }).command);
+        setMessage(`😈 ${(payload as { nickname: string }).nickname} a lancé /${(payload as { command: string }).command}`);
+      })
       .subscribe();
+
+    realtimeChannelRef.current = sub;
 
     return () => {
       supabase.removeChannel(sub);
+      realtimeChannelRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeChannel]);
@@ -120,10 +133,31 @@ function ChatInner() {
   async function sendMessage(e: React.FormEvent) {
     e.preventDefault();
     if (!draft.trim() || !activeChannel || !userId) return;
+
+    const trimmed = draft.trim();
+
+    if (isTrollCommand(trimmed)) {
+      if (profiles.get(userId)?.is_muted) {
+        setMessage("Tu es mute, impossible d'utiliser les commandes.");
+        return;
+      }
+      // Commande de troll : ni stockée ni affichée comme un message normal —
+      // juste diffusée en direct aux autres participants du salon actuellement
+      // connectés (Supabase Realtime broadcast, éphémère).
+      playTrollEffect(trimmed);
+      realtimeChannelRef.current?.send({
+        type: "broadcast",
+        event: "troll",
+        payload: { command: trimmed.replace(/^\//, "").toLowerCase(), nickname: profiles.get(userId)?.nickname ?? "Agent" },
+      });
+      setDraft("");
+      return;
+    }
+
     const { error } = await supabase.from("chat_messages").insert({
       channel_id: activeChannel,
       sender_id: userId,
-      content: draft.trim(),
+      content: trimmed,
       is_bold: draftBold,
       is_italic: draftItalic,
       color: draftColor || null,
@@ -493,7 +527,36 @@ function ChatInner() {
                     style={{ backgroundColor: c || "transparent" }}
                   />
                 ))}
+                <button
+                  type="button"
+                  onClick={() => setShowCommands((s) => !s)}
+                  className="ml-auto rounded border border-white/20 px-2 py-0.5 font-mono text-xs text-paper/70 hover:border-blue hover:text-blue-light"
+                  title="Commandes disponibles"
+                >
+                  😈 /commandes
+                </button>
               </div>
+              {showCommands && (
+                <div className="flex flex-wrap gap-1.5 rounded-lg border border-white/10 bg-white/5 p-2">
+                  {TROLL_COMMANDS.filter((c) => c !== "troll").map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => setDraft(`/${c}`)}
+                      className="rounded border border-blue/40 px-2 py-0.5 font-mono text-[10px] uppercase text-blue-light hover:bg-blue hover:text-ink"
+                    >
+                      /{c}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setDraft("/troll")}
+                    className="rounded border border-red/50 px-2 py-0.5 font-mono text-[10px] uppercase text-red hover:bg-red hover:text-ink"
+                  >
+                    /troll (aléatoire) 😈
+                  </button>
+                </div>
+              )}
               <div className="flex gap-2">
                 <input
                   value={draft}

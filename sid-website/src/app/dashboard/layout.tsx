@@ -22,6 +22,7 @@ const NAV: { href: string; label: string; perm?: PermissionKey[] }[] = [
   { href: "/dashboard/admin/roles", label: "Rôles & équipes", perm: ["manage_roles", "manage_teams", "manage_users"] },
   { href: "/dashboard/admin/economy", label: "Économie", perm: ["manage_economy"] },
   { href: "/dashboard/admin/users", label: "Administration", perm: ["manage_users"] },
+  { href: "/dashboard/admin/stats", label: "Statistiques", perm: ["manage_users"] },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -66,6 +67,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         await supabase.rpc("advance_my_travel");
       } catch {
         // silencieux : ne s'applique que si character_positions existe
+      }
+
+      // Enregistre la visite du jour (pour les statistiques admin : membres
+      // actifs aujourd'hui, visites, heure la plus active…).
+      try {
+        await supabase.rpc("record_visit");
+      } catch {
+        // silencieux
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
