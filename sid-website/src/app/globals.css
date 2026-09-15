@@ -284,6 +284,137 @@ body {
   to { background-position: 200% center; }
 }
 
+/* =========================================================
+   Effets "troll" déclenchés par les commandes de chat (/shake, /matrix…)
+   Voir src/lib/trollEffects.ts. Classes appliquées temporairement sur
+   <body>, ou éléments injectés/retirés dynamiquement.
+   ========================================================= */
+
+.troll-shake { animation: troll-shake 0.5s ease-in-out 4; }
+@keyframes troll-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-10px); }
+  75% { transform: translateX(10px); }
+}
+
+.troll-earthquake { animation: troll-earthquake 0.3s ease-in-out 8; }
+@keyframes troll-earthquake {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  20% { transform: translate(-14px, 6px) rotate(-1deg); }
+  40% { transform: translate(12px, -8px) rotate(1deg); }
+  60% { transform: translate(-10px, 10px) rotate(-1.5deg); }
+  80% { transform: translate(14px, -6px) rotate(1.5deg); }
+}
+
+.troll-invert { filter: invert(1); }
+
+.troll-spin { animation: troll-spin 2s ease-in-out; }
+@keyframes troll-spin {
+  0% { transform: rotate(0deg); }
+  50% { transform: rotate(8deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.troll-glitch { animation: troll-glitch 0.15s steps(2) 14; }
+@keyframes troll-glitch {
+  0% { transform: translate(0); filter: hue-rotate(0deg); }
+  20% { transform: translate(-4px, 2px); filter: hue-rotate(60deg); }
+  40% { transform: translate(4px, -2px) skewX(2deg); filter: hue-rotate(-60deg); }
+  60% { transform: translate(-3px, -3px); filter: hue-rotate(90deg); }
+  80% { transform: translate(3px, 3px) skewX(-2deg); filter: hue-rotate(-90deg); }
+  100% { transform: translate(0); filter: hue-rotate(0deg); }
+}
+
+.troll-party { animation: troll-party 0.6s linear infinite; }
+@keyframes troll-party {
+  0% { filter: hue-rotate(0deg) saturate(1.4); }
+  100% { filter: hue-rotate(360deg) saturate(1.4); }
+}
+
+.troll-drunk { animation: troll-drunk 2.5s ease-in-out infinite; }
+@keyframes troll-drunk {
+  0%, 100% { transform: rotate(0deg) skewX(0deg); }
+  25% { transform: rotate(1.2deg) skewX(1deg); }
+  50% { transform: rotate(-1deg) skewX(-1.2deg); }
+  75% { transform: rotate(0.8deg) skewX(0.6deg); }
+}
+
+.troll-gravity > * { animation: troll-gravity 0.9s cubic-bezier(0.55, 0, 1, 0.45) forwards; }
+@keyframes troll-gravity {
+  to { transform: translateY(110vh) rotate(25deg); opacity: 0; }
+}
+
+@keyframes troll-fall {
+  to { transform: translateY(105vh) rotate(180deg); opacity: 0.3; }
+}
+
+.troll-flash-overlay {
+  position: fixed;
+  inset: 0;
+  background: #fff;
+  z-index: 9999;
+  pointer-events: none;
+  animation: troll-flash 0.5s ease-out forwards;
+}
+@keyframes troll-flash {
+  0% { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+
+.troll-jumpscare-text {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18vw;
+  pointer-events: none;
+  animation: troll-jumpscare 0.9s cubic-bezier(0.2, 1.5, 0.4, 1) forwards;
+}
+@keyframes troll-jumpscare {
+  0% { transform: scale(0.2); opacity: 0; }
+  30% { transform: scale(1.15); opacity: 1; }
+  60% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1); opacity: 0; }
+}
+
+.troll-404-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #1b1e27;
+  color: #ede6d3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  animation: troll-fade-out 0.6s ease-in 2.6s forwards;
+}
+
+.troll-rickroll-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  background: linear-gradient(135deg, #d99a9a, #8fb3d9);
+  animation: troll-fade-out 0.6s ease-in 3.4s forwards;
+}
+.troll-rickroll-dance { animation: troll-dance 0.5s ease-in-out infinite; font-size: 6rem; }
+@keyframes troll-dance {
+  0%, 100% { transform: rotate(-8deg) translateY(0); }
+  50% { transform: rotate(8deg) translateY(-10px); }
+}
+
+@keyframes troll-fade-out {
+  to { opacity: 0; visibility: hidden; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.001ms !important;

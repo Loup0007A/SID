@@ -16,6 +16,7 @@ export interface Profile {
   member_rank: QuestDifficulty;
   is_muted: boolean;
   reputation: number;
+  last_seen_at: string | null;
   hidden_fields: string[];
   reviewed_by: string | null;
   reviewed_at: string | null;
