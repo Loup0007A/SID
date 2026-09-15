@@ -86,6 +86,7 @@ export interface Quest {
   assigned_group_id: string | null;
   funded_by_creator: boolean;
   pending_expiry_confirmation: boolean;
+  place_id: string | null;
   created_by: string | null;
   created_at: string;
 }
