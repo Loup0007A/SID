@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { createClient } from "@/lib/supabase/client";
 import type { AppNotification } from "@/types/notifications";
@@ -21,6 +20,13 @@ export function NotificationBell({ userId }: { userId: string }) {
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
+  // Le composant est rendu deux fois en simultané dans le layout (version
+  // desktop + version mobile, l'une des deux étant juste masquée en CSS) :
+  // sans identifiant unique, les deux instances créeraient un canal
+  // Realtime de même nom ("notifications:<userId>"), ce que Supabase
+  // refuse (on ne peut pas ajouter d'écouteur sur un canal déjà abonné par
+  // une autre instance). Un suffixe aléatoire par instance évite le conflit.
+  const instanceId = useRef(Math.random().toString(36).slice(2)).current;
 
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
@@ -38,7 +44,7 @@ export function NotificationBell({ userId }: { userId: string }) {
     refresh();
 
     const sub = supabase
-      .channel(`notifications:${userId}`)
+      .channel(`notifications:${userId}:${instanceId}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
