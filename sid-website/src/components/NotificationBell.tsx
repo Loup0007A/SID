@@ -1,0 +1,130 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import clsx from "clsx";
+import { createClient } from "@/lib/supabase/client";
+import type { AppNotification } from "@/types/notifications";
+
+const TYPE_ICON: Record<string, string> = {
+  chat_message: "💬",
+  quest_validated: "✅",
+  application_decision: "📋",
+  quest_confirmation_needed: "⏳",
+  travel_arrived: "🧭",
+  salary_paid: "💰",
+};
+
+export function NotificationBell({ userId }: { userId: string }) {
+  const supabase = createClient();
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
+
+  async function refresh() {
+    const { data } = await supabase
+      .from("notifications")
+      .select("*")
+      .eq("user_id", userId)
+      .order("updated_at", { ascending: false })
+      .limit(25);
+    setNotifications((data ?? []) as AppNotification[]);
+  }
+
+  useEffect(() => {
+    refresh();
+
+    const sub = supabase
+      .channel(`notifications:${userId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
+        () => refresh()
+      )
+      .subscribe();
+
+    // Filet de sécurité si le Realtime n'est pas activé sur ce projet
+    // (ou temporairement coupé) : on se resynchronise périodiquement.
+    const interval = window.setInterval(refresh, 45000);
+
+    return () => {
+      supabase.removeChannel(sub);
+      window.clearInterval(interval);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  async function markAllRead() {
+    await supabase.from("notifications").update({ is_read: true }).eq("user_id", userId).eq("is_read", false);
+    refresh();
+  }
+
+  async function handleClick(n: AppNotification) {
+    if (!n.is_read) {
+      await supabase.from("notifications").update({ is_read: true }).eq("id", n.id);
+    }
+    setOpen(false);
+    if (n.link) router.push(n.link);
+    refresh();
+  }
+
+  return (
+    <div className="relative" ref={containerRef}>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-white/15 bg-white/5 text-paper hover:bg-white/10"
+        aria-label="Notifications"
+      >
+        🔔
+        {unreadCount > 0 && (
+          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red px-1 font-mono text-[9px] text-ink">
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </span>
+        )}
+      </button>
+
+      {open && (
+        <div className="glass-card absolute right-0 z-30 mt-2 w-80 max-w-[90vw] space-y-1 p-2">
+          <div className="flex items-center justify-between px-2 py-1">
+            <p className="font-mono text-xs uppercase text-paper/60">Notifications</p>
+            {unreadCount > 0 && (
+              <button onClick={markAllRead} className="font-mono text-[10px] uppercase text-blue-light underline">
+                Tout marquer lu
+              </button>
+            )}
+          </div>
+          <div className="max-h-96 space-y-1 overflow-y-auto">
+            {notifications.length === 0 && (
+              <p className="px-2 py-3 text-center font-body text-sm text-paper/50">Rien de nouveau.</p>
+            )}
+            {notifications.map((n) => (
+              <button
+                key={n.id}
+                onClick={() => handleClick(n)}
+                className={clsx("block w-full rounded-lg px-2 py-2 text-left hover:bg-white/10", !n.is_read && "bg-blue/10")}
+              >
+                <p className="font-mono text-xs">
+                  {TYPE_ICON[n.type] ?? "🔔"} {n.title}
+                  {n.count > 1 && <span className="ml-1 text-blue-light">×{n.count}</span>}
+                </p>
+                {n.body && <p className="mt-0.5 line-clamp-2 font-body text-xs text-paper/70">{n.body}</p>}
+                <p className="mt-0.5 font-mono text-[10px] text-paper/40">{new Date(n.created_at).toLocaleString("fr-FR")}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

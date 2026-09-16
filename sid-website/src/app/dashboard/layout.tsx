@@ -7,6 +7,7 @@ import clsx from "clsx";
 import { createClient } from "@/lib/supabase/client";
 import { loadCurrentUser, can } from "@/lib/permissions";
 import type { Profile, PermissionKey } from "@/types/database";
+import { NotificationBell } from "@/components/NotificationBell";
 
 const NAV: { href: string; label: string; perm?: PermissionKey[] }[] = [
   { href: "/dashboard", label: "Vue d'ensemble" },
@@ -131,11 +132,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="mb-8 flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/logo.png" alt="Logo S.I.D." className="h-12 w-12 shrink-0 rounded-full" />
-          <div>
+          <div className="min-w-0 flex-1">
             <p className="font-display text-2xl uppercase tracking-wide text-red">S.I.D.</p>
-            <p className="font-mono text-xs text-paper/50">{profile?.nickname}</p>
+            <p className="truncate font-mono text-xs text-paper/50">{profile?.nickname}</p>
             {profile?.is_founder && <span className="stamp mt-1 text-red">Fondateur</span>}
           </div>
+          {profile && <NotificationBell userId={profile.id} />}
         </div>
 
         <nav className="flex-1 space-y-1">
@@ -167,26 +169,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.png" alt="Logo S.I.D." className="h-8 w-8 rounded-full" />
             <p className="font-display text-xl uppercase text-red">S.I.D.</p>
-            <button
-              onClick={() => setMobileMenuOpen((o) => !o)}
-              aria-label="Ouvrir le menu"
-              aria-expanded={mobileMenuOpen}
-              className="ml-auto flex h-10 w-10 flex-col items-center justify-center gap-1.5 rounded-lg border border-white/15 bg-white/5"
-            >
-              <span
-                className={clsx(
-                  "h-0.5 w-5 bg-paper transition-transform",
-                  mobileMenuOpen && "translate-y-2 rotate-45"
-                )}
-              />
-              <span className={clsx("h-0.5 w-5 bg-paper transition-opacity", mobileMenuOpen && "opacity-0")} />
-              <span
-                className={clsx(
-                  "h-0.5 w-5 bg-paper transition-transform",
-                  mobileMenuOpen && "-translate-y-2 -rotate-45"
-                )}
-              />
-            </button>
+            <div className="ml-auto flex items-center gap-2">
+              {profile && <NotificationBell userId={profile.id} />}
+              <button
+                onClick={() => setMobileMenuOpen((o) => !o)}
+                aria-label="Ouvrir le menu"
+                aria-expanded={mobileMenuOpen}
+                className="flex h-10 w-10 flex-col items-center justify-center gap-1.5 rounded-lg border border-white/15 bg-white/5"
+              >
+                <span
+                  className={clsx(
+                    "h-0.5 w-5 bg-paper transition-transform",
+                    mobileMenuOpen && "translate-y-2 rotate-45"
+                  )}
+                />
+                <span className={clsx("h-0.5 w-5 bg-paper transition-opacity", mobileMenuOpen && "opacity-0")} />
+                <span
+                  className={clsx(
+                    "h-0.5 w-5 bg-paper transition-transform",
+                    mobileMenuOpen && "-translate-y-2 -rotate-45"
+                  )}
+                />
+              </button>
+            </div>
           </div>
 
           {mobileMenuOpen && (

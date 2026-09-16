@@ -67,6 +67,21 @@ export default function AdminStatsPage() {
         <StatCard emoji="✅" label="Quêtes accomplies" value={stats.quests_completed} />
         <StatCard emoji="🛒" label="Achats en boutique" value={stats.purchases_count} />
         <StatCard emoji="💰" label="Valeur totale des achats" value={`${stats.purchases_total_value.toLocaleString("fr-FR")} Cr.`} />
+        <StatCard
+          emoji="🥇"
+          label="Objet le plus vendu"
+          value={stats.top_selling_item ? `${stats.top_selling_item.name} (×${stats.top_selling_item.quantity})` : "—"}
+        />
+        <StatCard
+          emoji="💸"
+          label="Meilleur acheteur"
+          value={stats.top_buyer ? `${stats.top_buyer.nickname} (${stats.top_buyer.total_spent.toLocaleString("fr-FR")} Cr.)` : "—"}
+        />
+        <StatCard
+          emoji="🏪"
+          label="Meilleur vendeur"
+          value={stats.top_seller ? `${stats.top_seller.nickname} (${stats.top_seller.total_earned.toLocaleString("fr-FR")} Cr.)` : "—"}
+        />
       </div>
 
       <div className="glass-card space-y-3 p-6">
@@ -81,6 +96,31 @@ export default function AdminStatsPage() {
                   className="w-full rounded-t bg-blue"
                   style={{ height: `${(w.message_count / maxWeekly) * 100}%`, minHeight: 2 }}
                   title={`${w.message_count} messages`}
+                />
+                <span className="font-mono text-[9px] text-paper/50">
+                  {new Date(w.week_start).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" })}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="glass-card space-y-3 p-6">
+        <h2 className="font-display text-lg uppercase">🛒 Achats (8 dernières semaines)</h2>
+        {stats.purchases_weekly.length === 0 ? (
+          <p className="font-body text-sm text-paper/60">Pas encore assez de données.</p>
+        ) : (
+          <div className="flex h-32 items-end gap-2">
+            {stats.purchases_weekly.map((w) => (
+              <div key={w.week_start} className="flex flex-1 flex-col items-center gap-1">
+                <div
+                  className="w-full rounded-t bg-red"
+                  style={{
+                    height: `${(w.purchases_count / Math.max(1, ...stats.purchases_weekly.map((x) => x.purchases_count))) * 100}%`,
+                    minHeight: 2,
+                  }}
+                  title={`${w.purchases_count} achat(s) — ${w.total_value.toLocaleString("fr-FR")} Cr.`}
                 />
                 <span className="font-mono text-[9px] text-paper/50">
                   {new Date(w.week_start).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" })}

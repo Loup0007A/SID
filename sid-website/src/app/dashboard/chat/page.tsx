@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import clsx from "clsx";
 import { createClient } from "@/lib/supabase/client";
+import { loadCurrentUser, can } from "@/lib/permissions";
 import type { ChatChannel, ChatMessage, Profile, DmPartner } from "@/types/database";
 import { isTrollCommand, playTrollEffect, TROLL_COMMANDS } from "@/lib/trollEffects";
 import type { RealtimeChannel } from "@supabase/supabase-js";
@@ -33,6 +34,7 @@ function ChatInner() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const realtimeChannelRef = useRef<RealtimeChannel | null>(null);
   const [showCommands, setShowCommands] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Édition d'un message existant
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -71,6 +73,11 @@ function ChatInner() {
       const { data: m } = await supabase.from("profiles").select("*").eq("status", "active");
       setMembers(m ?? []);
       setProfiles(new Map((m ?? []).map((p) => [p.id, p])));
+
+      // Seuls les admins (permission manage_users, ou fondateur) peuvent
+      // utiliser les commandes de troll — pas seulement les non-mutes.
+      const { permissions } = await loadCurrentUser();
+      setIsAdmin(can(permissions, "manage_users"));
 
       await refreshChannels(user.id);
     })();
@@ -137,6 +144,10 @@ function ChatInner() {
     const trimmed = draft.trim();
 
     if (isTrollCommand(trimmed)) {
+      if (!isAdmin) {
+        setMessage("Seuls les admins peuvent utiliser les commandes de troll.");
+        return;
+      }
       if (profiles.get(userId)?.is_muted) {
         setMessage("Tu es mute, impossible d'utiliser les commandes.");
         return;
@@ -527,16 +538,18 @@ function ChatInner() {
                     style={{ backgroundColor: c || "transparent" }}
                   />
                 ))}
-                <button
-                  type="button"
-                  onClick={() => setShowCommands((s) => !s)}
-                  className="ml-auto rounded border border-white/20 px-2 py-0.5 font-mono text-xs text-paper/70 hover:border-blue hover:text-blue-light"
-                  title="Commandes disponibles"
-                >
-                  😈 /commandes
-                </button>
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => setShowCommands((s) => !s)}
+                    className="ml-auto rounded border border-white/20 px-2 py-0.5 font-mono text-xs text-paper/70 hover:border-blue hover:text-blue-light"
+                    title="Commandes disponibles"
+                  >
+                    😈 /commandes
+                  </button>
+                )}
               </div>
-              {showCommands && (
+              {showCommands && isAdmin && (
                 <div className="flex flex-wrap gap-1.5 rounded-lg border border-white/10 bg-white/5 p-2">
                   {TROLL_COMMANDS.filter((c) => c !== "troll").map((c) => (
                     <button
