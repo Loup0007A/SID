@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { createClient } from "@/lib/supabase/client";
 import type { AppNotification } from "@/types/notifications";
@@ -86,7 +87,7 @@ export function NotificationBell({ userId }: { userId: string }) {
   }
 
   return (
-    <div className="relative" ref={containerRef}>
+    <div className="relative shrink-0" ref={containerRef}>
       <button
         onClick={() => setOpen((o) => !o)}
         className="relative flex h-9 w-9 items-center justify-center rounded-lg border border-white/15 bg-white/5 text-paper hover:bg-white/10"
@@ -101,7 +102,14 @@ export function NotificationBell({ userId }: { userId: string }) {
       </button>
 
       {open && (
-        <div className="glass-card absolute right-0 z-30 mt-2 w-80 max-w-[90vw] space-y-1 p-2">
+        // Positionné en "fixed" par rapport à la fenêtre plutôt qu'en
+        // "absolute" par rapport au bouton : la sidebar est trop étroite
+        // (256px) pour un panneau de 320px ancré à droite du bouton, ce qui
+        // le faisait déborder et se superposer au contenu principal. Fixé
+        // en haut à droite de l'écran, il ne déborde plus jamais, quel que
+        // soit l'endroit où la cloche est affichée (sidebar desktop ou
+        // barre du haut mobile).
+        <div className="glass-card fixed right-3 top-16 z-40 w-80 max-w-[calc(100vw-1.5rem)] space-y-1 p-2 sm:top-20">
           <div className="flex items-center justify-between px-2 py-1">
             <p className="font-mono text-xs uppercase text-paper/60">Notifications</p>
             {unreadCount > 0 && (
@@ -110,7 +118,7 @@ export function NotificationBell({ userId }: { userId: string }) {
               </button>
             )}
           </div>
-          <div className="max-h-96 space-y-1 overflow-y-auto">
+          <div className="max-h-[70vh] space-y-1 overflow-y-auto">
             {notifications.length === 0 && (
               <p className="px-2 py-3 text-center font-body text-sm text-paper/50">Rien de nouveau.</p>
             )}

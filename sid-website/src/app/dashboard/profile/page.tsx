@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { Profile, QuestDifficulty } from "@/types/database";
 import { inputClass, labelClass } from "@/lib/ui";
 import { RankCard } from "@/components/RankCard";
-import { isPushSupported, getPushPermission, hasActivePushSubscription, subscribeToPush, unsubscribeFromPush } from "@/lib/push";
+import { isPushSupported, getPushPermission, hasActivePushSubscription, subscribeToPush, unsubscribeFromPush, needsIosInstallFirst } from "@/lib/push";
 
 const HIDEABLE_FIELDS: { key: keyof Profile; label: string }[] = [
   { key: "first_name", label: "Prénom IRL" },
@@ -38,6 +38,7 @@ export default function ProfilePage() {
   const [pushSubscribed, setPushSubscribed] = useState(false);
   const [pushMessage, setPushMessage] = useState<string | null>(null);
   const [pushLoading, setPushLoading] = useState(false);
+  const [needsIosInstall, setNeedsIosInstall] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -52,6 +53,7 @@ export default function ProfilePage() {
       setPurchases(purchasesData ?? []);
 
       setPushSupported(isPushSupported());
+      setNeedsIosInstall(needsIosInstallFirst());
       if (isPushSupported()) {
         setPushSubscribed(await hasActivePushSubscription());
       }
@@ -230,6 +232,20 @@ export default function ProfilePage() {
         </p>
         {!pushSupported ? (
           <p className="font-mono text-xs text-paper/50">Ce navigateur ne prend pas en charge les notifications push.</p>
+        ) : needsIosInstall ? (
+          <div className="space-y-2 rounded-lg border border-blue/40 bg-blue/10 p-3">
+            <p className="font-mono text-xs uppercase text-blue-light">📲 Sur iPhone/iPad</p>
+            <p className="font-body text-sm text-paper/80">
+              Apple n&apos;autorise les notifications que pour un site ajouté à l&apos;écran d&apos;accueil — pas pour
+              un onglet Safari classique. Pour les activer :
+            </p>
+            <ol className="list-decimal space-y-1 pl-5 font-body text-sm text-paper/80">
+              <li>Ouvre ce site dans Safari (pas Chrome, qui ne le permet pas sur iOS).</li>
+              <li>Appuie sur l&apos;icône Partager, puis &quot;Sur l&apos;écran d&apos;accueil&quot;.</li>
+              <li>Ouvre S.I.D. depuis cette nouvelle icône (pas depuis Safari).</li>
+              <li>Reviens sur cette page pour activer les notifications.</li>
+            </ol>
+          </div>
         ) : (
           <>
             {pushMessage && <p className="font-mono text-xs text-red">{pushMessage}</p>}

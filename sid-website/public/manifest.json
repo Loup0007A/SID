@@ -1,0 +1,14 @@
+{
+  "name": "S.I.D. — Dossier Central",
+  "short_name": "S.I.D.",
+  "description": "Plateforme communautaire de la S.I.D.",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#1b1e27",
+  "theme_color": "#1b1e27",
+  "icons": [
+    { "src": "/logo.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/logo.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
