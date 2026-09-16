@@ -16,4 +16,8 @@ export interface AdminStats {
   streak_days: number;
   weekly_activity: { week_start: string; message_count: number }[];
   heatmap: { dow: number; hour: number; count: number }[];
+  top_selling_item: { name: string; quantity: number } | null;
+  top_buyer: { nickname: string; total_spent: number } | null;
+  top_seller: { nickname: string; total_earned: number } | null;
+  purchases_weekly: { week_start: string; purchases_count: number; total_value: number }[];
 }

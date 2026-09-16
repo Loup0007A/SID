@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { Profile, QuestDifficulty } from "@/types/database";
 import { inputClass, labelClass } from "@/lib/ui";
 import { RankCard } from "@/components/RankCard";
+import { isPushSupported, getPushPermission, hasActivePushSubscription, subscribeToPush, unsubscribeFromPush } from "@/lib/push";
 
 const HIDEABLE_FIELDS: { key: keyof Profile; label: string }[] = [
   { key: "first_name", label: "Prénom IRL" },
@@ -32,6 +33,12 @@ export default function ProfilePage() {
   const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
   const [passwordSaving, setPasswordSaving] = useState(false);
 
+  // Notifications push
+  const [pushSupported, setPushSupported] = useState(false);
+  const [pushSubscribed, setPushSubscribed] = useState(false);
+  const [pushMessage, setPushMessage] = useState<string | null>(null);
+  const [pushLoading, setPushLoading] = useState(false);
+
   useEffect(() => {
     (async () => {
       const {
@@ -43,6 +50,11 @@ export default function ProfilePage() {
 
       const { data: purchasesData } = await supabase.rpc("list_my_purchases");
       setPurchases(purchasesData ?? []);
+
+      setPushSupported(isPushSupported());
+      if (isPushSupported()) {
+        setPushSubscribed(await hasActivePushSubscription());
+      }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -131,6 +143,27 @@ export default function ProfilePage() {
     setPasswordMessage("Mot de passe modifié.");
   }
 
+  async function togglePush() {
+    if (!profile) return;
+    setPushLoading(true);
+    setPushMessage(null);
+    try {
+      if (pushSubscribed) {
+        await unsubscribeFromPush();
+        setPushSubscribed(false);
+        setPushMessage("Notifications push désactivées sur cet appareil.");
+      } else {
+        await subscribeToPush(profile.id);
+        setPushSubscribed(true);
+        setPushMessage("Notifications push activées sur cet appareil !");
+      }
+    } catch (e) {
+      setPushMessage(e instanceof Error ? e.message : "Échec de l'opération.");
+    } finally {
+      setPushLoading(false);
+    }
+  }
+
   return (
     <div className="max-w-2xl space-y-8">
       <div className="flex flex-wrap items-center gap-4">
@@ -187,6 +220,33 @@ export default function ProfilePage() {
           <label className={labelClass}>Âge</label>
           <input type="number" className={inputClass} value={profile.age ?? ""} onChange={(e) => update("age", Number(e.target.value))} />
         </div>
+      </div>
+
+      <div className="glass-card space-y-3 p-6">
+        <h2 className="font-display text-lg uppercase">Notifications</h2>
+        <p className="font-body text-sm text-paper/70">
+          Tu reçois déjà les notifications dans la cloche 🔔 en haut du site. Active en plus les notifications push
+          pour être alerté même quand l&apos;onglet est fermé (nouveau message, quête validée, décision requise…).
+        </p>
+        {!pushSupported ? (
+          <p className="font-mono text-xs text-paper/50">Ce navigateur ne prend pas en charge les notifications push.</p>
+        ) : (
+          <>
+            {pushMessage && <p className="font-mono text-xs text-red">{pushMessage}</p>}
+            <button
+              onClick={togglePush}
+              disabled={pushLoading}
+              className={`rounded-lg px-4 py-2 font-display text-sm uppercase text-ink disabled:opacity-40 ${
+                pushSubscribed ? "border border-red text-red bg-transparent hover:bg-red hover:text-ink" : "bg-blue hover:bg-blue-light"
+              }`}
+            >
+              {pushLoading ? "…" : pushSubscribed ? "Désactiver sur cet appareil" : "Activer sur cet appareil"}
+            </button>
+            <p className="font-mono text-[10px] text-paper/40">
+              L&apos;activation se fait par appareil/navigateur : à refaire si tu changes de téléphone ou de navigateur.
+            </p>
+          </>
+        )}
       </div>
 
       <div className="glass-card space-y-3 p-6">
