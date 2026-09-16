@@ -52,7 +52,12 @@ export async function subscribeToPush(userId: string): Promise<void> {
 
   const subscription = await registration.pushManager.subscribe({
     userVisibleOnly: true,
-    applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+    // Cast explicite : selon la version des types DOM utilisée au build,
+    // `Uint8Array` est générique sur son buffer et TS ne peut pas garantir
+    // qu'il s'agit d'un `ArrayBuffer` plutôt que d'un `SharedArrayBuffer` —
+    // à l'exécution c'est toujours un ArrayBuffer classique ici, donc le
+    // cast est sûr.
+    applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as BufferSource,
   });
 
   const json = subscription.toJSON();
