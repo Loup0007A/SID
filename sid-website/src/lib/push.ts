@@ -19,6 +19,43 @@ export function isPushSupported(): boolean {
   return typeof window !== "undefined" && "serviceWorker" in navigator && "PushManager" in window;
 }
 
+/** iPhone/iPad (pas les Mac, qui remontent aussi "Mac" mais sans support tactile multipoint). */
+export function isIos(): boolean {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent;
+  const isAppleTouch = /iPad|iPhone|iPod/.test(ua);
+  const isIpadOsDesktopUa = navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
+  return isAppleTouch || isIpadOsDesktopUa;
+}
+
+/** Le site est-il ouvert en tant qu'app installée (icône sur l'écran d'accueil) ? */
+export function isStandaloneDisplay(): boolean {
+  if (typeof window === "undefined") return false;
+  const nav = navigator as Navigator & { standalone?: boolean };
+  return window.matchMedia?.("(display-mode: standalone)").matches || nav.standalone === true;
+}
+
+/**
+ * Apple n'autorise les notifications push (et l'API Notification en
+ * général) que pour un site ajouté à l'écran d'accueil et ouvert depuis
+ * cette icône — jamais pour un onglet Safari classique, même avec la
+ * permission accordée. Cette fonction dit si on est dans ce cas précis :
+ * iOS, mais PAS encore installé.
+ */
+export function needsIosInstallFirst(): boolean {
+  return isIos() && !isStandaloneDisplay();
+}
+
+/** Enregistre le service worker le plus tôt possible (pas besoin d'attendre l'abonnement push pour ça). */
+export async function registerServiceWorker(): Promise<void> {
+  if (!isPushSupported()) return;
+  try {
+    await navigator.serviceWorker.register("/sw.js");
+  } catch {
+    // silencieux : pas grave si ça échoue ici, subscribeToPush retentera
+  }
+}
+
 export function getPushPermission(): NotificationPermission | "unsupported" {
   if (!isPushSupported()) return "unsupported";
   return Notification.permission;
@@ -35,6 +72,12 @@ export async function hasActivePushSubscription(): Promise<boolean> {
 export async function subscribeToPush(userId: string): Promise<void> {
   if (!isPushSupported()) {
     throw new Error("Les notifications push ne sont pas prises en charge par ce navigateur.");
+  }
+
+  if (needsIosInstallFirst()) {
+    throw new Error(
+      "Sur iPhone/iPad, ajoute d'abord le site à l'écran d'accueil (Partager → Sur l'écran d'accueil dans Safari), puis ouvre-le depuis cette icône avant d'activer les notifications."
+    );
   }
 
   const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;

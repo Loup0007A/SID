@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { loadCurrentUser, can } from "@/lib/permissions";
 import type { Profile, PermissionKey } from "@/types/database";
 import { NotificationBell } from "@/components/NotificationBell";
+import { registerServiceWorker } from "@/lib/push";
 
 const NAV: { href: string; label: string; perm?: PermissionKey[] }[] = [
   { href: "/dashboard", label: "Vue d'ensemble" },
@@ -37,6 +38,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
+    // Enregistre le service worker dès l'arrivée sur le dashboard (pas
+    // besoin d'attendre que le membre active le push) : c'est aussi une
+    // condition pour qu'iOS propose "Ajouter à l'écran d'accueil".
+    registerServiceWorker();
+
     (async () => {
       const {
         data: { user },
