@@ -31,6 +31,7 @@ export default function QuestsPage() {
     maxParticipants: "",
     fundedByCreator: true,
     placeId: "",
+    reputationReward: "",
   });
 
   // "Pour qui je prends cette mission" par quête (avant de cliquer sur "Prendre")
@@ -124,6 +125,7 @@ export default function QuestsPage() {
       max_participants: form.maxParticipants ? Number(form.maxParticipants) : null,
       funded_by_creator: form.fundedByCreator,
       place_id: form.placeId || null,
+      reputation_reward: form.reputationReward ? Number(form.reputationReward) : null,
       created_by: userId,
     });
     if (error) {
@@ -131,7 +133,7 @@ export default function QuestsPage() {
       return;
     }
     setShowForm(false);
-    setForm({ title: "", description: "", reward: "0", difficulty: "D", contractType: "autres", deadline: "", visibility: "members", maxParticipants: "", fundedByCreator: true, placeId: "" });
+    setForm({ title: "", description: "", reward: "0", difficulty: "D", contractType: "autres", deadline: "", visibility: "members", maxParticipants: "", fundedByCreator: true, placeId: "", reputationReward: "" });
     await refresh();
   }
 
@@ -185,6 +187,17 @@ export default function QuestsPage() {
     const { error } = await supabase.rpc("validate_quest_participant", { p_quest_id: questId, p_user_id: participantUserId });
     if (error) {
       setMessage(`Échec de la validation : ${error.message}`);
+      return;
+    }
+    await toggleParticipantsForceReload(questId);
+    await refresh();
+  }
+
+  async function rejectOne(questId: string, participantUserId: string) {
+    if (!confirm("Marquer cette participation comme échouée ? Le membre perdra de la renommée.")) return;
+    const { error } = await supabase.rpc("reject_quest_participant", { p_quest_id: questId, p_user_id: participantUserId });
+    if (error) {
+      setMessage(`Échec du rejet : ${error.message}`);
       return;
     }
     await toggleParticipantsForceReload(questId);
@@ -332,6 +345,16 @@ export default function QuestsPage() {
             <input type="number" min={0} className={inputClass} value={form.reward} onChange={(e) => setForm({ ...form, reward: e.target.value })} />
           </div>
           <div className="space-y-1">
+            <label className={labelClass}>Renommée gagnée (vide = calcul automatique façon Elo)</label>
+            <input
+              type="number"
+              className={inputClass}
+              placeholder="Ex : 20 (laisser vide pour un calcul auto selon le rang et le niveau du membre)"
+              value={form.reputationReward}
+              onChange={(e) => setForm({ ...form, reputationReward: e.target.value })}
+            />
+          </div>
+          <div className="space-y-1">
             <label className={labelClass}>Rang</label>
             <select className={inputClass} value={form.difficulty} onChange={(e) => setForm({ ...form, difficulty: e.target.value as QuestDifficulty })}>
               {["E", "D", "C", "B", "A", "S"].map((d) => (
@@ -406,6 +429,9 @@ export default function QuestsPage() {
               {!q.funded_by_creator && (
                 <p className="text-center font-mono text-[10px] uppercase text-paper/50">Financée par la S.I.D.</p>
               )}
+              <p className="text-center font-mono text-[10px] uppercase text-blue-light">
+                🏅 {q.reputation_reward != null ? `+${q.reputation_reward} de renommée` : "Renommée : calcul automatique selon ton niveau"}
+              </p>
 
               {questPlace && (
                 <div className="glass-card space-y-1 p-3 text-center">
@@ -491,14 +517,23 @@ export default function QuestsPage() {
                                   <span className="text-paper/60"> → {p.reward_recipient_nickname}</span>
                                 )}
                                 {p.status === "validated" && <span className="ml-1 text-blue-light">(validé)</span>}
+                                {p.status === "rejected" && <span className="ml-1 text-red">(échoué)</span>}
                               </span>
-                              {p.status !== "validated" && (
-                                <button
-                                  onClick={() => validateOne(q.id, p.user_id)}
-                                  className="rounded border border-blue px-2 py-0.5 uppercase text-blue hover:bg-blue hover:text-ink"
-                                >
-                                  Valider
-                                </button>
+                              {p.status !== "validated" && p.status !== "rejected" && (
+                                <div className="flex gap-1">
+                                  <button
+                                    onClick={() => validateOne(q.id, p.user_id)}
+                                    className="rounded border border-blue px-2 py-0.5 uppercase text-blue hover:bg-blue hover:text-ink"
+                                  >
+                                    Valider
+                                  </button>
+                                  <button
+                                    onClick={() => rejectOne(q.id, p.user_id)}
+                                    className="rounded border border-red px-2 py-0.5 uppercase text-red hover:bg-red hover:text-ink"
+                                  >
+                                    Rejeter
+                                  </button>
+                                </div>
                               )}
                             </div>
                           ))}
