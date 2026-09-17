@@ -21,3 +21,11 @@ export interface AdminStats {
   top_seller: { nickname: string; total_earned: number } | null;
   purchases_weekly: { week_start: string; purchases_count: number; total_value: number }[];
 }
+
+export interface ShopItemStats {
+  item_name: string;
+  quantity_sold: number;
+  revenue: number;
+  unique_buyers: number;
+  weekly_sales: { week_start: string; quantity: number; revenue: number }[];
+}

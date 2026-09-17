@@ -25,6 +25,7 @@ export function NotificationBell({ userId }: { userId: string }) {
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const buttonWrapperRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const [panelPos, setPanelPos] = useState<{ top: number; right: number } | null>(null);
   // Le composant est rendu deux fois en simultané dans le layout (version
   // desktop + version mobile, l'une des deux étant juste masquée en CSS) :
   // sans identifiant unique, les deux instances créeraient un canal
@@ -87,6 +88,32 @@ export function NotificationBell({ userId }: { userId: string }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Recalcule la position réelle du panneau (coordonnées écran du bouton
+  // cloche) à chaque ouverture, et si la fenêtre est redimensionnée ou si
+  // la page défile — plutôt que des offsets fixes ("top-16") qui ne
+  // collaient pas à la cloche dès que la page au-dessus avait une hauteur
+  // différente de celle prévue (sidebar mobile très longue, etc.).
+  useEffect(() => {
+    if (!open) return;
+
+    function updatePosition() {
+      if (!buttonWrapperRef.current) return;
+      const rect = buttonWrapperRef.current.getBoundingClientRect();
+      setPanelPos({
+        top: rect.bottom + 8,
+        right: Math.max(8, window.innerWidth - rect.right),
+      });
+    }
+
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [open]);
+
   async function markAllRead() {
     await supabase.from("notifications").update({ is_read: true }).eq("user_id", userId).eq("is_read", false);
     refresh();
@@ -104,7 +131,8 @@ export function NotificationBell({ userId }: { userId: string }) {
   const panel = (
     <div
       ref={panelRef}
-      className="glass-card fixed right-3 top-16 z-[999] w-80 max-w-[calc(100vw-1.5rem)] space-y-1 p-2 sm:top-20"
+      style={{ top: panelPos?.top ?? 64, right: panelPos?.right ?? 12 }}
+      className="glass-card fixed z-[999] w-80 max-w-[calc(100vw-1.5rem)] space-y-1 p-2"
     >
       <div className="flex items-center justify-between px-2 py-1">
         <p className="font-mono text-xs uppercase text-paper/60">Notifications</p>

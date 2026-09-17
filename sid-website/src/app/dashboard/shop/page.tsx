@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { loadCurrentUser, can } from "@/lib/permissions";
 import type { ShopItem, PermissionKey, Wallet } from "@/types/database";
+import type { ShopItemStats } from "@/types/stats";
 import { inputClass, labelClass } from "@/lib/ui";
 
 function effectivePrice(item: ShopItem) {
@@ -24,6 +25,11 @@ export default function ShopPage() {
   const [form, setForm] = useState({ name: "", description: "", price: "0", stock: "", visibility: "members" as "public" | "members" });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [edits, setEdits] = useState<Record<string, Partial<ShopItem>>>({});
+
+  // Statistiques par objet
+  const [openStatsId, setOpenStatsId] = useState<string | null>(null);
+  const [stats, setStats] = useState<ShopItemStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
 
   async function refresh() {
     // Les objets en rupture de stock (0, mais pas "illimité" = null) sont
@@ -158,6 +164,24 @@ export default function ShopPage() {
     refreshMine();
   }
 
+  async function toggleStats(itemId: string) {
+    if (openStatsId === itemId) {
+      setOpenStatsId(null);
+      setStats(null);
+      return;
+    }
+    setOpenStatsId(itemId);
+    setStatsLoading(true);
+    setStats(null);
+    const { data, error } = await supabase.rpc("get_shop_item_stats", { p_item_id: itemId });
+    setStatsLoading(false);
+    if (error) {
+      setMessage(`Impossible de charger les statistiques : ${error.message}`);
+      return;
+    }
+    setStats(data as ShopItemStats);
+  }
+
   const canManage = can(permissions, "manage_shop");
 
   return (
@@ -278,6 +302,65 @@ export default function ShopPage() {
                     {item.is_active ? "Retirer de la vente" : "Remettre en vente"}
                   </button>
                 </div>
+
+                <button
+                  onClick={() => toggleStats(item.id)}
+                  className="rounded-lg w-full border border-paper/30 py-1 font-mono text-xs uppercase text-paper hover:bg-paper hover:text-ink"
+                >
+                  {openStatsId === item.id ? "Masquer les statistiques" : "📊 Statistiques de vente"}
+                </button>
+
+                {openStatsId === item.id && (
+                  <div className="glass-card space-y-3 p-3">
+                    {statsLoading ? (
+                      <p className="font-body text-xs text-paper/60">Chargement…</p>
+                    ) : stats ? (
+                      <>
+                        <div className="grid grid-cols-3 gap-2 text-center">
+                          <div>
+                            <p className="font-display text-lg text-blue-light">{stats.quantity_sold}</p>
+                            <p className="font-mono text-[9px] uppercase text-paper/50">Vendus</p>
+                          </div>
+                          <div>
+                            <p className="font-display text-lg text-blue-light">{stats.revenue.toLocaleString("fr-FR")}</p>
+                            <p className="font-mono text-[9px] uppercase text-paper/50">Cr. générés</p>
+                          </div>
+                          <div>
+                            <p className="font-display text-lg text-blue-light">{stats.unique_buyers}</p>
+                            <p className="font-mono text-[9px] uppercase text-paper/50">Acheteurs</p>
+                          </div>
+                        </div>
+
+                        {stats.weekly_sales.length === 0 ? (
+                          <p className="text-center font-body text-xs text-paper/50">Pas encore de ventes.</p>
+                        ) : (
+                          <div>
+                            <p className="mb-1 font-mono text-[9px] uppercase text-paper/50">Ventes (8 dernières semaines)</p>
+                            <div className="flex h-20 items-end gap-1">
+                              {stats.weekly_sales.map((w) => {
+                                const max = Math.max(1, ...stats.weekly_sales.map((x) => x.quantity));
+                                return (
+                                  <div key={w.week_start} className="flex flex-1 flex-col items-center gap-1">
+                                    <div
+                                      className="w-full rounded-t bg-blue"
+                                      style={{ height: `${(w.quantity / max) * 100}%`, minHeight: 2 }}
+                                      title={`${w.quantity} vendu(s) — ${w.revenue.toLocaleString("fr-FR")} Cr.`}
+                                    />
+                                    <span className="font-mono text-[8px] text-paper/50">
+                                      {new Date(w.week_start).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" })}
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <p className="font-body text-xs text-red">Impossible de charger les statistiques.</p>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}
