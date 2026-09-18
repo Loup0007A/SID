@@ -53,7 +53,13 @@ export default function QuestsPage() {
   async function refresh(uid?: string | null) {
     const activeUserId = uid !== undefined ? uid : userId;
 
-    const { data, error } = await supabase.from("quests").select("*").order("created_at", { ascending: false });
+    // Les quêtes accomplies ou échouées ne restent pas affichées sur le
+    // panneau principal (uniquement celles encore "ouvertes"/"en cours").
+    const { data, error } = await supabase
+      .from("quests")
+      .select("*")
+      .in("status", ["open", "in_progress"])
+      .order("created_at", { ascending: false });
     if (error) {
       setMessage(`Impossible de charger les quêtes : ${error.message}`);
       return;
