@@ -14,6 +14,7 @@ const TYPE_ICON: Record<string, string> = {
   quest_confirmation_needed: "⏳",
   travel_arrived: "🧭",
   salary_paid: "💰",
+  money_received: "🤑",
 };
 
 export default function NotificationsPage() {
