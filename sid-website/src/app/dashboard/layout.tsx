@@ -18,6 +18,7 @@ const NAV: { href: string; label: string; perm?: PermissionKey[] }[] = [
   { href: "/dashboard/shop", label: "Boutique" },
   { href: "/dashboard/leaderboard", label: "Classement" },
   { href: "/dashboard/map", label: "Carte" },
+  { href: "/dashboard/bank", label: "Banque" },
   { href: "/dashboard/chat", label: "Messagerie" },
   { href: "/dashboard/profile", label: "Mon dossier" },
   { href: "/dashboard/admin/applications", label: "Recrutement", perm: ["recruit"] },
@@ -58,13 +59,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       setPermissions(permissions);
       setLoading(false);
 
-      // Vérifie et verse le salaire du membre s'il est dû — se déclenche
-      // simplement à chaque connexion/arrivée sur le tableau de bord, sans
+      // Traite l'économie du jour pour TOUT LE MONDE (pas seulement soi) :
+      // salaires en retard, intérêts bancaires, intérêts de dette. Se
+      // déclenche à la connexion de n'importe quel membre — pas de
       // dépendance à pg_cron.
       try {
-        await supabase.rpc("check_and_pay_my_salary");
+        await supabase.rpc("process_daily_economy");
       } catch {
-        // silencieux : un membre sans salaire configuré tombera toujours ici
+        // silencieux
       }
 
       // Fait avancer un trajet en cours (intégration carte / sid-map) —

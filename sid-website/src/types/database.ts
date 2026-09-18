@@ -127,6 +127,15 @@ export interface ShopItem {
 export interface Wallet {
   user_id: string;
   balance: number;
+  debt_principal: number;
+  last_debt_interest_at: string | null;
+}
+
+export interface BankAccount {
+  user_id: string;
+  balance: number;
+  last_interest_at: string;
+  created_at: string;
 }
 
 export interface ChatChannel {

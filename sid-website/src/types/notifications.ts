@@ -1,10 +1,12 @@
 export type NotificationType =
   | "chat_message"
   | "quest_validated"
+  | "quest_failed"
   | "application_decision"
   | "quest_confirmation_needed"
   | "travel_arrived"
-  | "salary_paid";
+  | "salary_paid"
+  | "money_received";
 
 export interface AppNotification {
   id: string;
