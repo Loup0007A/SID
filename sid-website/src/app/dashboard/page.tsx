@@ -33,7 +33,12 @@ export default function DashboardOverview() {
 
       const questIds = (participations ?? []).map((p) => p.quest_id);
       if (questIds.length) {
-        const { data: quests } = await supabase.from("quests").select("*").in("id", questIds);
+        // "En cours" : on exclut les quêtes déjà accomplies ou échouées.
+        const { data: quests } = await supabase
+          .from("quests")
+          .select("*")
+          .in("id", questIds)
+          .in("status", ["open", "in_progress"]);
         setMyQuests(quests ?? []);
       }
 
