@@ -273,6 +273,13 @@ export default function QuestsPage() {
 
   const canManage = can(permissions, "manage_quests");
   const isTraveling = !!myPosition?.route_id;
+  // Destination finale du trajet en cours (dernier segment du parcours
+  // planifié), pour savoir vers QUELLE quête précisément on se dirige —
+  // myPosition.place_id est vide tant qu'on est en chemin.
+  const travelDestinationPlaceId =
+    myPosition?.planned_path && myPosition.planned_path.length > 0
+      ? myPosition.planned_path[myPosition.planned_path.length - 1].to_place_id
+      : null;
 
   return (
     <div className="space-y-6">
@@ -428,6 +435,7 @@ export default function QuestsPage() {
           const alreadyIn = myQuestIds.has(q.id);
           const questPlace = q.place_id ? places.find((p) => p.id === q.place_id) : null;
           const eta = q.place_id ? etaFor(q) : null;
+          const isTravelingToThisQuest = isTraveling && !!q.place_id && q.place_id === travelDestinationPlaceId;
 
           return (
             <div key={q.id} className="space-y-2">
@@ -442,7 +450,14 @@ export default function QuestsPage() {
               {questPlace && (
                 <div className="glass-card space-y-1 p-3 text-center">
                   <p className="font-mono text-xs uppercase text-blue-light">🗺️ {questPlace.name}</p>
-                  {eta != null ? (
+                  {isTravelingToThisQuest ? (
+                    <p className="rounded border border-blue bg-blue/10 py-1 font-mono text-[10px] uppercase text-blue-light">
+                      🧭 En trajet vers cette quête —{" "}
+                      <a href="/dashboard/map" className="underline">
+                        voir le compte à rebours
+                      </a>
+                    </p>
+                  ) : eta != null ? (
                     <>
                       <p className="font-mono text-[10px] text-paper/60">≈ {Math.round(eta)} min depuis ta position</p>
                       {!isTraveling && eta > 0 && (
@@ -488,7 +503,7 @@ export default function QuestsPage() {
 
               {alreadyIn && (
                 <p className="rounded-lg w-full border border-blue/60 py-1 text-center font-mono text-xs uppercase text-blue-light">
-                  Déjà prise
+                  {isTravelingToThisQuest ? "🧭 En trajet — Déjà prise" : "Déjà prise"}
                 </p>
               )}
 
