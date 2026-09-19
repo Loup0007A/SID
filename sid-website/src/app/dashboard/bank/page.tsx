@@ -35,7 +35,16 @@ export default function BankPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function run(action: () => Promise<{ error: { message: string } | null }>, successMsg: string, clear: () => void) {
+  // `action` accepte le type "thenable" renvoyé par `supabase.rpc(...)`
+  // (PromiseLike), pas une vraie `Promise` : ce n'est reconnu comme telle
+  // qu'une fois `await`/`.then()` appliqué, donc `.catch()`/`Promise<...>`
+  // strict échouent à la compilation même si `await` fonctionne très bien
+  // à l'exécution.
+  async function run(
+    action: () => PromiseLike<{ error: { message: string } | null }>,
+    successMsg: string,
+    clear: () => void
+  ) {
     setBusy(true);
     setMessage(null);
     const { error } = await action();
