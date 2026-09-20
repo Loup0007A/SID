@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Profile, Wallet, SalaryView, SalaryFrequency } from "@/types/database";
+import type { TaxPoolStatus } from "@/types/business";
 import { inputClass } from "@/lib/ui";
 
 const FREQUENCY_LABELS: Record<SalaryFrequency, string> = {
@@ -31,6 +32,8 @@ export default function EconomyAdminPage() {
   const [salaryMessage, setSalaryMessage] = useState<string | null>(null);
   const [payingNow, setPayingNow] = useState(false);
 
+  const [taxStatus, setTaxStatus] = useState<TaxPoolStatus | null>(null);
+
   async function refresh() {
     const [{ data: m }, { data: w }] = await Promise.all([
       supabase.from("profiles").select("*").eq("status", "active").order("nickname"),
@@ -45,9 +48,15 @@ export default function EconomyAdminPage() {
     setSalaries((data ?? []) as SalaryView[]);
   }
 
+  async function refreshTaxStatus() {
+    const { data } = await supabase.rpc("get_tax_pool_status");
+    if (data) setTaxStatus(data as TaxPoolStatus);
+  }
+
   useEffect(() => {
     refresh();
     refreshSalaries();
+    refreshTaxStatus();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function adjust(userId: string) {
@@ -245,6 +254,38 @@ export default function EconomyAdminPage() {
           ))}
           {salaries.length === 0 && <p className="font-body text-sm text-paper/60">Aucun salaire configuré.</p>}
         </div>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="font-display text-lg uppercase text-paper">Impôts &amp; TVA</h2>
+        {taxStatus ? (
+          <div className="glass-card grid grid-cols-2 gap-4 p-4 sm:grid-cols-4">
+            <div>
+              <p className="font-mono text-[10px] uppercase text-paper/50">Caisse actuelle</p>
+              <p className="font-display text-xl text-blue-light">{taxStatus.balance.toLocaleString("fr-FR")} Cr.</p>
+            </div>
+            <div>
+              <p className="font-mono text-[10px] uppercase text-paper/50">TVA</p>
+              <p className="font-display text-xl text-paper">{(taxStatus.vat_rate * 100).toFixed(0)}%</p>
+            </div>
+            <div>
+              <p className="font-mono text-[10px] uppercase text-paper/50">Impôt hebdo.</p>
+              <p className="font-display text-xl text-paper">{(taxStatus.weekly_wealth_tax_rate * 100).toFixed(0)}%/sem.</p>
+            </div>
+            <div>
+              <p className="font-mono text-[10px] uppercase text-paper/50">Prochaine redistribution</p>
+              <p className="font-mono text-xs text-paper/70">{new Date(taxStatus.next_distribution_at).toLocaleString("fr-FR")}</p>
+            </div>
+          </div>
+        ) : (
+          <p className="font-body text-sm text-paper/60">Chargement…</p>
+        )}
+        <p className="font-mono text-[10px] text-paper/50">
+          Répartie automatiquement chaque semaine (à la connexion d&apos;un membre, sans job planifié) : 80% aux
+          admins à parts égales, 20% aux entreprises à parts égales. Réglages ajustables dans la table
+          <code> app_config</code> (clés <code>vat_rate</code>, <code>weekly_wealth_tax_rate</code>,
+          <code> tax_admin_share</code>, <code>tax_business_share</code>).
+        </p>
       </section>
     </div>
   );
