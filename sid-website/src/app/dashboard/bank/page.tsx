@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Wallet, BankAccount } from "@/types/database";
+import type { Business, BusinessSharePricePoint, MyShareholding } from "@/types/business";
 import { inputClass, labelClass } from "@/lib/ui";
 
 export default function BankPage() {
@@ -17,6 +18,13 @@ export default function BankPage() {
   const [borrowAmount, setBorrowAmount] = useState("");
   const [repayAmount, setRepayAmount] = useState("");
 
+  // Bourse
+  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [myShares, setMyShares] = useState<MyShareholding[]>([]);
+  const [openChartId, setOpenChartId] = useState<string | null>(null);
+  const [priceHistory, setPriceHistory] = useState<BusinessSharePricePoint[]>([]);
+  const [tradeQty, setTradeQty] = useState<Record<string, string>>({});
+
   async function refresh() {
     const {
       data: { user },
@@ -28,6 +36,12 @@ export default function BankPage() {
 
     const { data: b } = await supabase.from("bank_accounts").select("*").eq("user_id", user.id).maybeSingle();
     setBankAccount(b);
+
+    const { data: biz } = await supabase.rpc("list_businesses");
+    setBusinesses((biz ?? []) as Business[]);
+
+    const { data: shares } = await supabase.rpc("get_my_shareholdings");
+    setMyShares((shares ?? []) as MyShareholding[]);
   }
 
   useEffect(() => {
@@ -59,6 +73,20 @@ export default function BankPage() {
   }
 
   const isInDebt = (wallet?.balance ?? 0) < 0;
+
+  async function toggleChart(businessId: string) {
+    if (openChartId === businessId) {
+      setOpenChartId(null);
+      return;
+    }
+    setOpenChartId(businessId);
+    const { data } = await supabase.rpc("get_business_price_history", { p_business_id: businessId });
+    setPriceHistory((data ?? []) as BusinessSharePricePoint[]);
+  }
+
+  function myHolding(businessId: string) {
+    return myShares.find((s) => s.business_id === businessId)?.quantity ?? 0;
+  }
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -184,6 +212,127 @@ export default function BankPage() {
             >
               Rembourser
             </button>
+          </div>
+        )}
+      </div>
+
+      <div className="glass-card space-y-4 p-6">
+        <h2 className="font-display text-lg uppercase">Bourse</h2>
+        <p className="font-body text-sm text-paper/70">
+          Achète/vends des actions d&apos;entreprise directement contre leur trésorerie : chaque échange fait
+          légèrement bouger le cours. La "valeur estimée" est le cours actuel × le nombre total d&apos;actions.
+        </p>
+
+        {myShares.length > 0 && (
+          <div className="space-y-1 rounded-lg border border-white/10 p-3">
+            <p className="font-mono text-xs uppercase text-paper/60">Mes actions</p>
+            {myShares.map((s) => (
+              <p key={s.business_id} className="font-body text-sm">
+                {s.business_name} : {s.quantity} action(s) — ≈{" "}
+                {(s.quantity * s.share_price).toLocaleString("fr-FR")} Cr.
+              </p>
+            ))}
+          </div>
+        )}
+
+        {businesses.length === 0 ? (
+          <p className="font-body text-sm text-paper/60">Aucune entreprise cotée pour le moment.</p>
+        ) : (
+          <div className="space-y-3">
+            {businesses.map((b) => {
+              const marketCap = b.share_price * b.share_count;
+              const held = myHolding(b.id);
+              const qty = tradeQty[b.id] ?? "";
+              return (
+                <div key={b.id} className="rounded-lg border border-white/10 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <p className="font-display uppercase text-blue-light">{b.name}</p>
+                      {b.description && <p className="font-body text-xs text-paper/60">{b.description}</p>}
+                    </div>
+                    <div className="text-right">
+                      <p className="font-mono text-sm text-blue">{b.share_price.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} Cr./action</p>
+                      <p className="font-mono text-[10px] text-paper/50">Valeur estimée : {marketCap.toLocaleString("fr-FR", { maximumFractionDigits: 0 })} Cr.</p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => toggleChart(b.id)}
+                    className="mt-2 font-mono text-[10px] uppercase text-blue-light underline"
+                  >
+                    {openChartId === b.id ? "Masquer le graphique" : "📈 Voir le graphique du cours"}
+                  </button>
+
+                  {openChartId === b.id && (
+                    <div className="mt-2">
+                      {priceHistory.length < 2 ? (
+                        <p className="font-body text-xs text-paper/50">Pas encore assez d&apos;historique.</p>
+                      ) : (
+                        <div className="flex h-20 items-end gap-0.5">
+                          {priceHistory.map((p, i) => {
+                            const max = Math.max(...priceHistory.map((x) => x.price));
+                            const min = Math.min(...priceHistory.map((x) => x.price));
+                            const range = Math.max(0.01, max - min);
+                            return (
+                              <div
+                                key={p.id}
+                                className="flex-1 bg-blue"
+                                style={{ height: `${((p.price - min) / range) * 100}%`, minHeight: 2 }}
+                                title={`${p.price.toLocaleString("fr-FR")} Cr. — ${new Date(p.recorded_at).toLocaleString("fr-FR")}`}
+                              />
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <p className="mt-2 font-mono text-[10px] text-paper/50">
+                    {b.shares_in_treasury} action(s) disponible(s) à l&apos;achat sur {b.share_count}
+                    {held > 0 && ` · tu en détiens ${held}`}
+                  </p>
+
+                  <div className="mt-2 flex flex-wrap items-end gap-2">
+                    <div className="space-y-1">
+                      <label className={labelClass}>Quantité</label>
+                      <input
+                        type="number" min={1} className={`${inputClass} w-24`}
+                        value={qty}
+                        onChange={(e) => setTradeQty((t) => ({ ...t, [b.id]: e.target.value }))}
+                      />
+                    </div>
+                    <button
+                      onClick={() =>
+                        run(
+                          () => supabase.rpc("buy_business_shares", { p_business_id: b.id, p_quantity: Number(qty) || 0 }),
+                          "Actions achetées.",
+                          () => setTradeQty((t) => ({ ...t, [b.id]: "" }))
+                        )
+                      }
+                      disabled={busy || !qty}
+                      className="rounded-lg bg-blue px-3 py-2 font-mono text-xs uppercase text-ink hover:bg-blue-light disabled:opacity-40"
+                    >
+                      Acheter
+                    </button>
+                    {held > 0 && (
+                      <button
+                        onClick={() =>
+                          run(
+                            () => supabase.rpc("sell_business_shares", { p_business_id: b.id, p_quantity: Number(qty) || 0 }),
+                            "Actions vendues.",
+                            () => setTradeQty((t) => ({ ...t, [b.id]: "" }))
+                          )
+                        }
+                        disabled={busy || !qty}
+                        className="rounded-lg border border-red px-3 py-2 font-mono text-xs uppercase text-red hover:bg-red hover:text-ink disabled:opacity-40"
+                      >
+                        Vendre
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

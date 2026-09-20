@@ -31,7 +31,8 @@ export type PermissionKey =
   | "manage_teams"
   | "manage_economy"
   | "recruit"
-  | "manage_users";
+  | "manage_users"
+  | "entreprise";
 
 export interface Role {
   id: string;

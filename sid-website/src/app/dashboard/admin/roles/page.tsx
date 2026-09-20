@@ -15,6 +15,7 @@ const ALL_PERMISSIONS: PermissionKey[] = [
   "manage_economy",
   "recruit",
   "manage_users",
+  "entreprise",
 ];
 
 
