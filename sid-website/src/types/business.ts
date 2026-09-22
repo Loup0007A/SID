@@ -9,6 +9,33 @@ export interface Business {
   share_count: number;
   shares_in_treasury: number;
   share_price: number;
+  is_closed: boolean;
+  created_at: string;
+}
+
+export interface BusinessEmployee {
+  user_id: string;
+  nickname: string;
+  title: string | null;
+  salary: number;
+  frequency: "daily" | "weekly" | "biweekly" | "monthly";
+  next_payment_at: string;
+}
+
+export interface MyEmployment {
+  business_id: string;
+  business_name: string;
+  title: string | null;
+  salary: number;
+  frequency: "daily" | "weekly" | "biweekly" | "monthly";
+}
+
+export interface BusinessTransaction {
+  id: string;
+  business_id: string;
+  amount: number;
+  reason: string | null;
+  created_by: string | null;
   created_at: string;
 }
 
