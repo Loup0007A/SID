@@ -122,6 +122,7 @@ export interface ShopItem {
   visibility: "public" | "members";
   is_active: boolean;
   created_by: string | null;
+  business_id: string | null;
   created_at: string;
 }
 

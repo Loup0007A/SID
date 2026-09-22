@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { loadCurrentUser, can } from "@/lib/permissions";
 import type { ShopItem, PermissionKey, Wallet } from "@/types/database";
 import type { ShopItemStats } from "@/types/stats";
+import type { Business } from "@/types/business";
 import { inputClass, labelClass } from "@/lib/ui";
 
 function effectivePrice(item: ShopItem) {
@@ -22,7 +23,8 @@ export default function ShopPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [showMine, setShowMine] = useState(false);
-  const [form, setForm] = useState({ name: "", description: "", price: "0", stock: "", visibility: "members" as "public" | "members" });
+  const [form, setForm] = useState({ name: "", description: "", price: "0", stock: "", visibility: "members" as "public" | "members", businessId: "" });
+  const [myBusinesses, setMyBusinesses] = useState<Business[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [edits, setEdits] = useState<Record<string, Partial<ShopItem>>>({});
 
@@ -58,6 +60,8 @@ export default function ShopPage() {
         await refreshMine();
         const { data: w } = await supabase.from("wallets").select("*").eq("user_id", profile.id).single();
         setWallet(w);
+        const { data: biz } = await supabase.rpc("list_my_businesses");
+        setMyBusinesses((biz ?? []) as Business[]);
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -89,6 +93,7 @@ export default function ShopPage() {
         price: Number(form.price) || 0,
         stock: form.stock ? Number(form.stock) : null,
         visibility: form.visibility,
+        business_id: form.businessId || null,
         created_by: userId,
       })
       .select()
@@ -112,7 +117,7 @@ export default function ShopPage() {
     }
 
     setShowForm(false);
-    setForm({ name: "", description: "", price: "0", stock: "", visibility: "members" });
+    setForm({ name: "", description: "", price: "0", stock: "", visibility: "members", businessId: "" });
     setImageFile(null);
     refresh();
     refreshMine();
@@ -232,6 +237,18 @@ export default function ShopPage() {
               <option value="public">Publique</option>
             </select>
           </div>
+          {myBusinesses.length > 0 && (
+            <div className="space-y-1 sm:col-span-2">
+              <label className={labelClass}>Rattacher à une entreprise (optionnel)</label>
+              <select className={inputClass} value={form.businessId} onChange={(e) => setForm({ ...form, businessId: e.target.value })}>
+                <option value="">— Vente personnelle —</option>
+                {myBusinesses.map((b) => (
+                  <option key={b.id} value={b.id}>{b.name}</option>
+                ))}
+              </select>
+              <p className="font-mono text-[10px] text-paper/50">Si rattaché, le produit des ventes ira dans la trésorerie de l&apos;entreprise plutôt que ton portefeuille.</p>
+            </div>
+          )}
           <div className="space-y-1 sm:col-span-2">
             <label className={labelClass}>Image</label>
             <input
