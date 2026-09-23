@@ -33,6 +33,7 @@ export async function loadCurrentUser(): Promise<{
         "manage_economy",
         "recruit",
         "manage_users",
+        "entreprise",
       ]),
     };
   }
