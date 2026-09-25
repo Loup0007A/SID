@@ -5,9 +5,10 @@ import { createClient } from "@/lib/supabase/client";
 import type { LeaderboardEntry } from "@/types/database";
 import clsx from "clsx";
 
-type SortKey = "balance" | "reputation" | "quests_completed";
+type SortKey = "power_score" | "balance" | "reputation" | "quests_completed";
 
 const TABS: { key: SortKey; label: string; unit: string }[] = [
+  { key: "power_score", label: "Puissance", unit: "pts" },
   { key: "balance", label: "Argent", unit: "Cr." },
   { key: "reputation", label: "Renommée", unit: "pts" },
   { key: "quests_completed", label: "Quêtes accomplies", unit: "" },
@@ -16,7 +17,7 @@ const TABS: { key: SortKey; label: string; unit: string }[] = [
 export default function LeaderboardPage() {
   const supabase = createClient();
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
-  const [sortKey, setSortKey] = useState<SortKey>("balance");
+  const [sortKey, setSortKey] = useState<SortKey>("power_score");
 
   useEffect(() => {
     (async () => {
@@ -26,12 +27,12 @@ export default function LeaderboardPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const sorted = [...entries].sort((a, b) => b[sortKey] - a[sortKey]);
+  const sorted = [...entries].sort((a, b) => Number(b[sortKey]) - Number(a[sortKey]) || a.nickname.localeCompare(b.nickname));
   const activeTab = TABS.find((t) => t.key === sortKey)!;
 
   return (
     <div className="space-y-6">
-      <h1 className="font-display text-2xl uppercase tracking-wide text-red">Classement de la S.I.D.</h1>
+      <h1 className="font-display text-2xl uppercase tracking-wide text-red">Classement du S.I.D.</h1>
 
       <div className="flex flex-wrap gap-2">
         {TABS.map((t) => (
@@ -48,6 +49,10 @@ export default function LeaderboardPage() {
         ))}
       </div>
 
+      {sortKey === "power_score" && (
+        <p className="font-body text-sm text-paper/60">Le score de puissance est attribué par les administrateurs.</p>
+      )}
+
       <div className="glass-card divide-y divide-white/10 p-2">
         {sorted.map((e, i) => (
           <div key={e.user_id} className="flex items-center gap-4 px-4 py-3">
@@ -56,7 +61,7 @@ export default function LeaderboardPage() {
             </span>
             <span className="flex-1 font-display uppercase">{e.nickname}</span>
             <span className="font-mono text-sm text-blue-light">
-              {(e[sortKey] as number).toLocaleString("fr-FR")} {activeTab.unit}
+              {Number(e[sortKey]).toLocaleString("fr-FR")} {activeTab.unit}
             </span>
           </div>
         ))}
