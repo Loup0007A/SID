@@ -7,6 +7,7 @@ import type { ShopItem, PermissionKey, Wallet } from "@/types/database";
 import type { ShopItemStats } from "@/types/stats";
 import type { Business } from "@/types/business";
 import { inputClass, labelClass } from "@/lib/ui";
+import { LineChart } from "@/components/LineChart";
 
 function effectivePrice(item: ShopItem) {
   const promoActive = item.sale_price != null && (!item.sale_ends_at || new Date(item.sale_ends_at) > new Date());
@@ -193,7 +194,7 @@ export default function ShopPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-2xl uppercase tracking-wide text-red">Comptoir de la S.I.D.</h1>
+          <h1 className="font-display text-2xl uppercase tracking-wide text-red">Comptoir du S.I.D.</h1>
           {wallet && <p className="font-mono text-sm text-blue">Solde : {wallet.balance.toLocaleString("fr-FR")} Cr.</p>}
         </div>
         <div className="flex gap-2">
@@ -353,23 +354,13 @@ export default function ShopPage() {
                         ) : (
                           <div>
                             <p className="mb-1 font-mono text-[9px] uppercase text-paper/50">Ventes (8 dernières semaines)</p>
-                            <div className="flex h-20 items-end gap-1">
-                              {stats.weekly_sales.map((w) => {
-                                const max = Math.max(1, ...stats.weekly_sales.map((x) => x.quantity));
-                                return (
-                                  <div key={w.week_start} className="flex flex-1 flex-col items-center gap-1">
-                                    <div
-                                      className="w-full rounded-t bg-blue"
-                                      style={{ height: `${(w.quantity / max) * 100}%`, minHeight: 2 }}
-                                      title={`${w.quantity} vendu(s) — ${w.revenue.toLocaleString("fr-FR")} Cr.`}
-                                    />
-                                    <span className="font-mono text-[8px] text-paper/50">
-                                      {new Date(w.week_start).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" })}
-                                    </span>
-                                  </div>
-                                );
-                              })}
-                            </div>
+                            <LineChart
+                              labels={stats.weekly_sales.map((w) => `${w.week_start.slice(8, 10)}/${w.week_start.slice(5, 7)}`)}
+                              series={[{ name: "Vendus", color: "#8FB3D9", values: stats.weekly_sales.map((w) => w.quantity) }]}
+                              zeroBased
+                              height={170}
+                              formatValue={(n) => `${n} vendu(s)`}
+                            />
                           </div>
                         )}
                       </>

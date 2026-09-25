@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "S.I.D. — Dossier Central",
-  description: "Plateforme communautaire de la S.I.D.",
+  description: "Plateforme communautaire du S.I.D.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

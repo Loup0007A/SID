@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { Profile, Wallet, SalaryView, SalaryFrequency } from "@/types/database";
 import type { TaxPoolStatus } from "@/types/business";
 import { inputClass } from "@/lib/ui";
+import { PowerAdminSection } from "@/components/PowerAdminSection";
 
 const FREQUENCY_LABELS: Record<SalaryFrequency, string> = {
   daily: "Quotidien",
@@ -126,7 +127,7 @@ export default function EconomyAdminPage() {
 
   return (
     <div className="space-y-10">
-      <h1 className="font-display text-2xl uppercase tracking-wide text-red">Économie de la S.I.D.</h1>
+      <h1 className="font-display text-2xl uppercase tracking-wide text-red">Économie du S.I.D.</h1>
 
       <section className="space-y-3">
         <h2 className="font-display text-lg uppercase text-paper">Ajustement manuel du solde</h2>
@@ -178,6 +179,8 @@ export default function EconomyAdminPage() {
           </div>
         ))}
       </section>
+
+      <PowerAdminSection />
 
       <section className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">

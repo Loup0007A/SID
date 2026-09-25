@@ -64,7 +64,7 @@ export default function OrgChartPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-2xl uppercase tracking-wide text-red">Organigramme de la S.I.D.</h1>
+        <h1 className="font-display text-2xl uppercase tracking-wide text-red">Organigramme du S.I.D.</h1>
         {canManage && (
           <button onClick={() => setShowForm((s) => !s)} className="rounded-lg bg-red px-4 py-2 font-display text-sm uppercase text-ink hover:bg-red-light">
             {showForm ? "Annuler" : "Ajouter un poste"}

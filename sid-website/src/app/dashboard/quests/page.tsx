@@ -420,7 +420,7 @@ export default function QuestsPage() {
               checked={form.fundedByCreator}
               onChange={(e) => setForm({ ...form, fundedByCreator: e.target.checked })}
             />
-            La récompense est financée par moi-même (débitée de mon portefeuille à chaque validation). Décoche si c&apos;est la S.I.D. qui finance.
+            La récompense est financée par moi-même (débitée de mon portefeuille à chaque validation). Décoche si c&apos;est le S.I.D. qui finance.
           </label>
           <button type="submit" className="rounded-lg sm:col-span-2 bg-blue py-2 font-display uppercase text-ink hover:bg-blue-light">
             Publier la quête
@@ -441,7 +441,7 @@ export default function QuestsPage() {
             <div key={q.id} className="space-y-2">
               <QuestCard quest={q} participantCount={count} />
               {!q.funded_by_creator && (
-                <p className="text-center font-mono text-[10px] uppercase text-paper/50">Financée par la S.I.D.</p>
+                <p className="text-center font-mono text-[10px] uppercase text-paper/50">Financée par le S.I.D.</p>
               )}
               <p className="text-center font-mono text-[10px] uppercase text-blue-light">
                 🏅 {q.reputation_reward != null ? `+${q.reputation_reward} de renommée` : "Renommée : calcul automatique selon ton niveau"}
