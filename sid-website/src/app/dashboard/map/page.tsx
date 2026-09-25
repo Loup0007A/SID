@@ -161,7 +161,7 @@ export default function MapPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="font-display text-2xl uppercase tracking-wide text-red">Carte de la S.I.D.</h1>
+      <h1 className="font-display text-2xl uppercase tracking-wide text-red">Carte du S.I.D.</h1>
       <p className="font-body text-sm text-paper/70">
         Carte visuelle complète sur{" "}
         <a href="https://sid-map.vercel.app" target="_blank" rel="noreferrer" className="text-blue underline">

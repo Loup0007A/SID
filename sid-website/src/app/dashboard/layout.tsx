@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { loadCurrentUser, can } from "@/lib/permissions";
 import type { Profile, PermissionKey } from "@/types/database";
 import { NotificationBell } from "@/components/NotificationBell";
+import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import { registerServiceWorker } from "@/lib/push";
 
 const NAV: { href: string; label: string; perm?: PermissionKey[] }[] = [
@@ -26,6 +27,7 @@ const NAV: { href: string; label: string; perm?: PermissionKey[] }[] = [
   { href: "/dashboard/admin/roles", label: "Rôles & équipes", perm: ["manage_roles", "manage_teams", "manage_users"] },
   { href: "/dashboard/admin/economy", label: "Économie", perm: ["manage_economy"] },
   { href: "/dashboard/admin/users", label: "Administration", perm: ["manage_users"] },
+  { href: "/dashboard/admin/moderation", label: "Modération", perm: ["manage_users"] },
   { href: "/dashboard/admin/stats", label: "Statistiques", perm: ["manage_users"] },
 ];
 
@@ -137,6 +139,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex min-h-screen text-paper">
+      {profile && <AnnouncementBanner />}
       <aside className="grain-panel hidden w-64 shrink-0 flex-col border-r border-ink-border p-5 md:flex">
         <div className="mb-8 flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}

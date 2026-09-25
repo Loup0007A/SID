@@ -16,6 +16,7 @@ export interface Profile {
   member_rank: QuestDifficulty;
   is_muted: boolean;
   reputation: number;
+  power_score: number;
   last_seen_at: string | null;
   hidden_fields: string[];
   reviewed_by: string | null;
@@ -184,5 +185,6 @@ export interface LeaderboardEntry {
   nickname: string;
   balance: number;
   reputation: number;
+  power_score: number;
   quests_completed: number;
 }
