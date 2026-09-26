@@ -29,6 +29,8 @@ export interface CharacterPosition {
   planned_path: { route_id: string; to_place_id: string }[] | null;
   note: string | null;
   is_visible: boolean;
+  /** true une fois le point de départ posé (set_initial_position) — au-delà, tout changement de lieu passe par un trajet. */
+  spawned: boolean;
   updated_at: string;
 }
 

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import type { Profile } from "@/types/database";
+import { ProfileStyle, profileSkinClass } from "@/components/ProfileStyle";
 
 type RosterEntry = Partial<Profile> & { id: string; nickname: string };
 type MemberRole = { user_id: string; role_name: string; role_color: string; role_rank: number };
@@ -12,6 +13,7 @@ export default function MembersPage() {
   const supabase = createClient();
   const [roster, setRoster] = useState<RosterEntry[]>([]);
   const [rolesByUser, setRolesByUser] = useState<Map<string, MemberRole[]>>(new Map());
+  const [styles, setStyles] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {
     (async () => {
@@ -22,7 +24,8 @@ export default function MembersPage() {
 
       // Filtre défensif : on ignore toute entrée null (ne devrait plus
       // arriver depuis le correctif de list_roster, mais ceinture + bretelles).
-      setRoster(((rosterData ?? []) as (RosterEntry | null)[]).filter((m): m is RosterEntry => m !== null));
+      const cleaned = ((rosterData ?? []) as (RosterEntry | null)[]).filter((m): m is RosterEntry => m !== null);
+      setRoster(cleaned);
 
       const map = new Map<string, MemberRole[]>();
       ((rolesData ?? []) as MemberRole[]).forEach((r) => {
@@ -31,6 +34,12 @@ export default function MembersPage() {
         map.set(r.user_id, list);
       });
       setRolesByUser(map);
+
+      const ids = cleaned.map((m) => m.id);
+      if (ids.length > 0) {
+        const { data: css } = await supabase.rpc("get_profile_css_for", { p_section: "roster", p_user_ids: ids });
+        setStyles(new Map(((css ?? []) as { user_id: string; css: string }[]).map((r) => [r.user_id, r.css])));
+      }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -42,7 +51,8 @@ export default function MembersPage() {
         {roster.map((m) => {
           const roles = rolesByUser.get(m.id) ?? [];
           return (
-            <div key={m.id} className="glass-card space-y-1 p-4">
+            <div key={m.id} className={`glass-card space-y-1 p-4 ${profileSkinClass(m.id)}`}>
+              <ProfileStyle userId={m.id} css={styles.get(m.id)} />
               <div className="flex items-center justify-between gap-2">
                 <Link href={`/dashboard/profile/${m.id}`} className="font-display text-lg uppercase hover:text-blue-light hover:underline">
                   {m.nickname}

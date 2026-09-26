@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Profile, QuestDifficulty } from "@/types/database";
 import { RankCard } from "@/components/RankCard";
+import { ProfileStyle, profileSkinClass } from "@/components/ProfileStyle";
 
 type VisibleProfile = Partial<Profile> & { id: string; nickname: string };
 type MemberRole = { user_id: string; role_name: string; role_color: string; role_rank: number };
@@ -16,6 +17,7 @@ export default function MemberProfilePage() {
   const [profile, setProfile] = useState<VisibleProfile | null | undefined>(undefined);
   const [roles, setRoles] = useState<MemberRole[]>([]);
   const [isSelf, setIsSelf] = useState(false);
+  const [css, setCss] = useState<string>("");
 
   useEffect(() => {
     (async () => {
@@ -35,6 +37,10 @@ export default function MemberProfilePage() {
 
       const { data: rolesData } = await supabase.rpc("list_member_roles");
       setRoles(((rolesData ?? []) as MemberRole[]).filter((r) => r.user_id === params.id));
+
+      const { data: styleRows } = await supabase.rpc("get_profile_css_for", { p_section: "profile", p_user_ids: [params.id] });
+      const row = ((styleRows ?? []) as { user_id: string; css: string }[])[0];
+      setCss(row?.css ?? "");
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
@@ -44,7 +50,8 @@ export default function MemberProfilePage() {
   if (profile === null) return <p className="font-body text-paper/60">Ce dossier est introuvable ou inaccessible.</p>;
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className={`max-w-2xl space-y-6 ${profileSkinClass(profile.id)}`}>
+      <ProfileStyle userId={profile.id} css={css} />
       <div className="flex flex-wrap items-center gap-4">
         <RankCard rank={(profile.member_rank as QuestDifficulty) ?? "E"} />
         <div>

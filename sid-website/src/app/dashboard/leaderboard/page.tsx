@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { LeaderboardEntry } from "@/types/database";
+import { ProfileStyle, profileSkinClass } from "@/components/ProfileStyle";
 import clsx from "clsx";
 
 type SortKey = "power_score" | "balance" | "reputation" | "quests_completed";
@@ -18,11 +19,19 @@ export default function LeaderboardPage() {
   const supabase = createClient();
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [sortKey, setSortKey] = useState<SortKey>("power_score");
+  const [styles, setStyles] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {
     (async () => {
       const { data } = await supabase.rpc("list_leaderboard");
-      setEntries((data ?? []) as LeaderboardEntry[]);
+      const rows = (data ?? []) as LeaderboardEntry[];
+      setEntries(rows);
+
+      const ids = rows.map((r) => r.user_id);
+      if (ids.length > 0) {
+        const { data: css } = await supabase.rpc("get_profile_css_for", { p_section: "leaderboard", p_user_ids: ids });
+        setStyles(new Map(((css ?? []) as { user_id: string; css: string }[]).map((r) => [r.user_id, r.css])));
+      }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -55,7 +64,8 @@ export default function LeaderboardPage() {
 
       <div className="glass-card divide-y divide-white/10 p-2">
         {sorted.map((e, i) => (
-          <div key={e.user_id} className="flex items-center gap-4 px-4 py-3">
+          <div key={e.user_id} className={clsx("flex items-center gap-4 px-4 py-3", profileSkinClass(e.user_id))}>
+            <ProfileStyle userId={e.user_id} css={styles.get(e.user_id)} />
             <span className={clsx("w-8 shrink-0 text-center font-display text-lg", i === 0 && "text-blue-light", i === 1 && "text-paper/80", i === 2 && "text-red-light")}>
               {i + 1}
             </span>
