@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { MapPlace, CityBuilding, CharacterPosition, ActivePosition } from "@/types/map";
+import { findShortestPath } from "@/lib/pathfinding";
 import { inputClass, labelClass } from "@/lib/ui";
 
 function formatCountdown(secondsLeft: number) {
@@ -20,30 +21,54 @@ export default function MapPage() {
   const [myPosition, setMyPosition] = useState<CharacterPosition | null>(null);
   const [roster, setRoster] = useState<ActivePosition[]>([]);
   const [message, setMessage] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
 
-  // formulaire "ma position"
-  const [placeId, setPlaceId] = useState("");
-  const [buildingId, setBuildingId] = useState("");
-  const [note, setNote] = useState("");
-  const [isVisible, setIsVisible] = useState(true);
+  // Point de départ (une seule fois, jamais après)
+  const [spawnPlaceId, setSpawnPlaceId] = useState("");
+  const [spawnBuildingId, setSpawnBuildingId] = useState("");
+  const [spawnNote, setSpawnNote] = useState("");
+  const [spawnVisible, setSpawnVisible] = useState(true);
+  const [spawning, setSpawning] = useState(false);
+
+  // Préférences (bâtiment / note / visibilité) — jamais un déplacement
+  const [prefBuildingId, setPrefBuildingId] = useState("");
+  const [prefNote, setPrefNote] = useState("");
+  const [prefVisible, setPrefVisible] = useState(true);
+  const [savingPrefs, setSavingPrefs] = useState(false);
+
+  // Trajet vers un nouveau lieu
+  const [destPlaceId, setDestPlaceId] = useState("");
+  const [launching, setLaunching] = useState(false);
 
   // chronomètre live (recalculé côté client à partir de travel_started_at,
   // pas d'un simple compteur qui dérive)
   const [now, setNow] = useState(() => Date.now());
   const [activeRouteWeight, setActiveRouteWeight] = useState<number | null>(null);
+  const [routes, setRoutes] = useState<import("@/types/map").MapRoute[]>([]);
 
   const placeName = useCallback((id: string | null) => places.find((p) => p.id === id)?.name ?? "Lieu inconnu", [places]);
 
   async function refresh() {
-    const [{ data: p }, { data: b }, { data: active }] = await Promise.all([
+    const [{ data: p }, { data: b }, { data: r }, { data: active }] = await Promise.all([
       supabase.from("map_places").select("id, name, type"),
       supabase.from("city_buildings").select("id, name"),
+      supabase.from("map_routes").select("*"),
       supabase.rpc("list_active_positions"),
     ]);
     setPlaces(p ?? []);
     setBuildings(b ?? []);
+    setRoutes((r ?? []) as import("@/types/map").MapRoute[]);
     setRoster((active ?? []) as ActivePosition[]);
+  }
+
+  async function refreshMine(uid: string) {
+    const { data: mine } = await supabase.from("character_positions").select("*").eq("user_id", uid).maybeSingle();
+    const pos = (mine as CharacterPosition) ?? null;
+    setMyPosition(pos);
+    if (pos?.spawned) {
+      setPrefBuildingId(pos.building_id ?? "");
+      setPrefNote(pos.note ?? "");
+      setPrefVisible(pos.is_visible ?? true);
+    }
   }
 
   useEffect(() => {
@@ -61,15 +86,7 @@ export default function MapPage() {
         // silencieux
       }
 
-      const { data: mine } = await supabase.from("character_positions").select("*").eq("user_id", user.id).maybeSingle();
-      if (mine) {
-        setMyPosition(mine as CharacterPosition);
-        setPlaceId(mine.place_id ?? "");
-        setBuildingId(mine.building_id ?? "");
-        setNote(mine.note ?? "");
-        setIsVisible(mine.is_visible ?? true);
-      }
-
+      await refreshMine(user.id);
       await refresh();
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -110,40 +127,72 @@ export default function MapPage() {
     return () => clearInterval(interval);
   }, [myPosition?.travel_started_at]);
 
-  async function saveMyPosition() {
-    if (!userId) return;
-    setSaving(true);
+  async function spawn() {
+    if (!userId || !spawnPlaceId) {
+      setMessage("Choisis un lieu de départ.");
+      return;
+    }
+    setSpawning(true);
     setMessage(null);
-    const { error } = await supabase.from("character_positions").upsert({
-      user_id: userId,
-      place_id: placeId || null,
-      building_id: buildingId || null,
-      note: note || null,
-      is_visible: isVisible,
-      route_id: null,
-      route_progress: null,
-      travel_started_at: null,
-      planned_path: null,
-      updated_at: new Date().toISOString(),
+    const { error } = await supabase.rpc("set_initial_position", {
+      p_place_id: spawnPlaceId,
+      p_building_id: spawnBuildingId || null,
+      p_note: spawnNote || null,
+      p_is_visible: spawnVisible,
     });
-    setSaving(false);
+    setSpawning(false);
     if (error) {
       setMessage(`Échec : ${error.message}`);
       return;
     }
-    setMessage("Position mise à jour.");
-    setMyPosition({
-      user_id: userId,
-      place_id: placeId || null,
-      building_id: buildingId || null,
-      route_id: null,
-      route_progress: null,
-      travel_started_at: null,
-      planned_path: null,
-      note: note || null,
-      is_visible: isVisible,
-      updated_at: new Date().toISOString(),
+    setMessage("Point de départ posé.");
+    await refreshMine(userId);
+    await refresh();
+  }
+
+  async function savePrefs() {
+    if (!userId) return;
+    setSavingPrefs(true);
+    setMessage(null);
+    const { error } = await supabase.rpc("update_position_prefs", {
+      p_building_id: prefBuildingId || null,
+      p_note: prefNote || null,
+      p_is_visible: prefVisible,
     });
+    setSavingPrefs(false);
+    if (error) {
+      setMessage(`Échec : ${error.message}`);
+      return;
+    }
+    setMessage("Préférences mises à jour.");
+    await refreshMine(userId);
+    await refresh();
+  }
+
+  async function launchTravel() {
+    if (!myPosition?.place_id || !destPlaceId) return;
+    const plan = findShortestPath(routes, myPosition.place_id, destPlaceId);
+    if (!plan) {
+      setMessage("Aucun itinéraire connu vers ce lieu.");
+      return;
+    }
+    if (plan.steps.length === 0) {
+      setMessage("Tu es déjà sur place !");
+      return;
+    }
+    setLaunching(true);
+    setMessage(null);
+    const { error } = await supabase.rpc("start_travel", {
+      p_planned_path: plan.steps.map((s) => ({ route_id: s.route_id, to_place_id: s.to_place_id })),
+    });
+    setLaunching(false);
+    if (error) {
+      setMessage(`Échec du départ : ${error.message}`);
+      return;
+    }
+    setMessage(`Trajet lancé — arrivée estimée dans ${Math.round(plan.totalMinutes)} min.`);
+    setDestPlaceId("");
+    if (userId) await refreshMine(userId);
     await refresh();
   }
 
@@ -159,6 +208,8 @@ export default function MapPage() {
   }
   const stepsRemaining = (myPosition?.planned_path?.length ?? 1) - 1;
 
+  const destEta = myPosition?.place_id && destPlaceId ? findShortestPath(routes, myPosition.place_id, destPlaceId) : null;
+
   return (
     <div className="space-y-6">
       <h1 className="font-display text-2xl uppercase tracking-wide text-red">Carte du S.I.D.</h1>
@@ -167,63 +218,136 @@ export default function MapPage() {
         <a href="https://sid-map.vercel.app" target="_blank" rel="noreferrer" className="text-blue underline">
           sid-map.vercel.app
         </a>{" "}
-        — cette page permet de consulter et changer sa position depuis le site principal.
+        — cette page permet de consulter sa position et de se déplacer, chaque trajet prenant un temps réel à parcourir
+        (aucune téléportation possible).
       </p>
 
       {message && <p className="font-mono text-sm text-red">{message}</p>}
 
-      {isTraveling && (
-        <div className="glass-card space-y-2 border border-blue/50 p-4">
-          <p className="font-display uppercase text-blue-light">En trajet…</p>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
-            <div className="h-full bg-blue transition-all" style={{ width: `${progressPct}%` }} />
-          </div>
-          <p className="font-mono text-xs text-paper/70">
-            Arrivée {stepsRemaining > 0 ? `à cette étape ` : ""}dans {formatCountdown(secondsLeft)}
-            {stepsRemaining > 0 && ` (encore ${stepsRemaining} étape${stepsRemaining > 1 ? "s" : ""} après celle-ci)`}
+      {!myPosition?.spawned ? (
+        <div className="glass-card space-y-4 p-6">
+          <h2 className="font-display text-lg uppercase">Choisis ton point de départ</h2>
+          <p className="font-body text-sm text-paper/70">
+            À poser une seule fois — ensuite, tout changement de lieu se fera en lançant un trajet chronométré.
           </p>
+          <div className="space-y-1">
+            <label className={labelClass}>Lieu</label>
+            <select className={inputClass} value={spawnPlaceId} onChange={(e) => setSpawnPlaceId(e.target.value)}>
+              <option value="">— Choisir —</option>
+              {places.map((p) => (
+                <option key={p.id} value={p.id}>{p.name} ({p.type})</option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <label className={labelClass}>Bâtiment (précision optionnelle)</label>
+            <select className={inputClass} value={spawnBuildingId} onChange={(e) => setSpawnBuildingId(e.target.value)}>
+              <option value="">— Aucun —</option>
+              {buildings.map((b) => (
+                <option key={b.id} value={b.id}>{b.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <label className={labelClass}>Note libre</label>
+            <input className={inputClass} value={spawnNote} onChange={(e) => setSpawnNote(e.target.value)} placeholder="Ex : quelque part en forêt…" />
+          </div>
+          <label className="flex items-center gap-2 font-mono text-xs">
+            <input type="checkbox" className="accent-blue" checked={spawnVisible} onChange={(e) => setSpawnVisible(e.target.checked)} />
+            Visible par les autres membres
+          </label>
+          <button
+            onClick={spawn}
+            disabled={spawning || !spawnPlaceId}
+            className="rounded-lg bg-red px-4 py-2 font-display text-sm uppercase text-ink hover:bg-red-light disabled:opacity-40"
+          >
+            {spawning ? "…" : "Poser mon point de départ"}
+          </button>
         </div>
-      )}
+      ) : (
+        <>
+          {isTraveling ? (
+            <div className="glass-card space-y-2 border border-blue/50 p-4">
+              <p className="font-display uppercase text-blue-light">En trajet…</p>
+              <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
+                <div className="h-full bg-blue transition-all" style={{ width: `${progressPct}%` }} />
+              </div>
+              <p className="font-mono text-xs text-paper/70">
+                Arrivée {stepsRemaining > 0 ? `à cette étape ` : ""}dans {formatCountdown(secondsLeft)}
+                {stepsRemaining > 0 && ` (encore ${stepsRemaining} étape${stepsRemaining > 1 ? "s" : ""} après celle-ci)`}
+              </p>
+            </div>
+          ) : (
+            <div className="glass-card space-y-1 p-4">
+              <p className="font-display uppercase text-blue-light">📍 {placeName(myPosition.place_id)}</p>
+              {myPosition.building_id && (
+                <p className="font-mono text-xs text-paper/60">
+                  Bâtiment : {buildings.find((b) => b.id === myPosition.building_id)?.name ?? "—"}
+                </p>
+              )}
+              {myPosition.note && <p className="font-body text-sm text-paper/80">{myPosition.note}</p>}
+            </div>
+          )}
 
-      <div className="glass-card space-y-4 p-6">
-        <h2 className="font-display text-lg uppercase">Ma position</h2>
-        <div className="space-y-1">
-          <label className={labelClass}>Lieu</label>
-          <select className={inputClass} value={placeId} onChange={(e) => setPlaceId(e.target.value)}>
-            <option value="">— Non renseigné —</option>
-            {places.map((p) => (
-              <option key={p.id} value={p.id}>{p.name} ({p.type})</option>
-            ))}
-          </select>
-        </div>
-        <div className="space-y-1">
-          <label className={labelClass}>Bâtiment (précision optionnelle)</label>
-          <select className={inputClass} value={buildingId} onChange={(e) => setBuildingId(e.target.value)}>
-            <option value="">— Aucun —</option>
-            {buildings.map((b) => (
-              <option key={b.id} value={b.id}>{b.name}</option>
-            ))}
-          </select>
-        </div>
-        <div className="space-y-1">
-          <label className={labelClass}>Note libre (si pas de lieu précis)</label>
-          <input className={inputClass} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Ex : quelque part en forêt…" />
-        </div>
-        <label className="flex items-center gap-2 font-mono text-xs">
-          <input type="checkbox" className="accent-blue" checked={isVisible} onChange={(e) => setIsVisible(e.target.checked)} />
-          Visible par les autres membres
-        </label>
-        <button
-          onClick={saveMyPosition}
-          disabled={saving}
-          className="rounded-lg bg-blue px-4 py-2 font-display text-sm uppercase text-ink hover:bg-blue-light disabled:opacity-40"
-        >
-          {saving ? "Enregistrement…" : "Mettre à jour ma position"}
-        </button>
-        <p className="font-mono text-[10px] text-paper/50">
-          Enregistrer ici efface un trajet en cours — utilise les quêtes pour lancer un déplacement chronométré.
-        </p>
-      </div>
+          {!isTraveling && (
+            <div className="glass-card space-y-4 p-6">
+              <h2 className="font-display text-lg uppercase">Se déplacer</h2>
+              <div className="space-y-1">
+                <label className={labelClass}>Destination</label>
+                <select className={inputClass} value={destPlaceId} onChange={(e) => setDestPlaceId(e.target.value)}>
+                  <option value="">— Choisir un lieu —</option>
+                  {places.filter((p) => p.id !== myPosition.place_id).map((p) => (
+                    <option key={p.id} value={p.id}>{p.name} ({p.type})</option>
+                  ))}
+                </select>
+              </div>
+              {destPlaceId && (
+                <p className="font-mono text-xs text-paper/60">
+                  {destEta ? `≈ ${Math.round(destEta.totalMinutes)} min de trajet` : "Aucun itinéraire connu vers ce lieu."}
+                </p>
+              )}
+              <button
+                onClick={launchTravel}
+                disabled={launching || !destPlaceId || !destEta}
+                className="rounded-lg bg-blue px-4 py-2 font-display text-sm uppercase text-ink hover:bg-blue-light disabled:opacity-40"
+              >
+                {launching ? "Départ…" : "Lancer le trajet"}
+              </button>
+            </div>
+          )}
+
+          <div className="glass-card space-y-4 p-6">
+            <h2 className="font-display text-lg uppercase">Préférences</h2>
+            <p className="font-body text-sm text-paper/70">
+              Ne changent pas ton lieu — juste un détail de mise en scène, modifiable à tout moment.
+            </p>
+            <div className="space-y-1">
+              <label className={labelClass}>Bâtiment (précision optionnelle)</label>
+              <select className={inputClass} value={prefBuildingId} onChange={(e) => setPrefBuildingId(e.target.value)}>
+                <option value="">— Aucun —</option>
+                {buildings.map((b) => (
+                  <option key={b.id} value={b.id}>{b.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className={labelClass}>Note libre</label>
+              <input className={inputClass} value={prefNote} onChange={(e) => setPrefNote(e.target.value)} placeholder="Ex : quelque part en forêt…" />
+            </div>
+            <label className="flex items-center gap-2 font-mono text-xs">
+              <input type="checkbox" className="accent-blue" checked={prefVisible} onChange={(e) => setPrefVisible(e.target.checked)} />
+              Visible par les autres membres
+            </label>
+            <button
+              onClick={savePrefs}
+              disabled={savingPrefs}
+              className="rounded-lg bg-blue px-4 py-2 font-display text-sm uppercase text-ink hover:bg-blue-light disabled:opacity-40"
+            >
+              {savingPrefs ? "Enregistrement…" : "Enregistrer"}
+            </button>
+          </div>
+        </>
+      )}
 
       <div className="glass-card space-y-2 p-6">
         <h2 className="font-display text-lg uppercase">Qui est où</h2>

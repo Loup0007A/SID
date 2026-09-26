@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { OrgNode, Profile, Group } from "@/types/database";
+import { ProfileStyle, profileSkinClass } from "@/components/ProfileStyle";
 
 interface Props {
   nodes: OrgNode[];
@@ -9,9 +10,11 @@ interface Props {
   onDelete?: (id: string) => void;
   canManage?: boolean;
   isRoot?: boolean;
+  /** CSS personnalisé (section "org_chart") par id de titulaire, déjà chargé en une seule fois par la page parente. */
+  styles?: Map<string, string>;
 }
 
-export function OrgTree({ nodes, profiles, groups, parentId, onDelete, canManage, isRoot = true }: Props) {
+export function OrgTree({ nodes, profiles, groups, parentId, onDelete, canManage, isRoot = true, styles }: Props) {
   const children = nodes
     .filter((n) => n.parent_id === parentId)
     .sort((a, b) => a.sort_order - b.sort_order);
@@ -23,9 +26,11 @@ export function OrgTree({ nodes, profiles, groups, parentId, onDelete, canManage
       {children.map((node) => {
         const holder = node.holder_id ? profiles.get(node.holder_id) : null;
         const group = node.group_id ? groups.get(node.group_id) : null;
+        const skinClass = holder ? profileSkinClass(holder.id) : undefined;
         return (
           <li key={node.id}>
-            <div className="glass-card inline-flex flex-col gap-1 px-4 py-2">
+            <div className={`glass-card inline-flex flex-col gap-1 px-4 py-2 ${skinClass ?? ""}`}>
+              {holder && <ProfileStyle userId={holder.id} css={styles?.get(holder.id)} />}
               <div className="flex items-center gap-2">
                 <span className="font-display uppercase tracking-wide">{node.label}</span>
                 {group?.is_independent_system && (
@@ -59,6 +64,7 @@ export function OrgTree({ nodes, profiles, groups, parentId, onDelete, canManage
               onDelete={onDelete}
               canManage={canManage}
               isRoot={false}
+              styles={styles}
             />
           </li>
         );

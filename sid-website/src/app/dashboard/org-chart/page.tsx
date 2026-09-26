@@ -18,6 +18,7 @@ export default function OrgChartPage() {
   const [permissions, setPermissions] = useState<Set<PermissionKey>>(new Set());
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ label: "", parentId: "", holderId: "", groupId: "" });
+  const [styles, setStyles] = useState<Map<string, string>>(new Map());
 
   async function refresh() {
     const [{ data: n }, { data: p }, { data: g }] = await Promise.all([
@@ -30,6 +31,14 @@ export default function OrgChartPage() {
     setProfiles(new Map((p ?? []).map((x) => [x.id, x])));
     setGroupList(g ?? []);
     setGroups(new Map((g ?? []).map((x) => [x.id, x])));
+
+    const holderIds = Array.from(new Set((n ?? []).map((x) => x.holder_id).filter((id): id is string => !!id)));
+    if (holderIds.length > 0) {
+      const { data: css } = await supabase.rpc("get_profile_css_for", { p_section: "org_chart", p_user_ids: holderIds });
+      setStyles(new Map(((css ?? []) as { user_id: string; css: string }[]).map((r) => [r.user_id, r.css])));
+    } else {
+      setStyles(new Map());
+    }
   }
 
   useEffect(() => {
@@ -114,7 +123,7 @@ export default function OrgChartPage() {
       )}
 
       <div className="glass-card overflow-x-auto p-6">
-        <OrgTree nodes={nodes} profiles={profiles} groups={groups} parentId={null} onDelete={canManage ? handleDelete : undefined} canManage={canManage} />
+        <OrgTree nodes={nodes} profiles={profiles} groups={groups} parentId={null} onDelete={canManage ? handleDelete : undefined} canManage={canManage} styles={styles} />
         {nodes.length === 0 && <p className="font-body text-paper/60">L&apos;organigramme est encore vide.</p>}
       </div>
     </div>
