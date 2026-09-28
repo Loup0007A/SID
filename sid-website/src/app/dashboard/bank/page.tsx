@@ -37,6 +37,8 @@ export default function BankPage() {
     admin_fee_per_share: 0.5,
     min_holding_minutes: 30,
     tick_minutes: 60,
+    default_share_count: 1000,
+    min_initial_investment: 500,
   });
   const [myShares, setMyShares] = useState<MyShareholding[]>([]);
   const [sellable, setSellable] = useState<Record<string, number>>({});
