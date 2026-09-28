@@ -2,22 +2,21 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { PROFILE_CSS_SECTIONS } from "@/types/profileStyle";
+import { PROFILE_CSS_SECTIONS, DEFAULT_PROFILE_CSS, AVAILABLE_CLASSES } from "@/types/profileStyle";
 import type { ProfileCssSection, ProfileStyleRow } from "@/types/profileStyle";
 import { ProfileStyle, profileSkinClass } from "@/components/ProfileStyle";
+import { RankCard } from "@/components/RankCard";
 import { labelClass } from "@/lib/ui";
-
-const PLACEHOLDER = `/* Exemple : */\n.rank-card-letter {\n  color: gold;\n}\n.font-display {\n  letter-spacing: 0.2em;\n}`;
 
 export default function SettingsPage() {
   const supabase = createClient();
   const [userId, setUserId] = useState<string | null>(null);
-  const [drafts, setDrafts] = useState<Record<ProfileCssSection, string>>({
-    org_chart: "",
-    roster: "",
-    leaderboard: "",
-    profile: "",
-  });
+  const [nickname, setNickname] = useState("Ton pseudo");
+  // "saved" = ce qui est réellement en base (vide tant que rien n'a été
+  // enregistré) ; "drafts" = ce qui est affiché dans le champ, pré-rempli
+  // avec un exemple basique modifiable tant que rien n'a encore été
+  // enregistré pour cette section.
+  const [drafts, setDrafts] = useState<Record<ProfileCssSection, string>>({ ...DEFAULT_PROFILE_CSS });
   const [saved, setSaved] = useState<Record<ProfileCssSection, string>>({
     org_chart: "",
     roster: "",
@@ -35,14 +34,24 @@ export default function SettingsPage() {
       if (!user) return;
       setUserId(user.id);
 
+      const { data: profileRow } = await supabase.from("profiles").select("nickname").eq("id", user.id).single();
+      if (profileRow?.nickname) setNickname(profileRow.nickname);
+
       const { data } = await supabase.rpc("get_my_profile_css");
       const rows = (data ?? []) as ProfileStyleRow[];
-      const next = { org_chart: "", roster: "", leaderboard: "", profile: "" } as Record<ProfileCssSection, string>;
+      const savedNext = { org_chart: "", roster: "", leaderboard: "", profile: "" } as Record<ProfileCssSection, string>;
       rows.forEach((r) => {
-        next[r.section] = r.css;
+        savedNext[r.section] = r.css;
       });
-      setDrafts(next);
-      setSaved(next);
+      setSaved(savedNext);
+      // Le champ affiche ce qui est déjà enregistré ; sinon, un exemple de
+      // départ que l'utilisateur peut modifier ou vider librement.
+      setDrafts({
+        org_chart: savedNext.org_chart || DEFAULT_PROFILE_CSS.org_chart,
+        roster: savedNext.roster || DEFAULT_PROFILE_CSS.roster,
+        leaderboard: savedNext.leaderboard || DEFAULT_PROFILE_CSS.leaderboard,
+        profile: savedNext.profile || DEFAULT_PROFILE_CSS.profile,
+      });
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -61,7 +70,7 @@ export default function SettingsPage() {
   }
 
   async function resetSection(section: ProfileCssSection) {
-    if (!confirm("Vider le CSS de cette section ?")) return;
+    if (!confirm("Vider le CSS de cette section ? (repart sur l'exemple de base, non enregistré)")) return;
     setSavingSection(section);
     const { error } = await supabase.rpc("reset_profile_css", { p_section: section });
     setSavingSection(null);
@@ -69,7 +78,7 @@ export default function SettingsPage() {
       setMessage(`Échec : ${error.message}`);
       return;
     }
-    setDrafts((d) => ({ ...d, [section]: "" }));
+    setDrafts((d) => ({ ...d, [section]: DEFAULT_PROFILE_CSS[section] }));
     setSaved((s) => ({ ...s, [section]: "" }));
   }
 
@@ -82,16 +91,23 @@ export default function SettingsPage() {
       <section className="glass-card space-y-3 p-6">
         <h2 className="font-display text-lg uppercase">Apparence personnalisée</h2>
         <p className="font-body text-sm text-paper/70">
-          Un peu de CSS pour chacune des 4 zones où les autres membres te voient. Le CSS ne peut s&apos;appliquer
-          qu&apos;à ta propre carte/ligne/fiche — impossible de toucher au reste de la page. Certaines constructions
-          sont refusées ou retirées automatiquement (<code>url()</code>, <code>@import</code>,{" "}
-          <code>position: fixed</code>, etc.), 8000 caractères maximum par section.
+          Du CSS pour chacune des 4 zones où les autres membres te voient. Un champ pré-rempli avec un exemple, à
+          modifier ou étoffer comme tu veux — les propriétés tapées SANS sélecteur (comme dans l&apos;exemple)
+          s&apos;appliquent directement à ta carte ; ajoute des blocs <code>.classe {"{"} ... {"}"}</code> pour cibler
+          un élément précis à l&apos;intérieur.
+        </p>
+        <p className="font-body text-sm text-paper/70">
+          Le CSS ne peut s&apos;appliquer qu&apos;à ta propre carte/ligne/fiche — impossible de toucher au reste de la
+          page. Certaines constructions sont refusées ou retirées automatiquement (<code>url()</code>,{" "}
+          <code>@import</code>, <code>position: fixed</code>, etc.), 8000 caractères maximum par section. Les noms de
+          classe sont automatiquement remis en minuscules (<code>.RANK-CARD-LETTER</code> devient{" "}
+          <code>.rank-card-letter</code>) au cas où — mais écris-les en minuscules directement pour ne pas avoir de
+          mauvaise surprise ailleurs.
         </p>
         {message && <p className="font-mono text-sm text-red">{message}</p>}
       </section>
 
       {PROFILE_CSS_SECTIONS.map(({ key, label, hint }) => {
-        const dirty = drafts[key] !== saved[key];
         return (
           <section key={key} className="glass-card space-y-3 p-6">
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -102,10 +118,20 @@ export default function SettingsPage() {
               <span className="font-mono text-[10px] text-paper/40">{drafts[key].length} / 8000</span>
             </div>
 
+            <details className="font-mono text-[10px] text-paper/50">
+              <summary className="cursor-pointer uppercase text-paper/60 hover:text-blue-light">Classes disponibles ici</summary>
+              <ul className="mt-1 list-disc space-y-0.5 pl-4">
+                {AVAILABLE_CLASSES[key].map((c) => (
+                  <li key={c.className}>
+                    <code>.{c.className}</code> — {c.hint}
+                  </li>
+                ))}
+              </ul>
+            </details>
+
             <textarea
-              rows={8}
+              rows={9}
               spellCheck={false}
-              placeholder={PLACEHOLDER}
               className={`${labelClass} w-full rounded-lg border border-paper-dark bg-ink-soft px-3 py-2 font-mono text-xs text-paper outline-none transition focus:border-blue`}
               value={drafts[key]}
               maxLength={8000}
@@ -115,7 +141,7 @@ export default function SettingsPage() {
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => save(key)}
-                disabled={savingSection === key || !dirty}
+                disabled={savingSection === key}
                 className="rounded-lg bg-blue px-4 py-2 font-mono text-xs uppercase text-ink hover:bg-blue-light disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {savingSection === key ? "Enregistrement…" : "Enregistrer"}
@@ -131,17 +157,61 @@ export default function SettingsPage() {
               )}
             </div>
 
-            {/* Aperçu en direct de ce que les autres verront (nettoyé + scopé) */}
-            <div className={`glass-card space-y-1 p-4 ${profileSkinClass(userId)}`}>
-              <ProfileStyle userId={userId} css={drafts[key]} />
-              <p className="font-mono text-[10px] uppercase text-paper/40">Aperçu</p>
-              <p className="font-display text-lg uppercase">Ton pseudo</p>
-              <p className="rank-card-letter font-display text-2xl">S</p>
-              <p className="font-body text-sm text-paper/80">Un aperçu générique — le rendu réel dépend de la page.</p>
+            {/* Aperçu en direct : reprend le balisage réel de la zone concernée */}
+            <div>
+              <p className="mb-1 font-mono text-[10px] uppercase text-paper/40">Aperçu</p>
+              <SectionPreview section={key} userId={userId} nickname={nickname} css={drafts[key]} />
             </div>
           </section>
         );
       })}
+    </div>
+  );
+}
+
+function SectionPreview({ section, userId, nickname, css }: { section: ProfileCssSection; userId: string; nickname: string; css: string }) {
+  const skin = profileSkinClass(userId);
+
+  if (section === "org_chart") {
+    return (
+      <div className={`glass-card inline-flex flex-col gap-1 px-4 py-2 ${skin}`}>
+        <ProfileStyle userId={userId} css={css} />
+        <span className="font-display uppercase tracking-wide">Poste occupé</span>
+        <span className="font-mono text-xs text-paper/70">{nickname}</span>
+      </div>
+    );
+  }
+
+  if (section === "roster") {
+    return (
+      <div className={`glass-card max-w-xs space-y-1 p-4 ${skin}`}>
+        <ProfileStyle userId={userId} css={css} />
+        <span className="font-display text-lg uppercase">{nickname}</span>
+        <p className="font-mono text-xs text-paper/60">Agent de terrain</p>
+        <p className="font-body text-sm text-paper/80">Un aperçu de ta carte du trombinoscope.</p>
+      </div>
+    );
+  }
+
+  if (section === "leaderboard") {
+    return (
+      <div className={`glass-card flex items-center gap-4 px-4 py-3 ${skin}`}>
+        <ProfileStyle userId={userId} css={css} />
+        <span className="w-8 shrink-0 text-center font-display text-lg text-blue-light">1</span>
+        <span className="flex-1 font-display uppercase">{nickname}</span>
+        <span className="font-mono text-sm text-blue-light">1 234 pts</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`glass-card flex flex-wrap items-center gap-4 p-6 ${skin}`}>
+      <ProfileStyle userId={userId} css={css} />
+      <RankCard rank="B" />
+      <div>
+        <p className="font-display text-2xl uppercase tracking-wide text-red">{nickname}</p>
+        <p className="font-mono text-xs text-paper/60">Aperçu de ta fiche de profil</p>
+      </div>
     </div>
   );
 }

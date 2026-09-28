@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import type { Business, BusinessEmployee, MyEmployment, BusinessTransaction } from "@/types/business";
+import type { Business, BusinessEmployee, MyEmployment, BusinessTransaction, MarketSettings } from "@/types/business";
 import type { Profile, SalaryFrequency } from "@/types/database";
 import { inputClass, labelClass } from "@/lib/ui";
 
@@ -22,7 +22,14 @@ export default function BusinessPage() {
   const [busy, setBusy] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
 
-  const [form, setForm] = useState({ name: "", description: "", shareCount: "1000", initialPrice: "10" });
+  // La mise de départ est investie depuis le portefeuille du fondateur et
+  // devient les fonds propres de départ de l'entreprise : le nombre
+  // d'actions est fixe (voir get_market_settings) et le prix de départ en
+  // découle (mise ÷ nombre d'actions) — comme le cours au fil du temps,
+  // piloté par les fondamentaux réels de l'entreprise plutôt que choisi à
+  // la main.
+  const [form, setForm] = useState({ name: "", description: "", investment: "1000" });
+  const [marketSettings, setMarketSettings] = useState<MarketSettings | null>(null);
   const [editForm, setEditForm] = useState<Record<string, { name: string; description: string }>>({});
   const [amounts, setAmounts] = useState<Record<string, { deposit: string; withdraw: string; borrow: string; repay: string; dividend: string }>>({});
   const [openPanel, setOpenPanel] = useState<Record<string, "employees" | "ledger" | null>>({});
@@ -44,6 +51,9 @@ export default function BusinessPage() {
 
     const { data: emp } = await supabase.rpc("get_my_employments");
     setMyEmployments((emp ?? []) as MyEmployment[]);
+
+    const { data: settings } = await supabase.rpc("get_market_settings");
+    if (settings) setMarketSettings(settings as MarketSettings);
   }
 
   useEffect(() => {
@@ -82,12 +92,11 @@ export default function BusinessPage() {
         supabase.rpc("create_business", {
           p_name: form.name,
           p_description: form.description || null,
-          p_share_count: Number(form.shareCount) || 1000,
-          p_initial_price: Number(form.initialPrice) || 10,
+          p_initial_investment: Number(form.investment) || 0,
         }),
       "Entreprise créée !",
       () => {
-        setForm({ name: "", description: "", shareCount: "1000", initialPrice: "10" });
+        setForm({ name: "", description: "", investment: "1000" });
         setShowCreate(false);
       }
     );
@@ -150,6 +159,11 @@ export default function BusinessPage() {
     await run(() => supabase.rpc("close_business", { p_business_id: businessId }), "Entreprise fermée et liquidée.");
   }
 
+  const investmentNum = Number(form.investment) || 0;
+  const estimatedShareCount = marketSettings?.default_share_count ?? 1000;
+  const minInvestment = marketSettings?.min_initial_investment ?? 500;
+  const estimatedPrice = estimatedShareCount > 0 ? investmentNum / estimatedShareCount : 0;
+
   return (
     <div className="max-w-3xl space-y-6">
       <div className="flex items-center justify-between">
@@ -179,15 +193,23 @@ export default function BusinessPage() {
             <label className={labelClass}>Description</label>
             <textarea rows={3} className={inputClass} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
           </div>
-          <div className="flex gap-3">
-            <div className="flex-1 space-y-1">
-              <label className={labelClass}>Nombre d&apos;actions émises</label>
-              <input type="number" min={1} className={inputClass} value={form.shareCount} onChange={(e) => setForm({ ...form, shareCount: e.target.value })} />
-            </div>
-            <div className="flex-1 space-y-1">
-              <label className={labelClass}>Prix de départ par action</label>
-              <input type="number" min={0.01} step="0.01" className={inputClass} value={form.initialPrice} onChange={(e) => setForm({ ...form, initialPrice: e.target.value })} />
-            </div>
+          <div className="space-y-1">
+            <label className={labelClass}>Mise de départ</label>
+            <input
+              type="number"
+              min={minInvestment}
+              className={inputClass}
+              value={form.investment}
+              onChange={(e) => setForm({ ...form, investment: e.target.value })}
+            />
+            <p className="font-mono text-[10px] text-paper/50">
+              Minimum {minInvestment.toLocaleString("fr-FR")} Cr., prélevée sur ton portefeuille — elle devient les
+              fonds propres de départ de l&apos;entreprise. Le nombre d&apos;actions (
+              {estimatedShareCount.toLocaleString("fr-FR")}) est fixe : le prix de départ en découle automatiquement
+              {investmentNum > 0 && ` — ≈ ${estimatedPrice.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} Cr./action`}
+              . Le cours évolue ensuite tout seul selon la santé réelle de l&apos;entreprise (trésorerie, bénéfices,
+              dividendes) — voir Banque → Bourse.
+            </p>
           </div>
           <button disabled={busy} className="rounded-lg w-full bg-blue py-2 font-display uppercase text-ink hover:bg-blue-light disabled:opacity-40">
             Créer
