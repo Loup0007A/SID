@@ -88,6 +88,10 @@ export interface MarketSettings {
   admin_fee_per_share: number;
   min_holding_minutes: number;
   tick_minutes: number;
+  /** Nombre d'actions émises pour toute nouvelle entreprise (fixe, non choisi par le fondateur). */
+  default_share_count: number;
+  /** Mise de départ minimale exigée pour créer une entreprise. */
+  min_initial_investment: number;
 }
 
 /** Résultat de sell_business_shares : la vente peut être partielle si la

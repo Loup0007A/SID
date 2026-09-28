@@ -50,9 +50,12 @@ export default function MemberProfilePage() {
   if (profile === null) return <p className="font-body text-paper/60">Ce dossier est introuvable ou inaccessible.</p>;
 
   return (
-    <div className={`max-w-2xl space-y-6 ${profileSkinClass(profile.id)}`}>
-      <ProfileStyle userId={profile.id} css={css} />
-      <div className="flex flex-wrap items-center gap-4">
+    <div className="max-w-2xl space-y-6">
+      {/* Le CSS personnalisé ne s'applique qu'à cette carte-ci (comme pour
+          l'organigramme, le trombinoscope et le classement) — pas à toute
+          la page, ni à la description en dessous. */}
+      <div className={`glass-card flex flex-wrap items-center gap-4 p-6 ${profileSkinClass(profile.id)}`}>
+        <ProfileStyle userId={profile.id} css={css} />
         <RankCard rank={(profile.member_rank as QuestDifficulty) ?? "E"} />
         <div>
           <h1 className="font-display text-2xl uppercase tracking-wide text-red">{profile.nickname}</h1>
