@@ -415,6 +415,52 @@ body {
   to { opacity: 0; visibility: hidden; }
 }
 
+/* =========================================================
+   Animations pour le CSS personnalisé des profils
+   (Réglages -> Apparence personnalisée -> Éditeur visuel).
+   Définitions STATIQUES et PARTAGÉES par tous les membres — jamais un
+   membre ne peut injecter son propre @keyframes (voir src/lib/profileCss.ts,
+   qui retire systématiquement toute règle @ autre que @media). L'éditeur
+   visuel (src/lib/profileCssBuilder.ts) se contente de référencer ces noms
+   et de régler leur couleur/vitesse via des déclarations CSS classiques
+   (animation, --glow-color, --neon-color…), qui repassent comme le reste
+   par le nettoyeur à chaque affichage.
+   ========================================================= */
+@keyframes profile-glow-pulse {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.18); }
+}
+
+@keyframes profile-scale-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.025); }
+}
+
+@keyframes profile-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes profile-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes profile-rainbow {
+  to { filter: hue-rotate(360deg); }
+}
+
+@keyframes profile-neon-flicker {
+  0%, 19%, 21%, 23%, 54%, 56%, 100% {
+    opacity: 1;
+    text-shadow: 0 0 6px var(--neon-color, #fff), 0 0 16px var(--neon-color, #fff);
+  }
+  20%, 22%, 55% {
+    opacity: 0.55;
+    text-shadow: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.001ms !important;

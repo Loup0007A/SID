@@ -2,27 +2,60 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { PROFILE_CSS_SECTIONS, DEFAULT_PROFILE_CSS, AVAILABLE_CLASSES } from "@/types/profileStyle";
+import { PROFILE_CSS_SECTIONS } from "@/types/profileStyle";
 import type { ProfileCssSection, ProfileStyleRow } from "@/types/profileStyle";
 import { ProfileStyle, profileSkinClass } from "@/components/ProfileStyle";
+import { CssBuilderPanel } from "@/components/CssBuilderPanel";
 import { RankCard } from "@/components/RankCard";
 import { labelClass } from "@/lib/ui";
+import {
+  buildCss,
+  parseBuilderOptions,
+  defaultBuilderOptions,
+  accentSelectorFor,
+  type CssBuilderOptions,
+} from "@/lib/profileCssBuilder";
+import clsx from "clsx";
+
+const ACCENT_LABEL: Record<ProfileCssSection, string> = {
+  org_chart: "titre du poste",
+  roster: "ton pseudo",
+  leaderboard: "ton pseudo",
+  profile: "la grande lettre de rang",
+};
+
+type Mode = "visual" | "advanced";
 
 export default function SettingsPage() {
   const supabase = createClient();
   const [userId, setUserId] = useState<string | null>(null);
   const [nickname, setNickname] = useState("Ton pseudo");
-  // "saved" = ce qui est réellement en base (vide tant que rien n'a été
-  // enregistré) ; "drafts" = ce qui est affiché dans le champ, pré-rempli
-  // avec un exemple basique modifiable tant que rien n'a encore été
-  // enregistré pour cette section.
-  const [drafts, setDrafts] = useState<Record<ProfileCssSection, string>>({ ...DEFAULT_PROFILE_CSS });
+
+  const [mode, setMode] = useState<Record<ProfileCssSection, Mode>>({
+    org_chart: "visual",
+    roster: "visual",
+    leaderboard: "visual",
+    profile: "visual",
+  });
+  const [options, setOptions] = useState<Record<ProfileCssSection, CssBuilderOptions>>({
+    org_chart: defaultBuilderOptions("#8fb3d9"),
+    roster: defaultBuilderOptions("#d99a9a"),
+    leaderboard: defaultBuilderOptions("#8fb3d9"),
+    profile: defaultBuilderOptions("#d4af37"),
+  });
+  const [rawDrafts, setRawDrafts] = useState<Record<ProfileCssSection, string>>({
+    org_chart: "",
+    roster: "",
+    leaderboard: "",
+    profile: "",
+  });
   const [saved, setSaved] = useState<Record<ProfileCssSection, string>>({
     org_chart: "",
     roster: "",
     leaderboard: "",
     profile: "",
   });
+
   const [message, setMessage] = useState<string | null>(null);
   const [savingSection, setSavingSection] = useState<ProfileCssSection | null>(null);
 
@@ -44,33 +77,67 @@ export default function SettingsPage() {
         savedNext[r.section] = r.css;
       });
       setSaved(savedNext);
-      // Le champ affiche ce qui est déjà enregistré ; sinon, un exemple de
-      // départ que l'utilisateur peut modifier ou vider librement.
-      setDrafts({
-        org_chart: savedNext.org_chart || DEFAULT_PROFILE_CSS.org_chart,
-        roster: savedNext.roster || DEFAULT_PROFILE_CSS.roster,
-        leaderboard: savedNext.leaderboard || DEFAULT_PROFILE_CSS.leaderboard,
-        profile: savedNext.profile || DEFAULT_PROFILE_CSS.profile,
+
+      setOptions((o) => {
+        const next = { ...o };
+        (Object.keys(next) as ProfileCssSection[]).forEach((s) => {
+          const parsed = parseBuilderOptions(savedNext[s]);
+          if (parsed) next[s] = parsed;
+        });
+        return next;
       });
+      setMode((m) => {
+        const next = { ...m };
+        (Object.keys(next) as ProfileCssSection[]).forEach((s) => {
+          // Si du CSS existe mais qu'il n'a pas été généré par l'éditeur
+          // visuel (pas de commentaire BUILDER reconnu), on ouvre plutôt le
+          // mode avancé pour ne rien écraser par surprise.
+          if (savedNext[s] && !parseBuilderOptions(savedNext[s])) next[s] = "advanced";
+        });
+        return next;
+      });
+      setRawDrafts(savedNext);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function save(section: ProfileCssSection) {
+  function switchMode(section: ProfileCssSection, next: Mode) {
+    if (next === "visual" && mode[section] === "advanced" && rawDrafts[section] && !parseBuilderOptions(rawDrafts[section])) {
+      if (!confirm("Passer à l'éditeur visuel remplacera ton CSS avancé actuel par les réglages ci-dessous. Continuer ?")) return;
+    }
+    setMode((m) => ({ ...m, [section]: next }));
+  }
+
+  async function saveVisual(section: ProfileCssSection) {
+    const css = buildCss(section, options[section]);
     setSavingSection(section);
     setMessage(null);
-    const { error } = await supabase.rpc("set_profile_css", { p_section: section, p_css: drafts[section] });
+    const { error } = await supabase.rpc("set_profile_css", { p_section: section, p_css: css });
     setSavingSection(null);
     if (error) {
       setMessage(`Échec (${PROFILE_CSS_SECTIONS.find((s) => s.key === section)?.label}) : ${error.message}`);
       return;
     }
-    setSaved((s) => ({ ...s, [section]: drafts[section] }));
+    setSaved((s) => ({ ...s, [section]: css }));
+    setRawDrafts((d) => ({ ...d, [section]: css }));
+    setMessage(`Enregistré pour « ${PROFILE_CSS_SECTIONS.find((s) => s.key === section)?.label} ».`);
+  }
+
+  async function saveAdvanced(section: ProfileCssSection) {
+    setSavingSection(section);
+    setMessage(null);
+    const { error } = await supabase.rpc("set_profile_css", { p_section: section, p_css: rawDrafts[section] });
+    setSavingSection(null);
+    if (error) {
+      setMessage(`Échec (${PROFILE_CSS_SECTIONS.find((s) => s.key === section)?.label}) : ${error.message}`);
+      return;
+    }
+    setSaved((s) => ({ ...s, [section]: rawDrafts[section] }));
     setMessage(`Enregistré pour « ${PROFILE_CSS_SECTIONS.find((s) => s.key === section)?.label} ».`);
   }
 
   async function resetSection(section: ProfileCssSection) {
-    if (!confirm("Vider le CSS de cette section ? (repart sur l'exemple de base, non enregistré)")) return;
+    if (!confirm("Retirer complètement le style personnalisé de cette section ?")) return;
     setSavingSection(section);
     const { error } = await supabase.rpc("reset_profile_css", { p_section: section });
     setSavingSection(null);
@@ -78,8 +145,8 @@ export default function SettingsPage() {
       setMessage(`Échec : ${error.message}`);
       return;
     }
-    setDrafts((d) => ({ ...d, [section]: DEFAULT_PROFILE_CSS[section] }));
     setSaved((s) => ({ ...s, [section]: "" }));
+    setRawDrafts((d) => ({ ...d, [section]: "" }));
   }
 
   if (!userId) return <p className="font-body text-paper/60">Chargement…</p>;
@@ -91,76 +158,93 @@ export default function SettingsPage() {
       <section className="glass-card space-y-3 p-6">
         <h2 className="font-display text-lg uppercase">Apparence personnalisée</h2>
         <p className="font-body text-sm text-paper/70">
-          Du CSS pour chacune des 4 zones où les autres membres te voient. Un champ pré-rempli avec un exemple, à
-          modifier ou étoffer comme tu veux — les propriétés tapées SANS sélecteur (comme dans l&apos;exemple)
-          s&apos;appliquent directement à ta carte ; ajoute des blocs <code>.classe {"{"} ... {"}"}</code> pour cibler
-          un élément précis à l&apos;intérieur.
-        </p>
-        <p className="font-body text-sm text-paper/70">
-          Le CSS ne peut s&apos;appliquer qu&apos;à ta propre carte/ligne/fiche — impossible de toucher au reste de la
-          page. Certaines constructions sont refusées ou retirées automatiquement (<code>url()</code>,{" "}
-          <code>@import</code>, <code>position: fixed</code>, etc.), 8000 caractères maximum par section. Les noms de
-          classe sont automatiquement remis en minuscules (<code>.RANK-CARD-LETTER</code> devient{" "}
-          <code>.rank-card-letter</code>) au cas où — mais écris-les en minuscules directement pour ne pas avoir de
-          mauvaise surprise ailleurs.
+          Couleurs, bordure, lueur et animations pour chacune des 4 zones où les autres membres te voient — aucun code
+          à écrire. Le résultat ne peut s&apos;appliquer qu&apos;à ta propre carte/ligne/fiche, jamais au reste de la
+          page.
         </p>
         {message && <p className="font-mono text-sm text-red">{message}</p>}
       </section>
 
       {PROFILE_CSS_SECTIONS.map(({ key, label, hint }) => {
+        const currentMode = mode[key];
+        const previewCss = currentMode === "visual" ? buildCss(key, options[key]) : rawDrafts[key];
         return (
-          <section key={key} className="glass-card space-y-3 p-6">
+          <section key={key} className="glass-card space-y-4 p-6">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <h3 className="font-display text-base uppercase text-blue-light">{label}</h3>
                 <p className="font-mono text-xs text-paper/50">{hint}</p>
               </div>
-              <span className="font-mono text-[10px] text-paper/40">{drafts[key].length} / 8000</span>
-            </div>
-
-            <details className="font-mono text-[10px] text-paper/50">
-              <summary className="cursor-pointer uppercase text-paper/60 hover:text-blue-light">Classes disponibles ici</summary>
-              <ul className="mt-1 list-disc space-y-0.5 pl-4">
-                {AVAILABLE_CLASSES[key].map((c) => (
-                  <li key={c.className}>
-                    <code>.{c.className}</code> — {c.hint}
-                  </li>
-                ))}
-              </ul>
-            </details>
-
-            <textarea
-              rows={9}
-              spellCheck={false}
-              className={`${labelClass} w-full rounded-lg border border-paper-dark bg-ink-soft px-3 py-2 font-mono text-xs text-paper outline-none transition focus:border-blue`}
-              value={drafts[key]}
-              maxLength={8000}
-              onChange={(e) => setDrafts((d) => ({ ...d, [key]: e.target.value }))}
-            />
-
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => save(key)}
-                disabled={savingSection === key}
-                className="rounded-lg bg-blue px-4 py-2 font-mono text-xs uppercase text-ink hover:bg-blue-light disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                {savingSection === key ? "Enregistrement…" : "Enregistrer"}
-              </button>
-              {saved[key] && (
+              <div className="flex overflow-hidden rounded-lg border border-white/15">
                 <button
-                  onClick={() => resetSection(key)}
-                  disabled={savingSection === key}
-                  className="rounded-lg border border-red px-4 py-2 font-mono text-xs uppercase text-red hover:bg-red hover:text-ink disabled:opacity-40"
+                  onClick={() => switchMode(key, "visual")}
+                  className={clsx("px-3 py-1.5 font-mono text-[10px] uppercase", currentMode === "visual" ? "bg-blue text-ink" : "text-paper/60 hover:text-paper")}
                 >
-                  Vider
+                  Éditeur visuel
                 </button>
-              )}
+                <button
+                  onClick={() => switchMode(key, "advanced")}
+                  className={clsx("px-3 py-1.5 font-mono text-[10px] uppercase", currentMode === "advanced" ? "bg-blue text-ink" : "text-paper/60 hover:text-paper")}
+                >
+                  CSS avancé
+                </button>
+              </div>
             </div>
 
-            {/* Aperçu en direct : reprend le balisage réel de la zone concernée */}
+            {currentMode === "visual" ? (
+              <>
+                <CssBuilderPanel
+                  accentLabel={ACCENT_LABEL[key]}
+                  options={options[key]}
+                  onChange={(next) => setOptions((o) => ({ ...o, [key]: next }))}
+                />
+                <button
+                  onClick={() => saveVisual(key)}
+                  disabled={savingSection === key}
+                  className="rounded-lg bg-blue px-4 py-2 font-mono text-xs uppercase text-ink hover:bg-blue-light disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {savingSection === key ? "Enregistrement…" : "Enregistrer"}
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="font-mono text-[10px] text-paper/50">
+                  Pour celles et ceux qui préfèrent écrire le CSS eux-mêmes. Les propriétés tapées sans sélecteur
+                  s&apos;appliquent à la carte elle-même ; ajoute <code>{accentSelectorFor(key)} {"{"} ... {"}"}</code>{" "}
+                  pour cibler {ACCENT_LABEL[key]}. 8000 caractères max, <code>url()</code>/<code>@import</code>/
+                  <code>position: fixed</code> sont retirés automatiquement.
+                </p>
+                <textarea
+                  rows={9}
+                  spellCheck={false}
+                  className={`${labelClass} w-full rounded-lg border border-paper-dark bg-ink-soft px-3 py-2 font-mono text-xs text-paper outline-none transition focus:border-blue`}
+                  value={rawDrafts[key]}
+                  maxLength={8000}
+                  onChange={(e) => setRawDrafts((d) => ({ ...d, [key]: e.target.value }))}
+                />
+                <button
+                  onClick={() => saveAdvanced(key)}
+                  disabled={savingSection === key}
+                  className="rounded-lg bg-blue px-4 py-2 font-mono text-xs uppercase text-ink hover:bg-blue-light disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {savingSection === key ? "Enregistrement…" : "Enregistrer"}
+                </button>
+              </>
+            )}
+
+            {saved[key] && (
+              <button
+                onClick={() => resetSection(key)}
+                disabled={savingSection === key}
+                className="rounded-lg border border-red px-4 py-2 font-mono text-xs uppercase text-red hover:bg-red hover:text-ink disabled:opacity-40"
+              >
+                Retirer le style personnalisé
+              </button>
+            )}
+
             <div>
               <p className="mb-1 font-mono text-[10px] uppercase text-paper/40">Aperçu</p>
-              <SectionPreview section={key} userId={userId} nickname={nickname} css={drafts[key]} />
+              <SectionPreview section={key} userId={userId} nickname={nickname} css={previewCss} />
             </div>
           </section>
         );
