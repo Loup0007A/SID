@@ -13,22 +13,23 @@ import { registerServiceWorker } from "@/lib/push";
 
 const NAV: { href: string; label: string; perm?: PermissionKey[] }[] = [
   { href: "/dashboard", label: "Vue d'ensemble" },
-  { href: "/dashboard/org-chart", label: "Organigramme" },
-  { href: "/dashboard/members", label: "Trombinoscope" },
   { href: "/dashboard/quests", label: "Quêtes" },
   { href: "/dashboard/shop", label: "Boutique" },
+  { href: "/dashboard/profile", label: "Mon dossier" },
+  { href: "/dashboard/chat", label: "Messagerie" },
   { href: "/dashboard/leaderboard", label: "Classement" },
   { href: "/dashboard/map", label: "Carte" },
-  { href: "/dashboard/bank", label: "Banque" },
-  { href: "/dashboard/business", label: "Entreprise", perm: ["entreprise"] },
-  { href: "/dashboard/chat", label: "Messagerie" },
-  { href: "/dashboard/profile", label: "Mon dossier" },
   { href: "/dashboard/admin/applications", label: "Recrutement", perm: ["recruit"] },
   { href: "/dashboard/admin/roles", label: "Rôles & équipes", perm: ["manage_roles", "manage_teams", "manage_users"] },
+  { href: "/dashboard/business", label: "Entreprise", perm: ["entreprise"] },
+  { href: "/dashboard/bank", label: "Banque" },
+  { href: "/dashboard/org-chart", label: "Organigramme" },
+  { href: "/dashboard/members", label: "Trombinoscope" },
   { href: "/dashboard/admin/economy", label: "Économie", perm: ["manage_economy"] },
+  { href: "/dashboard/admin/simulation", label: "Simulation", perm: ["manage_economy"] },
+  { href: "/dashboard/admin/stats", label: "Statistiques", perm: ["manage_users"] },
   { href: "/dashboard/admin/users", label: "Administration", perm: ["manage_users"] },
   { href: "/dashboard/admin/moderation", label: "Modération", perm: ["manage_users"] },
-  { href: "/dashboard/admin/stats", label: "Statistiques", perm: ["manage_users"] },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
