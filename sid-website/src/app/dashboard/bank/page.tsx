@@ -39,6 +39,8 @@ export default function BankPage() {
     tick_minutes: 60,
     default_share_count: 1000,
     min_initial_investment: 500,
+    growth_revenue_threshold_pct: 0.05,
+    growth_share_increase_pct: 0.02,
   });
   const [myShares, setMyShares] = useState<MyShareholding[]>([]);
   const [sellable, setSellable] = useState<Record<string, number>>({});

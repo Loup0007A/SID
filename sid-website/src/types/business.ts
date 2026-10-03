@@ -92,6 +92,10 @@ export interface MarketSettings {
   default_share_count: number;
   /** Mise de départ minimale exigée pour créer une entreprise. */
   min_initial_investment: number;
+  /** Seuil de CA (7j) / capitalisation au-delà duquel une entreprise reçoit de nouvelles actions. */
+  growth_revenue_threshold_pct: number;
+  /** Pourcentage d'actions supplémentaires émises à chaque déclenchement. */
+  growth_share_increase_pct: number;
 }
 
 /** Résultat de sell_business_shares : la vente peut être partielle si la

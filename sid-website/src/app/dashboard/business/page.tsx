@@ -290,6 +290,13 @@ export default function BusinessPage() {
                   </div>
                 </div>
 
+                <p className="border-t border-white/10 pt-3 font-mono text-[10px] text-paper/50">
+                  📈 Le nombre total d&apos;actions peut augmenter tout seul : si le chiffre d&apos;affaires des 7
+                  derniers jours dépasse {((marketSettings?.growth_revenue_threshold_pct ?? 0.05) * 100).toLocaleString("fr-FR")} % de la
+                  capitalisation, l&apos;entreprise émet {((marketSettings?.growth_share_increase_pct ?? 0.02) * 100).toLocaleString("fr-FR")} %
+                  d&apos;actions neuves (ajoutées au stock disponible à l&apos;achat), vérifié une fois par semaine.
+                </p>
+
                 <div className="border-t border-white/10 pt-3">
                   <p className="mb-2 font-mono text-xs uppercase text-paper/60">Fonds propres</p>
                   <div className="flex flex-wrap gap-2">
