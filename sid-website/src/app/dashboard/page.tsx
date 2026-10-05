@@ -57,7 +57,7 @@ export default function DashboardOverview() {
     <div className="space-y-8">
       <div className="glass-card inline-block px-6 py-4">
         <p className="font-mono text-xs uppercase tracking-wide text-paper/60">Solde du dossier</p>
-        <p className="font-display text-4xl text-blue">{wallet ? wallet.balance.toLocaleString("fr-FR") : "…"} Cr.</p>
+        <p className="font-display text-4xl text-blue">{wallet ? wallet.balance.toLocaleString("fr-FR") : "…"} Z</p>
       </div>
 
       <div>

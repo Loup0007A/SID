@@ -29,7 +29,19 @@ export async function middleware(request: NextRequest) {
 
   // Ne jamais ajouter de logique entre createServerClient et getUser() :
   // c'est cet appel qui rafraîchit le token si besoin.
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Le tableau de bord n'était protégé que côté navigateur (un visiteur
+  // non connecté voyait brièvement la page avant d'être renvoyé). On
+  // renvoie maintenant directement vers /login, avant tout affichage.
+  if (!user && request.nextUrl.pathname.startsWith("/dashboard")) {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = "/login";
+    loginUrl.search = "";
+    return NextResponse.redirect(loginUrl);
+  }
 
   return response;
 }

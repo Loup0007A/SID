@@ -56,7 +56,7 @@ export function QuestCard({ quest, participantCount }: { quest: Quest; participa
       )}
 
       <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-paper-dark/70 pt-2 font-mono text-xs">
-        <span className="font-semibold text-blue-dark">{quest.reward.toLocaleString("fr-FR")} Cr.</span>
+        <span className="font-semibold text-blue-dark">{quest.reward.toLocaleString("fr-FR")} Z</span>
         <StatusStamp status={quest.status} />
       </div>
 

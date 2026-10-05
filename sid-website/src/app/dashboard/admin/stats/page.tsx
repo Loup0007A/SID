@@ -58,7 +58,7 @@ export default function AdminStatsPage() {
   if (!stats) return <p className="font-body text-paper/60">Chargement des statistiques…</p>;
 
   const cellCount = cell ? heatmapMap.get(`${cell.dow}-${cell.hour}`) ?? 0 : 0;
-  const money = (n: number) => `${n.toLocaleString("fr-FR")} Cr.`;
+  const money = (n: number) => `${n.toLocaleString("fr-FR")} Z`;
 
   return (
     <div className="space-y-8">

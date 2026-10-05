@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { inputClass, labelClass } from "@/lib/ui";
+import { ResendConfirmation } from "@/components/ResendConfirmation";
 
 
 export default function RegisterPage() {
@@ -79,13 +80,29 @@ export default function RegisterPage() {
   if (success) {
     return (
       <main className="flex min-h-screen items-center justify-center px-4">
-        <div className="glass-card max-w-md space-y-3 p-8 text-center">
+        <div className="glass-card max-w-md space-y-4 p-8 text-center">
           <h1 className="font-display text-2xl uppercase">Dossier transmis</h1>
           <p className="font-body">
             Ta candidature a été envoyée aux officiers recruteurs. Tu recevras une réponse via la
             messagerie une fois ton dossier examiné. Tu peux te connecter dès maintenant pour suivre
             son statut.
           </p>
+
+          <details className="space-y-3 text-left">
+            <summary className="cursor-pointer text-center font-mono text-xs uppercase text-blue underline">
+              Tu n&apos;as pas reçu d&apos;email de confirmation ?
+            </summary>
+            <div className="mt-3">
+              <ResendConfirmation
+                email={form.email}
+                onVerified={() => {
+                  router.push("/dashboard");
+                  router.refresh();
+                }}
+              />
+            </div>
+          </details>
+
           <button
             onClick={() => router.push("/login")}
             className="rounded-lg bg-blue px-5 py-2 font-display uppercase text-ink hover:bg-blue-light"
