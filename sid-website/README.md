@@ -199,7 +199,7 @@ créateur de l'objet.
 ### Salaires récurrents
 
 Un membre avec la permission `manage_economy` peut attribuer à quelqu'un un
-salaire versé automatiquement (montant par défaut : 2500 Cr., fréquence
+salaire versé automatiquement (montant par défaut : 2500 Z, fréquence
 journalière/hebdomadaire/bi-hebdomadaire/mensuelle). Le versement se
 déclenche **à la connexion du membre concerné** (pas de dépendance à un job
 planifié type `pg_cron`, qui n'est pas disponible sur tous les plans
