@@ -22,6 +22,7 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState("");
   const [resetResult, setResetResult] = useState<{ userId: string; password: string } | null>(null);
   const [resettingId, setResettingId] = useState<string | null>(null);
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   async function refresh() {
     const { data, error } = await supabase.rpc("list_all_profiles_for_admin");
@@ -87,6 +88,31 @@ export default function AdminUsersPage() {
     }
   }
 
+  // Pour un membre qui ne reçoit jamais son email de confirmation : le
+  // compte est marqué comme confirmé sans passer par le message.
+  async function confirmEmail(p: Profile) {
+    if (!confirm(`Confirmer manuellement l'email de ${p.nickname} ? Il pourra se connecter sans cliquer sur le lien reçu.`)) return;
+    setConfirmingId(p.id);
+    setMessage(null);
+    try {
+      const res = await fetch("/api/admin/confirm-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: p.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setMessage(`Échec de la confirmation : ${data.error ?? res.statusText}`);
+        return;
+      }
+      setMessage(`Email de ${p.nickname} confirmé.`);
+    } catch (e) {
+      setMessage(`Échec de la confirmation : ${e instanceof Error ? e.message : "erreur réseau"}`);
+    } finally {
+      setConfirmingId(null);
+    }
+  }
+
   if (!canUsers) {
     return <p className="font-body text-paper/60">Tu n&apos;as pas la permission de gérer les comptes.</p>;
   }
@@ -140,6 +166,13 @@ export default function AdminUsersPage() {
                 className="rounded-lg border border-blue px-3 py-1.5 font-mono text-xs uppercase text-blue hover:bg-blue hover:text-ink"
               >
                 {p.is_muted ? "Démute" : "Mute"}
+              </button>
+              <button
+                onClick={() => confirmEmail(p)}
+                disabled={confirmingId === p.id}
+                className="rounded-lg border border-blue px-3 py-1.5 font-mono text-xs uppercase text-blue hover:bg-blue hover:text-ink disabled:opacity-40"
+              >
+                {confirmingId === p.id ? "…" : "Confirmer l'email"}
               </button>
               <button
                 onClick={() => resetPassword(p)}

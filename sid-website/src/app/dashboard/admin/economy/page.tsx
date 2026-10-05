@@ -135,7 +135,7 @@ export default function EconomyAdminPage() {
           <div key={m.id} className="glass-card flex flex-wrap items-center gap-3 p-4">
             <div className="min-w-[10rem]">
               <p className="font-display uppercase">{m.nickname}</p>
-              <p className="font-mono text-xs text-blue">{(wallets.get(m.id)?.balance ?? 0).toLocaleString("fr-FR")} Cr.</p>
+              <p className="font-mono text-xs text-blue">{(wallets.get(m.id)?.balance ?? 0).toLocaleString("fr-FR")} Z</p>
             </div>
             <input
               type="number"
@@ -241,7 +241,7 @@ export default function EconomyAdminPage() {
               <div>
                 <p className="font-display uppercase">{s.nickname}</p>
                 <p className="font-mono text-xs text-paper/60">
-                  {s.amount.toLocaleString("fr-FR")} Cr. · {FREQUENCY_LABELS[s.frequency]} · prochain versement :{" "}
+                  {s.amount.toLocaleString("fr-FR")} Z · {FREQUENCY_LABELS[s.frequency]} · prochain versement :{" "}
                   {new Date(s.next_payment_at).toLocaleString("fr-FR")} · {s.is_active ? "actif" : "suspendu"}
                 </p>
               </div>
@@ -265,7 +265,7 @@ export default function EconomyAdminPage() {
           <div className="glass-card grid grid-cols-2 gap-4 p-4 sm:grid-cols-4">
             <div>
               <p className="font-mono text-[10px] uppercase text-paper/50">Caisse actuelle</p>
-              <p className="font-display text-xl text-blue-light">{taxStatus.balance.toLocaleString("fr-FR")} Cr.</p>
+              <p className="font-display text-xl text-blue-light">{taxStatus.balance.toLocaleString("fr-FR")} Z</p>
             </div>
             <div>
               <p className="font-mono text-[10px] uppercase text-paper/50">TVA</p>

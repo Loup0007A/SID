@@ -10,7 +10,7 @@ type SortKey = "power_score" | "balance" | "reputation" | "quests_completed";
 
 const TABS: { key: SortKey; label: string; unit: string }[] = [
   { key: "power_score", label: "Puissance", unit: "pts" },
-  { key: "balance", label: "Argent", unit: "Cr." },
+  { key: "balance", label: "Argent", unit: "Z" },
   { key: "reputation", label: "Renommée", unit: "pts" },
   { key: "quests_completed", label: "Quêtes accomplies", unit: "" },
 ];
