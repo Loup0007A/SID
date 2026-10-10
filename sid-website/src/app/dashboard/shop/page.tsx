@@ -195,7 +195,7 @@ export default function ShopPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-2xl uppercase tracking-wide text-red">Comptoir du S.I.D.</h1>
-          {wallet && <p className="font-mono text-sm text-blue">Solde : {wallet.balance.toLocaleString("fr-FR")} Z</p>}
+          {wallet && <p className="font-mono text-sm text-blue">Solde : {wallet.balance.toLocaleString("fr-FR")} z</p>}
         </div>
         <div className="flex gap-2">
           {myItems.length > 0 && (
@@ -341,7 +341,7 @@ export default function ShopPage() {
                           </div>
                           <div>
                             <p className="font-display text-lg text-blue-light">{stats.revenue.toLocaleString("fr-FR")}</p>
-                            <p className="font-mono text-[9px] uppercase text-paper/50">Z générés</p>
+                            <p className="font-mono text-[9px] uppercase text-paper/50">z générés</p>
                           </div>
                           <div>
                             <p className="font-display text-lg text-blue-light">{stats.unique_buyers}</p>
@@ -389,8 +389,8 @@ export default function ShopPage() {
                 {item.description && <p className="font-body text-sm text-paper/80">{item.description}</p>}
                 <div className="mt-auto flex items-center justify-between border-t border-white/10 pt-2 font-mono text-sm">
                   <span className="font-semibold text-blue">
-                    {price.toLocaleString("fr-FR")} Z
-                    {onPromo && <span className="ml-2 text-paper/50 line-through">{item.price.toLocaleString("fr-FR")} Z</span>}
+                    {price.toLocaleString("fr-FR")} z
+                    {onPromo && <span className="ml-2 text-paper/50 line-through">{item.price.toLocaleString("fr-FR")} z</span>}
                   </span>
                   <span className="text-paper/60">{item.stock === null ? "Illimité" : `${item.stock} en stock`}</span>
                 </div>

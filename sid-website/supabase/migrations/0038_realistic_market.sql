@@ -506,7 +506,13 @@ $$;
 -- commune avance le manque de trésorerie si besoin, et un ordre trop
 -- gros pour la trésorerie disponible est exécuté PARTIELLEMENT plutôt
 -- que rejeté.
+--
+-- Le type de retour change (void -> jsonb, pour indiquer une vente
+-- partielle) : Postgres refuse de le faire avec un simple "create or
+-- replace", il faut d'abord supprimer l'ancienne version.
 -- ---------------------------------------------------------
+drop function if exists public.sell_business_shares(uuid, int);
+
 create or replace function public.sell_business_shares(p_business_id uuid, p_quantity int)
 returns jsonb
 language plpgsql

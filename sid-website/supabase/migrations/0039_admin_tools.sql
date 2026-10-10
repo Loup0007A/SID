@@ -15,6 +15,14 @@
 --    planifié requis).
 -- =========================================================
 
+-- Colonnes de sanction créées EN PREMIER : les règles de sécurité du chat
+-- et des quêtes (section 2) les utilisent, et Postgres refuse une règle
+-- qui cite une colonne pas encore créée.
+alter table public.profiles add column if not exists mute_until timestamptz;
+alter table public.profiles add column if not exists is_frozen boolean not null default false;
+alter table public.profiles add column if not exists freeze_until timestamptz;
+alter table public.profiles add column if not exists ban_until timestamptz;
+
 -- ---------------------------------------------------------
 -- 1) ANNONCES
 -- ---------------------------------------------------------

@@ -8,7 +8,7 @@ import { LineChart } from "@/components/LineChart";
 import { MaintenanceNotice } from "@/components/MaintenanceNotice";
 import { inputClass, labelClass } from "@/lib/ui";
 
-const cr = (n: number, digits = 2) => `${n.toLocaleString("fr-FR", { maximumFractionDigits: digits })} Z`;
+const cr = (n: number, digits = 2) => `${n.toLocaleString("fr-FR", { maximumFractionDigits: digits })} z`;
 
 function valuation(entry: MarketEntry): { label: string; className: string } {
   const ratio = entry.share_price / Math.max(entry.fair_value, 0.0001);
@@ -151,17 +151,17 @@ export default function BankPage() {
         <div>
           <p className="font-mono text-xs uppercase text-paper/60">Portefeuille</p>
           <p className={`font-display text-3xl ${isInDebt ? "text-red" : "text-blue"}`}>
-            {(wallet?.balance ?? 0).toLocaleString("fr-FR")} Z
+            {(wallet?.balance ?? 0).toLocaleString("fr-FR")} z
           </p>
         </div>
         <div>
           <p className="font-mono text-xs uppercase text-paper/60">Épargne en banque</p>
-          <p className="font-display text-3xl text-blue-light">{(bankAccount?.balance ?? 0).toLocaleString("fr-FR")} Z</p>
+          <p className="font-display text-3xl text-blue-light">{(bankAccount?.balance ?? 0).toLocaleString("fr-FR")} z</p>
         </div>
         {(wallet?.debt_principal ?? 0) > 0 && (
           <div className="sm:col-span-2">
             <p className="font-mono text-xs uppercase text-paper/60">Emprunt en cours</p>
-            <p className="font-display text-xl text-red">{wallet!.debt_principal.toLocaleString("fr-FR")} Z</p>
+            <p className="font-display text-xl text-red">{wallet!.debt_principal.toLocaleString("fr-FR")} z</p>
           </div>
         )}
       </div>
@@ -278,7 +278,7 @@ export default function BankPage() {
           l&apos;entreprise (fonds propres, bénéfices récents, dividendes) — un peu comme un cours qui suit le
           « PIB » de l&apos;entreprise — avec de la volatilité et parfois des actualités qui font sursauter le cours.
           Chaque achat coûte {(settings.fee_rate * 100).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} % de
-          frais (caisse commune) + {settings.admin_fee_per_share.toLocaleString("fr-FR")} Z par action reversés
+          frais (caisse commune) + {settings.admin_fee_per_share.toLocaleString("fr-FR")} z par action reversés
           directement à l&apos;administration. Une action achetée doit être détenue au moins{" "}
           <strong>{settings.min_holding_minutes} min</strong> avant de pouvoir être revendue (anti-spéculation) —
           une entreprise peut toujours racheter au moins une action grâce au filet de liquidité de la caisse commune.
@@ -419,8 +419,8 @@ export default function BankPage() {
                           const r = data as SellResult;
                           setMessage(
                             r.partial
-                              ? `Vente partielle : ${r.sold} / ${r.requested} action(s) vendue(s) (trésorerie de l'entreprise limitée) pour ${r.net_received.toLocaleString("fr-FR")} Z nets.`
-                              : `${r.sold} action(s) vendue(s) pour ${r.net_received.toLocaleString("fr-FR")} Z nets.`
+                              ? `Vente partielle : ${r.sold} / ${r.requested} action(s) vendue(s) (trésorerie de l'entreprise limitée) pour ${r.net_received.toLocaleString("fr-FR")} z nets.`
+                              : `${r.sold} action(s) vendue(s) pour ${r.net_received.toLocaleString("fr-FR")} z nets.`
                           );
                           setTradeQty((t) => ({ ...t, [b.id]: "" }));
                           await refresh();

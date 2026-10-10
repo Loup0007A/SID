@@ -203,10 +203,10 @@ export default function BusinessPage() {
               onChange={(e) => setForm({ ...form, investment: e.target.value })}
             />
             <p className="font-mono text-[10px] text-paper/50">
-              Minimum {minInvestment.toLocaleString("fr-FR")} Z, prélevée sur ton portefeuille — elle devient les
+              Minimum {minInvestment.toLocaleString("fr-FR")} z, prélevée sur ton portefeuille — elle devient les
               fonds propres de départ de l&apos;entreprise. Le nombre d&apos;actions (
               {estimatedShareCount.toLocaleString("fr-FR")}) est fixe : le prix de départ en découle automatiquement
-              {investmentNum > 0 && ` — ≈ ${estimatedPrice.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} Z/action`}
+              {investmentNum > 0 && ` — ≈ ${estimatedPrice.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} z/action`}
               . Le cours évolue ensuite tout seul selon la santé réelle de l&apos;entreprise (trésorerie, bénéfices,
               dividendes) — voir Banque → Bourse.
             </p>
@@ -223,7 +223,7 @@ export default function BusinessPage() {
           {myEmployments.map((e) => (
             <p key={e.business_id} className="font-body text-sm">
               {e.title ? `${e.title} chez ` : "Employé chez "}
-              <strong>{e.business_name}</strong> — {e.salary.toLocaleString("fr-FR")} Z ({FREQUENCY_LABELS[e.frequency]})
+              <strong>{e.business_name}</strong> — {e.salary.toLocaleString("fr-FR")} z ({FREQUENCY_LABELS[e.frequency]})
             </p>
           ))}
         </div>
@@ -268,20 +268,20 @@ export default function BusinessPage() {
                 <div className="grid grid-cols-2 gap-4 border-t border-white/10 pt-3 sm:grid-cols-3">
                   <div>
                     <p className="font-mono text-[10px] uppercase text-paper/50">Trésorerie</p>
-                    <p className="font-display text-xl text-blue">{b.treasury_balance.toLocaleString("fr-FR")} Z</p>
+                    <p className="font-display text-xl text-blue">{b.treasury_balance.toLocaleString("fr-FR")} z</p>
                   </div>
                   <div>
                     <p className="font-mono text-[10px] uppercase text-paper/50">Cours de l&apos;action</p>
-                    <p className="font-display text-xl text-blue-light">{b.share_price.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} Z</p>
+                    <p className="font-display text-xl text-blue-light">{b.share_price.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} z</p>
                   </div>
                   <div>
                     <p className="font-mono text-[10px] uppercase text-paper/50">Valeur estimée</p>
-                    <p className="font-display text-xl text-paper">{(b.share_price * b.share_count).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} Z</p>
+                    <p className="font-display text-xl text-paper">{(b.share_price * b.share_count).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} z</p>
                   </div>
                   {b.debt_principal > 0 && (
                     <div>
                       <p className="font-mono text-[10px] uppercase text-paper/50">Dette</p>
-                      <p className="font-display text-xl text-red">{b.debt_principal.toLocaleString("fr-FR")} Z</p>
+                      <p className="font-display text-xl text-red">{b.debt_principal.toLocaleString("fr-FR")} z</p>
                     </div>
                   )}
                   <div>
@@ -385,7 +385,7 @@ export default function BusinessPage() {
                     {(employees[b.id] ?? []).map((e) => (
                       <div key={e.user_id} className="flex items-center justify-between gap-2 font-mono text-xs">
                         <span>
-                          {e.nickname} {e.title && `— ${e.title}`} · {e.salary.toLocaleString("fr-FR")} Z ({FREQUENCY_LABELS[e.frequency]})
+                          {e.nickname} {e.title && `— ${e.title}`} · {e.salary.toLocaleString("fr-FR")} z ({FREQUENCY_LABELS[e.frequency]})
                         </span>
                         <button onClick={() => fire(b.id, e.user_id)} className="rounded border border-red px-2 py-0.5 uppercase text-red hover:bg-red hover:text-ink">
                           Licencier
@@ -446,7 +446,7 @@ export default function BusinessPage() {
                       <div key={t.id} className="flex items-center justify-between font-mono text-xs">
                         <span className="text-paper/70">{t.reason}</span>
                         <span className={t.amount >= 0 ? "text-blue-light" : "text-red"}>
-                          {t.amount >= 0 ? "+" : ""}{t.amount.toLocaleString("fr-FR")} Z
+                          {t.amount >= 0 ? "+" : ""}{t.amount.toLocaleString("fr-FR")} z
                         </span>
                       </div>
                     ))}
