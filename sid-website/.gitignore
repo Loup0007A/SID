@@ -1,0 +1,15 @@
+# Dossiers et fichiers générés automatiquement : à ne jamais envoyer sur GitHub
+node_modules/
+.next/
+out/
+tsconfig.tsbuildinfo
+next-env.d.ts
+
+# Secrets locaux (clés Supabase, VAPID…) : restent sur ta machine / dans Vercel
+.env
+.env*.local
+
+# Divers
+.DS_Store
+*.log
+.vercel

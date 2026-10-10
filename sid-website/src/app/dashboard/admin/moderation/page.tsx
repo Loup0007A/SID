@@ -297,7 +297,7 @@ export default function ModerationPage() {
                 </p>
                 <p className="font-mono text-xs text-paper/50">
                   {s.reason || "Aucune raison précisée"}
-                  {s.amount != null && ` · ${s.amount.toLocaleString("fr-FR")} Z`}
+                  {s.amount != null && ` · ${s.amount.toLocaleString("fr-FR")} z`}
                   {s.expires_at && ` · jusqu'au ${new Date(s.expires_at).toLocaleString("fr-FR")}`}
                   {s.issued_by_nickname && ` · par ${s.issued_by_nickname}`}
                 </p>
