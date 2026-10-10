@@ -50,5 +50,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: updateError.message }, { status: 500 });
   }
 
+  // Trace dans le journal d'audit. Un échec d'écriture du journal
+  // n'annule pas la confirmation.
+  const { error: auditError } = await supabase.rpc("log_admin_action", { p_action: "email_confirmed", p_target: userId });
+  if (auditError) console.error("Journal d'audit :", auditError.message);
+
   return NextResponse.json({ ok: true });
 }

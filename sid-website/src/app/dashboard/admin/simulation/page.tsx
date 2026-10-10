@@ -150,7 +150,7 @@ export default function SimulationPage() {
               <StatCard label="Âge moyen" value={`${stats.avg_age} ans`} />
               <StatCard label="Couples" value={stats.couples} />
               <StatCard label="Naissances" value={stats.children_born} />
-              <StatCard label="Argent en circulation" value={`${Math.round(stats.total_balance).toLocaleString("fr-FR")} Z`} />
+              <StatCard label="Argent en circulation" value={`${Math.round(stats.total_balance).toLocaleString("fr-FR")} z`} />
               <StatCard label="Dernier jour traité" value={stats.last_processed_day ? new Date(stats.last_processed_day).toLocaleDateString("fr-FR") : "—"} />
             </div>
           )}
@@ -206,8 +206,8 @@ export default function SimulationPage() {
                     <td className="p-2">
                       <span style={{ color: WEALTH_CLASS_COLOR[a.wealth_class] }}>{WEALTH_CLASS_LABELS[a.wealth_class]}</span>
                     </td>
-                    <td className="p-2">{a.weekly_salary.toLocaleString("fr-FR")} Z</td>
-                    <td className="p-2 text-blue-light">{Math.round(a.balance).toLocaleString("fr-FR")} Z</td>
+                    <td className="p-2">{a.weekly_salary.toLocaleString("fr-FR")} z</td>
+                    <td className="p-2 text-blue-light">{Math.round(a.balance).toLocaleString("fr-FR")} z</td>
                     <td className="p-2">{MOOD_LABELS[a.mood]}</td>
                     <td className="p-2">{a.luck}</td>
                     <td className="p-2">{a.ambition}</td>

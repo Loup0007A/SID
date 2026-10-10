@@ -62,5 +62,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: updateError.message }, { status: 500 });
   }
 
+  // Trace dans le journal d'audit (qui a réinitialisé le mot de passe de
+  // qui). Un échec d'écriture du journal n'annule pas la réinitialisation.
+  const { error: auditError } = await supabase.rpc("log_admin_action", { p_action: "password_reset", p_target: userId });
+  if (auditError) console.error("Journal d'audit :", auditError.message);
+
   return NextResponse.json({ tempPassword });
 }
