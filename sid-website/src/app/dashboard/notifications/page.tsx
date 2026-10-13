@@ -15,6 +15,7 @@ const TYPE_ICON: Record<string, string> = {
   travel_arrived: "🧭",
   salary_paid: "💰",
   money_received: "🤑",
+  raid_call: "⚔️",
 };
 
 export default function NotificationsPage() {
