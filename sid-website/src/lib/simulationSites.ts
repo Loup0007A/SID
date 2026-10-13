@@ -72,7 +72,7 @@ export const SIMULATION_SITES: Record<SimulationKind, SimulationSite> = {
     kind: "donjons",
     label: "Donjons",
     factor: "strength",
-    description: "Explore les donjons pour gagner en puissance.",
+    description: "Explore les donjons pour gagner en puissance : chaque île (chapitre) terminée compte comme une simulation réussie.",
     emoji: "🏰",
     repo: "Loup0007A/3D-game-world",
     url: "https://loup0007a.github.io/3D-game-world/",
@@ -157,15 +157,21 @@ export function interpretSiteReport(
   // ni perdue, la partie reste ouverte.
   if (statut === "invalide") return { action: "ignore", reason: "tentative annulée" };
 
-  if (runStartedAt !== null && report.debut !== undefined && report.debut !== null && report.debut !== "") {
+  const reussi = report.reussi === 1 || report.reussi === "1" || report.reussi === true;
+  const success = statut === "reussi" || reussi;
+
+  // Seuls les ÉCHECS d'une vieille tentative sont écartés (un site peut
+  // signaler au rechargement une tentative laissée en plan). Une réussite
+  // compte toujours : elle n'est envoyée qu'au moment où elle a lieu, même
+  // si la tentative avait commencé longtemps avant (partie reprise).
+  if (!success && runStartedAt !== null && report.debut !== undefined && report.debut !== null && report.debut !== "") {
     const debut = typeof report.debut === "number" ? report.debut : Date.parse(String(report.debut));
     if (Number.isFinite(debut) && debut < runStartedAt - STALE_ATTEMPT_MS) {
       return { action: "ignore", reason: "tentative commencée avant la partie" };
     }
   }
 
-  const reussi = report.reussi === 1 || report.reussi === "1" || report.reussi === true;
-  return { action: "record", success: statut === "reussi" || reussi };
+  return { action: "record", success };
 }
 
 /** La simulation à laquelle appartient une épreuve envoyée par un site. */
