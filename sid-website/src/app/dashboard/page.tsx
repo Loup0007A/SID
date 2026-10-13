@@ -9,6 +9,7 @@ import { QuestCard } from "@/components/QuestCard";
 import { NavIcon } from "@/components/NavIcon";
 import { NAV_GROUPS, visibleEntries } from "@/lib/navigation";
 import { ConstructionTape } from "@/components/ConstructionTape";
+import { useSuspendedSections } from "@/lib/maintenance";
 import { MemberStatBars } from "@/components/MemberStatBars";
 import type { SimulationOverview } from "@/types/simulationRuns";
 
@@ -54,6 +55,7 @@ export default function DashboardHome() {
   }, []);
 
   const entries = visibleEntries((...anyOf) => can(permissions, ...anyOf));
+  const suspended = useSuspendedSections();
 
   return (
     <div className="space-y-10">
@@ -82,7 +84,13 @@ export default function DashboardHome() {
                   key={e.key}
                   href={e.href}
                   scroll={false}
-                  aria-label={e.wip ? `${e.label} (en développement)` : undefined}
+                  aria-label={
+                    e.section && suspended[e.section]
+                      ? `${e.label} (service suspendu)`
+                      : e.wip
+                        ? `${e.label} (en développement)`
+                        : undefined
+                  }
                   className="glass-card group relative flex flex-col items-center gap-2 overflow-hidden px-3 py-5 text-center transition hover:-translate-y-1 hover:border-blue/50 focus-visible:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue"
                 >
                   <span className="flex h-16 w-16 items-center justify-center transition group-hover:scale-110">
@@ -90,7 +98,11 @@ export default function DashboardHome() {
                   </span>
                   <span className="font-display uppercase tracking-wide">{e.label}</span>
                   <span className="hidden font-body text-xs leading-snug text-paper/60 sm:block">{e.description}</span>
-                  {e.wip && <ConstructionTape />}
+                  {e.section && suspended[e.section] ? (
+                    <ConstructionTape label="Service suspendu" />
+                  ) : (
+                    e.wip && <ConstructionTape />
+                  )}
                 </Link>
               ))}
               {group.key === "entrainement" && training && (

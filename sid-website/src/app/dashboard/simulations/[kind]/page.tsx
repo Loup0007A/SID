@@ -21,6 +21,7 @@ import {
 import type { SimulationOverview, SimulationResultResponse, SimulationRunStatus } from "@/types/simulationRuns";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { connectRaid, sendRaidEvent, type ActiveRaid, type BossRaid } from "@/lib/bossRaids";
+import { BloodLockout } from "@/components/BloodLockout";
 
 const RUN_STATUS_LABELS: Record<SimulationRunStatus, string> = {
   started: "En cours",
@@ -155,6 +156,23 @@ export default function SimulationPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [me, postToGame, leaveRaidChannel]
   );
+
+  // Donjons niveau 50+ : le jeu signale la perte d'un membre. La simulation
+  // se ferme (après quelques secondes pour laisser voir l'écran du jeu).
+  const handleInjury = useCallback(async () => {
+    const { data, error } = await supabase.rpc("injure_member", { p_kind: "donjons" });
+    if (error) return;
+    postToGame({ type: "sid-injury", until: data });
+    leaveRaidChannel();
+    setTimeout(() => {
+      setFullscreen(null);
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+      setSession(null);
+      setNotice(null);
+      void refresh();
+    }, 4000);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [postToGame, leaveRaidChannel, refresh]);
 
   // Messages « mv-raid » du jeu 3D.
   const handleRaidMessage = useCallback(
@@ -328,6 +346,10 @@ export default function SimulationPage() {
         void handleRaidMessage(d);
         return;
       }
+      if (d.type === "mv-injury" && site.kind === "donjons") {
+        void handleInjury();
+        return;
+      }
       if (d.type === SITE_RESULT_MESSAGE_TYPE) {
         const verdict = interpretSiteReport(site, d, current.startedAt);
         if (verdict.action === "record") void submitResult(verdict.success, undefined, String(d.epreuve));
@@ -344,7 +366,7 @@ export default function SimulationPage() {
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [Boolean(session), origin, submitResult, handleRaidMessage]);
+  }, [Boolean(session), origin, submitResult, handleRaidMessage, handleInjury]);
 
   async function start(extraParams?: Record<string, string>) {
     if (!site) return;
@@ -429,7 +451,11 @@ export default function SimulationPage() {
   const doneToday = overview?.results_today?.[site.kind] ?? 0;
   const maxPerDay = overview?.max_results_per_day ?? 0;
   const limitReached = overview ? doneToday >= maxPerDay : false;
-  const disabledReason = !site.url
+  const injuredUntil = overview?.injuries?.[site.kind];
+  const injured = injuredUntil ? new Date(injuredUntil).getTime() > Date.now() : false;
+  const disabledReason = injured
+    ? "Perte temporaire d'un membre : la simulation est fermée."
+    : !site.url
     ? "Le site de cette simulation n'est pas encore branché au S.I.D."
     : overview && !overview.enabled
       ? "Les simulations sont temporairement fermées par l'administration."
@@ -546,6 +572,8 @@ export default function SimulationPage() {
                 )}
               </div>
             </>
+          ) : injured && injuredUntil ? (
+            <BloodLockout until={injuredUntil} onHealed={refresh} />
           ) : (
             <div className="space-y-3">
               <p className="font-body text-paper/80">
@@ -648,7 +676,7 @@ export default function SimulationPage() {
                     {!mine && (
                       <button
                         onClick={() => joinRaid(r)}
-                        disabled={!site.url || raidRef.current?.id === r.id}
+                        disabled={!site.url || injured || raidRef.current?.id === r.id}
                         className="rounded-lg bg-red px-4 py-1.5 font-mono text-xs uppercase text-ink hover:bg-red-light disabled:opacity-40"
                       >
                         Rejoindre

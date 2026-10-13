@@ -12,6 +12,10 @@ export interface SimulationOverview {
   skills: Partial<Record<SkillKey, number>>;
   /** Objets « réinitialisation des délais » possédés. */
   cooldown_resets: number;
+  /** Perte temporaire d'un membre : simulation fermée jusqu'à cette date (migration 0054). */
+  injuries?: Partial<Record<SimulationKind, string>>;
+  /** Points disponibles pour l'arbre technologique. */
+  tech_points?: number;
   max_results_per_day: number;
   min_seconds: number;
   enabled: boolean;

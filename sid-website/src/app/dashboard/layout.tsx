@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { loadCurrentUser } from "@/lib/permissions";
+import { loadCurrentUser, can } from "@/lib/permissions";
 import type { Profile } from "@/types/database";
 import { NotificationBell } from "@/components/NotificationBell";
 import { SettingsButton } from "@/components/SettingsButton";
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import { ScrollMemory } from "@/components/ScrollMemory";
 import { entryForPath } from "@/lib/navigation";
+import { SectionGate } from "@/components/SectionGate";
 import { registerServiceWorker } from "@/lib/push";
 
 /** Titre affiché dans la barre du haut pour la page en cours. */
@@ -27,6 +28,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isStaff, setIsStaff] = useState(false);
 
   useEffect(() => {
     // Enregistre le service worker dès l'arrivée sur le dashboard (pas
@@ -44,8 +46,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         return;
       }
 
-      const { profile } = await loadCurrentUser();
+      const { profile, permissions } = await loadCurrentUser();
       setProfile(profile);
+      setIsStaff(can(permissions, "manage_users"));
       setLoading(false);
 
       // Traite l'économie du jour pour TOUT LE MONDE (pas seulement soi) :
@@ -172,7 +175,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl p-4 sm:p-6">{children}</main>
+      <main className="mx-auto max-w-6xl p-4 sm:p-6">
+        <SectionGate section={entryForPath(pathname)?.section} bypass={isStaff}>
+          {children}
+        </SectionGate>
+      </main>
     </div>
   );
 }

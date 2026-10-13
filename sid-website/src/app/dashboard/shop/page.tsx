@@ -270,9 +270,9 @@ export default function ShopPage() {
               <p className="font-mono text-[10px] text-paper/50">Si rattaché, le produit des ventes ira dans la trésorerie de l&apos;entreprise plutôt que ton portefeuille.</p>
             </div>
           )}
-          {canManage && (
+          {can(permissions, "manage_economy") && (
             <div className="space-y-1 sm:col-span-2">
-              <label className={labelClass}>Effet de l&apos;objet</label>
+              <label className={labelClass}>Effet de l&apos;objet (réservé aux admins)</label>
               <select className={inputClass} value={form.effect} onChange={(e) => setForm({ ...form, effect: e.target.value as "" | ShopItemEffect })}>
                 <option value="">Aucun (objet simple)</option>
                 {(Object.keys(SHOP_EFFECT_LABELS) as ShopItemEffect[]).map((k) => (
