@@ -28,6 +28,7 @@ page : `src/lib/navigation.ts`.
 | `donjons.png` | Donjons (`/dashboard/simulations/donjons`) | Entraînement | 🏰 |
 | `intelligence.png` | Intelligence (`/dashboard/simulations/intelligence`) | Entraînement | 🧪 |
 | `techniques.png` | Techniques (`/dashboard/simulations/techniques`) | Entraînement | 🥋 |
+| `tech.png` | Arbre technologique (`/dashboard/tech`) | Entraînement | 🌳 |
 | `shop.png` | Boutique (`/dashboard/shop`) | Économie | 🛒 |
 | `bank.png` | Banque (`/dashboard/bank`) | Économie | 🏦 |
 | `business.png` | Entreprise (`/dashboard/business`) | Économie | 🏢 |
