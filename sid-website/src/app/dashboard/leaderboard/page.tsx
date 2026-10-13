@@ -77,7 +77,7 @@ export default function LeaderboardPage() {
               <span className="block font-display uppercase">{e.nickname}</span>
               {sortKey === "power_score" && e.intelligence !== undefined && (
                 <span className="block font-mono text-[10px] uppercase tracking-wide text-paper/50">
-                  Int. {e.intelligence} · Pui. {e.strength ?? 0} · Tech. {e.technique ?? 0}
+                  Int. {formatPower(Number(e.intelligence))} · Pui. {formatPower(Number(e.strength ?? 0))} · Tech. {formatPower(Number(e.technique ?? 0))}
                 </span>
               )}
             </span>

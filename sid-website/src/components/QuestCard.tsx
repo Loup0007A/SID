@@ -2,6 +2,7 @@ import type { Quest } from "@/types/database";
 import { DifficultyBadge } from "./DifficultyBadge";
 import { StatusStamp } from "./StatusStamp";
 import { contractTypeInfo } from "@/lib/contractTypes";
+import { formatStat, questRequirements } from "@/lib/questRequirements";
 
 function formatDeadline(deadline: string | null) {
   if (!deadline) return null;
@@ -33,6 +34,7 @@ export function QuestCard({ quest, participantCount }: { quest: Quest; participa
     quest.deadline && new Date(quest.deadline).getTime() - Date.now() < 3 * 24 * 3600 * 1000;
   const isFull = quest.max_participants != null && (participantCount ?? 0) >= quest.max_participants;
   const type = contractTypeInfo(quest.contract_type);
+  const requirements = questRequirements(quest);
 
   return (
     <div
@@ -63,6 +65,12 @@ export function QuestCard({ quest, participantCount }: { quest: Quest; participa
       {quest.max_participants != null && participantCount !== undefined && (
         <div className={isFull ? "font-mono text-xs font-bold text-red-dark" : "font-mono text-xs text-paper-text/70"}>
           Places : {participantCount} / {quest.max_participants}
+        </div>
+      )}
+
+      {requirements.length > 0 && (
+        <div className="font-mono text-xs text-paper-text/70">
+          Prérequis : {requirements.map((r) => `${r.label} ${formatStat(r.min)}`).join(" · ")}
         </div>
       )}
 

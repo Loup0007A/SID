@@ -11,6 +11,8 @@ import {
   RESULT_MESSAGE_TYPE,
   SIMULATION_SITES,
   SITE_RESULT_MESSAGE_TYPE,
+  SKILLS,
+  SKILL_LABELS,
   STAT_LABELS,
   interpretSiteReport,
   isSimulationKind,
@@ -63,6 +65,7 @@ export default function SimulationPage() {
   const [session, setSession] = useState<Session | null>(null);
   const [starting, setStarting] = useState(false);
   const [notice, setNotice] = useState<Notice | null>(null);
+  const [usingReset, setUsingReset] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const frameBoxRef = useRef<HTMLDivElement>(null);
   // Plein écran : « native » = API du navigateur ; « css » = repli quand
@@ -147,7 +150,7 @@ export default function SimulationPage() {
   // Enregistre le résultat de la partie en cours, puis en ouvre une nouvelle
   // pour que la prochaine tentative dans la même iframe compte aussi.
   const submitResult = useCallback(
-    async (success: boolean, signature?: string) => {
+    async (success: boolean, signature?: string, epreuve?: string) => {
       const current = sessionRef.current;
       if (!site || !current?.token || submitting.current) return;
       submitting.current = true;
@@ -159,7 +162,7 @@ export default function SimulationPage() {
         const res = await fetch("/api/simulations/result", {
           method: "POST",
           headers: { "Content-Type": "application/json", ...(signature ? { "X-SID-Signature": signature } : {}) },
-          body: JSON.stringify({ token, success }),
+          body: JSON.stringify({ token, success, epreuve }),
         });
         const data = (await res.json()) as SimulationResultResponse;
         if (data.result === "already_completed") {
@@ -220,11 +223,15 @@ export default function SimulationPage() {
 
       if (d.type === SITE_RESULT_MESSAGE_TYPE) {
         const verdict = interpretSiteReport(site, d, current.startedAt);
-        if (verdict.action === "record") void submitResult(verdict.success);
+        if (verdict.action === "record") void submitResult(verdict.success, undefined, String(d.epreuve));
         return;
       }
       if (d.type === RESULT_MESSAGE_TYPE && typeof d.success === "boolean" && current.issued.includes(String(d.token))) {
-        void submitResult(d.success, typeof d.signature === "string" ? d.signature : undefined);
+        void submitResult(
+          d.success,
+          typeof d.signature === "string" ? d.signature : undefined,
+          typeof d.epreuve === "string" ? d.epreuve : undefined
+        );
       }
     }
     window.addEventListener("message", onMessage);
@@ -245,6 +252,31 @@ export default function SimulationPage() {
     setSession({ token: run.token, iframeUrl: run.iframeUrl, startedAt: Date.now(), issued: [run.token] });
   }
 
+  // Objet « réinitialisation des délais » : efface les délais d'attente de
+  // toutes les compétences. Les sites les retirent à leur prochaine ouverture
+  // depuis le S.I.D. : on relance donc la simulation ouverte.
+  async function applyCooldownReset() {
+    if (!confirm("Utiliser un objet pour réinitialiser les délais d'attente de toutes les compétences ?")) return;
+    setUsingReset(true);
+    const { data, error } = await supabase.rpc("use_cooldown_reset");
+    setUsingReset(false);
+    if (error) {
+      setNotice({ tone: "bad", text: error.message });
+      return;
+    }
+    const cleared = Number((data as { cleared?: number } | null)?.cleared ?? 0);
+    await refresh();
+    const text = cleared
+      ? `Délais réinitialisés (${cleared}). Ils disparaissent des simulations à leur prochaine ouverture depuis le S.I.D.`
+      : "Objet utilisé, mais aucun délai d'attente n'était enregistré.";
+    if (sessionRef.current) {
+      await start();
+      setNotice({ tone: "good", text: `${text} La simulation a été relancée.` });
+    } else {
+      setNotice({ tone: "good", text });
+    }
+  }
+
   if (!site) {
     return (
       <div className="glass-card space-y-3 p-6 text-center">
@@ -257,6 +289,8 @@ export default function SimulationPage() {
   }
 
   const factorLabel = STAT_LABELS[site.factor];
+  const siteSkills = SKILLS.filter((sk) => sk.kind === site.kind);
+  const resets = overview?.cooldown_resets ?? 0;
   const doneToday = overview?.results_today?.[site.kind] ?? 0;
   const maxPerDay = overview?.max_results_per_day ?? 0;
   const limitReached = overview ? doneToday >= maxPerDay : false;
@@ -284,7 +318,17 @@ export default function SimulationPage() {
         <div>
           <h1 className="font-display text-3xl uppercase tracking-wide text-red">{site.label}</h1>
           <p className="font-body text-paper/70">
-            {site.description} Une simulation réussie rapporte <strong>+1 {factorLabel}</strong> (100 maximum).
+            {site.description}{" "}
+            {siteSkills.length > 1 ? (
+              <>
+                Chaque épreuve réussie rapporte <strong>+1</strong> dans sa compétence (100 maximum) ; l&apos;
+                {factorLabel.toLowerCase()} est la moyenne des {siteSkills.length} compétences.
+              </>
+            ) : (
+              <>
+                Une simulation réussie rapporte <strong>+1 {factorLabel}</strong> (100 maximum).
+              </>
+            )}
           </p>
         </div>
       </div>
@@ -388,12 +432,39 @@ export default function SimulationPage() {
                 power={overview.power}
                 highlight={site.factor}
               />
+              {siteSkills.length > 1 && (
+                <div className="space-y-1 border-t border-white/10 pt-3">
+                  <p className="font-mono text-[10px] uppercase tracking-wide text-paper/60">
+                    Compétences ({factorLabel} = moyenne)
+                  </p>
+                  {siteSkills.map((sk) => (
+                    <p key={sk.key} className="flex justify-between font-mono text-xs">
+                      <span>{sk.label}</span>
+                      <span className="text-paper/70">{overview.skills?.[sk.key] ?? 0} / 100</span>
+                    </p>
+                  ))}
+                </div>
+              )}
               <p className="border-t border-white/10 pt-3 font-mono text-xs text-paper/60">
                 Résultats comptés aujourd&apos;hui :{" "}
                 <span className="whitespace-nowrap text-paper">
                   {doneToday} / {maxPerDay}
                 </span>
               </p>
+              {resets > 0 && (
+                <div className="space-y-2 border-t border-white/10 pt-3">
+                  <p className="font-mono text-xs text-paper/60">
+                    ⏳ Réinitialisations des délais : <span className="text-paper">{resets}</span>
+                  </p>
+                  <button
+                    onClick={applyCooldownReset}
+                    disabled={usingReset}
+                    className="w-full rounded-lg border border-blue py-1.5 font-mono text-xs uppercase text-blue hover:bg-blue hover:text-ink disabled:opacity-40"
+                  >
+                    {usingReset ? "…" : "Utiliser (toutes les compétences)"}
+                  </button>
+                </div>
+              )}
             </>
           ) : (
             <p className="font-body text-sm text-paper/60">
@@ -417,6 +488,7 @@ export default function SimulationPage() {
                     (r.status === "abandoned" || r.status === "expired") && "text-paper/50"
                   )}
                 >
+                  {r.skill && siteSkills.length > 1 && `${SKILL_LABELS[r.skill] ?? r.skill} · `}
                   {RUN_STATUS_LABELS[r.status]}
                   {r.status === "success" && ` (+${r.points_awarded})`}
                 </span>

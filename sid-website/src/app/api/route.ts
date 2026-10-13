@@ -75,6 +75,7 @@ export async function GET(request: NextRequest) {
     token,
     success: verdict.success,
     signature: q.get("sid_sig"),
+    epreuve: q.get("epreuve"),
     expectedKind: site.kind,
     run,
   });

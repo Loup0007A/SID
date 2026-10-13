@@ -1,6 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { SIMULATION_SITES, STAT_LABELS, isSimulationKind, type SimulationKind, type StatKey } from "@/lib/simulationSites";
+import { SIMULATION_SITES, SKILL_LABELS, STAT_LABELS, isSimulationKind, isSkillKey, type SimulationKind, type StatKey } from "@/lib/simulationSites";
 import { hashRunToken, verifySignature } from "@/lib/simulationServer";
 
 /**
@@ -13,9 +13,11 @@ import { hashRunToken, verifySignature } from "@/lib/simulationServer";
  */
 
 type CompleteResult = {
-  result: "ok" | "not_found" | "already_completed" | "expired" | "too_fast" | "daily_limit";
+  result: "ok" | "not_found" | "already_completed" | "expired" | "too_fast" | "daily_limit" | "invalid_epreuve";
   status?: string;
   factor?: StatKey;
+  skill?: string;
+  skill_value?: number;
   points_awarded?: number;
   value?: number;
   power?: number;
@@ -30,16 +32,25 @@ const HTTP_STATUS: Record<CompleteResult["result"], number> = {
   expired: 410,
   too_fast: 425,
   daily_limit: 429,
+  invalid_epreuve: 400,
 };
+
+function fmt(n: number | undefined): string {
+  return Number(n ?? 0).toLocaleString("fr-FR", { maximumFractionDigits: 1 });
+}
 
 function messageFor(r: CompleteResult): string {
   switch (r.result) {
     case "ok": {
       const label = r.factor ? STAT_LABELS[r.factor] : "le facteur";
+      const skill = isSkillKey(r.skill) ? SKILL_LABELS[r.skill] : label;
       if (r.status === "failure") return "Simulation échouée : aucun point cette fois.";
-      if (!r.points_awarded) return `Simulation réussie, mais ${label} est déjà au maximum (100).`;
-      return `Simulation réussie : +1 ${label} (${r.value}/100).`;
+      if (!r.points_awarded) return `Simulation réussie, mais ${skill} est déjà au maximum (100).`;
+      if (r.factor === "intelligence" && skill !== label) return `Simulation réussie : +1 en ${skill} (${r.skill_value}/100) — ${label} ${fmt(r.value)}/100.`;
+      return `Simulation réussie : +1 ${label} (${fmt(r.value)}/100).`;
     }
+    case "invalid_epreuve":
+      return "Épreuve manquante ou inconnue : précise laquelle a été jouée (potions, enigmes ou probleme).";
     case "not_found":
       return "Partie inconnue.";
     case "already_completed":
@@ -75,6 +86,8 @@ export async function recordSimulationResult(opts: {
   token: string;
   success: boolean;
   signature: string | null;
+  /** Épreuve jouée (obligatoire pour l'Intelligence : potions, enigmes ou probleme). */
+  epreuve?: string | null;
   /** Si renseigné : refuse le résultat s'il ne relève pas de cette simulation. */
   expectedKind?: SimulationKind;
   /** Partie déjà lue par l'appelant (évite une seconde lecture). */
@@ -121,6 +134,7 @@ export async function recordSimulationResult(opts: {
   const { data, error } = await admin.rpc("complete_simulation_run", {
     p_token_hash: hashRunToken(opts.token),
     p_success: opts.success,
+    p_epreuve: opts.epreuve ?? null,
   });
   if (error || !data) {
     return { status: 500, body: { ok: false, error: "server_error", message: "Erreur du serveur." } };

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { loadCurrentUser, can } from "@/lib/permissions";
-import type { ShopItem, PermissionKey, Wallet } from "@/types/database";
+import { SHOP_EFFECT_LABELS, type ShopItem, type ShopItemEffect, type PermissionKey, type Wallet } from "@/types/database";
 import type { ShopItemStats } from "@/types/stats";
 import type { Business } from "@/types/business";
 import { inputClass, labelClass } from "@/lib/ui";
@@ -24,7 +24,7 @@ export default function ShopPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [showMine, setShowMine] = useState(false);
-  const [form, setForm] = useState({ name: "", description: "", price: "0", stock: "", visibility: "members" as "public" | "members", businessId: "" });
+  const [form, setForm] = useState({ name: "", description: "", price: "0", stock: "", visibility: "members" as "public" | "members", businessId: "", effect: "" as "" | ShopItemEffect });
   const [myBusinesses, setMyBusinesses] = useState<Business[]>([]);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [edits, setEdits] = useState<Record<string, Partial<ShopItem>>>({});
@@ -41,6 +41,7 @@ export default function ShopPage() {
       .from("shop_items")
       .select("*")
       .eq("is_active", true)
+      .is("hidden_at", null)
       .or("stock.is.null,stock.gt.0")
       .order("created_at", { ascending: false });
     setItems(data ?? []);
@@ -48,7 +49,8 @@ export default function ShopPage() {
 
   async function refreshMine() {
     const { data } = await supabase.rpc("list_my_shop_items");
-    setMyItems((data ?? []) as ShopItem[]);
+    // Les objets supprimés par leur vendeur disparaissent aussi de sa liste.
+    setMyItems(((data ?? []) as ShopItem[]).filter((i) => !i.hidden_at));
   }
 
   useEffect(() => {
@@ -95,6 +97,7 @@ export default function ShopPage() {
         stock: form.stock ? Number(form.stock) : null,
         visibility: form.visibility,
         business_id: form.businessId || null,
+        effect: form.effect || null,
         created_by: userId,
       })
       .select()
@@ -118,7 +121,7 @@ export default function ShopPage() {
     }
 
     setShowForm(false);
-    setForm({ name: "", description: "", price: "0", stock: "", visibility: "members", businessId: "" });
+    setForm({ name: "", description: "", price: "0", stock: "", visibility: "members", businessId: "", effect: "" });
     setImageFile(null);
     refresh();
     refreshMine();
@@ -134,6 +137,23 @@ export default function ShopPage() {
       setMessage(`Impossible de retirer l'objet : ${error.message}`);
       return;
     }
+    refresh();
+    refreshMine();
+  }
+
+  // Suppression par le vendeur : l'objet disparaît de la vitrine et de sa
+  // liste, mais reste en base pour l'historique des achats.
+  async function hideItem(item: ShopItem) {
+    if (!confirm(`Supprimer « ${item.name} » ? Il disparaîtra de la vitrine et de ta liste (les achats déjà faits restent).`)) return;
+    const { error } = await supabase
+      .from("shop_items")
+      .update({ is_active: false, hidden_at: new Date().toISOString() })
+      .eq("id", item.id);
+    if (error) {
+      setMessage(`Impossible de supprimer l'objet : ${error.message}`);
+      return;
+    }
+    setMessage(`« ${item.name} » a été supprimé.`);
     refresh();
     refreshMine();
   }
@@ -250,6 +270,21 @@ export default function ShopPage() {
               <p className="font-mono text-[10px] text-paper/50">Si rattaché, le produit des ventes ira dans la trésorerie de l&apos;entreprise plutôt que ton portefeuille.</p>
             </div>
           )}
+          {canManage && (
+            <div className="space-y-1 sm:col-span-2">
+              <label className={labelClass}>Effet de l&apos;objet</label>
+              <select className={inputClass} value={form.effect} onChange={(e) => setForm({ ...form, effect: e.target.value as "" | ShopItemEffect })}>
+                <option value="">Aucun (objet simple)</option>
+                {(Object.keys(SHOP_EFFECT_LABELS) as ShopItemEffect[]).map((k) => (
+                  <option key={k} value={k}>{SHOP_EFFECT_LABELS[k]}</option>
+                ))}
+              </select>
+              <p className="font-mono text-[10px] text-paper/50">
+                Chaque exemplaire acheté s&apos;utilise une fois, depuis la page d&apos;une simulation : il efface les délais
+                d&apos;attente des trois simulations (toutes leurs épreuves).
+              </p>
+            </div>
+          )}
           <div className="space-y-1 sm:col-span-2">
             <label className={labelClass}>Image</label>
             <input
@@ -320,6 +355,12 @@ export default function ShopPage() {
                     {item.is_active ? "Retirer de la vente" : "Remettre en vente"}
                   </button>
                 </div>
+                <button
+                  onClick={() => hideItem(item)}
+                  className="rounded-lg w-full border border-red/50 py-1 font-mono text-xs uppercase text-red/80 hover:bg-red hover:text-ink"
+                >
+                  🗑 Supprimer
+                </button>
 
                 <button
                   onClick={() => toggleStats(item.id)}
@@ -386,6 +427,11 @@ export default function ShopPage() {
                   <img src={item.image_url} alt={item.name} className="-mx-4 -mt-4 h-36 w-[calc(100%+2rem)] object-cover" />
                 )}
                 <h3 className="font-display text-lg uppercase">{item.name}</h3>
+                {item.effect && (
+                  <p className="rounded border border-blue/40 bg-blue/10 px-2 py-1 font-mono text-[10px] uppercase text-blue-light">
+                    ⏳ {SHOP_EFFECT_LABELS[item.effect]}
+                  </p>
+                )}
                 {item.description && <p className="font-body text-sm text-paper/80">{item.description}</p>}
                 <div className="mt-auto flex items-center justify-between border-t border-white/10 pt-2 font-mono text-sm">
                   <span className="font-semibold text-blue">
@@ -401,7 +447,15 @@ export default function ShopPage() {
                 >
                   Acheter
                 </button>
-                {canManage && (
+                {item.created_by === userId && (
+                  <button
+                    onClick={() => hideItem(item)}
+                    className="rounded-lg border border-red/50 py-1 font-mono text-xs uppercase text-red/80 hover:bg-red hover:text-ink"
+                  >
+                    🗑 Supprimer mon objet
+                  </button>
+                )}
+                {canManage && item.created_by !== userId && (
                   <button
                     onClick={() => deleteItem(item.id)}
                     className="rounded-lg border border-red/50 py-1 font-mono text-xs uppercase text-red hover:bg-red hover:text-ink"
