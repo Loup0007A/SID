@@ -10,7 +10,9 @@ import { MemberStatBars } from "@/components/MemberStatBars";
 import {
   RESULT_MESSAGE_TYPE,
   SIMULATION_SITES,
+  SITE_RESULT_MESSAGE_TYPE,
   STAT_LABELS,
+  interpretSiteReport,
   isSimulationKind,
   siteOrigin,
 } from "@/lib/simulationSites";
@@ -24,7 +26,32 @@ const RUN_STATUS_LABELS: Record<SimulationRunStatus, string> = {
   expired: "Expirée",
 };
 
-type Session = { token: string; iframeUrl: string };
+/**
+ * Une session = l'iframe ouverte. Elle peut enchaîner plusieurs parties :
+ * après chaque résultat, une nouvelle partie est ouverte automatiquement
+ * (nouveau jeton) pour que le niveau suivant compte aussi.
+ *  - token     : jeton de la partie qui comptera le prochain résultat (null = plus rien ne compte aujourd'hui)
+ *  - startedAt : début de cette partie (horloge de l'appareil, comme celle du site dans l'iframe)
+ *  - issued    : tous les jetons donnés à cette iframe
+ */
+type Session = { token: string | null; iframeUrl: string; startedAt: number; issued: string[] };
+
+type Notice = { tone: "good" | "bad" | "info"; text: string };
+
+async function requestRun(kind: string): Promise<{ ok: true; token: string; iframeUrl: string } | { ok: false; error: string }> {
+  try {
+    const res = await fetch("/api/simulations/start", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ kind }),
+    });
+    const data = await res.json();
+    if (!res.ok) return { ok: false, error: data.error ?? "Impossible de lancer la simulation." };
+    return { ok: true, token: data.token, iframeUrl: data.iframe_url };
+  } catch {
+    return { ok: false, error: "Impossible de lancer la simulation (problème de connexion)." };
+  }
+}
 
 export default function SimulationPage() {
   const params = useParams<{ kind: string }>();
@@ -35,10 +62,12 @@ export default function SimulationPage() {
   const [overviewError, setOverviewError] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
   const [starting, setStarting] = useState(false);
-  const [notice, setNotice] = useState<{ tone: "good" | "bad" | "info"; text: string } | null>(null);
+  const [notice, setNotice] = useState<Notice | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const frameBoxRef = useRef<HTMLDivElement>(null);
   const submitting = useRef(false);
+  const sessionRef = useRef<Session | null>(null);
+  sessionRef.current = session;
 
   const site = isSimulationKind(kind) ? SIMULATION_SITES[kind] : null;
   const origin = site ? siteOrigin(site) : null;
@@ -57,10 +86,17 @@ export default function SimulationPage() {
     refresh();
   }, [refresh]);
 
+  // Enregistre le résultat de la partie en cours, puis en ouvre une nouvelle
+  // pour que la prochaine tentative dans la même iframe compte aussi.
   const submitResult = useCallback(
-    async (token: string, success: boolean, signature?: string) => {
-      if (submitting.current) return;
+    async (success: boolean, signature?: string) => {
+      const current = sessionRef.current;
+      if (!site || !current?.token || submitting.current) return;
       submitting.current = true;
+      const token = current.token;
+      let text: string;
+      let tone: Notice["tone"];
+      let finished = true;
       try {
         const res = await fetch("/api/simulations/result", {
           method: "POST",
@@ -68,62 +104,87 @@ export default function SimulationPage() {
           body: JSON.stringify({ token, success }),
         });
         const data = (await res.json()) as SimulationResultResponse;
-        const finished = data.ok || data.result === "already_completed";
-        if (finished && data.result === "already_completed") {
-          // Le site a déjà envoyé le résultat lui-même : on affiche simplement le bilan.
-          setNotice({ tone: "info", text: "Partie terminée, résultat enregistré." });
+        if (data.result === "already_completed") {
+          // Le site a envoyé le résultat lui-même juste avant : même bilan.
+          const label = STAT_LABELS[site.factor];
+          if (data.status === "success") {
+            text = data.points_awarded
+              ? `Simulation réussie : +${data.points_awarded} ${label}.`
+              : `Simulation réussie, mais ${label} est déjà au maximum (100).`;
+            tone = "good";
+          } else {
+            text = data.status === "failure" ? "Simulation échouée : aucun point cette fois." : "Résultat enregistré.";
+            tone = "info";
+          }
         } else {
-          setNotice({ tone: data.ok && data.status === "success" ? "good" : data.ok ? "info" : "bad", text: data.message });
+          text = data.message;
+          tone = data.ok && data.status === "success" ? "good" : data.ok ? "info" : "bad";
         }
-        // « Trop tôt » : la partie reste ouverte, un vrai résultat pourra suivre.
-        if (data.result !== "too_fast") setSession(null);
-        await refresh();
+        // On ne passe à une nouvelle partie que si celle-ci est réglée pour de
+        // bon. « Trop tôt », erreur serveur… : la partie reste ouverte, le
+        // résultat suivant pourra encore compter.
+        finished = data.ok || ["already_completed", "expired", "not_found", "daily_limit"].includes(String(data.result));
       } catch {
-        setNotice({ tone: "bad", text: "Impossible d'enregistrer le résultat (problème de connexion). Réessaie depuis la simulation." });
-      } finally {
-        submitting.current = false;
+        text = "Impossible d'enregistrer le résultat (problème de connexion).";
+        tone = "bad";
+        finished = false;
       }
+
+      if (finished) {
+        const next = await requestRun(site.kind);
+        if (next.ok) {
+          setSession((s) => (s ? { ...s, token: next.token, startedAt: Date.now(), issued: [...s.issued, next.token] } : s));
+          text += " Tu peux enchaîner : la prochaine partie réussie comptera aussi.";
+        } else {
+          setSession((s) => (s ? { ...s, token: null } : s));
+          text += ` Les prochaines parties ne compteront pas : ${next.error}`;
+        }
+      }
+      setNotice({ tone, text });
+      await refresh();
+      submitting.current = false;
     },
-    [refresh]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [refresh, site?.kind]
   );
 
-  // Le site de la simulation (dans l'iframe) annonce la fin de partie avec
-  // window.parent.postMessage({ type: "sid:simulation-result", token, success }, "*").
-  // On n'écoute que CE site, et que l'iframe affichée ici.
+  // Messages venant du site affiché dans l'iframe (et seulement de lui) :
+  //  - format des sites : { type: "sid-quest-resultat", epreuve, statut, reussi, debut, … }
+  //  - format générique : { type: "sid:simulation-result", token, success }
   useEffect(() => {
-    if (!session || !origin) return;
-    const active = session;
+    if (!session || !origin || !site) return;
     function onMessage(e: MessageEvent) {
       if (e.origin !== origin || e.source !== iframeRef.current?.contentWindow) return;
-      const d = e.data as { type?: unknown; token?: unknown; success?: unknown; signature?: unknown } | null;
-      if (!d || d.type !== RESULT_MESSAGE_TYPE || d.token !== active.token || typeof d.success !== "boolean") return;
-      void submitResult(active.token, d.success, typeof d.signature === "string" ? d.signature : undefined);
+      const current = sessionRef.current;
+      if (!site || !current) return;
+      const d = e.data as Record<string, unknown> | null;
+      if (!d || typeof d !== "object") return;
+
+      if (d.type === SITE_RESULT_MESSAGE_TYPE) {
+        const verdict = interpretSiteReport(site, d, current.startedAt);
+        if (verdict.action === "record") void submitResult(verdict.success);
+        return;
+      }
+      if (d.type === RESULT_MESSAGE_TYPE && typeof d.success === "boolean" && current.issued.includes(String(d.token))) {
+        void submitResult(d.success, typeof d.signature === "string" ? d.signature : undefined);
+      }
     }
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
-  }, [session, origin, submitResult]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [Boolean(session), origin, submitResult]);
 
   async function start() {
     if (!site) return;
     setStarting(true);
     setNotice(null);
-    try {
-      const res = await fetch("/api/simulations/start", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ kind: site.kind }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setNotice({ tone: "bad", text: data.error ?? "Impossible de lancer la simulation." });
-        return;
-      }
-      setSession({ token: data.token, iframeUrl: data.iframe_url });
-    } catch {
-      setNotice({ tone: "bad", text: "Impossible de lancer la simulation (problème de connexion)." });
-    } finally {
-      setStarting(false);
+    const run = await requestRun(site.kind);
+    setStarting(false);
+    if (!run.ok) {
+      setNotice({ tone: "bad", text: run.error });
+      return;
     }
+    setSession({ token: run.token, iframeUrl: run.iframeUrl, startedAt: Date.now(), issued: [run.token] });
   }
 
   if (!site) {
@@ -148,7 +209,11 @@ export default function SimulationPage() {
       : limitReached
         ? `Limite du jour atteinte (${maxPerDay} résultats). Reviens demain !`
         : null;
-  const recentRuns = (overview?.recent_runs ?? []).filter((r) => r.kind === site.kind);
+  // Seules les parties jouées jusqu'au bout : les parties ouvertes d'avance
+  // pour enchaîner (puis abandonnées ou expirées) n'intéressent personne.
+  const recentRuns = (overview?.recent_runs ?? []).filter(
+    (r) => r.kind === site.kind && (r.status === "success" || r.status === "failure")
+  );
 
   return (
     <div className="space-y-6">
@@ -168,6 +233,18 @@ export default function SimulationPage() {
 
       <div className="grid gap-4 md:grid-cols-[1fr_18rem]">
         <div className="glass-card space-y-4 p-5">
+          {notice && (
+            <p
+              className={clsx(
+                "rounded-lg border px-3 py-2 font-body text-sm",
+                notice.tone === "good" && "border-blue/50 bg-blue/10 text-blue-light",
+                notice.tone === "bad" && "border-red/50 bg-red/10 text-red-light",
+                notice.tone === "info" && "border-white/15 bg-white/5 text-paper/80"
+              )}
+            >
+              {notice.text}
+            </p>
+          )}
           {session ? (
             <>
               <div
@@ -194,12 +271,15 @@ export default function SimulationPage() {
                 <button
                   onClick={() => {
                     setSession(null);
-                    setNotice({ tone: "info", text: "Simulation quittée : aucun point gagné ni perdu." });
+                    setNotice({ tone: "info", text: "Simulation fermée. Les parties déjà terminées restent comptées." });
                   }}
                   className="rounded-lg border border-paper/30 px-3 py-1.5 font-mono text-xs uppercase text-paper/70 hover:border-red hover:text-red"
                 >
-                  Quitter la simulation
+                  Fermer la simulation
                 </button>
+                {!session.token && (
+                  <span className="self-center font-mono text-[11px] text-paper/50">Les parties ne comptent plus pour aujourd&apos;hui.</span>
+                )}
               </div>
             </>
           ) : (
@@ -217,19 +297,6 @@ export default function SimulationPage() {
               </button>
               {disabledReason && <p className="font-mono text-xs text-paper/60">{disabledReason}</p>}
             </div>
-          )}
-
-          {notice && (
-            <p
-              className={clsx(
-                "rounded-lg border px-3 py-2 font-body text-sm",
-                notice.tone === "good" && "border-blue/50 bg-blue/10 text-blue-light",
-                notice.tone === "bad" && "border-red/50 bg-red/10 text-red-light",
-                notice.tone === "info" && "border-white/15 bg-white/5 text-paper/80"
-              )}
-            >
-              {notice.text}
-            </p>
           )}
         </div>
 

@@ -49,6 +49,9 @@ export async function POST(request: NextRequest) {
   const iframeUrl = new URL(site.url);
   iframeUrl.searchParams.set("sid_run", token);
   iframeUrl.searchParams.set("sid_api", `${request.nextUrl.origin}/api/simulations`);
+  // Les sites identifient aussi le joueur par son e-mail : on le leur donne
+  // pour qu'ils n'aient pas à le redemander (seul le jeton compte côté S.I.D.).
+  if (user.email) iframeUrl.searchParams.set("email", user.email);
 
   return NextResponse.json(
     { token, iframe_url: iframeUrl.toString(), ...(data as Record<string, unknown>) },
