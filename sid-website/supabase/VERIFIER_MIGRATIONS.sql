@@ -8,7 +8,7 @@
 -- que rien ne casse visiblement sur le site.
 --
 --  - Tout est à true jusqu'à 0045 : exécute dans l'ordre les migrations
---    suivantes qui sont à false (0047, 0048, puis 0049).
+--    suivantes qui sont à false (0047, 0048, 0049, puis 0050).
 --  - Au moins un false : ne lance rien d'autre, envoie-moi le résultat ;
 --    certaines migrations ne peuvent pas être rejouées deux fois, je te
 --    donnerai l'ordre exact à suivre selon ce qui manque.
@@ -25,5 +25,6 @@ select migration, appliquee from (values
   ('0044 simulation',               exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'sim_agents')),
   ('0045 croissance des actions',   exists (select 1 from pg_proc where proname = 'process_business_growth')),
   ('0048 journal d''audit',         exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'audit_log')),
-  ('0049 facteurs + simulations',   exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'member_stats'))
+  ('0049 facteurs + simulations',   exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'member_stats')),
+  ('0050 progression synchronisée', exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'simulation_progress'))
 ) as t(migration, appliquee);
