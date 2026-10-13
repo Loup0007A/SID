@@ -65,6 +65,9 @@ export default function SimulationPage() {
   const [notice, setNotice] = useState<Notice | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const frameBoxRef = useRef<HTMLDivElement>(null);
+  // Plein écran : « native » = API du navigateur ; « css » = repli quand
+  // l'API n'existe pas ou est refusée (iPhone, notamment).
+  const [fullscreen, setFullscreen] = useState<"native" | "css" | null>(null);
   const submitting = useRef(false);
   const sessionRef = useRef<Session | null>(null);
   sessionRef.current = session;
@@ -85,6 +88,61 @@ export default function SimulationPage() {
   useEffect(() => {
     refresh();
   }, [refresh]);
+
+  useEffect(() => {
+    const onChange = () => {
+      const doc = document as Document & { webkitFullscreenElement?: Element | null };
+      const el = document.fullscreenElement ?? doc.webkitFullscreenElement ?? null;
+      setFullscreen((prev) => (el && el === frameBoxRef.current ? "native" : prev === "native" ? null : prev));
+    };
+    document.addEventListener("fullscreenchange", onChange);
+    document.addEventListener("webkitfullscreenchange", onChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", onChange);
+      document.removeEventListener("webkitfullscreenchange", onChange);
+    };
+  }, []);
+
+  // Repli CSS : Échap pour sortir, et la page derrière ne défile plus.
+  useEffect(() => {
+    if (fullscreen !== "css") return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setFullscreen(null);
+    };
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = overflow;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [fullscreen]);
+
+  const enterFullscreen = useCallback(async () => {
+    const box = frameBoxRef.current as (HTMLDivElement & { webkitRequestFullscreen?: () => Promise<void> | void }) | null;
+    if (!box) return;
+    const request = box.requestFullscreen?.bind(box) ?? box.webkitRequestFullscreen?.bind(box);
+    if (request) {
+      try {
+        await request();
+        setFullscreen("native");
+        // Donne le clavier au jeu tout de suite.
+        iframeRef.current?.focus();
+        return;
+      } catch {
+        // refusé : repli CSS ci-dessous
+      }
+    }
+    setFullscreen("css");
+    iframeRef.current?.focus();
+  }, []);
+
+  const exitFullscreen = useCallback(() => {
+    const doc = document as Document & { webkitExitFullscreen?: () => void; webkitFullscreenElement?: Element | null };
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    else if (doc.webkitFullscreenElement) doc.webkitExitFullscreen?.();
+    setFullscreen(null);
+  }, []);
 
   // Enregistre le résultat de la partie en cours, puis en ouvre une nouvelle
   // pour que la prochaine tentative dans la même iframe compte aussi.
@@ -232,7 +290,13 @@ export default function SimulationPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-[1fr_18rem]">
-        <div className="glass-card space-y-4 p-5">
+        <div
+          className={clsx(
+            "glass-card space-y-4 p-5",
+            // backdrop-filter rendrait le repli « fixed » relatif à la carte au lieu de l'écran
+            fullscreen === "css" && "![-webkit-backdrop-filter:none] ![backdrop-filter:none]"
+          )}
+        >
           {notice && (
             <p
               className={clsx(
@@ -249,27 +313,43 @@ export default function SimulationPage() {
             <>
               <div
                 ref={frameBoxRef}
-                className="overflow-hidden rounded-lg border border-white/15 bg-black"
+                className={clsx(
+                  "overflow-hidden bg-black",
+                  fullscreen !== "css" && "relative",
+                  fullscreen === null && "rounded-lg border border-white/15",
+                  fullscreen === "native" && "h-full w-full",
+                  fullscreen === "css" && "fixed inset-0 z-[100] h-[100dvh] w-screen"
+                )}
               >
                 <iframe
                   ref={iframeRef}
                   src={session.iframeUrl}
                   title={`Simulation ${site.label}`}
-                  className="h-[70vh] min-h-[420px] w-full"
+                  className={clsx("block w-full", fullscreen ? "h-full" : "h-[70vh] min-h-[420px]")}
                   sandbox="allow-scripts allow-same-origin allow-pointer-lock allow-popups allow-forms"
                   allow="fullscreen; gamepad; autoplay"
                   allowFullScreen
                 />
+                {fullscreen && (
+                  <button
+                    onClick={exitFullscreen}
+                    aria-label="Quitter le plein écran"
+                    className="absolute left-1/2 top-0 -translate-x-1/2 rounded-b-md border border-t-0 border-white/20 bg-black/70 px-2 py-0.5 font-mono text-[10px] uppercase text-paper/70 opacity-70 hover:border-blue hover:text-blue hover:opacity-100"
+                  >
+                    ✕ Quitter
+                  </button>
+                )}
               </div>
               <div className="flex flex-wrap gap-2">
                 <button
-                  onClick={() => frameBoxRef.current?.requestFullscreen?.()}
+                  onClick={enterFullscreen}
                   className="rounded-lg border border-blue px-3 py-1.5 font-mono text-xs uppercase text-blue hover:bg-blue hover:text-ink"
                 >
                   Plein écran
                 </button>
                 <button
                   onClick={() => {
+                    exitFullscreen();
                     setSession(null);
                     setNotice({ tone: "info", text: "Simulation fermée. Les parties déjà terminées restent comptées." });
                   }}
