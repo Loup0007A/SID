@@ -12,6 +12,10 @@
  *
  * Le fonctionnement de l'API utilisée par ces sites est décrit dans
  * API_SIMULATIONS.md, à la racine du projet.
+ *
+ *   epreuves       identifiants (« slugs ») des épreuves que le site envoie
+ *                  dans ses résultats (champ `epreuve`) : un résultat n'est
+ *                  accepté que pour la simulation dont il relève.
  */
 
 export type SimulationKind = "donjons" | "intelligence" | "techniques";
@@ -37,6 +41,7 @@ export interface SimulationSite {
   repo: string;
   url: string | null;
   inDevelopment: boolean;
+  epreuves: string[];
 }
 
 export const SIMULATION_SITES: Record<SimulationKind, SimulationSite> = {
@@ -47,8 +52,9 @@ export const SIMULATION_SITES: Record<SimulationKind, SimulationSite> = {
     description: "Explore les donjons pour gagner en puissance.",
     emoji: "🏰",
     repo: "Loup0007A/3D-game-world",
-    url: null,
-    inDevelopment: true,
+    url: "https://loup0007a.github.io/3D-game-world/",
+    inDevelopment: false,
+    epreuves: ["mondes-vivants"],
   },
   intelligence: {
     kind: "intelligence",
@@ -57,8 +63,9 @@ export const SIMULATION_SITES: Record<SimulationKind, SimulationSite> = {
     description: "Prépare des potions pour gagner en intelligence.",
     emoji: "🧪",
     repo: "Loup0007A/Potions",
-    url: null,
-    inDevelopment: true,
+    url: "https://intelligence-seven-henna.vercel.app/",
+    inDevelopment: false,
+    epreuves: ["potions", "enigmes", "probleme"],
   },
   techniques: {
     kind: "techniques",
@@ -67,8 +74,9 @@ export const SIMULATION_SITES: Record<SimulationKind, SimulationSite> = {
     description: "Maîtrise de nouvelles techniques.",
     emoji: "🥋",
     repo: "Loup0007A/Techniques",
-    url: null,
-    inDevelopment: true,
+    url: "https://techniques-delta.vercel.app/",
+    inDevelopment: false,
+    epreuves: ["techniques"],
   },
 };
 
@@ -90,3 +98,55 @@ export function siteOrigin(site: SimulationSite): string | null {
 
 /** Type du message que le site envoie au S.I.D. (window.parent.postMessage). */
 export const RESULT_MESSAGE_TYPE = "sid:simulation-result";
+
+/**
+ * Format de résultat déjà utilisé par Potions, Techniques et 3D-game-world :
+ * message `sid-quest-resultat` envoyé au parent, et requête GET vers /api,
+ * avec les champs epreuve, statut ("reussi", "echoue", "invalide"…),
+ * reussi (1 ou 0) et debut (date de début de la tentative).
+ */
+export const SITE_RESULT_MESSAGE_TYPE = "sid-quest-resultat";
+
+/** Une tentative commencée plus de 10 min avant la partie S.I.D. ne lui appartient pas. */
+const STALE_ATTEMPT_MS = 10 * 60 * 1000;
+
+export type SiteReportVerdict =
+  | { action: "record"; success: boolean }
+  | { action: "ignore"; reason: string };
+
+/**
+ * Lit un résultat au format des sites et dit s'il faut l'enregistrer.
+ * `runStartedAt` : début de la partie S.I.D. (ms), pour écarter une
+ * vieille tentative renvoyée par le site au rechargement de la page.
+ */
+export function interpretSiteReport(
+  site: SimulationSite,
+  report: { epreuve?: unknown; statut?: unknown; reussi?: unknown; debut?: unknown },
+  runStartedAt: number | null
+): SiteReportVerdict {
+  const epreuve = typeof report.epreuve === "string" ? report.epreuve : "";
+  if (!site.epreuves.includes(epreuve)) {
+    return { action: "ignore", reason: `épreuve « ${epreuve || "?"} » sans rapport avec ${site.label}` };
+  }
+
+  const statut = typeof report.statut === "string" ? report.statut : "";
+  // « invalide » = tentative annulée (page quittée ou rechargée) : ni gagnée
+  // ni perdue, la partie reste ouverte.
+  if (statut === "invalide") return { action: "ignore", reason: "tentative annulée" };
+
+  if (runStartedAt !== null && report.debut !== undefined && report.debut !== null && report.debut !== "") {
+    const debut = typeof report.debut === "number" ? report.debut : Date.parse(String(report.debut));
+    if (Number.isFinite(debut) && debut < runStartedAt - STALE_ATTEMPT_MS) {
+      return { action: "ignore", reason: "tentative commencée avant la partie" };
+    }
+  }
+
+  const reussi = report.reussi === 1 || report.reussi === "1" || report.reussi === true;
+  return { action: "record", success: statut === "reussi" || reussi };
+}
+
+/** La simulation à laquelle appartient une épreuve envoyée par un site. */
+export function siteForEpreuve(epreuve: unknown): SimulationSite | null {
+  if (typeof epreuve !== "string") return null;
+  return Object.values(SIMULATION_SITES).find((s) => s.epreuves.includes(epreuve)) ?? null;
+}
