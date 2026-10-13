@@ -1,4 +1,4 @@
-import type { SimulationKind } from "@/lib/simulationSites";
+import type { SimulationKind, SkillKey } from "@/lib/simulationSites";
 
 export type SimulationRunStatus = "started" | "success" | "failure" | "abandoned" | "expired";
 
@@ -8,12 +8,17 @@ export interface SimulationOverview {
   strength: number;
   technique: number;
   power: number;
+  /** Points par compétence (migration 0051). */
+  skills: Partial<Record<SkillKey, number>>;
+  /** Objets « réinitialisation des délais » possédés. */
+  cooldown_resets: number;
   max_results_per_day: number;
   min_seconds: number;
   enabled: boolean;
   results_today: Record<SimulationKind, number>;
   recent_runs: {
     kind: SimulationKind;
+    skill: SkillKey | null;
     status: SimulationRunStatus;
     points_awarded: number;
     started_at: string;

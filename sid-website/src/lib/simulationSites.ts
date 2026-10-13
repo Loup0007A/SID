@@ -20,6 +20,29 @@
 
 export type SimulationKind = "donjons" | "intelligence" | "techniques";
 
+/**
+ * Compétences = épreuves des sites (slugs envoyés dans `epreuve`). Chacune a
+ * ses points (0 à 100, +1 par réussite). Facteurs :
+ *   Intelligence = moyenne de Potions, Énigmes et Problème
+ *   Puissance    = Donjons
+ *   Technique    = Techniques
+ */
+export type SkillKey = "potions" | "enigmes" | "probleme" | "techniques" | "mondes-vivants";
+
+export const SKILLS: { key: SkillKey; label: string; kind: SimulationKind }[] = [
+  { key: "potions", label: "Potions", kind: "intelligence" },
+  { key: "enigmes", label: "Énigmes", kind: "intelligence" },
+  { key: "probleme", label: "Problème", kind: "intelligence" },
+  { key: "techniques", label: "Techniques", kind: "techniques" },
+  { key: "mondes-vivants", label: "Donjons", kind: "donjons" },
+];
+
+export const SKILL_LABELS = Object.fromEntries(SKILLS.map((s) => [s.key, s.label])) as Record<SkillKey, string>;
+
+export function isSkillKey(value: unknown): value is SkillKey {
+  return typeof value === "string" && SKILLS.some((s) => s.key === value);
+}
+
 /** Les trois facteurs, tels qu'ils sont nommés en base (table member_stats). */
 export type StatKey = "intelligence" | "strength" | "technique";
 

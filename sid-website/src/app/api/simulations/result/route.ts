@@ -6,9 +6,10 @@ export const dynamic = "force-dynamic";
 
 // POST /api/simulations/result — appelée par le site d'une simulation (ou
 // relayée par la page du S.I.D. qui l'affiche) quand une partie se termine.
-// Corps : { "token": "<jeton reçu dans sid_run>", "success": true | false }
+// Corps : { "token": "<jeton reçu dans sid_run>", "success": true | false,
+//          "epreuve": "potions" | "enigmes" | "probleme" (obligatoire pour l'Intelligence) }
 export async function POST(request: NextRequest) {
-  let body: { token?: unknown; success?: unknown; signature?: unknown };
+  let body: { token?: unknown; success?: unknown; signature?: unknown; epreuve?: unknown };
   try {
     body = await request.json();
   } catch {
@@ -25,7 +26,8 @@ export async function POST(request: NextRequest) {
 
   const signature =
     request.headers.get("x-sid-signature") ?? (typeof body.signature === "string" ? body.signature : null);
-  const outcome = await recordSimulationResult({ token, success, signature });
+  const epreuve = typeof body.epreuve === "string" ? body.epreuve : null;
+  const outcome = await recordSimulationResult({ token, success, signature, epreuve });
   return corsJson(outcome.body, outcome.status);
 }
 

@@ -41,7 +41,7 @@ export function MemberStatBars({
           <div key={key} className={clsx("space-y-1", highlight && highlight !== key && "opacity-60")}>
             <div className="flex justify-between font-mono text-xs">
               <span className={clsx("uppercase tracking-wide", highlight === key && "text-blue-light")}>{STAT_LABELS[key]}</span>
-              <span className="text-paper/70">{value} / 100</span>
+              <span className="text-paper/70">{formatPower(value)} / 100</span>
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-white/10" role="progressbar" aria-valuenow={value} aria-valuemin={0} aria-valuemax={100} aria-label={STAT_LABELS[key]}>
               <div className={clsx("h-full rounded-full transition-all", BAR_COLOR[key])} style={{ width: `${value}%` }} />

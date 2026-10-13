@@ -48,9 +48,22 @@ compte jamais deux fois.
 
 Les sites envoient notamment `epreuve`, `statut`, `reussi` et `debut`.
 
+Chaque épreuve est une **compétence** notée de 0 à 100 (+1 par réussite) :
+
+| Compétence (`epreuve`) | Facteur |
+|---|---|
+| `potions`, `enigmes`, `probleme` | Intelligence = **moyenne** des trois |
+| `mondes-vivants` | Puissance |
+| `techniques` | Technique |
+
+La puissance globale est la moyenne des trois facteurs. L'administration peut
+régler directement le niveau d'un membre dans chaque compétence (Admin →
+Économie → Niveaux & puissance) : le niveau est aussi débloqué dans le site
+(progression synchronisée, section 6).
+
 | Champ reçu | Effet |
 |---|---|
-| `statut=reussi` (ou `reussi=1`) | réussite : +1 au facteur |
+| `statut=reussi` (ou `reussi=1`) | réussite : +1 dans la compétence de l'`epreuve` jouée |
 | `statut=echoue`, `explosion`, `temps_ecoule`… | échec : 0 point |
 | `statut=invalide` | ignoré : tentative annulée (page quittée ou rechargée), la partie reste ouverte |
 | `epreuve` d'une autre simulation | ignoré (un résultat de Potions ne peut pas valider une partie de Donjons) |
@@ -98,10 +111,12 @@ Infos sur une partie : simulation, état (`playable`), pseudo du joueur.
 
 ### `POST /api/simulations/result` — format générique
 
-Corps `{ "token": "<jeton>", "success": true }`. Utile pour un futur site
-qui n'utiliserait pas le format ci-dessus ; il peut aussi envoyer à la page
-du S.I.D. le message
-`{ type: "sid:simulation-result", token, success }`.
+Corps `{ "token": "<jeton>", "success": true, "epreuve": "potions" }`
+(`epreuve` obligatoire pour l'Intelligence : `potions`, `enigmes` ou
+`probleme` ; sinon réponse 400 `invalid_epreuve` et la partie reste ouverte).
+Utile pour un futur site qui n'utiliserait pas le format ci-dessus ; il peut
+aussi envoyer à la page du S.I.D. le message
+`{ type: "sid:simulation-result", token, success, epreuve }`.
 
 ---
 
@@ -185,6 +200,13 @@ Adresses utilisées (CORS ouvert, jeton de partie valable 24 h pour la synchro) 
   (300 clés par envoi, 1000 clés / 300 Ko par simulation et par membre)
 
 Rien ne se gagne par ces adresses : seuls les résultats rapportent des points.
+
+**Objets « réinitialisation des délais ».** Vendus au comptoir par
+l'administration ; chaque exemplaire s'utilise une fois depuis la page d'une
+simulation. Il efface du compte les délais d'attente enregistrés
+(`sq_<…>_cd_*` de Potions, `sqt_cd` de Techniques) ; les sites les retirent de
+l'appareil à leur prochaine ouverture depuis le S.I.D. (la page relance la
+simulation ouverte).
 
 ## 7. Sécurité : ce qu'il faut savoir
 

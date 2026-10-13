@@ -91,6 +91,11 @@ export interface Quest {
   pending_expiry_confirmation: boolean;
   reputation_reward: number | null;
   place_id: string | null;
+  /** Prérequis (0 = aucun) : facteurs et puissance globale minimum. */
+  min_intelligence: number;
+  min_strength: number;
+  min_technique: number;
+  min_power: number;
   created_by: string | null;
   created_at: string;
 }
@@ -124,8 +129,18 @@ export interface ShopItem {
   is_active: boolean;
   created_by: string | null;
   business_id: string | null;
+  /** Effet de l'objet acheté (objets créés par l'administration). */
+  effect: ShopItemEffect | null;
+  /** Supprimé par son vendeur : masqué, gardé pour l'historique des achats. */
+  hidden_at: string | null;
   created_at: string;
 }
+
+export type ShopItemEffect = "reset_cooldowns";
+
+export const SHOP_EFFECT_LABELS: Record<ShopItemEffect, string> = {
+  reset_cooldowns: "Réinitialise une fois les délais d'attente de toutes les compétences",
+};
 
 export interface Wallet {
   user_id: string;

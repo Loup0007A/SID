@@ -9,6 +9,7 @@ import { QuestCard } from "@/components/QuestCard";
 import { inputClass, labelClass } from "@/lib/ui";
 import { CONTRACT_TYPES } from "@/lib/contractTypes";
 import { findShortestPath } from "@/lib/pathfinding";
+import { formatStat, unmetRequirements, type MemberCharacteristics } from "@/lib/questRequirements";
 
 export default function QuestsPage() {
   const supabase = createClient();
@@ -32,7 +33,14 @@ export default function QuestsPage() {
     fundedByCreator: true,
     placeId: "",
     reputationReward: "",
+    minIntelligence: "",
+    minStrength: "",
+    minTechnique: "",
+    minPower: "",
   });
+
+  // Mes caractéristiques, pour griser les quêtes dont je n'atteins pas les prérequis.
+  const [me, setMe] = useState<MemberCharacteristics | null>(null);
 
   // "Pour qui je prends cette mission" par quête (avant de cliquer sur "Prendre")
   const [beneficiary, setBeneficiary] = useState<Record<string, "self" | string>>({});
@@ -72,6 +80,17 @@ export default function QuestsPage() {
     if (activeUserId) {
       const { data: mine } = await supabase.from("quest_participants").select("quest_id").eq("user_id", activeUserId);
       setMyQuestIds(new Set((mine ?? []).map((m) => m.quest_id)));
+
+      const [{ data: st }, { data: prof }] = await Promise.all([
+        supabase.from("member_stats").select("intelligence, strength, technique").eq("user_id", activeUserId).maybeSingle(),
+        supabase.from("profiles").select("power_score").eq("id", activeUserId).maybeSingle(),
+      ]);
+      setMe({
+        intelligence: Number(st?.intelligence ?? 0),
+        strength: Number(st?.strength ?? 0),
+        technique: Number(st?.technique ?? 0),
+        power: Number(prof?.power_score ?? 0),
+      });
 
       const { data: pos } = await supabase.from("character_positions").select("*").eq("user_id", activeUserId).maybeSingle();
       setMyPosition((pos as CharacterPosition) ?? null);
@@ -132,6 +151,10 @@ export default function QuestsPage() {
       funded_by_creator: form.fundedByCreator,
       place_id: form.placeId || null,
       reputation_reward: form.reputationReward ? Number(form.reputationReward) : null,
+      min_intelligence: Number(form.minIntelligence) || 0,
+      min_strength: Number(form.minStrength) || 0,
+      min_technique: Number(form.minTechnique) || 0,
+      min_power: Number(form.minPower) || 0,
       created_by: userId,
     });
     if (error) {
@@ -139,7 +162,7 @@ export default function QuestsPage() {
       return;
     }
     setShowForm(false);
-    setForm({ title: "", description: "", reward: "0", difficulty: "D", contractType: "autres", deadline: "", visibility: "members", maxParticipants: "", fundedByCreator: true, placeId: "", reputationReward: "" });
+    setForm({ title: "", description: "", reward: "0", difficulty: "D", contractType: "autres", deadline: "", visibility: "members", maxParticipants: "", fundedByCreator: true, placeId: "", reputationReward: "", minIntelligence: "", minStrength: "", minTechnique: "", minPower: "" });
     await refresh();
   }
 
@@ -148,6 +171,11 @@ export default function QuestsPage() {
     const currentCount = counts.get(quest.id) ?? 0;
     if (quest.max_participants != null && currentCount >= quest.max_participants) {
       setMessage("Cette mission est déjà complète.");
+      return;
+    }
+    const missing = unmetRequirements(quest, me);
+    if (missing.length > 0) {
+      setMessage(`Prérequis non atteints : ${missing.map((r) => `${r.label} ${formatStat(r.min)}`).join(", ")}.`);
       return;
     }
     const choice = beneficiary[quest.id] ?? "self";
@@ -414,6 +442,33 @@ export default function QuestsPage() {
               ))}
             </select>
           </div>
+          <fieldset className="space-y-2 sm:col-span-2">
+            <legend className={labelClass}>Prérequis pour prendre la quête (vide = aucun, 100 max)</legend>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {(
+                [
+                  ["minIntelligence", "Intelligence"],
+                  ["minStrength", "Puissance"],
+                  ["minTechnique", "Technique"],
+                  ["minPower", "Puissance globale"],
+                ] as const
+              ).map(([key, label]) => (
+                <label key={key} className="space-y-1">
+                  <span className="block font-mono text-[10px] uppercase tracking-wide text-paper/60">{label}</span>
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    step="0.1"
+                    className={inputClass}
+                    placeholder="0"
+                    value={form[key]}
+                    onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                  />
+                </label>
+              ))}
+            </div>
+          </fieldset>
           <label className="flex items-center gap-2 font-mono text-xs sm:col-span-2">
             <input
               type="checkbox" className="accent-blue"
@@ -436,6 +491,7 @@ export default function QuestsPage() {
           const questPlace = q.place_id ? places.find((p) => p.id === q.place_id) : null;
           const eta = q.place_id ? etaFor(q) : null;
           const isTravelingToThisQuest = isTraveling && !!q.place_id && q.place_id === travelDestinationPlaceId;
+          const missing = unmetRequirements(q, me);
 
           return (
             <div key={q.id} className="space-y-2">
@@ -491,12 +547,18 @@ export default function QuestsPage() {
                       <option key={m.id} value={m.id}>{m.nickname}</option>
                     ))}
                   </select>
+                  {missing.length > 0 && (
+                    <p className="font-mono text-[10px] text-red-light">
+                      Il te manque :{" "}
+                      {missing.map((r) => `${r.label} ${formatStat(r.min)} (tu as ${formatStat(Number(me?.[r.key] ?? 0))})`).join(", ")}
+                    </p>
+                  )}
                   <button
                     onClick={() => joinQuest(q)}
-                    disabled={isFull}
+                    disabled={isFull || missing.length > 0}
                     className="rounded-lg w-full border border-red py-1 font-mono text-xs uppercase text-red hover:bg-red hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    {isFull ? "Complète" : "Prendre la mission"}
+                    {isFull ? "Complète" : missing.length > 0 ? "Prérequis non atteints" : "Prendre la mission"}
                   </button>
                 </div>
               )}
