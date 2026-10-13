@@ -8,6 +8,9 @@ import type { PermissionKey, Profile, Quest, Wallet } from "@/types/database";
 import { QuestCard } from "@/components/QuestCard";
 import { NavIcon } from "@/components/NavIcon";
 import { NAV_GROUPS, visibleEntries } from "@/lib/navigation";
+import { ConstructionTape } from "@/components/ConstructionTape";
+import { MemberStatBars } from "@/components/MemberStatBars";
+import type { SimulationOverview } from "@/types/simulationRuns";
 
 export default function DashboardHome() {
   const supabase = createClient();
@@ -16,6 +19,7 @@ export default function DashboardHome() {
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [myQuests, setMyQuests] = useState<Quest[]>([]);
   const [counts, setCounts] = useState<Map<string, number>>(new Map());
+  const [training, setTraining] = useState<SimulationOverview | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -26,6 +30,10 @@ export default function DashboardHome() {
 
       const { data: w } = await supabase.from("wallets").select("*").eq("user_id", profile.id).single();
       setWallet(w);
+
+      // Facteurs de puissance (absent tant que la migration 0049 n'est pas appliquée).
+      const { data: overview } = await supabase.rpc("get_simulation_overview");
+      if (overview) setTraining(overview as SimulationOverview);
 
       const { data: countsData } = await supabase.rpc("quest_participant_counts");
       setCounts(new Map(((countsData ?? []) as { quest_id: string; participant_count: number }[]).map((c) => [c.quest_id, c.participant_count])));
@@ -74,15 +82,25 @@ export default function DashboardHome() {
                   key={e.key}
                   href={e.href}
                   scroll={false}
-                  className="glass-card group flex flex-col items-center gap-2 px-3 py-5 text-center transition hover:-translate-y-1 hover:border-blue/50 focus-visible:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue"
+                  aria-label={e.wip ? `${e.label} (en développement)` : undefined}
+                  className="glass-card group relative flex flex-col items-center gap-2 overflow-hidden px-3 py-5 text-center transition hover:-translate-y-1 hover:border-blue/50 focus-visible:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue"
                 >
                   <span className="flex h-16 w-16 items-center justify-center transition group-hover:scale-110">
                     <NavIcon entry={e} />
                   </span>
                   <span className="font-display uppercase tracking-wide">{e.label}</span>
                   <span className="hidden font-body text-xs leading-snug text-paper/60 sm:block">{e.description}</span>
+                  {e.wip && <ConstructionTape />}
                 </Link>
               ))}
+              {group.key === "entrainement" && training && (
+                <div className="glass-card col-span-2 px-4 py-4 sm:col-span-3 lg:col-span-1">
+                  <MemberStatBars
+                    stats={{ intelligence: training.intelligence, strength: training.strength, technique: training.technique }}
+                    power={training.power}
+                  />
+                </div>
+              )}
             </div>
           </section>
         );

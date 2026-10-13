@@ -3,55 +3,75 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { inputClass } from "@/lib/ui";
+import type { LeaderboardEntry } from "@/types/database";
+import { STAT_LABELS, type StatKey } from "@/lib/simulationSites";
+import { formatPower } from "@/components/MemberStatBars";
 
-type Row = { id: string; nickname: string; power_score: number };
+const STATS: StatKey[] = ["intelligence", "strength", "technique"];
+
+type Draft = Record<StatKey, string>;
 
 /**
- * Section admin : définir le score de puissance de chaque membre.
- * Côté base, set_power_score() exige manage_users ou manage_economy et
- * journalise chaque changement (table power_score_log).
+ * Section admin : corriger les trois facteurs de puissance d'un membre
+ * (Intelligence, Puissance, Technique, 0 à 100). La puissance globale en
+ * est la moyenne, recalculée automatiquement. Côté base, set_member_stats()
+ * exige manage_users ou manage_economy, et chaque correction apparaît dans
+ * le journal d'audit.
  */
 export function PowerAdminSection() {
   const supabase = createClient();
-  const [rows, setRows] = useState<Row[]>([]);
-  const [inputs, setInputs] = useState<Record<string, string>>({});
+  const [rows, setRows] = useState<LeaderboardEntry[]>([]);
+  const [drafts, setDrafts] = useState<Record<string, Draft>>({});
   const [message, setMessage] = useState<string | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
 
   async function refresh() {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("id, nickname, power_score")
-      .eq("status", "active")
-      .order("power_score", { ascending: false });
+    const { data, error } = await supabase.rpc("list_leaderboard");
     if (error) {
-      setMessage(`Impossible de charger les scores : ${error.message}`);
+      setMessage(`Impossible de charger les facteurs : ${error.message}`);
       return;
     }
-    setRows((data ?? []) as Row[]);
+    const list = ((data ?? []) as LeaderboardEntry[]).sort(
+      (a, b) => Number(b.power_score) - Number(a.power_score) || a.nickname.localeCompare(b.nickname)
+    );
+    setRows(list);
+    setDrafts({});
   }
 
   useEffect(() => {
     refresh();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function save(id: string) {
-    const raw = inputs[id];
-    if (raw === undefined || raw === "") return;
-    const value = Math.round(Number(raw));
-    if (!Number.isFinite(value) || value < 0) {
-      setMessage("Le score doit être un nombre positif ou nul.");
+  function draftFor(m: LeaderboardEntry): Draft {
+    return (
+      drafts[m.user_id] ?? {
+        intelligence: String(m.intelligence ?? 0),
+        strength: String(m.strength ?? 0),
+        technique: String(m.technique ?? 0),
+      }
+    );
+  }
+
+  async function save(m: LeaderboardEntry) {
+    const d = draftFor(m);
+    const values = STATS.map((k) => Math.round(Number(d[k])));
+    if (values.some((v) => !Number.isFinite(v) || v < 0 || v > 100)) {
+      setMessage("Chaque facteur doit être un nombre entre 0 et 100.");
       return;
     }
-    setSavingId(id);
+    setSavingId(m.user_id);
     setMessage(null);
-    const { error } = await supabase.rpc("set_power_score", { p_user_id: id, p_score: value });
+    const { error } = await supabase.rpc("set_member_stats", {
+      p_user_id: m.user_id,
+      p_intelligence: values[0],
+      p_strength: values[1],
+      p_technique: values[2],
+    });
     setSavingId(null);
     if (error) {
       setMessage(`Échec : ${error.message}`);
       return;
     }
-    setInputs((i) => ({ ...i, [id]: "" }));
     await refresh();
   }
 
@@ -59,33 +79,46 @@ export function PowerAdminSection() {
     <section className="space-y-3">
       <h2 className="font-display text-lg uppercase text-paper">Puissance</h2>
       <p className="font-body text-sm text-paper/60">
-        Score affiché dans l&apos;onglet « Puissance » du classement. Chaque modification est journalisée.
+        La puissance globale est la moyenne de trois facteurs (100 max), que les membres font progresser dans les
+        simulations. Tu peux les corriger ici ; chaque correction est inscrite au journal d&apos;audit.
       </p>
       {message && <p className="font-mono text-sm text-red">{message}</p>}
-      {rows.map((m) => (
-        <div key={m.id} className="glass-card flex flex-wrap items-center gap-3 p-4">
-          <div className="min-w-[10rem]">
-            <p className="font-display uppercase">{m.nickname}</p>
-            <p className="font-mono text-xs text-blue">{m.power_score.toLocaleString("fr-FR")} pts</p>
+      {rows.map((m) => {
+        const d = draftFor(m);
+        const dirty =
+          d.intelligence !== String(m.intelligence ?? 0) ||
+          d.strength !== String(m.strength ?? 0) ||
+          d.technique !== String(m.technique ?? 0);
+        return (
+          <div key={m.user_id} className="glass-card flex flex-wrap items-end gap-3 p-4">
+            <div className="min-w-[10rem] flex-1">
+              <p className="font-display uppercase">{m.nickname}</p>
+              <p className="font-mono text-xs text-blue">Puissance globale : {formatPower(Number(m.power_score))} / 100</p>
+            </div>
+            {STATS.map((k) => (
+              <label key={k} className="space-y-1">
+                <span className="block font-mono text-[10px] uppercase tracking-wide text-paper/60">{STAT_LABELS[k]}</span>
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  className={`${inputClass} w-24`}
+                  value={d[k]}
+                  onChange={(e) => setDrafts((all) => ({ ...all, [m.user_id]: { ...d, [k]: e.target.value } }))}
+                  onKeyDown={(e) => e.key === "Enter" && dirty && save(m)}
+                />
+              </label>
+            ))}
+            <button
+              onClick={() => save(m)}
+              disabled={savingId === m.user_id || !dirty}
+              className="rounded-lg bg-blue px-4 py-2 font-mono text-xs uppercase text-ink hover:bg-blue-light disabled:opacity-40"
+            >
+              {savingId === m.user_id ? "…" : "Enregistrer"}
+            </button>
           </div>
-          <input
-            type="number"
-            min={0}
-            placeholder="Nouveau score"
-            className={`${inputClass} w-36`}
-            value={inputs[m.id] ?? ""}
-            onChange={(e) => setInputs((i) => ({ ...i, [m.id]: e.target.value }))}
-            onKeyDown={(e) => e.key === "Enter" && save(m.id)}
-          />
-          <button
-            onClick={() => save(m.id)}
-            disabled={savingId === m.id || !inputs[m.id]}
-            className="rounded-lg bg-blue px-4 py-2 font-mono text-xs uppercase text-ink hover:bg-blue-light disabled:opacity-40"
-          >
-            {savingId === m.id ? "…" : "Définir"}
-          </button>
-        </div>
-      ))}
+        );
+      })}
     </section>
   );
 }

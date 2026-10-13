@@ -185,6 +185,10 @@ export interface LeaderboardEntry {
   nickname: string;
   balance: number;
   reputation: number;
+  /** Puissance globale : moyenne des trois facteurs (100 max). */
   power_score: number;
   quests_completed: number;
+  intelligence?: number;
+  strength?: number;
+  technique?: number;
 }

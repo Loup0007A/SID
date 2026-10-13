@@ -1,4 +1,5 @@
 import type { PermissionKey } from "@/types/database";
+import { SIMULATION_SITES, type SimulationKind } from "@/lib/simulationSites";
 
 /**
  * Toutes les pages du tableau de bord, à un seul endroit : la page
@@ -13,7 +14,7 @@ import type { PermissionKey } from "@/types/database";
  * attendus est dans `public/icons/LISEZMOI.md`.
  */
 
-export type NavGroup = "espace" | "jeu" | "economie" | "admin";
+export type NavGroup = "espace" | "jeu" | "entrainement" | "economie" | "admin";
 
 export interface NavEntry {
   /** Identifiant stable, utilisé aussi comme nom de fichier de l'icône. */
@@ -26,11 +27,14 @@ export interface NavEntry {
   group: NavGroup;
   /** Visible seulement si le membre a AU MOINS UNE de ces permissions. */
   perm?: PermissionKey[];
+  /** Affiche le bandeau de chantier « En développement » sur la tuile. */
+  wip?: boolean;
 }
 
 export const NAV_GROUPS: { key: NavGroup; label: string }[] = [
   { key: "espace", label: "Mon espace" },
   { key: "jeu", label: "Le S.I.D." },
+  { key: "entrainement", label: "Entraînement" },
   { key: "economie", label: "Économie" },
   { key: "admin", label: "Administration" },
 ];
@@ -46,6 +50,19 @@ export const NAV_ENTRIES: NavEntry[] = [
   { key: "leaderboard", href: "/dashboard/leaderboard", label: "Classement", description: "Puissance, argent, renommée", emoji: "🏆", group: "jeu" },
   { key: "org-chart", href: "/dashboard/org-chart", label: "Organigramme", description: "La hiérarchie du S.I.D.", emoji: "🏛️", group: "jeu" },
   { key: "members", href: "/dashboard/members", label: "Trombinoscope", description: "Tous les membres", emoji: "👥", group: "jeu" },
+
+  ...(["donjons", "intelligence", "techniques"] as SimulationKind[]).map((kind): NavEntry => {
+    const site = SIMULATION_SITES[kind];
+    return {
+      key: kind,
+      href: `/dashboard/simulations/${kind}`,
+      label: site.label,
+      description: site.description,
+      emoji: site.emoji,
+      group: "entrainement",
+      wip: site.inDevelopment,
+    };
+  }),
 
   { key: "shop", href: "/dashboard/shop", label: "Boutique", description: "Acheter et vendre des objets", emoji: "🛒", group: "economie" },
   { key: "bank", href: "/dashboard/bank", label: "Banque", description: "Épargne, emprunts et bourse", emoji: "🏦", group: "economie" },
