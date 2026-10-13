@@ -468,3 +468,25 @@ body {
     transition-duration: 0.001ms !important;
   }
 }
+
+/* =========================================================
+   Bandeau de chantier « En développement » (src/components/ConstructionTape.tsx)
+   ========================================================= */
+.construction-tape {
+  background: repeating-linear-gradient(-45deg, #f5c518 0 14px, #141414 14px 28px);
+  border-top: 2px solid #141414;
+  border-bottom: 2px solid #141414;
+  box-shadow: 0 6px 16px -6px rgba(0, 0, 0, 0.6);
+}
+
+.construction-tape-label {
+  background: #141414;
+  color: #f5c518;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.7rem;
+  border: 1px solid #f5c518;
+  white-space: nowrap;
+}

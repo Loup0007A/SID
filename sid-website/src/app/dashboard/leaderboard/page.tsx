@@ -5,11 +5,12 @@ import { createClient } from "@/lib/supabase/client";
 import type { LeaderboardEntry } from "@/types/database";
 import { ProfileStyle, profileSkinClass } from "@/components/ProfileStyle";
 import clsx from "clsx";
+import { formatPower } from "@/components/MemberStatBars";
 
 type SortKey = "power_score" | "balance" | "reputation" | "quests_completed";
 
 const TABS: { key: SortKey; label: string; unit: string }[] = [
-  { key: "power_score", label: "Puissance", unit: "pts" },
+  { key: "power_score", label: "Puissance", unit: "/ 100" },
   { key: "balance", label: "Argent", unit: "z" },
   { key: "reputation", label: "Renommée", unit: "pts" },
   { key: "quests_completed", label: "Quêtes accomplies", unit: "" },
@@ -59,7 +60,10 @@ export default function LeaderboardPage() {
       </div>
 
       {sortKey === "power_score" && (
-        <p className="font-body text-sm text-paper/60">Le score de puissance est attribué par les administrateurs.</p>
+        <p className="font-body text-sm text-paper/60">
+          La puissance globale est la moyenne de l&apos;intelligence, de la puissance et de la technique de chaque membre
+          (100 maximum). Elles se gagnent dans les simulations de la rubrique Entraînement.
+        </p>
       )}
 
       <div className="glass-card divide-y divide-white/10 p-2">
@@ -69,9 +73,17 @@ export default function LeaderboardPage() {
             <span className={clsx("w-8 shrink-0 text-center font-display text-lg", i === 0 && "text-blue-light", i === 1 && "text-paper/80", i === 2 && "text-red-light")}>
               {i + 1}
             </span>
-            <span className="flex-1 font-display uppercase">{e.nickname}</span>
-            <span className="font-mono text-sm text-blue-light">
-              {Number(e[sortKey]).toLocaleString("fr-FR")} {activeTab.unit}
+            <span className="min-w-0 flex-1">
+              <span className="block font-display uppercase">{e.nickname}</span>
+              {sortKey === "power_score" && e.intelligence !== undefined && (
+                <span className="block font-mono text-[10px] uppercase tracking-wide text-paper/50">
+                  Int. {e.intelligence} · Pui. {e.strength ?? 0} · Tech. {e.technique ?? 0}
+                </span>
+              )}
+            </span>
+            <span className="shrink-0 font-mono text-sm text-blue-light">
+              {sortKey === "power_score" ? formatPower(Number(e.power_score)) : Number(e[sortKey]).toLocaleString("fr-FR")}{" "}
+              {activeTab.unit}
             </span>
           </div>
         ))}

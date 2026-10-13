@@ -34,6 +34,7 @@ const ACTION_LABELS: Record<string, string> = {
   maintenance_changed: "Maintenance",
   wallet_adjusted: "Solde ajusté",
   reputation_adjusted: "Renommée ajustée",
+  stats_changed: "Facteurs de puissance corrigés",
   password_reset: "Mot de passe réinitialisé",
   email_confirmed: "Email confirmé à la main",
 };
@@ -45,6 +46,9 @@ const FIELD_LABELS: Record<string, string> = {
   is_founder: "fondateur",
   member_rank: "rang",
   power_score: "puissance",
+  intelligence: "intelligence",
+  strength: "puissance",
+  technique: "technique",
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -68,6 +72,7 @@ const SECTION_LABELS: Record<string, string> = {
   bank: "Banque & bourse",
   quests: "Quêtes",
   registrations: "Inscriptions",
+  simulations: "Simulations",
 };
 
 function show(value: unknown, field?: string): string {
@@ -89,6 +94,7 @@ function describe(row: AuditRow): string {
   const d = row.details ?? {};
   switch (row.action) {
     case "profile_changed":
+    case "stats_changed":
       return Object.entries(d)
         .map(([k, v]) => {
           const change = v as { from?: unknown; to?: unknown };

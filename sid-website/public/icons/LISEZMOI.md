@@ -5,6 +5,9 @@ colonne « Fichier ». Tant qu'un fichier manque, la page d'accueil affiche
 l'emoji de secours : tu peux donc les ajouter au fur et à mesure, sans
 toucher au code.
 
+Tant qu'une simulation est « en développement », un bandeau de chantier
+barre son icône : c'est normal.
+
 Conseils : image carrée, fond transparent, 128×128 px ou plus (elle est
 affichée en 56×56, la taille supplémentaire sert aux écrans haute définition).
 
@@ -22,6 +25,9 @@ page : `src/lib/navigation.ts`.
 | `leaderboard.png` | Classement (`/dashboard/leaderboard`) | Le S.I.D. | 🏆 |
 | `org-chart.png` | Organigramme (`/dashboard/org-chart`) | Le S.I.D. | 🏛️ |
 | `members.png` | Trombinoscope (`/dashboard/members`) | Le S.I.D. | 👥 |
+| `donjons.png` | Donjons (`/dashboard/simulations/donjons`) | Entraînement | 🏰 |
+| `intelligence.png` | Intelligence (`/dashboard/simulations/intelligence`) | Entraînement | 🧪 |
+| `techniques.png` | Techniques (`/dashboard/simulations/techniques`) | Entraînement | 🥋 |
 | `shop.png` | Boutique (`/dashboard/shop`) | Économie | 🛒 |
 | `bank.png` | Banque (`/dashboard/bank`) | Économie | 🏦 |
 | `business.png` | Entreprise (`/dashboard/business`) | Économie | 🏢 |

@@ -13,6 +13,7 @@ const SECTION_LABELS: Record<string, string> = {
   bank: "Banque & Bourse",
   quests: "Quêtes",
   registrations: "Nouvelles candidatures",
+  simulations: "Simulations",
 };
 
 const SANCTION_LABELS: Record<SanctionType, string> = {
