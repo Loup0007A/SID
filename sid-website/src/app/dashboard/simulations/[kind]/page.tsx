@@ -19,6 +19,8 @@ import {
   siteOrigin,
 } from "@/lib/simulationSites";
 import type { SimulationOverview, SimulationResultResponse, SimulationRunStatus } from "@/types/simulationRuns";
+import type { RealtimeChannel } from "@supabase/supabase-js";
+import { connectRaid, sendRaidEvent, type ActiveRaid, type BossRaid } from "@/lib/bossRaids";
 
 const RUN_STATUS_LABELS: Record<SimulationRunStatus, string> = {
   started: "En cours",
@@ -36,7 +38,7 @@ const RUN_STATUS_LABELS: Record<SimulationRunStatus, string> = {
  *  - startedAt : début de cette partie (horloge de l'appareil, comme celle du site dans l'iframe)
  *  - issued    : tous les jetons donnés à cette iframe
  */
-type Session = { token: string | null; iframeUrl: string; startedAt: number; issued: string[] };
+type Session = { token: string | null; iframeUrl: string; startedAt: number; issued: string[]; raid?: boolean };
 
 type Notice = { tone: "good" | "bad" | "info"; text: string };
 
@@ -75,6 +77,13 @@ export default function SimulationPage() {
   const sessionRef = useRef<Session | null>(null);
   sessionRef.current = session;
 
+  // Raids de boss (Donjons) : liste des appels à l'aide et relais temps réel.
+  const [raids, setRaids] = useState<BossRaid[]>([]);
+  const [highlightRaid, setHighlightRaid] = useState<string | null>(null);
+  const [me, setMe] = useState<{ id: string; name: string } | null>(null);
+  const raidRef = useRef<ActiveRaid | null>(null);
+  const channelRef = useRef<RealtimeChannel | null>(null);
+
   const site = isSimulationKind(kind) ? SIMULATION_SITES[kind] : null;
   const origin = site ? siteOrigin(site) : null;
 
@@ -91,6 +100,100 @@ export default function SimulationPage() {
   useEffect(() => {
     refresh();
   }, [refresh]);
+
+  const refreshRaids = useCallback(async () => {
+    if (kind !== "donjons") return;
+    const { data } = await supabase.rpc("list_open_boss_raids");
+    setRaids((data ?? []) as BossRaid[]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kind]);
+
+  useEffect(() => {
+    if (kind !== "donjons") return;
+    refreshRaids();
+    const t = setInterval(refreshRaids, 20000);
+    // Lien d'une notification : /dashboard/simulations/donjons?raid=<id>
+    const fromLink = new URLSearchParams(window.location.search).get("raid");
+    if (fromLink) setHighlightRaid(fromLink);
+    (async () => {
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth.user) return;
+      const { data: prof } = await supabase.from("profiles").select("nickname").eq("id", auth.user.id).maybeSingle();
+      setMe({ id: auth.user.id, name: prof?.nickname ?? "Allié" });
+    })();
+    return () => {
+      clearInterval(t);
+      if (channelRef.current) void supabase.removeChannel(channelRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kind]);
+
+  const postToGame = useCallback(
+    (msg: Record<string, unknown>) => {
+      if (origin) iframeRef.current?.contentWindow?.postMessage(msg, origin);
+    },
+    [origin]
+  );
+
+  const leaveRaidChannel = useCallback(() => {
+    if (channelRef.current) void supabase.removeChannel(channelRef.current);
+    channelRef.current = null;
+    raidRef.current = null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const openRaidChannel = useCallback(
+    (raid: ActiveRaid) => {
+      if (!me) {
+        postToGame({ type: "sid-raid", action: "error", message: "Profil introuvable." });
+        return;
+      }
+      leaveRaidChannel();
+      raidRef.current = raid;
+      channelRef.current = connectRaid(supabase, raid, me, postToGame);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [me, postToGame, leaveRaidChannel]
+  );
+
+  // Messages « mv-raid » du jeu 3D.
+  const handleRaidMessage = useCallback(
+    async (d: Record<string, unknown>) => {
+      const action = d.action;
+      if (action === "request") {
+        const { data, error } = await supabase.rpc("create_boss_raid", {
+          p_story: Number(d.story) || 1,
+          p_chapter: Number(d.chapter) || 1,
+          p_boss_name: String(d.boss ?? "Gardien"),
+        });
+        if (error || !data) {
+          postToGame({ type: "sid-raid", action: "error", message: error?.message ?? "Raid impossible." });
+          return;
+        }
+        const r = data as { id: string; dragon: boolean; host_nickname?: string };
+        openRaidChannel({ id: r.id, isHost: true, dragon: r.dragon, hostName: r.host_nickname ?? me?.name ?? "" });
+        setNotice({ tone: "info", text: "⚔️ Appel à l'aide envoyé : tous les membres sont prévenus. Le raid reste ouvert 30 minutes." });
+        refreshRaids();
+      } else if (action === "ready") {
+        const r = raidRef.current;
+        if (r && d.raid === r.id && !channelRef.current) openRaidChannel(r);
+        else if (r && d.raid === r.id) postToGame({ type: "sid-raid", action: "joined", raidId: r.id, isHost: r.isHost, dragon: r.dragon, hostName: r.hostName, me });
+      } else if (action === "send") {
+        if (channelRef.current && me && typeof d.event === "string") sendRaidEvent(channelRef.current, me, d.event, d.payload ?? {});
+      } else if (action === "won") {
+        const r = raidRef.current;
+        if (r) {
+          await supabase.rpc("finish_boss_raid", { p_raid_id: r.id, p_won: true });
+          setNotice({ tone: "good", text: "⚔️ Raid gagné ! Le gardien est tombé." });
+          refreshRaids();
+        }
+      } else if (action === "leave") {
+        leaveRaidChannel();
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [me, postToGame, openRaidChannel, leaveRaidChannel, refreshRaids]
+  );
 
   useEffect(() => {
     const onChange = () => {
@@ -221,6 +324,10 @@ export default function SimulationPage() {
       const d = e.data as Record<string, unknown> | null;
       if (!d || typeof d !== "object") return;
 
+      if (d.type === "mv-raid") {
+        void handleRaidMessage(d);
+        return;
+      }
       if (d.type === SITE_RESULT_MESSAGE_TYPE) {
         const verdict = interpretSiteReport(site, d, current.startedAt);
         if (verdict.action === "record") void submitResult(verdict.success, undefined, String(d.epreuve));
@@ -237,9 +344,9 @@ export default function SimulationPage() {
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [Boolean(session), origin, submitResult]);
+  }, [Boolean(session), origin, submitResult, handleRaidMessage]);
 
-  async function start() {
+  async function start(extraParams?: Record<string, string>) {
     if (!site) return;
     setStarting(true);
     setNotice(null);
@@ -249,7 +356,35 @@ export default function SimulationPage() {
       setNotice({ tone: "bad", text: run.error });
       return;
     }
-    setSession({ token: run.token, iframeUrl: run.iframeUrl, startedAt: Date.now(), issued: [run.token] });
+    const url = new URL(run.iframeUrl);
+    // Donjons : la Puissance décide du dragon (à partir de 90).
+    if (site.kind === "donjons" && overview) url.searchParams.set("sid_puissance", String(overview.strength));
+    for (const [k, v] of Object.entries(extraParams ?? {})) url.searchParams.set(k, v);
+    setSession({ token: run.token, iframeUrl: url.toString(), startedAt: Date.now(), issued: [run.token] });
+  }
+
+  // Rejoindre le raid d'un autre membre : le jeu s'ouvre directement sur son île.
+  async function joinRaid(r: BossRaid) {
+    const { data, error } = await supabase.rpc("join_boss_raid", { p_raid_id: r.id });
+    if (error || !data) {
+      setNotice({ tone: "bad", text: error?.message ?? "Impossible de rejoindre ce raid." });
+      refreshRaids();
+      return;
+    }
+    const j = data as { id: string; dragon: boolean; story: number; chapter: number; host_nickname?: string; is_host?: boolean };
+    leaveRaidChannel();
+    raidRef.current = { id: j.id, isHost: !!j.is_host, dragon: j.dragon, hostName: j.host_nickname ?? "" };
+    // Pas de partie S.I.D. pour un allié : aider ne rapporte pas de point
+    // (et ne compte pas dans la limite du jour).
+    if (!site?.url) return;
+    const url = new URL(site.url);
+    url.searchParams.set("story", String(j.story));
+    url.searchParams.set("raid", j.id);
+    url.searchParams.set("raid_chapter", String(j.chapter));
+    if (j.dragon) url.searchParams.set("raid_dragon", "1");
+    exitFullscreen();
+    setSession({ token: null, iframeUrl: url.toString(), startedAt: Date.now(), issued: [], raid: true });
+    setNotice({ tone: "info", text: `⚔️ Tu rejoins le raid de ${j.host_nickname ?? "ce membre"}. Clique sur « Rejoindre le combat » dans le jeu.` });
   }
 
   // Objet « réinitialisation des délais » : efface les délais d'attente de
@@ -394,6 +529,7 @@ export default function SimulationPage() {
                 <button
                   onClick={() => {
                     exitFullscreen();
+                    leaveRaidChannel();
                     setSession(null);
                     setNotice({ tone: "info", text: "Simulation fermée. Les parties déjà terminées restent comptées." });
                   }}
@@ -401,8 +537,12 @@ export default function SimulationPage() {
                 >
                   Fermer la simulation
                 </button>
-                {!session.token && (
-                  <span className="self-center font-mono text-[11px] text-paper/50">Les parties ne comptent plus pour aujourd&apos;hui.</span>
+                {session.raid ? (
+                  <span className="self-center font-mono text-[11px] text-paper/50">Raid : tu aides un autre membre (sans point à gagner).</span>
+                ) : (
+                  !session.token && (
+                    <span className="self-center font-mono text-[11px] text-paper/50">Les parties ne comptent plus pour aujourd&apos;hui.</span>
+                  )
                 )}
               </div>
             </>
@@ -413,7 +553,7 @@ export default function SimulationPage() {
                 ne fait rien perdre.
               </p>
               <button
-                onClick={start}
+                onClick={() => start()}
                 disabled={starting || Boolean(disabledReason)}
                 className="rounded-lg bg-red px-5 py-2.5 font-display uppercase tracking-wide text-ink hover:bg-red-light disabled:cursor-not-allowed disabled:opacity-40"
               >
@@ -473,6 +613,54 @@ export default function SimulationPage() {
           )}
         </aside>
       </div>
+
+      {site.kind === "donjons" && (
+        <section className="space-y-2">
+          <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-paper/50">⚔️ Raids en cours</h2>
+          {raids.length === 0 ? (
+            <p className="glass-card px-4 py-3 font-body text-sm text-paper/60">
+              Aucun appel à l&apos;aide pour le moment. Si tu tombes face à un gardien, le jeu te proposera de demander de
+              l&apos;aide aux autres membres.
+            </p>
+          ) : (
+            <div className="glass-card divide-y divide-white/10">
+              {raids.map((r) => {
+                const mine = r.host_id === me?.id;
+                const minutes = Math.max(0, Math.round((new Date(r.expires_at).getTime() - Date.now()) / 60000));
+                return (
+                  <div
+                    key={r.id}
+                    className={clsx(
+                      "flex flex-wrap items-center justify-between gap-2 px-4 py-3",
+                      highlightRaid === r.id && "bg-red/10"
+                    )}
+                  >
+                    <div className="font-mono text-xs">
+                      <p className="text-paper">
+                        {r.dragon ? "🐉" : "👑"} <strong>{r.host_nickname ?? "Un membre"}</strong> appelle à l&apos;aide
+                        {mine && <span className="text-paper/50"> (ton raid)</span>}
+                      </p>
+                      <p className="text-paper/60">
+                        {r.dragon ? "Dragon" : r.boss_name} · histoire {r.story}, île {r.chapter} · {r.members} combattant
+                        {r.members > 1 ? "s" : ""} · encore {minutes} min
+                      </p>
+                    </div>
+                    {!mine && (
+                      <button
+                        onClick={() => joinRaid(r)}
+                        disabled={!site.url || raidRef.current?.id === r.id}
+                        className="rounded-lg bg-red px-4 py-1.5 font-mono text-xs uppercase text-ink hover:bg-red-light disabled:opacity-40"
+                      >
+                        Rejoindre
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      )}
 
       {recentRuns.length > 0 && (
         <section className="space-y-2">
