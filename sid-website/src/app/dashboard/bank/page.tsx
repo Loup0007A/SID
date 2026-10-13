@@ -5,7 +5,6 @@ import { createClient } from "@/lib/supabase/client";
 import type { Wallet, BankAccount } from "@/types/database";
 import type { BusinessSharePricePoint, MarketEntry, MarketSettings, MyShareholding, SellResult } from "@/types/business";
 import { LineChart } from "@/components/LineChart";
-import { MaintenanceNotice } from "@/components/MaintenanceNotice";
 import { inputClass, labelClass } from "@/lib/ui";
 
 const cr = (n: number, digits = 2) => `${n.toLocaleString("fr-FR", { maximumFractionDigits: digits })} z`;
@@ -145,7 +144,6 @@ export default function BankPage() {
     <div className="max-w-2xl space-y-6">
       <h1 className="font-display text-2xl uppercase tracking-wide text-red">Banque du S.I.D.</h1>
 
-      <MaintenanceNotice sectionKey="bank" />
 
       <div className="glass-card grid grid-cols-1 gap-4 p-6 sm:grid-cols-2">
         <div>

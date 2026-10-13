@@ -1,5 +1,6 @@
 import type { PermissionKey } from "@/types/database";
 import { SIMULATION_SITES, type SimulationKind } from "@/lib/simulationSites";
+import type { MaintenanceSection } from "@/lib/maintenance";
 
 /**
  * Toutes les pages du tableau de bord, à un seul endroit : la page
@@ -29,6 +30,8 @@ export interface NavEntry {
   perm?: PermissionKey[];
   /** Affiche le bandeau de chantier « En développement » sur la tuile. */
   wip?: boolean;
+  /** Section que l'administration peut suspendre (bandeau « Service suspendu »). */
+  section?: MaintenanceSection;
 }
 
 export const NAV_GROUPS: { key: NavGroup; label: string }[] = [
@@ -41,11 +44,12 @@ export const NAV_GROUPS: { key: NavGroup; label: string }[] = [
 
 export const NAV_ENTRIES: NavEntry[] = [
   { key: "profile", href: "/dashboard/profile", label: "Mon dossier", description: "Ton profil, ta photo, ta confidentialité", emoji: "🪪", group: "espace" },
-  { key: "chat", href: "/dashboard/chat", label: "Messagerie", description: "Messages privés et groupes", emoji: "💬", group: "espace" },
+  { key: "chat", href: "/dashboard/chat", label: "Messagerie", description: "Messages privés et groupes", emoji: "💬", group: "espace", section: "chat" },
   { key: "notifications", href: "/dashboard/notifications", label: "Notifications", description: "Tout ce qui t'est arrivé récemment", emoji: "🔔", group: "espace" },
   { key: "settings", href: "/dashboard/settings", label: "Réglages", description: "Apparence de tes cartes", emoji: "⚙️", group: "espace" },
 
-  { key: "quests", href: "/dashboard/quests", label: "Quêtes", description: "Missions ouvertes et en cours", emoji: "📜", group: "jeu" },
+  { key: "quests", href: "/dashboard/quests", label: "Quêtes", description: "Missions ouvertes et en cours", emoji: "📜", group: "jeu", section: "quests" },
+  { key: "tech", href: "/dashboard/tech", label: "Arbre technologique", description: "Dépense tes points de simulation", emoji: "🌳", group: "entrainement" },
   { key: "map", href: "/dashboard/map", label: "Carte", description: "Ta position et tes trajets", emoji: "🗺️", group: "jeu" },
   { key: "leaderboard", href: "/dashboard/leaderboard", label: "Classement", description: "Puissance, argent, renommée", emoji: "🏆", group: "jeu" },
   { key: "org-chart", href: "/dashboard/org-chart", label: "Organigramme", description: "La hiérarchie du S.I.D.", emoji: "🏛️", group: "jeu" },
@@ -61,11 +65,12 @@ export const NAV_ENTRIES: NavEntry[] = [
       emoji: site.emoji,
       group: "entrainement",
       wip: site.inDevelopment,
+      section: "simulations",
     };
   }),
 
-  { key: "shop", href: "/dashboard/shop", label: "Boutique", description: "Acheter et vendre des objets", emoji: "🛒", group: "economie" },
-  { key: "bank", href: "/dashboard/bank", label: "Banque", description: "Épargne, emprunts et bourse", emoji: "🏦", group: "economie" },
+  { key: "shop", href: "/dashboard/shop", label: "Boutique", description: "Acheter et vendre des objets", emoji: "🛒", group: "economie", section: "shop" },
+  { key: "bank", href: "/dashboard/bank", label: "Banque", description: "Épargne, emprunts et bourse", emoji: "🏦", group: "economie", section: "bank" },
   { key: "business", href: "/dashboard/business", label: "Entreprise", description: "Gérer tes entreprises", emoji: "🏢", group: "economie", perm: ["entreprise"] },
 
   { key: "applications", href: "/dashboard/admin/applications", label: "Recrutement", description: "Candidatures en attente", emoji: "📋", group: "admin", perm: ["recruit"] },
