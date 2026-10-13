@@ -143,7 +143,50 @@ manette.
 
 ---
 
-## 6. Sécurité : ce qu'il faut savoir
+## 6. Progression synchronisée entre appareils
+
+Chaque site garde sa progression dans le `localStorage` du navigateur
+(niveaux débloqués, délais entre tentatives, histoires terminées,
+sauvegardes). Pour qu'elle suive le membre sur tous ses appareils, chaque
+site charge **une seule ligne** dans son `<head>` :
+
+```html
+<script src="https://sid-quest.vercel.app/sid-sync.js" async></script>
+```
+
+Ce script (`public/sid-sync.js`) ne fait **rien** quand le site est ouvert
+seul. Ouvert depuis le S.I.D. (paramètre `sid_run`), il :
+
+1. récupère la progression enregistrée sur le compte et la fusionne avec
+   celle de l'appareil, puis recharge la page une fois si quelque chose a
+   changé (seulement dans les 5 premières secondes, et jamais pendant une
+   tentative) ;
+2. renvoie chaque modification au S.I.D. 1,5 s après, et au plus tard
+   quand on quitte la page.
+
+| Simulation | Clés synchronisées | Non synchronisées |
+|---|---|---|
+| Intelligence (Potions) | `sq_<…>_prog_*`, `sq_<…>_cd_*` | `sq_email`, `sq_actif` (tentative en cours) |
+| Techniques | `sqt_prog`, `sqt_cd` | `sqt_email`, `sqt_actif` |
+| Donjons (3D) | `mv-done`, `mv-end<n>`, `mv-s<n>` | `mv-quality`, `mv-sens`, `mv-invert` (réglages de l'appareil), `mv-email`, `mv-envoyes` |
+
+**Fusion.** Le script retient ce que le compte contenait à la dernière
+synchro : une clé modifiée d'un seul côté prend la nouvelle valeur ; modifiée
+des deux côtés (ex. joué hors ligne), il garde le plus grand nombre, l'union
+des listes, la sauvegarde la plus avancée. Une suppression (ex. délai
+terminé) se propage aussi. Si un **autre membre** a joué sur le même
+appareil, la progression du compte connecté remplace celle de l'appareil
+(celle de l'autre membre reste sur son compte).
+
+Adresses utilisées (CORS ouvert, jeton de partie valable 24 h pour la synchro) :
+
+- `GET  /api/simulations/progress?token=<sid_run>` → `{ ok, kind, account, data: { clé: valeur | null } }`
+- `POST /api/simulations/progress` — `{ "token": "…", "set": { "clé": "valeur" }, "remove": ["clé"] }`
+  (300 clés par envoi, 1000 clés / 300 Ko par simulation et par membre)
+
+Rien ne se gagne par ces adresses : seuls les résultats rapportent des points.
+
+## 7. Sécurité : ce qu'il faut savoir
 
 **Pourquoi un résultat sans jeton n'est jamais compté.** Tes sites calculent
 leur « signature » (`sig`) dans le navigateur, avec un sel (`sid-quest-v2`)
