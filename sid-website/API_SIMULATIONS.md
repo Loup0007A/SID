@@ -7,7 +7,7 @@ n'en fait pas perdre.
 
 | Tuile | Site | Épreuves reconnues | Facteur |
 |---|---|---|---|
-| Donjons | https://loup0007a.github.io/3D-game-world/ (`Loup0007A/3D-game-world`) | `mondes-vivants` | Puissance |
+| Donjons | https://loup0007a.github.io/3D-game-world/ (`Loup0007A/3D-game-world`) | `mondes-vivants` (1 point par île/chapitre terminé, 10 par histoire) | Puissance |
 | Intelligence | https://intelligence-seven-henna.vercel.app/ (`Loup0007A/Potions`) | `potions`, `enigmes`, `probleme` | Intelligence |
 | Techniques | https://techniques-delta.vercel.app/ (`Loup0007A/Techniques`) | `techniques` | Technique |
 
@@ -53,7 +53,7 @@ Chaque épreuve est une **compétence** notée de 0 à 100 (+1 par réussite) :
 | Compétence (`epreuve`) | Facteur |
 |---|---|
 | `potions`, `enigmes`, `probleme` | Intelligence = **moyenne** des trois |
-| `mondes-vivants` | Puissance |
+| `mondes-vivants` (1 point par île/chapitre terminé, 10 par histoire) | Puissance |
 | `techniques` | Technique |
 
 La puissance globale est la moyenne des trois facteurs. L'administration peut
@@ -67,7 +67,7 @@ régler directement le niveau d'un membre dans chaque compétence (Admin →
 | `statut=echoue`, `explosion`, `temps_ecoule`… | échec : 0 point |
 | `statut=invalide` | ignoré : tentative annulée (page quittée ou rechargée), la partie reste ouverte |
 | `epreuve` d'une autre simulation | ignoré (un résultat de Potions ne peut pas valider une partie de Donjons) |
-| `debut` plus de 10 min avant la partie S.I.D. | ignoré (vieille tentative renvoyée au rechargement) |
+| échec dont le `debut` précède de plus de 10 min la partie S.I.D. | ignoré (vieille tentative renvoyée au rechargement) ; une **réussite** compte toujours |
 | pas de jeton `sid_run` | **jamais compté** (voir section 6) |
 
 Le jeton arrive tout seul dans la requête `GET /api` : tes sites recopient

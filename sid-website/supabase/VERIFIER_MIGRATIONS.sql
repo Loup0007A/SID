@@ -8,7 +8,7 @@
 -- que rien ne casse visiblement sur le site.
 --
 --  - Tout est à true jusqu'à 0045 : exécute dans l'ordre les migrations
---    suivantes qui sont à false (0047 … 0051, dans l'ordre).
+--    suivantes qui sont à false (0047 … 0052, dans l'ordre).
 --  - Au moins un false : ne lance rien d'autre, envoie-moi le résultat ;
 --    certaines migrations ne peuvent pas être rejouées deux fois, je te
 --    donnerai l'ordre exact à suivre selon ce qui manque.
@@ -27,5 +27,6 @@ select migration, appliquee from (values
   ('0048 journal d''audit',         exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'audit_log')),
   ('0049 facteurs + simulations',   exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'member_stats')),
   ('0050 progression synchronisée', exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'simulation_progress')),
-  ('0051 compétences + objets',     exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'member_skills'))
+  ('0051 compétences + objets',     exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'member_skills')),
+  ('0052 donjons par chapitre',     exists (select 1 from pg_proc where proname = 'set_member_levels' and prosrc like '%v_level / 10%'))
 ) as t(migration, appliquee);
