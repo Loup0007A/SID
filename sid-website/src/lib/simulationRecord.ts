@@ -140,12 +140,18 @@ export async function recordSimulationResult(opts: {
     };
   }
 
-  const { data, error } = await admin.rpc("complete_simulation_run", {
+  const args: Record<string, unknown> = {
     p_token_hash: hashRunToken(opts.token),
     p_success: opts.success,
     p_epreuve: opts.epreuve ?? null,
-    p_niveau: Number.isInteger(opts.niveau) ? opts.niveau : null,
-  });
+  };
+  if (Number.isInteger(opts.niveau)) args.p_niveau = opts.niveau;
+  let { data, error } = await admin.rpc("complete_simulation_run", args);
+  // Base pas encore passée en 0056 (fonction sans p_niveau) : on retente sans.
+  if (error && "p_niveau" in args && /complete_simulation_run|function/i.test(error.message)) {
+    delete args.p_niveau;
+    ({ data, error } = await admin.rpc("complete_simulation_run", args));
+  }
   if (error || !data) {
     return { status: 500, body: { ok: false, error: "server_error", message: "Erreur du serveur." } };
   }
