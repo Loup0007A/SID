@@ -7,7 +7,7 @@ n'en fait pas perdre.
 
 | Tuile | Site | Épreuves reconnues | Facteur |
 |---|---|---|---|
-| Donjons | https://loup0007a.github.io/3D-game-world/ (`Loup0007A/3D-game-world`) | `mondes-vivants` (1 point par île/chapitre terminé, 10 par histoire) | Puissance |
+| Donjons | https://loup0007a.github.io/3D-game-world/ (`Loup0007A/3D-game-world`) | `mondes-vivants` (1 point par histoire terminée) | Puissance |
 | Intelligence | https://intelligence-seven-henna.vercel.app/ (`Loup0007A/Potions`) | `potions`, `enigmes`, `probleme` | Intelligence |
 | Techniques | https://techniques-delta.vercel.app/ (`Loup0007A/Techniques`) | `techniques` | Technique |
 
@@ -53,7 +53,7 @@ Chaque épreuve est une **compétence** notée de 0 à 100 (+1 par réussite) :
 | Compétence (`epreuve`) | Facteur |
 |---|---|
 | `potions`, `enigmes`, `probleme` | Intelligence = **moyenne** des trois |
-| `mondes-vivants` (1 point par île/chapitre terminé, 10 par histoire) | Puissance |
+| `mondes-vivants` (1 point par histoire terminée) | Puissance |
 | `techniques` | Technique |
 
 La puissance globale est la moyenne des trois facteurs. L'administration peut
