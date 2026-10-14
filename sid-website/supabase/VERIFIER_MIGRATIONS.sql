@@ -8,7 +8,7 @@
 -- que rien ne casse visiblement sur le site.
 --
 --  - Tout est à true jusqu'à 0045 : exécute dans l'ordre les migrations
---    suivantes qui sont à false (0047 … 0055, dans l'ordre).
+--    suivantes qui sont à false (0047 … 0056, dans l'ordre).
 --  - Au moins un false : ne lance rien d'autre, envoie-moi le résultat ;
 --    certaines migrations ne peuvent pas être rejouées deux fois, je te
 --    donnerai l'ordre exact à suivre selon ce qui manque.
@@ -31,5 +31,6 @@ select migration, appliquee from (values
   ('0052 donjons par chapitre',     exists (select 1 from pg_proc where proname = 'set_member_levels' and prosrc like '%v_level / 10%')),
   ('0053 raids de boss',            exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'boss_raids')),
   ('0054 blessures + arbre techno',  exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'tech_nodes')),
-  ('0055 donjons par histoire',     exists (select 1 from pg_proc where proname = 'set_member_levels' and prosrc like '%generate_series(1, v_level) i%'))
+  ('0055 donjons par histoire',     exists (select 1 from pg_proc where proname = 'set_member_levels' and prosrc like '%generate_series(1, v_level) i%')),
+  ('0056 donjons : niveau vérifié',  exists (select 1 from pg_proc where proname = 'complete_simulation_run' and pronargs = 4))
 ) as t(migration, appliquee);

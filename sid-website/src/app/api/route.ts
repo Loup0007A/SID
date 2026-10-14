@@ -76,6 +76,7 @@ export async function GET(request: NextRequest) {
     success: verdict.success,
     signature: q.get("sid_sig"),
     epreuve: q.get("epreuve"),
+    niveau: q.get("niveau") ? Number(q.get("niveau")) : null,
     expectedKind: site.kind,
     run,
   });
