@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import type { Profile, QuestDifficulty } from "@/types/database";
+import type { Profile } from "@/types/database";
 import { RankCard } from "@/components/RankCard";
 import { ProfileStyle, profileSkinClass } from "@/components/ProfileStyle";
 
@@ -56,7 +56,7 @@ export default function MemberProfilePage() {
           la page, ni à la description en dessous. */}
       <div className={`glass-card flex flex-wrap items-center gap-4 p-6 ${profileSkinClass(profile.id)}`}>
         <ProfileStyle userId={profile.id} css={css} />
-        <RankCard rank={(profile.member_rank as QuestDifficulty) ?? "E"} />
+        <RankCard rank={profile.member_rank ?? "E"} />
         <div>
           <h1 className="font-display text-2xl uppercase tracking-wide text-red">{profile.nickname}</h1>
           {(profile.first_name || profile.last_name) && (

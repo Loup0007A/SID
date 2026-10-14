@@ -36,6 +36,7 @@ const ACTION_LABELS: Record<string, string> = {
   reputation_adjusted: "Renommée ajustée",
   stats_changed: "Facteurs de puissance corrigés",
   levels_changed: "Niveaux modifiés",
+  rank_divine: "Rang Divin obtenu (niveau 101)",
   password_reset: "Mot de passe réinitialisé",
   email_confirmed: "Email confirmé à la main",
 };

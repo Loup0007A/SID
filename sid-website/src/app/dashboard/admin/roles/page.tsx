@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { loadCurrentUser, can } from "@/lib/permissions";
-import type { Role, Group, Profile, PermissionKey, QuestDifficulty } from "@/types/database";
+import type { Role, Group, Profile, PermissionKey, MemberRank } from "@/types/database";
 import { inputClass, labelClass } from "@/lib/ui";
 
 const ALL_PERMISSIONS: PermissionKey[] = [
@@ -101,7 +101,7 @@ export default function RolesAdminPage() {
     refresh();
   }
 
-  async function changeRank(userId: string, rank: QuestDifficulty) {
+  async function changeRank(userId: string, rank: MemberRank) {
     await supabase.from("profiles").update({ member_rank: rank }).eq("id", userId);
     refresh();
   }
@@ -181,9 +181,9 @@ export default function RolesAdminPage() {
                 <select
                   className={`${inputClass} w-24`}
                   value={m.member_rank}
-                  onChange={(e) => changeRank(m.id, e.target.value as QuestDifficulty)}
+                  onChange={(e) => changeRank(m.id, e.target.value as MemberRank)}
                 >
-                  {["E", "D", "C", "B", "A", "S"].map((r) => (
+                  {["E", "D", "C", "B", "A", "S", "Divin"].map((r) => (
                     <option key={r} value={r}>{r}</option>
                   ))}
                 </select>

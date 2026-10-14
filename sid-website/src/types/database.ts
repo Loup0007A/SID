@@ -13,7 +13,7 @@ export interface Profile {
   desired_role: string | null;
   status: ProfileStatus;
   is_founder: boolean;
-  member_rank: QuestDifficulty;
+  member_rank: MemberRank;
   is_muted: boolean;
   reputation: number;
   power_score: number;
@@ -63,6 +63,8 @@ export interface OrgNode {
 }
 
 export type QuestDifficulty = "E" | "D" | "C" | "B" | "A" | "S";
+/** Rang d'un membre : E à S, puis « Divin » (niveau caché 101 de Donjons). */
+export type MemberRank = QuestDifficulty | "Divin";
 export type QuestStatus = "open" | "in_progress" | "completed" | "failed" | "cancelled";
 export type QuestVisibility = "public" | "members" | "private";
 export type ContractType =

@@ -490,3 +490,30 @@ body {
   border: 1px solid #f5c518;
   white-space: nowrap;
 }
+
+/* Rang Divin : or vivant, rayons tournants (niveau caché 101) */
+.rank-divin {
+  background: radial-gradient(circle at 50% 30%, rgba(255, 233, 168, 0.32), rgba(60, 40, 10, 0.55) 60%, rgba(27, 30, 39, 0.75));
+  border: 1px solid rgba(255, 211, 77, 0.8);
+  box-shadow: 0 0 34px -2px rgba(255, 211, 77, 0.65), inset 0 0 22px rgba(255, 211, 77, 0.25);
+  animation: rank-s-glow 2.4s ease-in-out infinite;
+  overflow: hidden;
+}
+.rank-divin::before {
+  content: "";
+  position: absolute;
+  inset: -60%;
+  background: conic-gradient(from 0deg, transparent 0 10%, rgba(255, 233, 168, 0.35) 12%, transparent 16% 35%, rgba(255, 233, 168, 0.3) 37%, transparent 41% 60%, rgba(255, 233, 168, 0.35) 62%, transparent 66% 85%, rgba(255, 233, 168, 0.3) 87%, transparent 91%);
+  animation: rank-s-spin 9s linear infinite;
+  pointer-events: none;
+}
+.rank-divin .rank-card-letter {
+  position: relative;
+  background: linear-gradient(90deg, #fff4c8, #ffd34d, #fff4c8);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: rank-s-shimmer 2.5s linear infinite;
+}
+.rank-divin .rank-card-title { position: relative; color: #ffe9a8; letter-spacing: 0.2em; }
