@@ -72,7 +72,7 @@ export const SIMULATION_SITES: Record<SimulationKind, SimulationSite> = {
     kind: "donjons",
     label: "Donjons",
     factor: "strength",
-    description: "Explore les donjons pour gagner en puissance : chaque île (chapitre) terminée compte comme une simulation réussie.",
+    description: "Explore les donjons pour gagner en puissance : chaque histoire terminée rapporte +1 Puissance (Puissance N = histoire N+1 ouverte).",
     emoji: "🏰",
     repo: "Loup0007A/3D-game-world",
     url: "https://loup0007a.github.io/3D-game-world/",
