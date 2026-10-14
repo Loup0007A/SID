@@ -13,7 +13,8 @@ import { hashRunToken, verifySignature } from "@/lib/simulationServer";
  */
 
 type CompleteResult = {
-  result: "ok" | "not_found" | "already_completed" | "expired" | "too_fast" | "daily_limit" | "invalid_epreuve";
+  result: "ok" | "not_found" | "already_completed" | "expired" | "too_fast" | "daily_limit" | "invalid_epreuve" | "already_validated" | "level_locked";
+  niveau?: number;
   status?: string;
   factor?: StatKey;
   skill?: string;
@@ -33,6 +34,8 @@ const HTTP_STATUS: Record<CompleteResult["result"], number> = {
   too_fast: 425,
   daily_limit: 429,
   invalid_epreuve: 400,
+  already_validated: 409,
+  level_locked: 409,
 };
 
 function fmt(n: number | undefined): string {
@@ -49,6 +52,10 @@ function messageFor(r: CompleteResult): string {
       if (r.factor === "intelligence" && skill !== label) return `Simulation réussie : +1 en ${skill} (${r.skill_value}/100) — ${label} ${fmt(r.value)}/100.`;
       return `Simulation réussie : +1 ${label} (${fmt(r.value)}/100).`;
     }
+    case "already_validated":
+      return `Histoire ${r.niveau ?? "?"} déjà validée : pas de nouveau point (Puissance ${fmt(r.value)}).`;
+    case "level_locked":
+      return `Histoire ${r.niveau ?? "?"} pas encore ouverte : termine d'abord l'histoire ${Number(r.value ?? 0) + 1}.`;
     case "invalid_epreuve":
       return "Épreuve manquante ou inconnue : précise laquelle a été jouée (potions, enigmes ou probleme).";
     case "not_found":
@@ -88,6 +95,8 @@ export async function recordSimulationResult(opts: {
   signature: string | null;
   /** Épreuve jouée (obligatoire pour l'Intelligence : potions, enigmes ou probleme). */
   epreuve?: string | null;
+  /** Donjons : numéro de l'histoire terminée. */
+  niveau?: number | null;
   /** Si renseigné : refuse le résultat s'il ne relève pas de cette simulation. */
   expectedKind?: SimulationKind;
   /** Partie déjà lue par l'appelant (évite une seconde lecture). */
@@ -135,6 +144,7 @@ export async function recordSimulationResult(opts: {
     p_token_hash: hashRunToken(opts.token),
     p_success: opts.success,
     p_epreuve: opts.epreuve ?? null,
+    p_niveau: Number.isInteger(opts.niveau) ? opts.niveau : null,
   });
   if (error || !data) {
     return { status: 500, body: { ok: false, error: "server_error", message: "Erreur du serveur." } };

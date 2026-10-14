@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 // Corps : { "token": "<jeton reçu dans sid_run>", "success": true | false,
 //          "epreuve": "potions" | "enigmes" | "probleme" (obligatoire pour l'Intelligence) }
 export async function POST(request: NextRequest) {
-  let body: { token?: unknown; success?: unknown; signature?: unknown; epreuve?: unknown };
+  let body: { token?: unknown; success?: unknown; signature?: unknown; epreuve?: unknown; niveau?: unknown };
   try {
     body = await request.json();
   } catch {
@@ -27,7 +27,8 @@ export async function POST(request: NextRequest) {
   const signature =
     request.headers.get("x-sid-signature") ?? (typeof body.signature === "string" ? body.signature : null);
   const epreuve = typeof body.epreuve === "string" ? body.epreuve : null;
-  const outcome = await recordSimulationResult({ token, success, signature, epreuve });
+  const niveau = typeof body.niveau === "number" || typeof body.niveau === "string" ? Number(body.niveau) : null;
+  const outcome = await recordSimulationResult({ token, success, signature, epreuve, niveau: Number.isInteger(niveau) ? niveau : null });
   return corsJson(outcome.body, outcome.status);
 }
 

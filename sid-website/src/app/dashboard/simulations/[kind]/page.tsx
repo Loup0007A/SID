@@ -83,6 +83,8 @@ export default function SimulationPage() {
   const [highlightRaid, setHighlightRaid] = useState<string | null>(null);
   const [me, setMe] = useState<{ id: string; name: string } | null>(null);
   const raidRef = useRef<ActiveRaid | null>(null);
+  const overviewRef = useRef<SimulationOverview | null>(null);
+  overviewRef.current = overview;
   const channelRef = useRef<RealtimeChannel | null>(null);
 
   const site = isSimulationKind(kind) ? SIMULATION_SITES[kind] : null;
@@ -95,6 +97,7 @@ export default function SimulationPage() {
       return;
     }
     setOverview(data as SimulationOverview);
+    return data as SimulationOverview;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -134,6 +137,11 @@ export default function SimulationPage() {
       if (origin) iframeRef.current?.contentWindow?.postMessage(msg, origin);
     },
     [origin]
+  );
+
+  const sendLevelToGame = useCallback(
+    (strength: number) => postToGame({ type: "sid-level", puissance: Math.floor(Number(strength) || 0) }),
+    [postToGame]
   );
 
   const leaveRaidChannel = useCallback(() => {
@@ -271,7 +279,7 @@ export default function SimulationPage() {
   // Enregistre le résultat de la partie en cours, puis en ouvre une nouvelle
   // pour que la prochaine tentative dans la même iframe compte aussi.
   const submitResult = useCallback(
-    async (success: boolean, signature?: string, epreuve?: string) => {
+    async (success: boolean, signature?: string, epreuve?: string, niveau?: number) => {
       const current = sessionRef.current;
       if (!site || !current?.token || submitting.current) return;
       submitting.current = true;
@@ -283,7 +291,7 @@ export default function SimulationPage() {
         const res = await fetch("/api/simulations/result", {
           method: "POST",
           headers: { "Content-Type": "application/json", ...(signature ? { "X-SID-Signature": signature } : {}) },
-          body: JSON.stringify({ token, success, epreuve }),
+          body: JSON.stringify({ token, success, epreuve, niveau }),
         });
         const data = (await res.json()) as SimulationResultResponse;
         if (data.result === "already_completed") {
@@ -323,7 +331,9 @@ export default function SimulationPage() {
         }
       }
       setNotice({ tone, text });
-      await refresh();
+      const ov = await refresh();
+      // Donjons : le jeu met à jour les histoires validées sans recharger.
+      if (ov && site.kind === "donjons") sendLevelToGame(ov.strength);
       submitting.current = false;
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -346,13 +356,18 @@ export default function SimulationPage() {
         void handleRaidMessage(d);
         return;
       }
+      if (d.type === "mv-hello" && site.kind === "donjons") {
+        if (overviewRef.current) sendLevelToGame(overviewRef.current.strength);
+        return;
+      }
       if (d.type === "mv-injury" && site.kind === "donjons") {
         void handleInjury();
         return;
       }
       if (d.type === SITE_RESULT_MESSAGE_TYPE) {
         const verdict = interpretSiteReport(site, d, current.startedAt);
-        if (verdict.action === "record") void submitResult(verdict.success, undefined, String(d.epreuve));
+        const niv = Number(d.niveau);
+        if (verdict.action === "record") void submitResult(verdict.success, undefined, String(d.epreuve), Number.isInteger(niv) ? niv : undefined);
         return;
       }
       if (d.type === RESULT_MESSAGE_TYPE && typeof d.success === "boolean" && current.issued.includes(String(d.token))) {
