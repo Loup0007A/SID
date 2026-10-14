@@ -117,7 +117,7 @@ export default function TechTreePage() {
                 const locked = !!req && (levels[req.key] ?? 0) < n.requires_level;
                 const price = cost(n, level);
                 const affordable = points !== null && points >= price;
-                const rankMaxed = n.key === "rank" && rank === "S";
+                const rankMaxed = n.key === "rank" && (rank === "S" || rank === "Divin");
                 return (
                   <div key={n.key} className="flex flex-col items-center">
                     {i > 0 && <div className={clsx("h-6 w-0.5", locked ? "bg-white/15" : "bg-blue/60")} aria-hidden />}

@@ -19,6 +19,7 @@ type CompleteResult = {
   factor?: StatKey;
   skill?: string;
   skill_value?: number;
+  divine?: boolean;
   points_awarded?: number;
   value?: number;
   power?: number;
@@ -48,6 +49,7 @@ function messageFor(r: CompleteResult): string {
       const label = r.factor ? STAT_LABELS[r.factor] : "le facteur";
       const skill = isSkillKey(r.skill) ? SKILL_LABELS[r.skill] : label;
       if (r.status === "failure") return "Simulation échouée : aucun point cette fois.";
+      if (r.divine) return "✦ Le Primordial est vaincu : tu es devenu Divin !";
       if (!r.points_awarded) return `Simulation réussie, mais ${skill} est déjà au maximum (100).`;
       if (r.factor === "intelligence" && skill !== label) return `Simulation réussie : +1 en ${skill} (${r.skill_value}/100) — ${label} ${fmt(r.value)}/100.`;
       return `Simulation réussie : +1 ${label} (${fmt(r.value)}/100).`;

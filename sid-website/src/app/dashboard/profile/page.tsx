@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import type { Profile, QuestDifficulty } from "@/types/database";
+import type { Profile } from "@/types/database";
 import { inputClass, labelClass } from "@/lib/ui";
 import { RankCard } from "@/components/RankCard";
 import { isPushSupported, getPushPermission, hasActivePushSubscription, subscribeToPush, unsubscribeFromPush, needsIosInstallFirst } from "@/lib/push";
@@ -169,7 +169,7 @@ export default function ProfilePage() {
   return (
     <div className="max-w-2xl space-y-8">
       <div className="flex flex-wrap items-center gap-4">
-        <RankCard rank={(profile.member_rank as QuestDifficulty) ?? "E"} />
+        <RankCard rank={profile.member_rank ?? "E"} />
         <h1 className="font-display text-2xl uppercase tracking-wide text-red">Mon dossier</h1>
       </div>
 
