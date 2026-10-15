@@ -80,6 +80,7 @@ export const NAV_ENTRIES: NavEntry[] = [
   { key: "stats", href: "/dashboard/admin/stats", label: "Statistiques", description: "Activité du site", emoji: "📊", group: "admin", perm: ["manage_users"] },
   { key: "users", href: "/dashboard/admin/users", label: "Comptes", description: "Bannir, muter, mots de passe", emoji: "🛡️", group: "admin", perm: ["manage_users"] },
   { key: "moderation", href: "/dashboard/admin/moderation", label: "Modération", description: "Annonces, maintenance, sanctions", emoji: "⚖️", group: "admin", perm: ["manage_users"] },
+  { key: "sandbox", href: "/dashboard/admin/sandbox", label: "Bac à sable", description: "Tester le site avec un compte temporaire", emoji: "🧪", group: "admin", perm: ["manage_users"] },
   { key: "audit", href: "/dashboard/admin/audit", label: "Journal d'audit", description: "Qui a fait quoi, et quand", emoji: "🕵️", group: "admin", perm: ["manage_users"] },
 ];
 

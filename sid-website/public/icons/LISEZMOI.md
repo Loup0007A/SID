@@ -39,4 +39,5 @@ page : `src/lib/navigation.ts`.
 | `stats.png` | Statistiques (`/dashboard/admin/stats`) | Administration | 📊 |
 | `users.png` | Comptes (`/dashboard/admin/users`) | Administration | 🛡️ |
 | `moderation.png` | Modération (`/dashboard/admin/moderation`) | Administration | ⚖️ |
+| `sandbox.png` | Bac à sable (`/dashboard/admin/sandbox`) | Administration | 🧪 |
 | `audit.png` | Journal d'audit (`/dashboard/admin/audit`) | Administration | 🕵️ |

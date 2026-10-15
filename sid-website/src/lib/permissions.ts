@@ -21,6 +21,14 @@ export async function loadCurrentUser(): Promise<{
 
   if (!profile) return { profile: null, permissions: new Set() };
 
+  // Compte de test (bac à sable) : seulement les permissions choisies par
+  // l'admin, et plus rien une fois expiré.
+  if (profile.sandbox_expires_at) {
+    if (new Date(profile.sandbox_expires_at).getTime() <= Date.now()) return { profile, permissions: new Set() };
+    const { data: sb } = await supabase.from("sandbox_accounts").select("permissions").eq("user_id", user.id).maybeSingle();
+    return { profile, permissions: new Set<PermissionKey>(((sb?.permissions ?? []) as string[]) as PermissionKey[]) };
+  }
+
   if (profile.is_founder) {
     return {
       profile,

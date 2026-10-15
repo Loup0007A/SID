@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { loadCurrentUser, can } from "@/lib/permissions";
-import type { Profile } from "@/types/database";
+import type { PermissionKey, Profile } from "@/types/database";
 import { NotificationBell } from "@/components/NotificationBell";
 import { SettingsButton } from "@/components/SettingsButton";
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
@@ -13,6 +13,8 @@ import { ScrollMemory } from "@/components/ScrollMemory";
 import { entryForPath } from "@/lib/navigation";
 import { SectionGate } from "@/components/SectionGate";
 import { registerServiceWorker } from "@/lib/push";
+import { SandboxBanner } from "@/components/SandboxBanner";
+import { leaveSandbox } from "@/lib/sandbox";
 
 /** Titre affiché dans la barre du haut pour la page en cours. */
 function pageTitle(pathname: string): string | null {
@@ -29,6 +31,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isStaff, setIsStaff] = useState(false);
+  const [perms, setPerms] = useState<Set<PermissionKey>>(new Set());
 
   useEffect(() => {
     // Enregistre le service worker dès l'arrivée sur le dashboard (pas
@@ -48,6 +51,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       const { profile, permissions } = await loadCurrentUser();
       setProfile(profile);
+      setPerms(permissions);
       setIsStaff(can(permissions, "manage_users"));
       setLoading(false);
 
@@ -91,6 +95,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return <div className="flex min-h-screen items-center justify-center text-paper">Ouverture du dossier…</div>;
   }
 
+  // Compte de test (bac à sable) expiré : plus d'accès, retour au compte d'admin.
+  if (profile?.sandbox_expires_at && new Date(profile.sandbox_expires_at).getTime() <= Date.now()) {
+    return (
+      <main className="flex min-h-screen items-center justify-center px-4">
+        <div className="glass-card max-w-md space-y-3 p-8 text-center">
+          <h1 className="font-display text-2xl uppercase">Compte de test expiré</h1>
+          <p className="font-body">
+            Ce compte du bac à sable a expiré. Il sera effacé, avec tout ce qu&apos;il a créé, à la prochaine visite
+            d&apos;un admin sur la page Bac à sable.
+          </p>
+          <button onClick={() => leaveSandbox()} className="font-mono text-xs uppercase text-red underline">
+            Revenir à mon compte
+          </button>
+        </div>
+      </main>
+    );
+  }
+
   if (profile && profile.status === "pending") {
     return (
       <main className="flex min-h-screen items-center justify-center px-4">
@@ -128,6 +150,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen text-paper">
       <ScrollMemory />
+      {profile?.sandbox_expires_at && <SandboxBanner nickname={profile.nickname} expiresAt={profile.sandbox_expires_at} permissions={perms} />}
       {profile && <AnnouncementBanner />}
 
       <header className="glass-panel sticky top-0 z-20 border-x-0 border-t-0 pt-[env(safe-area-inset-top)]">
