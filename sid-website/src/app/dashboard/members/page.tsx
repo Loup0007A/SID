@@ -56,6 +56,11 @@ export default function MembersPage() {
               <div className="flex items-center justify-between gap-2">
                 <Link href={`/dashboard/profile/${m.id}`} className="font-display text-lg uppercase hover:text-blue-light hover:underline">
                   {m.nickname}
+                  {m.is_invisible && (
+                    <span className="ml-2 align-middle font-mono text-[10px] normal-case text-paper/50" title="Compte invisible : seuls le membre et l'administration le voient ici">
+                      👻 invisible
+                    </span>
+                  )}
                 </Link>
                 {m.age !== undefined && m.age !== null && (
                   <span className="font-mono text-xs text-paper/60">{m.age} ans</span>

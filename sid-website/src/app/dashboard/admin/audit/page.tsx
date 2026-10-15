@@ -37,6 +37,8 @@ const ACTION_LABELS: Record<string, string> = {
   stats_changed: "Facteurs de puissance corrigés",
   levels_changed: "Niveaux modifiés",
   rank_divine: "Rang Divin obtenu (niveau 101)",
+  account_invisible: "Compte rendu invisible",
+  account_visible: "Compte rendu visible",
   password_reset: "Mot de passe réinitialisé",
   email_confirmed: "Email confirmé à la main",
 };
@@ -131,6 +133,9 @@ function describe(row: AuditRow): string {
       return SANCTION_LABELS[String(d.type)] ?? String(d.type);
     case "maintenance_changed":
       return `${SECTION_LABELS[String(d.section)] ?? String(d.section)} ${d.enabled ? "réactivée" : "suspendue"}`;
+    case "account_invisible":
+    case "account_visible":
+      return d.par_le_membre ? "par le membre lui-même" : "par l'administration";
     case "wallet_adjusted":
       return `${money(d.amount)} z${d.reason ? ` — « ${d.reason} »` : ""}`;
     case "reputation_adjusted":

@@ -6,6 +6,7 @@ import Link from "next/link";
 import clsx from "clsx";
 import { createClient } from "@/lib/supabase/client";
 import { loadCurrentUser, can } from "@/lib/permissions";
+import { visibleMembers } from "@/lib/visibility";
 import type { ChatChannel, ChatMessage, Profile, DmPartner } from "@/types/database";
 import { isTrollCommand, playTrollEffect, TROLL_COMMANDS } from "@/lib/trollEffects";
 import type { RealtimeChannel } from "@supabase/supabase-js";
@@ -71,13 +72,16 @@ function ChatInner() {
       setUserId(user.id);
 
       const { data: m } = await supabase.from("profiles").select("*").eq("status", "active");
-      setMembers(m ?? []);
       setProfiles(new Map((m ?? []).map((p) => [p.id, p])));
 
       // Seuls les admins (permission manage_users, ou fondateur) peuvent
       // utiliser les commandes de troll — pas seulement les non-mutes.
       const { permissions } = await loadCurrentUser();
-      setIsAdmin(can(permissions, "manage_users"));
+      const admin = can(permissions, "manage_users");
+      setIsAdmin(admin);
+      // Les comptes invisibles n'apparaissent pas dans les listes de choix
+      // (leurs messages restent signés de leur nom).
+      setMembers(visibleMembers(m ?? [], user.id, admin));
 
       await refreshChannels(user.id);
     })();
