@@ -38,6 +38,8 @@ const ACTION_LABELS: Record<string, string> = {
   levels_changed: "Niveaux modifiés",
   rank_divine: "Rang Divin obtenu (niveau 101)",
   account_invisible: "Compte rendu invisible",
+  sandbox_created: "Compte de test créé (bac à sable)",
+  sandbox_deleted: "Compte de test effacé (bac à sable)",
   account_visible: "Compte rendu visible",
   password_reset: "Mot de passe réinitialisé",
   email_confirmed: "Email confirmé à la main",
@@ -133,6 +135,12 @@ function describe(row: AuditRow): string {
       return SANCTION_LABELS[String(d.type)] ?? String(d.type);
     case "maintenance_changed":
       return `${SECTION_LABELS[String(d.section)] ?? String(d.section)} ${d.enabled ? "réactivée" : "suspendue"}`;
+    case "sandbox_created": {
+      const perms = Array.isArray(d.permissions) ? (d.permissions as string[]) : [];
+      return `${perms.length ? perms.join(", ") : "simple membre"} · rang ${d.rang ?? "?"} · ${d.heures ?? "?"} h · ${Number(d.solde ?? 0).toLocaleString("fr-FR")} z`;
+    }
+    case "sandbox_deleted":
+      return `${d.liens_nettoyes ?? 0} liens nettoyés${Array.isArray(d.echecs) && d.echecs.length ? ` · échecs : ${(d.echecs as string[]).join(", ")}` : ""}`;
     case "account_invisible":
     case "account_visible":
       return d.par_le_membre ? "par le membre lui-même" : "par l'administration";
