@@ -59,6 +59,9 @@ export default function MemberProfilePage() {
         <RankCard rank={profile.member_rank ?? "E"} />
         <div>
           <h1 className="font-display text-2xl uppercase tracking-wide text-red">{profile.nickname}</h1>
+          {profile.is_invisible && (
+            <p className="font-mono text-xs text-paper/50">👻 Compte invisible : les autres membres ne voient pas ce dossier.</p>
+          )}
           {(profile.first_name || profile.last_name) && (
             <p className="font-mono text-xs text-paper/60">{[profile.first_name, profile.last_name].filter(Boolean).join(" ")}</p>
           )}

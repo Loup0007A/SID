@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/client";
 import type { Business, BusinessEmployee, MyEmployment, BusinessTransaction, MarketSettings } from "@/types/business";
 import type { Profile, SalaryFrequency } from "@/types/database";
 import { inputClass, labelClass } from "@/lib/ui";
+import { loadCurrentUser, can } from "@/lib/permissions";
+import { visibleMembers } from "@/lib/visibility";
 
 const FREQUENCY_LABELS: Record<SalaryFrequency, string> = {
   daily: "Quotidien",
@@ -47,7 +49,8 @@ export default function BusinessPage() {
     setMyBusinesses((data ?? []) as Business[]);
 
     const { data: m } = await supabase.from("profiles").select("*").eq("status", "active");
-    setMembers(m ?? []);
+    const { permissions } = await loadCurrentUser();
+    setMembers(visibleMembers(m ?? [], user.id, can(permissions, "manage_users")));
 
     const { data: emp } = await supabase.rpc("get_my_employments");
     setMyEmployments((emp ?? []) as MyEmployment[]);

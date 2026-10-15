@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { loadCurrentUser, can } from "@/lib/permissions";
+import { visibleMembers } from "@/lib/visibility";
 import type { Quest, QuestDifficulty, QuestVisibility, ContractType, PermissionKey, Profile, QuestParticipantView } from "@/types/database";
 import type { MapPlace, MapRoute, CharacterPosition } from "@/types/map";
 import { QuestCard } from "@/components/QuestCard";
@@ -106,7 +107,7 @@ export default function QuestsPage() {
       setPermissions(permissions);
       setUserId(profile?.id ?? null);
       const { data: m } = await supabase.from("profiles").select("*").eq("status", "active");
-      setMembers(m ?? []);
+      setMembers(visibleMembers(m ?? [], profile?.id, can(permissions, "manage_users")));
 
       const [{ data: p }, { data: r }] = await Promise.all([
         supabase.from("map_places").select("id, name, type"),

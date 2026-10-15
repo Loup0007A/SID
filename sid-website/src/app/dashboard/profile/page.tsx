@@ -23,6 +23,8 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [purchases, setPurchases] = useState<{ item_name: string; quantity: number; last_purchase: string }[]>([]);
   const [saved, setSaved] = useState(false);
+  const [invisibleSaving, setInvisibleSaving] = useState(false);
+  const [invisibleMessage, setInvisibleMessage] = useState<string | null>(null);
 
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarMessage, setAvatarMessage] = useState<string | null>(null);
@@ -92,6 +94,25 @@ export default function ProfilePage() {
       .eq("id", profile.id);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  }
+
+  // Compte invisible : enregistré tout de suite (sans passer par « Enregistrer »).
+  async function toggleInvisible(next: boolean) {
+    if (!profile) return;
+    setInvisibleSaving(true);
+    setInvisibleMessage(null);
+    const { error } = await supabase.from("profiles").update({ is_invisible: next }).eq("id", profile.id);
+    setInvisibleSaving(false);
+    if (error) {
+      setInvisibleMessage(
+        error.message.includes("is_invisible")
+          ? "Fonction pas encore activée : la migration 0058 doit être lancée sur la base."
+          : `Échec : ${error.message}`
+      );
+      return;
+    }
+    update("is_invisible", next);
+    setInvisibleMessage(next ? "Ton compte est maintenant invisible." : "Ton compte est de nouveau visible.");
   }
 
   async function uploadAvatar() {
@@ -283,6 +304,26 @@ export default function ProfilePage() {
             </label>
           ))}
         </div>
+      </div>
+
+      <div className="glass-card space-y-3 p-6">
+        <h2 className="font-display text-lg uppercase">Compte invisible</h2>
+        <p className="font-body text-sm text-paper/70">
+          Un compte invisible n&apos;apparaît plus aux autres membres : trombinoscope, classement, carte,
+          organigramme, profil public, et listes de choix (nouvelle conversation, quêtes, embauche). Ce que tu
+          écris ou fais reste signé de ton nom. L&apos;administration (gestion des comptes) te voit toujours.
+        </p>
+        <label className="flex items-center gap-3 font-mono text-sm">
+          <input
+            type="checkbox"
+            className="h-4 w-4 accent-blue"
+            checked={!!profile.is_invisible}
+            disabled={invisibleSaving}
+            onChange={(e) => toggleInvisible(e.target.checked)}
+          />
+          {profile.is_invisible ? "👻 Mon compte est invisible" : "Rendre mon compte invisible"}
+        </label>
+        {invisibleMessage && <p className="font-mono text-xs text-red">{invisibleMessage}</p>}
       </div>
 
       <div className="glass-card space-y-3 p-6">

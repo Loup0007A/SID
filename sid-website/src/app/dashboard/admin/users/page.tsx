@@ -64,6 +64,20 @@ export default function AdminUsersPage() {
     refresh();
   }
 
+  async function toggleInvisible(p: Profile) {
+    const { error } = await supabase.from("profiles").update({ is_invisible: !p.is_invisible }).eq("id", p.id);
+    if (error) {
+      setMessage(
+        error.message.includes("is_invisible")
+          ? "Fonction pas encore activée : la migration 0058 doit être lancée sur la base."
+          : `Échec : ${error.message}`
+      );
+      return;
+    }
+    setMessage(`${p.nickname} est maintenant ${p.is_invisible ? "visible" : "invisible"} pour les autres membres.`);
+    refresh();
+  }
+
   async function resetPassword(p: Profile) {
     if (!confirm(`Générer un nouveau mot de passe temporaire pour ${p.nickname} ?`)) return;
     setResettingId(p.id);
@@ -150,6 +164,7 @@ export default function AdminUsersPage() {
                 {[p.first_name, p.last_name].filter(Boolean).join(" ")} · {STATUS_LABELS[p.status]}
                 {p.is_muted && <span className="ml-1 text-red">· Mute</span>}
                 {p.is_founder && <span className="ml-1 text-blue-light">· Fondateur</span>}
+                {p.is_invisible && <span className="ml-1 text-paper/80">· 👻 Invisible</span>}
               </p>
             </div>
 
@@ -166,6 +181,13 @@ export default function AdminUsersPage() {
                 className="rounded-lg border border-blue px-3 py-1.5 font-mono text-xs uppercase text-blue hover:bg-blue hover:text-ink"
               >
                 {p.is_muted ? "Démute" : "Mute"}
+              </button>
+              <button
+                onClick={() => toggleInvisible(p)}
+                className="rounded-lg border border-paper/40 px-3 py-1.5 font-mono text-xs uppercase text-paper hover:bg-paper hover:text-ink"
+                title="Un compte invisible n'apparaît plus aux autres membres (trombinoscope, classement, carte, organigramme, profil, listes de choix)"
+              >
+                {p.is_invisible ? "Rendre visible" : "Rendre invisible"}
               </button>
               <button
                 onClick={() => confirmEmail(p)}

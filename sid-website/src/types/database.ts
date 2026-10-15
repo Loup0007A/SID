@@ -19,6 +19,7 @@ export interface Profile {
   power_score: number;
   last_seen_at: string | null;
   hidden_fields: string[];
+  is_invisible: boolean;
   reviewed_by: string | null;
   reviewed_at: string | null;
   created_at: string;

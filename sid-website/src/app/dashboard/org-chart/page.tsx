@@ -6,6 +6,7 @@ import { loadCurrentUser, can } from "@/lib/permissions";
 import type { OrgNode, Profile, Group, PermissionKey } from "@/types/database";
 import { OrgTree } from "@/components/OrgTree";
 import { inputClass, labelClass } from "@/lib/ui";
+import { visibleMembers } from "@/lib/visibility";
 
 
 export default function OrgChartPage() {
@@ -19,6 +20,7 @@ export default function OrgChartPage() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ label: "", parentId: "", holderId: "", groupId: "" });
   const [styles, setStyles] = useState<Map<string, string>>(new Map());
+  const [myId, setMyId] = useState<string | null>(null);
 
   async function refresh() {
     const [{ data: n }, { data: p }, { data: g }] = await Promise.all([
@@ -43,14 +45,18 @@ export default function OrgChartPage() {
 
   useEffect(() => {
     (async () => {
-      const { permissions } = await loadCurrentUser();
+      const { profile, permissions } = await loadCurrentUser();
       setPermissions(permissions);
+      setMyId(profile?.id ?? null);
       await refresh();
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const canManage = can(permissions, "manage_org_chart");
+  // Comptes invisibles : leur poste s'affiche vacant pour les autres membres.
+  const shownList = visibleMembers(profileList, myId, can(permissions, "manage_users"));
+  const shownProfiles = shownList.length === profileList.length ? profiles : new Map(shownList.map((p) => [p.id, p]));
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
@@ -100,7 +106,7 @@ export default function OrgChartPage() {
             <label className={labelClass}>Titulaire</label>
             <select className={inputClass} value={form.holderId} onChange={(e) => setForm({ ...form, holderId: e.target.value })}>
               <option value="">— Poste vacant —</option>
-              {profileList.map((p) => (
+              {shownList.map((p) => (
                 <option key={p.id} value={p.id}>{p.nickname}</option>
               ))}
             </select>
@@ -123,7 +129,7 @@ export default function OrgChartPage() {
       )}
 
       <div className="glass-card overflow-x-auto p-6">
-        <OrgTree nodes={nodes} profiles={profiles} groups={groups} parentId={null} onDelete={canManage ? handleDelete : undefined} canManage={canManage} styles={styles} />
+        <OrgTree nodes={nodes} profiles={shownProfiles} groups={groups} parentId={null} onDelete={canManage ? handleDelete : undefined} canManage={canManage} styles={styles} />
         {nodes.length === 0 && <p className="font-body text-paper/60">L&apos;organigramme est encore vide.</p>}
       </div>
     </div>
