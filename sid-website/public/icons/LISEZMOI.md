@@ -20,6 +20,7 @@ page : `src/lib/navigation.ts`.
 | `chat.png` | Messagerie (`/dashboard/chat`) | Mon espace | 💬 |
 | `notifications.png` | Notifications (`/dashboard/notifications`) | Mon espace | 🔔 |
 | `settings.png` | Réglages (`/dashboard/settings`) | Mon espace | ⚙️ |
+| `privacy.png` | Mes données (`/dashboard/privacy`) | Mon espace | 🔐 |
 | `quests.png` | Quêtes (`/dashboard/quests`) | Le S.I.D. | 📜 |
 | `map.png` | Carte (`/dashboard/map`) | Le S.I.D. | 🗺️ |
 | `leaderboard.png` | Classement (`/dashboard/leaderboard`) | Le S.I.D. | 🏆 |
@@ -39,5 +40,6 @@ page : `src/lib/navigation.ts`.
 | `stats.png` | Statistiques (`/dashboard/admin/stats`) | Administration | 📊 |
 | `users.png` | Comptes (`/dashboard/admin/users`) | Administration | 🛡️ |
 | `moderation.png` | Modération (`/dashboard/admin/moderation`) | Administration | ⚖️ |
+| `alerts.png` | Alertes (`/dashboard/admin/alerts`) | Administration | 🚨 |
 | `sandbox.png` | Bac à sable (`/dashboard/admin/sandbox`) | Administration | 🧪 |
 | `audit.png` | Journal d'audit (`/dashboard/admin/audit`) | Administration | 🕵️ |

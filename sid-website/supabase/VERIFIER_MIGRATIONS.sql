@@ -8,7 +8,7 @@
 -- que rien ne casse visiblement sur le site.
 --
 --  - Tout est à true jusqu'à 0045 : exécute dans l'ordre les migrations
---    suivantes qui sont à false (0047 … 0059, dans l'ordre).
+--    suivantes qui sont à false (0047 … 0060, dans l'ordre).
 --  - Au moins un false : ne lance rien d'autre, envoie-moi le résultat ;
 --    certaines migrations ne peuvent pas être rejouées deux fois, je te
 --    donnerai l'ordre exact à suivre selon ce qui manque.
@@ -35,5 +35,6 @@ select migration, appliquee from (values
   ('0056 donjons : niveau vérifié',  exists (select 1 from pg_proc where proname = 'complete_simulation_run' and pronargs = 4)),
   ('0057 rang Divin (niveau 101)',  exists (select 1 from pg_proc where proname = 'complete_simulation_run' and prosrc like '%Divin%')),
   ('0058 comptes invisibles',       exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'profiles' and column_name = 'is_invisible')),
-  ('0059 bac à sable',              exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'sandbox_accounts'))
+  ('0059 bac à sable',              exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'sandbox_accounts')),
+  ('0060 journal, alertes, données', exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'activity_alerts'))
 ) as t(migration, appliquee);

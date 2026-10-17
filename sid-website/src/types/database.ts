@@ -22,6 +22,9 @@ export interface Profile {
   is_invisible: boolean;
   /** Compte de test (bac à sable) : date d'expiration ; null pour un vrai compte. */
   sandbox_expires_at: string | null;
+  /** Version des CGU acceptée (voir TERMS_VERSION) et date d'acceptation. */
+  terms_version?: string | null;
+  terms_accepted_at?: string | null;
   reviewed_by: string | null;
   reviewed_at: string | null;
   created_at: string;

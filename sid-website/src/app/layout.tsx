@@ -1,4 +1,14 @@
 import type { Metadata, Viewport } from "next";
+// Polices servies par le site lui-même (pas d'appel à Google Fonts : rien
+// n'est envoyé à Google quand on ouvre une page).
+import "@fontsource/oswald/400.css";
+import "@fontsource/oswald/600.css";
+import "@fontsource/oswald/700.css";
+import "@fontsource/source-serif-4/400.css";
+import "@fontsource/source-serif-4/600.css";
+import "@fontsource/source-serif-4/400-italic.css";
+import "@fontsource/jetbrains-mono/400.css";
+import "@fontsource/jetbrains-mono/500.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -27,12 +37,6 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap"
-          rel="stylesheet"
-        />
         {/* Nécessaires pour qu'iOS propose "Sur l'écran d'accueil" et
             traite le site comme une app installée (condition posée par
             Apple pour autoriser les notifications push sur iPhone/iPad —
