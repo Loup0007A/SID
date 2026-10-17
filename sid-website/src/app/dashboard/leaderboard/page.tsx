@@ -6,6 +6,8 @@ import type { LeaderboardEntry } from "@/types/database";
 import { ProfileStyle, profileSkinClass } from "@/components/ProfileStyle";
 import clsx from "clsx";
 import { formatPower } from "@/components/MemberStatBars";
+import { useEquippedTitles } from "@/lib/useEquippedTitles";
+import { TitleBadge } from "@/components/titles/TitleVisuals";
 
 type SortKey = "power_score" | "balance" | "reputation" | "quests_completed";
 
@@ -21,6 +23,7 @@ export default function LeaderboardPage() {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [sortKey, setSortKey] = useState<SortKey>("power_score");
   const [styles, setStyles] = useState<Map<string, string>>(new Map());
+  const titles = useEquippedTitles(entries.map((e) => e.user_id));
 
   useEffect(() => {
     (async () => {
@@ -74,7 +77,10 @@ export default function LeaderboardPage() {
               {i + 1}
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block font-display uppercase">{e.nickname}</span>
+              <span className="flex flex-wrap items-center gap-2">
+                <span className="font-display uppercase">{e.nickname}</span>
+                {titles.get(e.user_id) && <TitleBadge titleId={titles.get(e.user_id)!.title_id} level={titles.get(e.user_id)!.level} dragon={titles.get(e.user_id)!.dragon} size="xs" />}
+              </span>
               {sortKey === "power_score" && e.intelligence !== undefined && (
                 <span className="block font-mono text-[10px] uppercase tracking-wide text-paper/50">
                   Int. {formatPower(Number(e.intelligence))} · Pui. {formatPower(Number(e.strength ?? 0))} · Tech. {formatPower(Number(e.technique ?? 0))}

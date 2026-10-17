@@ -12,6 +12,7 @@ import { ConstructionTape } from "@/components/ConstructionTape";
 import { useSuspendedSections } from "@/lib/maintenance";
 import { MemberStatBars } from "@/components/MemberStatBars";
 import type { SimulationOverview } from "@/types/simulationRuns";
+import { BirthdaysToday } from "@/components/secrets/Birthday";
 
 export default function DashboardHome() {
   const supabase = createClient();
@@ -91,6 +92,8 @@ export default function DashboardHome() {
           <p className="font-display text-3xl text-blue">{wallet ? wallet.balance.toLocaleString("fr-FR") : "…"} z</p>
         </Link>
       </div>
+
+      {profile && <BirthdaysToday myId={profile.id} />}
 
       <section aria-label="À faire" className="flex flex-wrap gap-2">
         {myQuests.length > 0 && (

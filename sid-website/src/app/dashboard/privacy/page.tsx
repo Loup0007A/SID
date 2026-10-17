@@ -122,7 +122,8 @@ export default function PrivacyPage() {
         <h2 className="font-display text-lg uppercase">Ce que nous gardons</h2>
         <ul className="list-disc space-y-1 pl-5 font-body text-sm text-paper/80">
           <li>Ton compte (email ; le mot de passe est chiffré et illisible) et ton dossier.</li>
-          <li>Ton activité de jeu : quêtes, zénis, achats, entreprises, simulations, arbre techno, raids.</li>
+          <li>Ton activité de jeu : quêtes, zénis, achats, entreprises, simulations, arbre techno, raids, titres et farces.</li>
+          <li>Ton anniversaire si tu l&apos;as renseigné (jour et mois seulement, jamais montré aux autres).</li>
           <li>Tes messages, tes salons, tes notifications.</li>
           <li>Ta position et tes trajets sur la carte ; tes commentaires, favoris et notes du wiki.</li>
           <li>Ta dernière visite et ton nombre de visites par jour (pas les pages vues, pas d&apos;adresse IP).</li>

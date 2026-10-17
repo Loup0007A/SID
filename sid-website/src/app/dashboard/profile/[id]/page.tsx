@@ -8,6 +8,9 @@ import { RankCard } from "@/components/RankCard";
 import { ProfileStyle, profileSkinClass } from "@/components/ProfileStyle";
 import Link from "next/link";
 import { loadCurrentUser, can } from "@/lib/permissions";
+import { useEquippedTitles } from "@/lib/useEquippedTitles";
+import { TitleAuraLayer, TitleBadge } from "@/components/titles/TitleVisuals";
+import { BirthdayGift } from "@/components/secrets/Birthday";
 
 type VisibleProfile = Partial<Profile> & { id: string; nickname: string };
 type MemberRole = { user_id: string; role_name: string; role_color: string; role_rank: number };
@@ -21,6 +24,9 @@ export default function MemberProfilePage() {
   const [isSelf, setIsSelf] = useState(false);
   const [css, setCss] = useState<string>("");
   const [isStaff, setIsStaff] = useState(false);
+  const [canTroll, setCanTroll] = useState(false);
+  const titles = useEquippedTitles([params.id]);
+  const title = titles.get(params.id);
 
   useEffect(() => {
     (async () => {
@@ -35,8 +41,9 @@ export default function MemberProfilePage() {
         return;
       }
 
-      const { permissions } = await loadCurrentUser();
+      const { profile: me, permissions } = await loadCurrentUser();
       setIsStaff(can(permissions, "manage_users"));
+      setCanTroll(!!me?.equipped_title);
       const { data } = await supabase.rpc("get_visible_profile", { target: params.id, viewer: user.id });
       setProfile((data as VisibleProfile) ?? null);
 
@@ -59,11 +66,27 @@ export default function MemberProfilePage() {
       {/* Le CSS personnalisé ne s'applique qu'à cette carte-ci (comme pour
           l'organigramme, le trombinoscope et le classement) — pas à toute
           la page, ni à la description en dessous. */}
-      <div className={`glass-card flex flex-wrap items-center gap-4 p-6 ${profileSkinClass(profile.id)}`}>
+      <div className={`glass-card relative flex flex-wrap items-center gap-4 overflow-hidden p-6 ${title ? "min-h-[150px]" : ""} ${profileSkinClass(profile.id)}`}>
         <ProfileStyle userId={profile.id} css={css} />
-        <RankCard rank={profile.member_rank ?? "E"} />
-        <div>
-          <h1 className="font-display text-2xl uppercase tracking-wide text-red">{profile.nickname}</h1>
+        {title && <TitleAuraLayer titleId={title.title_id} dragon={title.dragon} />}
+        <div className="relative z-[1]">
+          <RankCard rank={profile.member_rank ?? "E"} />
+        </div>
+        <div className="relative z-[1] min-w-0 flex-1">
+          <h1 className="font-display text-2xl uppercase tracking-wide text-red">
+            {profile.nickname}
+            <BirthdayGift targetId={profile.id} nickname={profile.nickname} />
+          </h1>
+          {title && (
+            <div className="my-1">
+              <TitleBadge titleId={title.title_id} level={title.level} dragon={title.dragon} size="md" />
+            </div>
+          )}
+          {canTroll && (
+            <Link href={`/dashboard/titles?target=${profile.id}`} className="mr-3 font-mono text-xs uppercase text-[#ffb15c] underline">
+              🎭 Lui faire une farce
+            </Link>
+          )}
           {isStaff && (
             <Link href={`/dashboard/admin/members/${profile.id}`} className="font-mono text-xs uppercase text-blue-light underline">
               Fiche d&apos;administration →

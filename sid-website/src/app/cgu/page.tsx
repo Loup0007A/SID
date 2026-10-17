@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Conditions d'utilisation · S.I.D." 
 
 export default function CguPage() {
   return (
-    <LegalPage title="Conditions d'utilisation">
+    <LegalPage title="Conditions d'utilisation" page="cgu">
       <Cgu site="quest" />
     </LegalPage>
   );

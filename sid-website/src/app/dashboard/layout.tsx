@@ -17,6 +17,10 @@ import { SandboxBanner } from "@/components/SandboxBanner";
 import { leaveSandbox } from "@/lib/sandbox";
 import { TermsBanner } from "@/components/TermsBanner";
 import { SiteFooter } from "@/components/SiteFooter";
+import { TrollLayer } from "@/components/trolls/TrollLayer";
+import { TitleUnlock } from "@/components/titles/TitleUnlock";
+import { HiddenButton } from "@/components/secrets/HiddenButton";
+import { AbyssDive } from "@/components/secrets/AbyssDive";
 
 /** Titre affiché dans la barre du haut pour la page en cours. */
 function pageTitle(pathname: string): string | null {
@@ -172,7 +176,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const title = pageTitle(pathname);
 
   return (
-    <div className="min-h-screen text-paper">
+    <>
+    <div id="sid-app" className="min-h-screen text-paper">
       <ScrollMemory />
       {profile?.sandbox_expires_at && <SandboxBanner nickname={profile.nickname} expiresAt={profile.sandbox_expires_at} permissions={perms} />}
       {profile && !profile.sandbox_expires_at && <TermsBanner acceptedVersion={profile.terms_version} />}
@@ -233,12 +238,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl p-4 sm:p-6">
+      <main className="relative mx-auto max-w-6xl p-4 sm:p-6">
         <SectionGate section={entryForPath(pathname)?.section} bypass={isStaff}>
           {children}
         </SectionGate>
+        {profile && <HiddenButton />}
       </main>
       <SiteFooter />
+      {profile && <AbyssDive />}
     </div>
+    {profile && <TrollLayer nickname={profile.nickname} />}
+    {profile && <TitleUnlock userId={profile.id} equipped={profile.equipped_title ?? null} />}
+    </>
   );
 }

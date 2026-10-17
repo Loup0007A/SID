@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { GlitchGame } from "@/components/secrets/GlitchGame";
 
 export default function NotFound() {
   return (
@@ -16,6 +17,7 @@ export default function NotFound() {
           </Link>
         </div>
       </div>
+      <GlitchGame />
     </main>
   );
 }

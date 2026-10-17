@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { loadCurrentUser, can } from "@/lib/permissions";
 import type { PermissionKey, Profile } from "@/types/database";
-import { ACTION_LABELS, SANCTION_LABELS, describe } from "@/lib/auditLabels";
+import { ACTION_LABELS, POWER_NAMES, SANCTION_LABELS, describe } from "@/lib/auditLabels";
 import { ALERT_KINDS, SEVERITY, describeAlert, timeAgo, type AlertRow } from "@/lib/alerts";
 
 type Summary = {
@@ -55,6 +55,8 @@ const SOURCES: { key: string; label: string; icon: string }[] = [
   { key: "puissance", label: "Puissance", icon: "💪" },
   { key: "techno", label: "Arbre techno", icon: "🌳" },
   { key: "raid", label: "Raids", icon: "🐉" },
+  { key: "titre", label: "Titres", icon: "🏅" },
+  { key: "troll", label: "Farces", icon: "🎭" },
 ];
 const ICON = Object.fromEntries(SOURCES.map((s) => [s.key, s.icon]));
 
@@ -96,6 +98,10 @@ function describeRow(r: TimelineRow): string {
       return "A rejoint un raid de boss";
     case "alerte":
       return `Alerte : ${r.label ?? ALERT_KINDS[r.action] ?? r.action}`;
+    case "titre":
+      return `Titre obtenu : ${r.label}${Number(d.niveau) > 1 ? ` (niveau ${d.niveau})` : ""}`;
+    case "troll":
+      return `Farce « ${POWER_NAMES[r.action] ?? r.action} » : ${r.label ?? ""}${d.annulee ? " (arrêtée)" : ""}`;
     default:
       return r.label ?? r.action;
   }
@@ -359,7 +365,7 @@ export default function MemberAdminPage() {
                 <span className="w-5 shrink-0 text-center" aria-hidden>{ICON[r.source] ?? "•"}</span>
                 <span className="min-w-[12rem] flex-1 font-body text-sm text-paper/90">
                   {describeRow(r)}
-                  {r.actor && r.source !== "alerte" && <span className="font-mono text-[11px] text-paper/50"> · par {r.actor}</span>}
+                  {r.actor && r.source !== "alerte" && r.source !== "troll" && <span className="font-mono text-[11px] text-paper/50"> · par {r.actor}</span>}
                 </span>
                 {r.amount != null && Number(r.amount) !== 0 && (
                   <span className={`font-mono text-xs ${Number(r.amount) > 0 ? "text-blue-light" : "text-red"}`}>{signed(Number(r.amount))}</span>

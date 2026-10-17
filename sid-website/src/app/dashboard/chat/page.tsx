@@ -10,6 +10,8 @@ import { visibleMembers } from "@/lib/visibility";
 import type { ChatChannel, ChatMessage, Profile, DmPartner } from "@/types/database";
 import { isTrollCommand, playTrollEffect, TROLL_COMMANDS } from "@/lib/trollEffects";
 import type { RealtimeChannel } from "@supabase/supabase-js";
+import { useEquippedTitles } from "@/lib/useEquippedTitles";
+import { TitleBadge } from "@/components/titles/TitleVisuals";
 
 const COLOR_PRESETS = ["#D99A9A", "#8FB3D9", "#E8C547", "#3F8F5F", "#B23B2E", ""] as const;
 
@@ -23,6 +25,7 @@ function ChatInner() {
   const [dmPartners, setDmPartners] = useState<Map<string, string>>(new Map()); // channel_id -> pseudo
   const [activeChannel, setActiveChannel] = useState<string | null>(searchParams.get("channel"));
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const senderTitles = useEquippedTitles(Array.from(new Set(messages.map((m) => m.sender_id))));
   const [draft, setDraft] = useState("");
   const [draftBold, setDraftBold] = useState(false);
   const [draftItalic, setDraftItalic] = useState(false);
@@ -473,12 +476,17 @@ function ChatInner() {
                 return (
                   <div key={m.id} className={`group max-w-[85%] sm:max-w-md rounded-lg px-3 py-2 ${isMine ? "ml-auto bg-blue text-ink" : "bg-paper-dark text-ink"}`}>
                     {!isMine && (
-                      <Link
-                        href={`/dashboard/profile/${m.sender_id}`}
-                        className="font-mono text-[10px] uppercase text-paper/60 hover:text-blue-light hover:underline"
-                      >
-                        {profiles.get(m.sender_id)?.nickname ?? "Agent"}
-                      </Link>
+                      <span className="flex flex-wrap items-center gap-1.5">
+                        <Link
+                          href={`/dashboard/profile/${m.sender_id}`}
+                          className="font-mono text-[10px] uppercase text-paper/60 hover:text-blue-light hover:underline"
+                        >
+                          {profiles.get(m.sender_id)?.nickname ?? "Agent"}
+                        </Link>
+                        {senderTitles.get(m.sender_id) && (
+                          <TitleBadge titleId={senderTitles.get(m.sender_id)!.title_id} level={senderTitles.get(m.sender_id)!.level} dragon={senderTitles.get(m.sender_id)!.dragon} size="xs" />
+                        )}
+                      </span>
                     )}
 
                     {m.is_deleted ? (
@@ -512,6 +520,11 @@ function ChatInner() {
                         style={m.color ? { color: m.color } : undefined}
                       >
                         {m.content}
+                        {m.troll_tag?.kind === "flatterie" && (
+                          <span className="ml-1 font-bold not-italic" style={{ color: "#B23B2E" }} title={`Flatterie obligatoire : une farce de ${m.troll_tag.by}`}>
+                            … et {m.troll_tag.by} est le meilleur ! 🎭
+                          </span>
+                        )}
                         {m.edited_at && <span className="ml-1 font-mono text-[10px] opacity-60">(modifié)</span>}
                       </p>
                     )}

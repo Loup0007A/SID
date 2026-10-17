@@ -19,6 +19,8 @@ const TYPE_ICON: Record<string, string> = {
   sanction: "⚖️",
   announcement: "📣",
   admin_alert: "🚨",
+  title: "🏅",
+  troll: "🎭",
 };
 
 export default function NotificationsPage() {
@@ -40,27 +42,32 @@ export default function NotificationsPage() {
   }
 
   useEffect(() => {
+    // Abonnement temps réel : nom unique et vrai nettoyage, sinon revenir sur
+    // la page réutilisait un canal déjà abonné (erreur « after subscribe() »).
+    let sub: ReturnType<typeof supabase.channel> | null = null;
+    let cancelled = false;
     (async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user || cancelled) return;
       setUserId(user.id);
       await refresh(user.id);
+      if (cancelled) return;
 
-      const sub = supabase
-        .channel(`notifications-page:${user.id}`)
+      sub = supabase
+        .channel(`notifications-page:${user.id}:${Math.random().toString(36).slice(2)}`)
         .on(
           "postgres_changes",
           { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
           () => refresh(user.id)
         )
         .subscribe();
-
-      return () => {
-        supabase.removeChannel(sub);
-      };
     })();
+    return () => {
+      cancelled = true;
+      if (sub) supabase.removeChannel(sub);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

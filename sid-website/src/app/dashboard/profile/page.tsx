@@ -5,6 +5,10 @@ import { createClient } from "@/lib/supabase/client";
 import type { Profile } from "@/types/database";
 import { inputClass, labelClass } from "@/lib/ui";
 import { RankCard } from "@/components/RankCard";
+import Link from "next/link";
+import { BirthdaySetting } from "@/components/secrets/Birthday";
+import { TitleAuraLayer, TitleBadge } from "@/components/titles/TitleVisuals";
+import { useEquippedTitles } from "@/lib/useEquippedTitles";
 import { isPushSupported, getPushPermission, hasActivePushSubscription, subscribeToPush, unsubscribeFromPush, needsIosInstallFirst } from "@/lib/push";
 
 const HIDEABLE_FIELDS: { key: keyof Profile; label: string }[] = [
@@ -41,6 +45,8 @@ export default function ProfilePage() {
   const [pushMessage, setPushMessage] = useState<string | null>(null);
   const [pushLoading, setPushLoading] = useState(false);
   const [needsIosInstall, setNeedsIosInstall] = useState(false);
+  const [myId, setMyId] = useState<string>("");
+  const myTitle = useEquippedTitles(myId ? [myId] : []).get(myId);
 
   useEffect(() => {
     (async () => {
@@ -48,6 +54,7 @@ export default function ProfilePage() {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) return;
+      setMyId(user.id);
       const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
       setProfile(data);
 
@@ -194,6 +201,21 @@ export default function ProfilePage() {
         <h1 className="font-display text-2xl uppercase tracking-wide text-red">Mon dossier</h1>
       </div>
 
+      <Link href="/dashboard/titles" className="glass-card relative block overflow-hidden p-5 transition hover:-translate-y-0.5">
+        {myTitle && <TitleAuraLayer titleId={myTitle.title_id} dragon={myTitle.dragon} compact />}
+        <div className="relative z-[1] flex flex-wrap items-center justify-between gap-3">
+          <div className="space-y-1">
+            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-paper/60">Titre</p>
+            {myTitle ? (
+              <TitleBadge titleId={myTitle.title_id} level={myTitle.level} dragon={myTitle.dragon} size="md" />
+            ) : (
+              <p className="font-body text-sm text-paper/70">Aucun titre équipé. Douze titres secrets t&apos;attendent…</p>
+            )}
+          </div>
+          <span className="font-mono text-xs uppercase text-blue-light">Mes titres →</span>
+        </div>
+      </Link>
+
       <div className="glass-card space-y-4 p-6">
         <div className="flex items-center gap-4">
           {profile.avatar_url ? (
@@ -244,6 +266,8 @@ export default function ProfilePage() {
           <input type="number" className={inputClass} value={profile.age ?? ""} onChange={(e) => update("age", Number(e.target.value))} />
         </div>
       </div>
+
+      {myId && <BirthdaySetting userId={myId} />}
 
       <div className="glass-card space-y-3 p-6">
         <h2 className="font-display text-lg uppercase">Notifications</h2>
