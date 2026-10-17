@@ -20,6 +20,9 @@ export interface Profile {
   last_seen_at: string | null;
   hidden_fields: string[];
   is_invisible: boolean;
+  /** Lot 37 : apparaître dans « En ligne maintenant », et y montrer son activité. */
+  presence_visible?: boolean;
+  activity_visible?: boolean;
   /** Compte de test (bac à sable) : date d'expiration ; null pour un vrai compte. */
   sandbox_expires_at: string | null;
   /** Version des CGU acceptée (voir TERMS_VERSION) et date d'acceptation. */

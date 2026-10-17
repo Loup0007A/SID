@@ -13,6 +13,8 @@ import { useSuspendedSections } from "@/lib/maintenance";
 import { MemberStatBars } from "@/components/MemberStatBars";
 import type { SimulationOverview } from "@/types/simulationRuns";
 import { BirthdaysToday } from "@/components/secrets/Birthday";
+import { OnlineNow } from "@/components/presence/OnlineNow";
+import { HalloweenGreeting } from "@/components/seasonal/Halloween";
 
 export default function DashboardHome() {
   const supabase = createClient();
@@ -86,6 +88,7 @@ export default function DashboardHome() {
           <h1 className="font-display text-3xl uppercase tracking-wide">
             {profile ? `Bonjour, ${profile.nickname}` : "Bienvenue"}
           </h1>
+          <HalloweenGreeting />
         </div>
         <Link href="/dashboard/bank" scroll={false} className="glass-card px-5 py-3 transition hover:-translate-y-0.5">
           <p className="font-mono text-[10px] uppercase tracking-wide text-paper/60">Solde</p>
@@ -127,6 +130,8 @@ export default function DashboardHome() {
           </Link>
         )}
       </section>
+
+      {profile && <OnlineNow />}
 
       {myQuests.length > 0 && (
         <section id="missions" className="scroll-mt-24 space-y-4">

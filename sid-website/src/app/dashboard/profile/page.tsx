@@ -29,6 +29,7 @@ export default function ProfilePage() {
   const [saved, setSaved] = useState(false);
   const [invisibleSaving, setInvisibleSaving] = useState(false);
   const [invisibleMessage, setInvisibleMessage] = useState<string | null>(null);
+  const [presenceMessage, setPresenceMessage] = useState<string | null>(null);
 
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarMessage, setAvatarMessage] = useState<string | null>(null);
@@ -69,6 +70,14 @@ export default function ProfilePage() {
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Lien « Ce que les autres voient de toi » (accueil) : on descend jusqu'au réglage.
+  const loaded = !!profile;
+  useEffect(() => {
+    if (loaded && window.location.hash === "#presence") {
+      setTimeout(() => document.getElementById("presence")?.scrollIntoView({ behavior: "smooth", block: "start" }), 150);
+    }
+  }, [loaded]);
 
   if (!profile) return <p className="font-body text-paper/60">Chargement du dossier…</p>;
 
@@ -120,6 +129,20 @@ export default function ProfilePage() {
     }
     update("is_invisible", next);
     setInvisibleMessage(next ? "Ton compte est maintenant invisible." : "Ton compte est de nouveau visible.");
+  }
+
+  async function setPresence(field: "presence_visible" | "activity_visible", next: boolean) {
+    if (!profile) return;
+    setPresenceMessage(null);
+    const { error } = await supabase.rpc("set_presence_privacy", {
+      p_visible: field === "presence_visible" ? next : null,
+      p_activity: field === "activity_visible" ? next : null,
+    });
+    if (error) {
+      setPresenceMessage(error.message.includes("set_presence_privacy") ? "Fonction pas encore activée : la migration 0063 doit être lancée sur la base." : `Échec : ${error.message}`);
+      return;
+    }
+    update(field, next);
   }
 
   async function uploadAvatar() {
@@ -348,6 +371,35 @@ export default function ProfilePage() {
           {profile.is_invisible ? "👻 Mon compte est invisible" : "Rendre mon compte invisible"}
         </label>
         {invisibleMessage && <p className="font-mono text-xs text-red">{invisibleMessage}</p>}
+      </div>
+
+      <div id="presence" className="glass-card scroll-mt-24 space-y-3 p-6">
+        <h2 className="font-display text-lg uppercase">Présence en ligne</h2>
+        <p className="font-body text-sm text-paper/70">
+          L&apos;accueil montre qui est sur le site en ce moment et ce qu&apos;il y fait (« À la banque », « En plein
+          donjon »…). Seule la page en cours est gardée, jamais l&apos;historique, et elle est effacée au bout
+          d&apos;un jour. L&apos;administration (gestion des comptes) voit tout le monde.
+        </p>
+        <label className="flex items-center gap-3 font-mono text-sm">
+          <input
+            type="checkbox"
+            className="h-4 w-4 accent-blue"
+            checked={profile.presence_visible !== false}
+            onChange={(e) => setPresence("presence_visible", e.target.checked)}
+          />
+          Apparaître en ligne aux autres membres
+        </label>
+        <label className={`flex items-center gap-3 font-mono text-sm ${profile.presence_visible === false ? "opacity-50" : ""}`}>
+          <input
+            type="checkbox"
+            className="h-4 w-4 accent-blue"
+            checked={profile.activity_visible !== false}
+            disabled={profile.presence_visible === false}
+            onChange={(e) => setPresence("activity_visible", e.target.checked)}
+          />
+          Montrer ce que je fais (sinon : « Activité masquée »)
+        </label>
+        {presenceMessage && <p className="font-mono text-xs text-red">{presenceMessage}</p>}
       </div>
 
       <div className="glass-card space-y-3 p-6">

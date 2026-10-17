@@ -6,8 +6,8 @@
 // trois, et changer TERMS_VERSION pour redemander l'acceptation à tous.
 // ─────────────────────────────────────────────────────────────────────
 
-export const TERMS_VERSION = "2026-10-15";
-export const TERMS_DATE = "15 octobre 2026";
+export const TERMS_VERSION = "2026-10-17";
+export const TERMS_DATE = "17 octobre 2026";
 
 export type LegalSite = "quest" | "map" | "wiki";
 
@@ -208,7 +208,9 @@ export function Privacy({ site }: { site: LegalSite }) {
         <li>
           <strong>Activité :</strong> date de ta dernière visite et nombre de visites par jour (pas d&apos;historique des
           pages vues), notifications reçues, et, si tu les actives, l&apos;abonnement aux notifications push de ton
-          appareil.
+          appareil. Pour le tableau « En ligne maintenant » : la page du Dossier Central où tu te trouves en ce moment
+          (sans identifiant), si tu es absent, et depuis quand tu es en ligne — une seule ligne, remplacée à chaque
+          page, jamais d&apos;historique.
         </li>
         <li>
           <strong>Administration :</strong> sanctions, actions de l&apos;administration te concernant (journal
@@ -236,7 +238,8 @@ export function Privacy({ site }: { site: LegalSite }) {
           <strong>Les autres membres</strong> voient ton dossier public (sans les champs que tu as masqués), ton rang, ta
           place au classement, ta position sur la carte si tu la partages, et ce que tu publies. En mode{" "}
           <em>compte invisible</em>, tu n&apos;apparais plus dans les listes, le classement, la carte ni
-          l&apos;organigramme.
+          l&apos;organigramme. Ils voient aussi si tu es en ligne et ce que tu fais (« À la banque », « En plein
+          donjon »…), sauf si tu masques ton activité ou ta présence (Mon dossier → Présence en ligne).
         </li>
         <li>
           <strong>La gestion des comptes</strong> (administration) voit tout ton dossier, y compris les champs masqués, et
@@ -282,6 +285,7 @@ export function Privacy({ site }: { site: LegalSite }) {
         <li>Ton compte et ce qui s&apos;y rattache : tant que ton compte existe.</li>
         <li>Après une demande de suppression : effacement sous 30 jours au plus.</li>
         <li>Visites par jour : 13 mois. Notifications lues : 6 mois. Alertes traitées : 12 mois.</li>
+        <li>Présence en ligne (page en cours) : effacée un jour après ta dernière visite.</li>
         <li>Journal d&apos;audit de l&apos;administration : 3 ans (pour pouvoir traiter une contestation).</li>
         <li>Comptes de test de l&apos;administration : effacés à leur expiration.</li>
       </ul>

@@ -22,6 +22,7 @@ import type { SimulationOverview, SimulationResultResponse, SimulationRunStatus 
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { connectRaid, sendRaidEvent, type ActiveRaid, type BossRaid } from "@/lib/bossRaids";
 import { BloodLockout } from "@/components/BloodLockout";
+import { announceActivity } from "@/lib/presence";
 
 const RUN_STATUS_LABELS: Record<SimulationRunStatus, string> = {
   started: "En cours",
@@ -66,6 +67,12 @@ export default function SimulationPage() {
   const [overview, setOverview] = useState<SimulationOverview | null>(null);
   const [overviewError, setOverviewError] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
+  // Présence : « en plein donjon » tant que la partie est ouverte.
+  const playing = !!session;
+  useEffect(() => {
+    announceActivity(playing ? "jeu" : null);
+    return () => announceActivity(null);
+  }, [playing]);
   const [starting, setStarting] = useState(false);
   const [notice, setNotice] = useState<Notice | null>(null);
   const [usingReset, setUsingReset] = useState(false);
