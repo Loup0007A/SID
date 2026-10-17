@@ -263,17 +263,19 @@ export default function ModerationPage() {
         </div>
       </section>
 
-      {/* Décor saisonnier */}
+      {/* Affichage événementiel */}
       <section className="space-y-4">
-        <h2 className="font-display text-lg uppercase text-paper">Décor saisonnier</h2>
+        <h2 className="font-display text-lg uppercase text-paper">Affichage événementiel</h2>
         <p className="font-body text-sm text-paper/60">
-          Décorations visibles par tous les membres : purement visuelles, elles ne changent rien au fonctionnement du site.
+          Décorations d&apos;événement sur les trois sites (Dossier Central, Cartographie, Wiki), visibles par tous :
+          purement visuelles, elles ne changent rien au fonctionnement.
         </p>
         <div className="glass-card flex flex-wrap items-center gap-4 p-4">
           <div className="min-w-[12rem] flex-1 space-y-1">
             <p className="font-display uppercase">🎃 Halloween</p>
             <p className="font-body text-xs text-paper/60">
-              Lune, chauves-souris, toile d&apos;araignée, cimetière en silhouette, citrouille dans le pied de page.
+              Dossier : lune, cimetière, chauves-souris, toile d&apos;araignée, citrouille du pied de page. Carte : toile,
+              chauves-souris, sceau en citrouille, bords teintés. Wiki : lune, citrouilles sur les vagues, mer orangée.
             </p>
             {decor && (
               <span className={clsx("font-mono text-xs uppercase", decor.halloween ? "text-[#ff9a3c]" : "text-paper/50")}>

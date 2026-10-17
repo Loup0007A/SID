@@ -163,7 +163,15 @@ export function HalloweenDecor() {
   const [mounted, setMounted] = useState(false);
   const [flock, setFlock] = useState(false);
   const [straggler, setStraggler] = useState(0);
+  const [strayOn, setStrayOn] = useState(false);
   const on = !!decor?.halloween;
+
+  useEffect(() => {
+    if (!straggler) return;
+    setStrayOn(true);
+    const t = setTimeout(() => setStrayOn(false), 12_500);
+    return () => clearTimeout(t);
+  }, [straggler]);
 
   useEffect(() => setMounted(true), []);
 
@@ -184,8 +192,11 @@ export function HalloweenDecor() {
       first = setTimeout(() => setFlock(true), 900);
     }
     const t = setInterval(() => setStraggler((n) => n + 1), 140_000);
+    // Une fois passées, les chauves-souris quittent la page (plus d'animation cachée).
+    const gone = setTimeout(() => setFlock(false), 13_000);
     return () => {
       clearTimeout(first);
+      clearTimeout(gone);
       clearInterval(t);
       root.classList.remove("decor-halloween");
     };
@@ -210,7 +221,7 @@ export function HalloweenDecor() {
               style={{ "--d": `${b.d}s`, "--s": b.s, "--y": `${b.y}px`, "--t": `${b.t}s` } as React.CSSProperties}
             />
           ))}
-        {straggler > 0 && <Bat key={`s${straggler}`} className="hw-fly hw-straggler" style={{ "--d": "0s", "--s": 0.6, "--y": "40px", "--t": "11s" } as React.CSSProperties} />}
+        {strayOn && <Bat key={`s${straggler}`} className="hw-fly hw-straggler" style={{ "--d": "0s", "--s": 0.6, "--y": "40px", "--t": "11s" } as React.CSSProperties} />}
       </div>
     </>,
     document.body
