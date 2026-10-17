@@ -40,6 +40,7 @@ export const ACTION_LABELS: Record<string, string> = {
   troll_shield_on: "Bouclier anti-farces posé",
   troll_shield_off: "Bouclier anti-farces retiré",
   trolls_toggled: "Farces activées / coupées",
+  decor_changed: "Décor saisonnier changé",
 };
 
 export const FIELD_LABELS: Record<string, string> = {
@@ -156,6 +157,8 @@ export function describe(row: { action: string; details: Record<string, unknown>
       return d.raison ? `« ${String(d.raison)} »` : "";
     case "trolls_toggled":
       return d.actives ? "activées" : "coupées";
+    case "decor_changed":
+      return `Halloween : ${d.mode === "on" ? "toujours" : d.mode === "off" ? "désactivé" : "automatique"}`;
     case "account_invisible":
     case "account_visible":
       return d.par_le_membre ? "par le membre lui-même" : "par l'administration";

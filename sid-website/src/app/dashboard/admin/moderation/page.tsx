@@ -6,6 +6,13 @@ import type { Profile } from "@/types/database";
 import type { Announcement, AnnouncementSeverity, MaintenanceFlag, SanctionType, SanctionView } from "@/types/admin";
 import { inputClass, labelClass } from "@/lib/ui";
 import clsx from "clsx";
+import { DECOR_CHANGED_EVENT, type SiteDecor } from "@/components/seasonal/Halloween";
+
+const DECOR_MODES: { v: SiteDecor["halloween_mode"]; label: string; hint: string }[] = [
+  { v: "auto", label: "Automatique", hint: "Du 15 octobre au 2 novembre (heure de Paris)." },
+  { v: "on", label: "Toujours", hint: "Affiché tout de suite, jusqu'à ce que tu changes d'avis." },
+  { v: "off", label: "Désactivé", hint: "Aucune décoration, même pendant la période." },
+];
 
 const SECTION_LABELS: Record<string, string> = {
   shop: "Boutique",
@@ -42,6 +49,10 @@ export default function ModerationPage() {
   const [flags, setFlags] = useState<MaintenanceFlag[]>([]);
   const [flagMessages, setFlagMessages] = useState<Record<string, string>>({});
 
+  // Décor saisonnier
+  const [decor, setDecor] = useState<SiteDecor | null>(null);
+  const [decorSaving, setDecorSaving] = useState(false);
+
   // Sanctions
   const [members, setMembers] = useState<Profile[]>([]);
   const [sanctions, setSanctions] = useState<SanctionView[]>([]);
@@ -61,6 +72,21 @@ export default function ModerationPage() {
     const { data } = await supabase.rpc("list_maintenance_flags");
     setFlags((data ?? []) as MaintenanceFlag[]);
   }
+  async function refreshDecor() {
+    const { data } = await supabase.rpc("site_decor");
+    if (data) setDecor(data as SiteDecor);
+  }
+  async function changeDecor(mode: SiteDecor["halloween_mode"]) {
+    setDecorSaving(true);
+    const { data, error } = await supabase.rpc("set_site_decor", { p_decor: "halloween", p_mode: mode });
+    setDecorSaving(false);
+    if (error) {
+      setMessage(`Échec : ${error.message}`);
+      return;
+    }
+    setDecor(data as SiteDecor);
+    window.dispatchEvent(new CustomEvent(DECOR_CHANGED_EVENT, { detail: data }));
+  }
   async function refreshSanctions() {
     const { data } = await supabase.rpc("list_all_sanctions");
     setSanctions((data ?? []) as SanctionView[]);
@@ -70,7 +96,7 @@ export default function ModerationPage() {
     (async () => {
       const { data: m } = await supabase.from("profiles").select("*").eq("status", "active").order("nickname");
       setMembers(m ?? []);
-      await Promise.all([refreshAnnouncements(), refreshFlags(), refreshSanctions()]);
+      await Promise.all([refreshAnnouncements(), refreshFlags(), refreshSanctions(), refreshDecor()]);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -234,6 +260,46 @@ export default function ModerationPage() {
               </button>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Décor saisonnier */}
+      <section className="space-y-4">
+        <h2 className="font-display text-lg uppercase text-paper">Décor saisonnier</h2>
+        <p className="font-body text-sm text-paper/60">
+          Décorations visibles par tous les membres : purement visuelles, elles ne changent rien au fonctionnement du site.
+        </p>
+        <div className="glass-card flex flex-wrap items-center gap-4 p-4">
+          <div className="min-w-[12rem] flex-1 space-y-1">
+            <p className="font-display uppercase">🎃 Halloween</p>
+            <p className="font-body text-xs text-paper/60">
+              Lune, chauves-souris, toile d&apos;araignée, cimetière en silhouette, citrouille dans le pied de page.
+            </p>
+            {decor && (
+              <span className={clsx("font-mono text-xs uppercase", decor.halloween ? "text-[#ff9a3c]" : "text-paper/50")}>
+                {decor.halloween ? "Affiché en ce moment" : "Pas affiché en ce moment"}
+              </span>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Décor d'Halloween">
+            {DECOR_MODES.map((m) => (
+              <button
+                key={m.v}
+                role="radio"
+                aria-checked={decor?.halloween_mode === m.v}
+                title={m.hint}
+                disabled={decorSaving || !decor}
+                onClick={() => changeDecor(m.v)}
+                className={clsx(
+                  "rounded-lg px-4 py-2 font-mono text-xs uppercase disabled:opacity-50",
+                  decor?.halloween_mode === m.v ? "bg-blue text-ink" : "border border-white/20 text-paper/70 hover:bg-white/10"
+                )}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
+          {decor && <p className="basis-full font-mono text-[11px] text-paper/45">{DECOR_MODES.find((m) => m.v === decor.halloween_mode)?.hint}</p>}
         </div>
       </section>
 

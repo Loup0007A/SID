@@ -21,6 +21,7 @@ import { TrollLayer } from "@/components/trolls/TrollLayer";
 import { TitleUnlock } from "@/components/titles/TitleUnlock";
 import { HiddenButton } from "@/components/secrets/HiddenButton";
 import { AbyssDive } from "@/components/secrets/AbyssDive";
+import { PresenceTracker } from "@/components/presence/PresenceTracker";
 
 /** Titre affiché dans la barre du haut pour la page en cours. */
 function pageTitle(pathname: string): string | null {
@@ -114,6 +115,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [pathname]);
 
   async function handleLogout() {
+    try {
+      await supabase.rpc("presence_leave");
+    } catch {
+      // silencieux
+    }
     await supabase.auth.signOut();
     router.push("/login");
     router.refresh();
@@ -188,7 +194,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <Link href="/dashboard" scroll={false} className="flex shrink-0 items-center gap-2" aria-label="Accueil du S.I.D.">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.png" alt="" className="h-9 w-9 rounded-full" />
-            <span className="hidden font-display text-xl uppercase tracking-wide text-red sm:inline">S.I.D.</span>
+            <span className="sid-wordmark hidden font-display text-xl uppercase tracking-wide text-red sm:inline">S.I.D.</span>
           </Link>
 
           {!isHome && (
@@ -247,6 +253,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <SiteFooter />
       {profile && <AbyssDive />}
     </div>
+    {profile && <PresenceTracker />}
     {profile && <TrollLayer nickname={profile.nickname} />}
     {profile && <TitleUnlock userId={profile.id} equipped={profile.equipped_title ?? null} />}
     </>

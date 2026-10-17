@@ -921,3 +921,122 @@ body {
 .glitch-title::after { color: #36e6ff; clip-path: inset(55% 0 0 0); transform: translateX(4px); animation: glitch-slice 1.3s steps(1) infinite reverse; }
 @keyframes glitch-skew { 0%, 90% { transform: none; } 92% { transform: skewX(12deg); } 95% { transform: skewX(-8deg); } }
 @keyframes glitch-slice { 0%, 80% { transform: translateX(-4px); } 85% { transform: translateX(8px); } 90% { transform: translateX(-10px); } }
+
+
+/* =========================================================
+   Présence en ligne (Lot 37)
+   ========================================================= */
+.online-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #5fe39a; box-shadow: 0 0 0 3px rgb(95 227 154 / 0.18); }
+
+/* =========================================================
+   Décor d'Halloween (Lot 37) — activé par la base (site_decor),
+   coupé depuis Modération. Rien ne capte les clics.
+   ========================================================= */
+html.decor-halloween:not(.troll-abyss) body {
+  background-color: #231f33;
+  background-image:
+    radial-gradient(ellipse 70% 55% at 10% -10%, rgb(123 75 201 / 0.34), transparent 60%),
+    radial-gradient(ellipse 60% 45% at 100% 8%, rgb(243 233 200 / 0.08), transparent 55%),
+    radial-gradient(ellipse 60% 50% at 15% 105%, rgb(123 75 201 / 0.22), transparent 60%),
+    radial-gradient(ellipse 55% 45% at 100% 100%, rgb(255 138 42 / 0.18), transparent 60%);
+}
+
+/* Arrière-plan : lune, nuage, cimetière, brume (derrière tout le contenu). */
+.hw-back { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+.hw-moon-wrap { position: absolute; top: 88px; right: max(4vw, 18px); width: clamp(84px, 11vw, 150px); aspect-ratio: 1; }
+.hw-moon {
+  position: absolute; inset: 0; border-radius: 50%; opacity: 0.8;
+  background:
+    radial-gradient(circle at 70% 30%, rgb(190 172 130 / 0.35) 0 7%, transparent 8%),
+    radial-gradient(circle at 57% 70%, rgb(190 172 130 / 0.3) 0 12%, transparent 13%),
+    radial-gradient(circle at 24% 52%, rgb(190 172 130 / 0.25) 0 5%, transparent 6%),
+    radial-gradient(circle at 80% 58%, rgb(190 172 130 / 0.22) 0 4%, transparent 5%),
+    radial-gradient(circle at 38% 34%, #fffaf0, #f3e9c8 52%, #d8c79c 100%);
+  box-shadow: 0 0 60px 14px rgb(243 233 200 / 0.16), 0 0 160px 60px rgb(123 75 201 / 0.14);
+}
+.hw-cloud {
+  position: absolute; left: -60%; top: 60%; width: 150%; height: 24%; border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgb(35 31 51 / 0.7) 22%, rgb(35 31 51 / 0.75) 70%, transparent);
+  filter: blur(6px); animation: hw-cloud 80s linear infinite alternate;
+}
+@keyframes hw-cloud { from { transform: translateX(-20%); } to { transform: translateX(45%); } }
+@media (max-width: 640px) {
+  .hw-moon-wrap { top: 68px; right: 8px; width: 58px; opacity: 0.55; }
+}
+.hw-graveyard { position: absolute; left: 0; bottom: 0; width: 100%; height: 130px; }
+.hw-hill-far { fill: #1e1731; opacity: 0.85; }
+.hw-hill, .hw-stones path { fill: #150f21; }
+.hw-tree { fill: none; stroke: #150f21; stroke-width: 4; stroke-linecap: round; }
+.hw-fog {
+  position: absolute; left: -10%; right: -10%; bottom: 0; height: 190px;
+  background:
+    radial-gradient(ellipse 50% 60% at 30% 100%, rgb(170 150 210 / 0.16), transparent 70%),
+    radial-gradient(ellipse 45% 55% at 75% 100%, rgb(255 138 42 / 0.1), transparent 70%);
+  animation: hw-fog 40s ease-in-out infinite alternate;
+}
+@keyframes hw-fog { from { transform: translateX(-3%); } to { transform: translateX(3%); } }
+
+/* Premier plan : toile d'araignée et chauves-souris. */
+.hw-front { position: fixed; inset: 0; z-index: 21; pointer-events: none; overflow: hidden; }
+.hw-web { position: absolute; top: 0; left: 0; width: clamp(78px, 9vw, 120px); height: auto; overflow: visible; }
+.hw-web line, .hw-web path { stroke: rgb(236 228 250 / 0.26); stroke-width: 0.7; fill: none; }
+.hw-spider { animation: hw-spider 1.6s cubic-bezier(.3, .7, .4, 1) 0.6s both; }
+.hw-spider ellipse, .hw-spider circle { fill: #120c1a; stroke: rgb(255 138 42 / 0.5); stroke-width: 0.4; }
+.hw-web .hw-legs { stroke: #120c1a; stroke-width: 1.1; }
+.hw-web .hw-thread { stroke: rgb(236 228 250 / 0.35); }
+.hw-eye, .hw-spider .hw-eye { fill: #ff8a2a; stroke: none; }
+@keyframes hw-spider { from { transform: translateY(-46px); } to { transform: translateY(0); } }
+
+.hw-bat { fill: #2b1a3a; filter: drop-shadow(0 0 2px rgb(255 138 42 / 0.55)); overflow: visible; }
+.hw-fly { position: absolute; top: 120px; right: 7vw; width: 56px; opacity: 0; animation: hw-fly var(--t) cubic-bezier(.45, .05, .55, .95) var(--d) both; }
+.hw-straggler { top: 38vh; }
+@keyframes hw-fly {
+  0% { opacity: 0; transform: translate(0, var(--y)) scale(calc(var(--s) * 0.3)); }
+  8% { opacity: 1; }
+  30% { transform: translate(-28vw, calc(var(--y) - 40px)) scale(var(--s)); }
+  55% { transform: translate(-56vw, calc(var(--y) + 30px)) scale(var(--s)); }
+  85% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-112vw, calc(var(--y) - 60px)) scale(calc(var(--s) * 1.2)); }
+}
+.hw-wing { transform-box: fill-box; animation: hw-flap 0.22s ease-in-out infinite alternate; }
+.hw-wing-l { transform-origin: 100% 60%; }
+.hw-wing-r { transform-origin: 0% 60%; }
+@keyframes hw-flap { from { transform: scaleY(1); } to { transform: scaleY(0.35); } }
+
+/* Le S.I.D. à la bougie, la phrase de l'accueil. */
+.decor-halloween .sid-wordmark { color: #ff9a3c; animation: hw-flicker 3.4s steps(1) infinite; text-shadow: 0 0 10px rgb(255 122 26 / 0.55); }
+@keyframes hw-flicker {
+  0%, 100% { text-shadow: 0 0 10px rgb(255 122 26 / 0.55); }
+  41% { text-shadow: 0 0 4px rgb(255 122 26 / 0.3); }
+  43% { text-shadow: 0 0 13px rgb(255 160 70 / 0.75); }
+  72% { text-shadow: 0 0 7px rgb(255 122 26 / 0.45); }
+}
+.hw-greeting { color: #f2a65a; }
+
+/* Lanterne du pied de page. */
+.hw-lantern { display: inline-flex; width: 22px; height: 22px; padding: 0; border: 0; background: none; cursor: pointer; border-radius: 6px; }
+.hw-lantern svg { width: 100%; height: 100%; overflow: visible; transition: transform 0.2s; }
+.hw-pumpkin { fill: #e8711f; }
+.hw-rib { fill: none; stroke: #b4500f; stroke-width: 1; }
+.hw-stem { fill: #4f7a3a; }
+.hw-face { fill: #3a1a08; transition: fill 0.2s, filter 0.2s; }
+.hw-lantern:hover .hw-face, .hw-lantern:focus-visible .hw-face { fill: #ffd36b; filter: drop-shadow(0 0 3px #ffb02e); }
+.hw-lantern:hover svg { transform: rotate(-8deg) scale(1.12); }
+.hw-lantern:focus-visible { outline: 2px solid #ff8a2a; outline-offset: 2px; }
+.hw-bubble {
+  position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%); z-index: 5;
+  width: max-content; max-width: min(70vw, 260px); padding: 6px 10px; border-radius: 10px; text-align: center;
+  background: #1d1630; border: 1px solid rgb(255 138 42 / 0.5); color: #f6dcc0;
+  font: italic 13px/1.35 var(--font-body); box-shadow: 0 6px 20px -6px rgb(0 0 0 / 0.6);
+  animation: title-unlock-in 0.2s ease-out;
+}
+.hw-candies span { position: absolute; left: 50%; top: 0; font-size: 14px; pointer-events: none; animation: hw-candy 0.9s cubic-bezier(.2, .7, .4, 1) both; }
+@keyframes hw-candy {
+  from { transform: translate(-50%, 0) rotate(0deg); opacity: 1; }
+  to { transform: translate(calc(-50% + var(--x)), -48px) rotate(var(--r)); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hw-cloud, .hw-fog, .hw-spider, .hw-wing, .decor-halloween .sid-wordmark { animation: none !important; }
+  .hw-candies { display: none; }
+}

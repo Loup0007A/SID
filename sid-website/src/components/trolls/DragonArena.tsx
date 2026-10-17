@@ -7,6 +7,7 @@ import type { ActiveTroll } from "@/lib/titles";
 import { connectArena, type ArenaBattle, type ArenaRole } from "@/lib/arenaRelay";
 import { DRAGON_FINALES, readOptions } from "@/lib/trollOptions";
 import { SIMULATION_SITES } from "@/lib/simulationSites";
+import { announceActivity } from "@/lib/presence";
 
 /** Page de l'arène dans le jeu 3D (surchargeable pour les essais). */
 const ARENA_URL = process.env.NEXT_PUBLIC_ARENA_URL || `${SIMULATION_SITES.donjons.url ?? "https://loup0007a.github.io/3D-game-world/"}arena.html`;
@@ -128,11 +129,13 @@ export function DragonArena({
       }
     }
     window.addEventListener("message", onMessage);
+    announceActivity(role === "dragon" ? "arene_dragon" : role === "player" ? "arene_joueur" : "arene_tribune");
     const html = document.documentElement;
     const prevOverflow = html.style.overflow;
     html.style.overflow = "hidden";
     return () => {
       window.removeEventListener("message", onMessage);
+      announceActivity(null);
       relay.close();
       html.style.overflow = prevOverflow;
     };

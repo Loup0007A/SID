@@ -10,6 +10,7 @@ import "@fontsource/source-serif-4/400-italic.css";
 import "@fontsource/jetbrains-mono/400.css";
 import "@fontsource/jetbrains-mono/500.css";
 import "./globals.css";
+import { HalloweenDecor } from "@/components/seasonal/Halloween";
 
 export const metadata: Metadata = {
   title: "S.I.D. — Dossier Central",
@@ -46,7 +47,10 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="S.I.D." />
       </head>
-      <body className="font-body">{children}</body>
+      <body className="font-body">
+        {children}
+        <HalloweenDecor />
+      </body>
     </html>
   );
 }
