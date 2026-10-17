@@ -3,15 +3,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { mentalQuestion } from "@/lib/mentalCalc";
 import type { ActiveTroll } from "@/lib/titles";
+import { HAUNT_CREATURES, readOptions } from "@/lib/trollOptions";
 
 /* ---------------------------------------------------------------
    Calcul forcé (Éclair Vivant) : 3 calculs du niveau 50 par page.
    --------------------------------------------------------------- */
 export function CalcGate({ troll }: { troll: ActiveTroll }) {
-  const NEED = 3;
+  const o = readOptions("calcul", troll.params, troll.level);
+  const NEED = o.count;
   const [done, setDone] = useState(false);
   const [streak, setStreak] = useState(0);
-  const [q, setQ] = useState(() => mentalQuestion(50));
+  const [q, setQ] = useState(() => mentalQuestion(o.level));
   const [deadline, setDeadline] = useState(() => Date.now() + q.seconds * 1000);
   const [value, setValue] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
@@ -25,7 +27,7 @@ export function CalcGate({ troll }: { troll: ActiveTroll }) {
   }, [done]);
 
   function next(fail?: string) {
-    const nq = mentalQuestion(50);
+    const nq = mentalQuestion(o.level);
     setQ(nq);
     setDeadline(Date.now() + nq.seconds * 1000);
     setValue("");
@@ -35,8 +37,8 @@ export function CalcGate({ troll }: { troll: ActiveTroll }) {
 
   useEffect(() => {
     if (!done && now > deadline) {
-      setStreak(0);
-      next(`Trop lent ! ${q.q} = ${q.r}. On recommence.`);
+      if (o.reset) setStreak(0);
+      next(`Trop lent ! ${q.q} = ${q.r}.${o.reset ? " On recommence." : ""}`);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [now]);
@@ -57,8 +59,8 @@ export function CalcGate({ troll }: { troll: ActiveTroll }) {
       if (s >= NEED) setDone(true);
       else next();
     } else {
-      setStreak(0);
-      next(`Faux : ${q.q} = ${q.r}. On recommence.`);
+      if (o.reset) setStreak(0);
+      next(`Faux : ${q.q} = ${q.r}.${o.reset ? " On recommence." : " Encore un essai."}`);
     }
   }
 
@@ -69,7 +71,8 @@ export function CalcGate({ troll }: { troll: ActiveTroll }) {
       <div className="w-full max-w-md space-y-4 rounded-2xl border border-[#ffe95c]/40 bg-black/40 p-6 text-center shadow-[0_0_60px_-10px_#ff8a00]">
         <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-[#ffe95c]">⚡ Contrôle de vivacité</p>
         <p className="font-body text-sm text-paper/80">
-          {troll.actor} exige {NEED} calculs mentaux justes d&apos;affilée (niveau 50) avant de te laisser voir cette page.
+          {troll.actor} exige {NEED} {NEED > 1 ? "calculs mentaux justes" : "calcul mental juste"}
+          {o.reset && NEED > 1 ? " d'affilée" : ""} (niveau {o.level}) avant de te laisser voir cette page.
         </p>
         <div className="flex justify-center gap-2">
           {Array.from({ length: NEED }, (_, i) => (
@@ -103,8 +106,10 @@ export function CalcGate({ troll }: { troll: ActiveTroll }) {
    --------------------------------------------------------------- */
 export function Haunt404({ troll }: { troll: ActiveTroll }) {
   const level = Math.max(1, troll.level || 1);
-  const [haunted, setHaunted] = useState(() => Math.random() < Math.min(0.75, 0.35 + 0.1 * (level - 1)));
-  const need = 3 + level;
+  const o = readOptions("hantise", troll.params, level);
+  const [haunted, setHaunted] = useState(() => Math.random() < o.chance / 100);
+  const need = o.catches;
+  const creature = HAUNT_CREATURES[o.creature];
   const [caught, setCaught] = useState(0);
   const [pos, setPos] = useState({ x: 50, y: 60 });
   const [boo, setBoo] = useState(false);
@@ -134,9 +139,9 @@ export function Haunt404({ troll }: { troll: ActiveTroll }) {
         <div className="glass-card max-w-md space-y-3 p-8 text-center">
           <p className="troll-glitch-text font-mono text-xs uppercase tracking-[0.3em] text-red">Erreur 404</p>
           <h1 className="font-display text-3xl uppercase tracking-wide">Dossier introuvable</h1>
-          <p className="font-body text-paper/70">Cette page n&apos;existe pas, ou a été dévorée par un fantôme.</p>
+          <p className="font-body text-paper/70">{o.message || `Cette page n'existe pas, ou a été dévorée par un${o.creature === "chauvesouris" || o.creature === "citrouille" ? "e" : ""} ${creature.label.toLowerCase()}.`}</p>
           <p className="font-mono text-xs text-paper/50">
-            Attrape le fantôme de {troll.actor} pour la récupérer : {caught} / {need}
+            Attrape {creature.emoji} de {troll.actor} pour la récupérer : {caught} / {need}
           </p>
         </div>
       </div>
@@ -144,9 +149,9 @@ export function Haunt404({ troll }: { troll: ActiveTroll }) {
         onPointerDown={catchIt}
         className={`troll-ghost absolute text-5xl ${boo ? "scale-125" : ""}`}
         style={{ left: `${pos.x}%`, top: `${pos.y}%`, transitionDuration: `${Math.max(250, 700 - level * 80)}ms` }}
-        aria-label="Fantôme"
+        aria-label={creature.label}
       >
-        👻
+        {creature.emoji}
       </button>
     </div>
   );
@@ -171,18 +176,23 @@ const CLAUSES = (actor: string, me: string) => [
 ];
 
 export function ContractGate({ troll, nickname }: { troll: ActiveTroll; nickname: string }) {
+  const o = readOptions("avenant", troll.params, troll.level);
   const [open, setOpen] = useState(true);
+  const [signed, setSigned] = useState("");
   const [scrolled, setScrolled] = useState(false);
   const [checked, setChecked] = useState(false);
   const [dodges, setDodges] = useState(0);
   const [boxPos, setBoxPos] = useState({ x: 0, y: 0 });
   const num = useMemo(() => Math.floor(1000 + Math.random() * 9000), []);
-  const clauses = useMemo(() => CLAUSES(troll.actor, nickname), [troll.actor, nickname]);
+  const clauses = useMemo(() => [...o.clauses.map((c) => `Clause particulière de ${troll.actor} : ${c}`), ...CLAUSES(troll.actor, nickname)], [troll.actor, nickname, o.clauses]);
+  const formula = `Lu et approuvé, ${troll.actor} a toujours raison`;
+  const norm = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/gi, " ").trim().toLowerCase();
+  const signOk = !o.signature || norm(signed) === norm(formula);
 
   if (!open) return null;
 
   function dodge() {
-    if (checked || dodges >= 3) return false;
+    if (checked || dodges >= o.dodges) return false;
     setDodges((d) => d + 1);
     setBoxPos({ x: (Math.random() - 0.5) * 220, y: (Math.random() - 0.5) * 40 });
     return true;
@@ -233,8 +243,20 @@ export function ContractGate({ troll, nickname }: { troll: ActiveTroll; nickname
             J&apos;accepte sans réserve
           </label>
         </div>
+        {o.signature && (
+          <label className="block space-y-1 font-mono text-[11px]">
+            <span>Recopie à la main : « {formula} »</span>
+            <input
+              value={signed}
+              onChange={(e) => setSigned(e.target.value)}
+              onPaste={(e) => e.preventDefault()}
+              autoComplete="off"
+              className="w-full rounded border border-paper-text/30 bg-white/60 px-2 py-1.5 font-body text-sm italic text-paper-text outline-none focus:border-[#7a1d14]"
+            />
+          </label>
+        )}
         <button
-          disabled={!checked}
+          disabled={!checked || !signOk}
           onClick={() => setOpen(false)}
           className="w-full rounded-lg bg-[#7a1d14] py-2 font-display uppercase tracking-wide text-paper disabled:opacity-30"
         >

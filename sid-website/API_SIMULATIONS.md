@@ -261,3 +261,27 @@ const signature = createHmac("sha256", process.env.SIMULATION_SECRET)
 Dès que ce secret existe, le S.I.D. **refuse** tout résultat de cette
 simulation sans signature valide. Ne le configure donc que pour un site
 qui a vraiment un serveur : un site statique ne peut pas cacher un secret.
+
+## 8. Arène du Dragon (jeu 3D, aucun point)
+
+Le pouvoir **Défi du Dragon** (titre Fléau Draconique) ouvre la page
+`arena.html` du jeu 3D (`3D-game-world`) en plein écran, par-dessus le site.
+Elle ne rapporte aucun point de simulation : seul le résultat de la bataille
+est gardé (`troll_actions.result`, via `arena_finish`).
+
+Messages entre le jeu (iframe) et la page du S.I.D. :
+
+- jeu → S.I.D. `{ type: "mv-arena", action }` : `ready` (chargé), `send`
+  (`event`, `payload` : un échange à faire passer aux autres), `end`
+  (`winner` = `dragon` | `joueurs` | `annule`, `victim`, `raison`), `close`.
+- S.I.D. → jeu `{ type: "sid-arena", action }` : `joined` (`me`, `role` =
+  `dragon` | `player` | `spectator`, `battle` = `{ id, actor, players, skin,
+  finale, spectators }`), `event` (`event`, `payload`, `from`), `error`.
+
+Temps réel (Supabase Realtime, `src/lib/arenaRelay.ts`), en étoile autour du
+dragon pour ménager le quota de messages : chaque joueur envoie au plus 3
+paquets par seconde sur `arena:<id>:u:<joueur>` (seul le dragon écoute) ; le
+dragon renvoie à tous, au plus 3 fois par seconde, un paquet commun sur
+`arena:<id>` (sa position, celles des joueurs, les événements). La tribune
+écoute seulement. Essai sans S.I.D. : `arena.html?local=1&role=…&me=…` dans
+plusieurs onglets.
