@@ -106,6 +106,12 @@ export function Cgu({ site }: { site: LegalSite }) {
         réelle, ne s&apos;achètent pas et ne se revendent pas contre de l&apos;argent réel. En cas de bug ou d&apos;abus,
         l&apos;administration peut les corriger.
       </p>
+      <p>
+        Les titres et leurs pouvoirs de farce sont des effets d&apos;affichage temporaires et inoffensifs : ils durent
+        quelques minutes et ne suppriment, ne saisissent ni ne modifient rien pour de vrai. Ils ne doivent pas servir à
+        harceler quelqu&apos;un : l&apos;administration peut arrêter une farce, protéger un membre ou couper les farces
+        pour tout le monde.
+      </p>
 
       <H2>7. Messagerie et « espionnage » du jeu</H2>
       <p>
@@ -179,11 +185,13 @@ export function Privacy({ site }: { site: LegalSite }) {
         </li>
         <li>
           <strong>Dossier :</strong> surnom, prénom et nom, âge, photo, description, armes, équipement, rôle souhaité,
-          date d&apos;inscription, rang, rôles. Tu choisis ce que tu montres aux autres (Mon dossier → Confidentialité).
+          date d&apos;inscription, rang, rôles, titres. Si tu le renseignes, ton anniversaire (jour et mois seulement,
+          jamais montré aux autres). Tu choisis ce que tu montres aux autres (Mon dossier → Confidentialité).
         </li>
         <li>
           <strong>Jeu :</strong> quêtes, zénis et mouvements, achats, banque, entreprises et actions, caractéristiques,
-          simulations jouées (résultat, durée, progression), arbre technologique, raids, classement.
+          simulations jouées (résultat, durée, progression), arbre technologique, raids, classement, titres obtenus,
+          farces lancées ou subies.
         </li>
         <li>
           <strong>Messagerie :</strong> tes salons et les messages que tu envoies, la date de dernière lecture de chaque

@@ -1,6 +1,11 @@
 // Libellés et descriptions des entrées du journal d'audit (page Journal
 // d'audit, fiche d'un membre, alertes).
 
+import { TITLES, POWERS, type TrollPower } from "@/lib/titles";
+
+const TITLE_NAMES: Record<string, string> = Object.fromEntries(TITLES.map((t) => [t.id, t.name]));
+export const POWER_NAMES: Record<string, string> = Object.fromEntries(Object.entries(POWERS).map(([k, p]) => [k as TrollPower, p.name]));
+
 export const ACTION_LABELS: Record<string, string> = {
   profile_changed: "Profil modifié",
   role_assigned: "Rôle attribué",
@@ -29,6 +34,12 @@ export const ACTION_LABELS: Record<string, string> = {
   account_deleted: "Compte supprimé (à sa demande)",
   password_reset: "Mot de passe réinitialisé",
   email_confirmed: "Email confirmé à la main",
+  title_granted: "Titre donné",
+  title_revoked: "Titre retiré",
+  troll_cancelled: "Farce arrêtée par l'administration",
+  troll_shield_on: "Bouclier anti-farces posé",
+  troll_shield_off: "Bouclier anti-farces retiré",
+  trolls_toggled: "Farces activées / coupées",
 };
 
 export const FIELD_LABELS: Record<string, string> = {
@@ -135,6 +146,16 @@ export function describe(row: { action: string; details: Record<string, unknown>
       return `${d.liens_nettoyes ?? 0} liens nettoyés`;
     case "alert_settings_changed":
       return Object.entries(d).map(([k, v]) => `${k} = ${v}`).join(" · ");
+    case "title_granted":
+      return `${TITLE_NAMES[String(d.titre)] ?? String(d.titre)}${d.resultat === "upgraded" ? " (niveau +1)" : d.resultat === "already" ? " (déjà possédé)" : ""}`;
+    case "title_revoked":
+      return TITLE_NAMES[String(d.titre)] ?? String(d.titre);
+    case "troll_cancelled":
+      return `${POWER_NAMES[String(d.pouvoir)] ?? String(d.pouvoir ?? "")} lancée par ${String(d.par ?? "?")}`;
+    case "troll_shield_on":
+      return d.raison ? `« ${String(d.raison)} »` : "";
+    case "trolls_toggled":
+      return d.actives ? "activées" : "coupées";
     case "account_invisible":
     case "account_visible":
       return d.par_le_membre ? "par le membre lui-même" : "par l'administration";

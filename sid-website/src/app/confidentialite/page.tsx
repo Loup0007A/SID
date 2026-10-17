@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Confidentialité · S.I.D." };
 
 export default function PrivacyPage() {
   return (
-    <LegalPage title="Confidentialité">
+    <LegalPage title="Confidentialité" page="confidentialite">
       <Privacy site="quest" />
     </LegalPage>
   );

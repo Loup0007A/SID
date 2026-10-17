@@ -25,6 +25,7 @@ export interface Profile {
   /** Version des CGU acceptée (voir TERMS_VERSION) et date d'acceptation. */
   terms_version?: string | null;
   terms_accepted_at?: string | null;
+  equipped_title?: string | null;
   reviewed_by: string | null;
   reviewed_at: string | null;
   created_at: string;
@@ -183,6 +184,7 @@ export interface ChatMessage {
   is_bold: boolean;
   is_italic: boolean;
   color: string | null;
+  troll_tag?: { kind: string; by: string } | null;
   created_at: string;
 }
 

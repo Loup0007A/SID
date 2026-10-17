@@ -5,6 +5,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import type { Profile } from "@/types/database";
 import { ProfileStyle, profileSkinClass } from "@/components/ProfileStyle";
+import { useEquippedTitles } from "@/lib/useEquippedTitles";
+import { TitleAuraLayer, TitleBadge } from "@/components/titles/TitleVisuals";
 
 type RosterEntry = Partial<Profile> & { id: string; nickname: string };
 type MemberRole = { user_id: string; role_name: string; role_color: string; role_rank: number };
@@ -14,6 +16,7 @@ export default function MembersPage() {
   const [roster, setRoster] = useState<RosterEntry[]>([]);
   const [rolesByUser, setRolesByUser] = useState<Map<string, MemberRole[]>>(new Map());
   const [styles, setStyles] = useState<Map<string, string>>(new Map());
+  const titles = useEquippedTitles(roster.map((m) => m.id));
 
   useEffect(() => {
     (async () => {
@@ -50,9 +53,12 @@ export default function MembersPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {roster.map((m) => {
           const roles = rolesByUser.get(m.id) ?? [];
+          const title = titles.get(m.id);
           return (
-            <div key={m.id} className={`glass-card space-y-1 p-4 ${profileSkinClass(m.id)}`}>
+            <div key={m.id} className={`glass-card relative space-y-1 overflow-hidden p-4 ${profileSkinClass(m.id)}`}>
               <ProfileStyle userId={m.id} css={styles.get(m.id)} />
+              {title && <TitleAuraLayer titleId={title.title_id} dragon={title.dragon} compact />}
+              <div className="relative z-[1] space-y-1">
               <div className="flex items-center justify-between gap-2">
                 <Link href={`/dashboard/profile/${m.id}`} className="font-display text-lg uppercase hover:text-blue-light hover:underline">
                   {m.nickname}
@@ -66,6 +72,8 @@ export default function MembersPage() {
                   <span className="font-mono text-xs text-paper/60">{m.age} ans</span>
                 )}
               </div>
+
+              {title && <TitleBadge titleId={title.title_id} level={title.level} dragon={title.dragon} size="xs" />}
 
               {roles.length > 0 && (
                 <div className="flex flex-wrap gap-1">
@@ -88,6 +96,7 @@ export default function MembersPage() {
               {m.weapons && <p className="font-body text-sm">🗡 {m.weapons}</p>}
               {m.equipment && <p className="font-body text-sm">🎒 {m.equipment}</p>}
               {m.description && <p className="mt-1 font-body text-sm text-paper/80">{m.description}</p>}
+              </div>
             </div>
           );
         })}

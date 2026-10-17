@@ -56,6 +56,14 @@ Chaque épreuve est une **compétence** notée de 0 à 100 (+1 par réussite) :
 | `mondes-vivants` (1 point par histoire terminée) | Puissance |
 | `techniques` | Technique |
 
+**Niveau caché 101** (les trois simulations) : le site envoie `niveau=101`.
+Il ne compte que si le membre a déjà tout réussi (Donjons : 100 histoires ;
+Techniques : compétence à 100 ; Intelligence : potions, énigmes et problème à
+100, le site envoie alors `epreuve=enigmes`). Réussi, il donne un titre
+(Donjons : « Fléau Draconique » et le rang Divin ; Intelligence :
+« Architecte du Réseau » ; Techniques : « Éclair Vivant »), sans point de
+compétence en plus. Sinon la réponse est `level_locked`.
+
 La puissance globale est la moyenne des trois facteurs. L'administration peut
 régler directement le niveau d'un membre dans chaque compétence (Admin →
 Économie → Niveaux & puissance) : le niveau est aussi débloqué dans le site

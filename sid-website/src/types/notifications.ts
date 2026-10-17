@@ -8,7 +8,11 @@ export type NotificationType =
   | "salary_paid"
   | "money_received"
   | "raid_call"
-  | "admin_alert";
+  | "admin_alert"
+  | "sanction"
+  | "announcement"
+  | "title"
+  | "troll";
 
 export interface AppNotification {
   id: string;

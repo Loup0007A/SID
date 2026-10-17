@@ -20,6 +20,9 @@ type CompleteResult = {
   skill?: string;
   skill_value?: number;
   divine?: boolean;
+  title?: string | null;
+  title_name?: string | null;
+  title_result?: string | null;
   points_awarded?: number;
   value?: number;
   power?: number;
@@ -49,7 +52,9 @@ function messageFor(r: CompleteResult): string {
       const label = r.factor ? STAT_LABELS[r.factor] : "le facteur";
       const skill = isSkillKey(r.skill) ? SKILL_LABELS[r.skill] : label;
       if (r.status === "failure") return "Simulation échouée : aucun point cette fois.";
-      if (r.divine) return "✦ Le Primordial est vaincu : tu es devenu Divin !";
+      if (r.divine) return `✦ Le Primordial est vaincu : tu es devenu Divin !${r.title_result === "granted" ? ` Nouveau titre : « ${r.title_name} ».` : ""}`;
+      if (r.title_result === "granted") return `✦ Niveau 101 réussi : nouveau titre « ${r.title_name} » !`;
+      if (r.title_result === "already") return `✦ Niveau 101 réussi à nouveau. Tu portes déjà « ${r.title_name} ».`;
       if (!r.points_awarded) return `Simulation réussie, mais ${skill} est déjà au maximum (100).`;
       if (r.factor === "intelligence" && skill !== label) return `Simulation réussie : +1 en ${skill} (${r.skill_value}/100) — ${label} ${fmt(r.value)}/100.`;
       return `Simulation réussie : +1 ${label} (${fmt(r.value)}/100).`;
@@ -57,6 +62,7 @@ function messageFor(r: CompleteResult): string {
     case "already_validated":
       return `Histoire ${r.niveau ?? "?"} déjà validée : pas de nouveau point (Puissance ${fmt(r.value)}).`;
     case "level_locked":
+      if (r.niveau === 101) return "Le niveau 101 ne s'ouvre qu'après les 100 niveaux (les trois épreuves à 100 pour l'Intelligence).";
       return `Histoire ${r.niveau ?? "?"} pas encore ouverte : termine d'abord l'histoire ${Number(r.value ?? 0) + 1}.`;
     case "invalid_epreuve":
       return "Épreuve manquante ou inconnue : précise laquelle a été jouée (potions, enigmes ou probleme).";

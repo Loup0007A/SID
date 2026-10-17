@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { SiteFooter } from "@/components/SiteFooter";
+import { LegalReadTracker } from "@/components/secrets/LegalReadTracker";
 
 /** Mise en page des pages publiques (CGU, confidentialité) : lisibles sans être connecté. */
-export function LegalPage({ title, children }: { title: string; children: React.ReactNode }) {
+export function LegalPage({ title, children, page }: { title: string; children: React.ReactNode; page?: "cgu" | "confidentialite" }) {
   return (
     <main className="min-h-screen text-paper">
       <header className="glass-panel sticky top-0 z-10 border-x-0 border-t-0 pt-[env(safe-area-inset-top)]">
@@ -18,6 +19,7 @@ export function LegalPage({ title, children }: { title: string; children: React.
       <article className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
         <h1 className="mb-2 font-display text-3xl uppercase tracking-wide text-red">{title}</h1>
         <div className="glass-card p-5 sm:p-8">{children}</div>
+        {page && <LegalReadTracker page={page} />}
       </article>
       <SiteFooter />
     </main>
