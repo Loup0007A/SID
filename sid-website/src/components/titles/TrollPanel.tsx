@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { POWERS, TITLE_BY_ID, isTitleId, type TrollPower } from "@/lib/titles";
+import { POWERS, TITLE_BY_ID, announceTrollLaunched, isTitleId, type TrollPower } from "@/lib/titles";
 import { NodeEditor, type NetworkLogic } from "@/components/titles/NodeEditor";
+import { TrollOptionsEditor } from "@/components/titles/TrollOptionsPanel";
+import { arenaCost, arenaPricesFrom, defaultOptions, type TrollOptions } from "@/lib/trollOptions";
 import { inputClass } from "@/lib/ui";
 
 export type TrollStatus = {
@@ -16,6 +18,9 @@ export type TrollStatus = {
   everyone_allowed: boolean;
   ready_at: string | null;
   ready_all_at: string | null;
+  /** Lot 36 : solde et tarifs, pour les options de l'arène. */
+  balance?: number;
+  arena?: { max_extra?: number; price_player?: number; price_tribune?: number; price_finale?: number };
   recent: {
     id: number;
     power: TrollPower;
@@ -23,6 +28,7 @@ export type TrollStatus = {
     ends_at: string;
     cancelled: boolean;
     target: string;
+    result?: { winner?: string; victim_name?: string | null } | null;
     responses: { who: string; result: string }[];
   }[];
 };
@@ -34,6 +40,13 @@ const RESULT_LABELS: Record<string, string> = {
   defaite: "🔥 carbonisé",
   fuite: "🏃 a fui",
   fini: "✓",
+  tribune: "🎥 a quitté la tribune",
+};
+
+const ARENA_RESULT: Record<string, string> = {
+  dragon: "🐉 le dragon a gagné",
+  joueurs: "🗡 dragon terrassé",
+  annule: "bataille annulée",
 };
 
 function remaining(iso: string | null, now: number) {
@@ -48,7 +61,19 @@ function fmtDuration(ms: number) {
 }
 
 /** Panneau de lancement du pouvoir du titre équipé. */
-export function TrollPanel({ status, myId, initialTarget, onChange }: { status: TrollStatus; myId: string; initialTarget?: string | null; onChange: () => void }) {
+export function TrollPanel({
+  status,
+  myId,
+  myName = "toi",
+  initialTarget,
+  onChange,
+}: {
+  status: TrollStatus;
+  myId: string;
+  myName?: string;
+  initialTarget?: string | null;
+  onChange: () => void;
+}) {
   const supabase = createClient();
   const [members, setMembers] = useState<Member[]>([]);
   const [target, setTarget] = useState<string>(initialTarget ?? "");
@@ -57,6 +82,7 @@ export function TrollPanel({ status, myId, initialTarget, onChange }: { status: 
   const [map, setMap] = useState<Record<string, string>>({});
   const [logic, setLogic] = useState<NetworkLogic>("rotation");
   const [every, setEvery] = useState(30);
+  const [opts, setOpts] = useState<TrollOptions[TrollPower] | null>(() => (status.power ? defaultOptions(status.power, status.level ?? 1) : null));
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [now, setNow] = useState(Date.now());
@@ -76,6 +102,11 @@ export function TrollPanel({ status, myId, initialTarget, onChange }: { status: 
   useEffect(() => {
     if (initialTarget) setTarget(initialTarget);
   }, [initialTarget]);
+
+  // Nouveau titre équipé : on repart des réglages par défaut de son pouvoir.
+  useEffect(() => {
+    setOpts(status.power ? defaultOptions(status.power, status.level ?? 1) : null);
+  }, [status.power, status.level]);
 
   const power = status.power ? POWERS[status.power] : null;
   const title = isTitleId(status.title) ? TITLE_BY_ID[status.title] : null;
@@ -101,8 +132,8 @@ export function TrollPanel({ status, myId, initialTarget, onChange }: { status: 
     if (!power) return;
     setBusy(true);
     setMessage(null);
-    const params = power.key === "reseau" ? { map, logic, every } : {};
-    const { error } = await supabase.rpc("launch_troll", {
+    const params = power.key === "reseau" ? { map, logic, every } : opts ?? {};
+    const { data, error } = await supabase.rpc("launch_troll", {
       p_power: power.key,
       p_target: everyone ? null : target || null,
       p_params: params,
@@ -113,7 +144,14 @@ export function TrollPanel({ status, myId, initialTarget, onChange }: { status: 
       return;
     }
     const who = everyone ? "tout le S.I.D." : members.find((m) => m.id === target)?.nickname ?? "ta cible";
-    setMessage({ ok: true, text: `${power.name} lancé sur ${who} ! ${status.minutes ? `Pendant ${status.minutes} minutes.` : ""}` });
+    const res = (data ?? {}) as { id?: number; cost?: number };
+    if (power.key === "defi_dragon") {
+      setMessage({ ok: true, text: `🐉 Transformation ! ${who} est convoqué${res.cost ? ` (options : ${Number(res.cost).toLocaleString("fr-FR")} z)` : ""}. Ton arène s'ouvre…` });
+      announceTrollLaunched(res.id);
+    } else {
+      setMessage({ ok: true, text: `${power.name} lancé sur ${who} ! ${status.minutes ? `Pendant ${status.minutes} minutes.` : ""}` });
+      announceTrollLaunched();
+    }
     onChange();
   }
 
@@ -122,7 +160,13 @@ export function TrollPanel({ status, myId, initialTarget, onChange }: { status: 
     onChange();
   }
 
-  const ready = status.enabled && wait === 0 && (everyone || !!target) && (power.key !== "reseau" || logic === "aleatoire" || Object.keys(map).length > 0);
+  const balance = Number(status.balance ?? 0);
+  const dragonOpts = power.key === "defi_dragon" && opts ? (opts as TrollOptions["defi_dragon"]) : null;
+  const prices = arenaPricesFrom(status.arena);
+  const affordable = !dragonOpts || arenaCost(dragonOpts, prices) <= balance;
+  const ready =
+    status.enabled && wait === 0 && (everyone || !!target) && affordable && (power.key !== "reseau" || logic === "aleatoire" || Object.keys(map).length > 0);
+  const targetName = everyone ? "tout le S.I.D." : members.find((m) => m.id === target)?.nickname ?? "ta cible";
 
   return (
     <div className="glass-card relative space-y-4 overflow-hidden p-6">
@@ -177,6 +221,21 @@ export function TrollPanel({ status, myId, initialTarget, onChange }: { status: 
 
       {power.key === "reseau" && <NodeEditor map={map} onChange={setMap} logic={logic} onLogic={setLogic} every={every} onEvery={setEvery} />}
 
+      {power.key !== "reseau" && opts && (
+        <div className="space-y-3 rounded-xl border border-white/10 bg-black/20 p-4">
+          <p className="font-mono text-xs uppercase tracking-[0.2em]" style={{ color: title.colors[0] }}>
+            ⚙ Réglages de la farce
+          </p>
+          <TrollOptionsEditor
+            power={power.key}
+            value={opts}
+            onChange={setOpts}
+            everyone={everyone}
+            ctx={{ accent: title.colors[0], me: myName, target: targetName, level: status.level ?? 1, balance, members, targetId: target, prices }}
+          />
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center gap-3">
         <button
           onClick={launch}
@@ -206,6 +265,12 @@ export function TrollPanel({ status, myId, initialTarget, onChange }: { status: 
                 <span className="text-paper/40">{new Date(r.created_at).toLocaleString("fr-FR", { weekday: "short", hour: "2-digit", minute: "2-digit" })}</span>
                 {active && <span className="rounded-full bg-[#7dffb0]/15 px-2 text-[#7dffb0]">en cours</span>}
                 {r.cancelled && <span className="text-paper/40">annulée</span>}
+                {r.result?.winner && (
+                  <span className="text-paper/60">
+                    {ARENA_RESULT[r.result.winner] ?? r.result.winner}
+                    {r.result.victim_name ? ` · ${r.result.victim_name} y est resté` : ""}
+                  </span>
+                )}
                 {r.responses.length > 0 && (
                   <span className="text-paper/60">
                     {r.responses.slice(0, 6).map((x) => `${x.who} ${RESULT_LABELS[x.result] ?? x.result}`).join(" · ")}

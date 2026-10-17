@@ -110,7 +110,7 @@ function TitlesInner() {
         <p className="font-mono text-xs text-paper/50">🛡 L&apos;administration t&apos;a mis à l&apos;abri des farces des autres.</p>
       )}
 
-      {equipped && <TrollPanel status={status} myId={me.id} initialTarget={params.get("target")} onChange={load} />}
+      {equipped && <TrollPanel status={status} myId={me.id} myName={me.nickname} initialTarget={params.get("target")} onChange={load} />}
 
       {/* Collection */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

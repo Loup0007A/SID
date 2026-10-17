@@ -521,8 +521,8 @@ function ChatInner() {
                       >
                         {m.content}
                         {m.troll_tag?.kind === "flatterie" && (
-                          <span className="ml-1 font-bold not-italic" style={{ color: "#B23B2E" }} title={`Flatterie obligatoire : une farce de ${m.troll_tag.by}`}>
-                            … et {m.troll_tag.by} est le meilleur ! 🎭
+                          <span className="ml-1 font-bold not-italic" style={{ color: m.troll_tag.color || "#B23B2E" }} title={`Flatterie obligatoire : une farce de ${m.troll_tag.by}`}>
+                            … et {m.troll_tag.by} {m.troll_tag.phrase || "est le meilleur !"} 🎭
                           </span>
                         )}
                         {m.edited_at && <span className="ml-1 font-mono text-[10px] opacity-60">(modifié)</span>}

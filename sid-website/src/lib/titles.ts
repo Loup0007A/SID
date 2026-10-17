@@ -184,8 +184,7 @@ export const POWERS: Record<TrollPower, PowerDef> = {
   defi_dragon: {
     key: "defi_dragon",
     name: "Défi du Dragon",
-    description: "Tu te changes en dragon et provoques un membre — ou tout le S.I.D. — en duel. Il doit te combattre ou fuir.",
-    everyoneFromLevel: 1,
+    description: "Tu te changes en dragon dans le jeu 3D et convoques un membre dans l'arène : il doit te combattre ou fuir. En option : jusqu'à 5 joueurs de plus, tout le S.I.D. en tribune, une cinématique de fin.",
   },
   reseau: {
     key: "reseau",
@@ -195,17 +194,17 @@ export const POWERS: Record<TrollPower, PowerDef> = {
   calcul: {
     key: "calcul",
     name: "Calcul forcé",
-    description: "Ta cible doit réussir trois calculs mentaux du niveau 50 avant chaque page. 10 minutes.",
+    description: "Ta cible doit réussir des calculs mentaux avant chaque page (3 du niveau 50 par défaut, à régler). 10 minutes.",
   },
   hantise: {
     key: "hantise",
     name: "Hantise",
-    description: "Les pages de ta cible se changent en fausses erreurs 404 hantées : il faut attraper le fantôme pour continuer. Plus long et plus fréquent à chaque niveau.",
+    description: "Les pages de ta cible se changent en fausses erreurs 404 hantées : il faut attraper la créature pour continuer. Plus long et plus fréquent à chaque niveau.",
   },
   fete: {
     key: "fete",
     name: "Fête forcée",
-    description: "Confettis à chaque clic, bannière de non-anniversaire et curseur festif. Plus long à chaque niveau ; tout le S.I.D. à partir du niveau 3.",
+    description: "Confettis à chaque clic, bannière et curseur festifs, sur le thème de ton choix. Plus long à chaque niveau ; tout le S.I.D. à partir du niveau 3.",
     everyoneFromLevel: 3,
   },
   abysses: {
@@ -221,22 +220,22 @@ export const POWERS: Record<TrollPower, PowerDef> = {
   flatterie: {
     key: "flatterie",
     name: "Flatterie obligatoire",
-    description: "Chaque message de ta cible se termine par « … et tu es le meilleur ! » en ton honneur. 10 minutes.",
+    description: "Les messages de ta cible se terminent par un compliment en ton honneur (« … et <ton pseudo> est le meilleur ! », ou la phrase de ton choix). 10 minutes.",
   },
   miroir: {
     key: "miroir",
     name: "Monde à l'envers",
-    description: "Le site de ta cible s'affiche en miroir et se retourne de temps en temps. 10 minutes.",
+    description: "Le site de ta cible s'affiche en miroir, tête en bas, penché ou en toupie, et se retourne de temps en temps. 10 minutes.",
   },
   reecriture: {
     key: "reecriture",
     name: "Réécriture",
-    description: "Les mots du site de ta cible changent : les quêtes deviennent des patates, les zénis des cailloux… 10 minutes.",
+    description: "Les mots du site de ta cible changent (potager, pirate, bébé ou médiéval, plus tes propres mots) : les quêtes deviennent des patates… 10 minutes.",
   },
   rationnement: {
     key: "rationnement",
     name: "Rationnement",
-    description: "Ta cible n'a droit qu'à un clic toutes les 8 secondes. 10 minutes.",
+    description: "Ta cible n'a droit qu'à un clic toutes les 8 secondes (de 3 à 15, clavier compris si tu veux). 10 minutes.",
   },
   avenant: {
     key: "avenant",
@@ -270,6 +269,16 @@ export interface ActiveTroll {
   everyone: boolean;
   created_at: string;
   ends_at: string;
+  /** Lot 36 : place du membre (farce ordinaire, ou arène du dragon). */
+  role?: "target" | "dragon" | "player" | "spectator";
+  /** Arène : joueurs convoqués. */
+  players?: { id: string; name: string }[];
+}
+
+/** Demande au calque des farces de se rafraîchir (et d'ouvrir l'arène lancée). */
+export const TROLLS_REFRESH_EVENT = "sid:trolls-refresh";
+export function announceTrollLaunched(id?: number) {
+  if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent(TROLLS_REFRESH_EVENT, { detail: { open: id ?? null } }));
 }
 
 export interface EquippedTitle {

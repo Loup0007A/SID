@@ -821,19 +821,7 @@ body {
 .dragon-roar { animation: dragon-roar 0.12s linear 10, dragon-roar-glow 1.4s ease-in-out infinite alternate; text-shadow: 0 0 24px #ff3d0b; }
 @keyframes dragon-roar { 0% { transform: translate(-3px, 2px); } 50% { transform: translate(3px, -2px); } 100% { transform: translate(0, 0); } }
 @keyframes dragon-roar-glow { from { text-shadow: 0 0 14px #ff3d0b; } to { text-shadow: 0 0 34px #ff8a00; } }
-.dragon-arena { border-radius: 1rem; border: 1px solid rgb(255 120 40 / 0.3); background: radial-gradient(70% 70% at 50% 60%, rgb(80 10 5 / 0.6), rgb(0 0 0 / 0.5)); touch-action: none; }
-.dragon-hit-a .dragon-arena-beast, .dragon-hit-b .dragon-arena-beast { animation: dragon-idle 2.4s ease-in-out infinite; }
-.dragon-hit-a .dragon-arena-beast { filter: brightness(1.6) saturate(1.4); transition: filter 0.1s; }
-@keyframes dragon-idle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-.dragon-spot {
-  width: 38px; height: 38px; margin: -19px 0 0 -19px; border-radius: 50%;
-  background: radial-gradient(circle, #fff6b0, #ffb02e 40%, rgb(255 80 20 / 0.6) 65%, transparent 70%);
-  box-shadow: 0 0 18px 6px rgb(255 140 30 / 0.7); animation: dragon-spot 0.95s ease-out forwards; cursor: crosshair;
-}
-@keyframes dragon-spot { 0% { transform: scale(0.2); } 30% { transform: scale(1.1); } 100% { transform: scale(0.6); opacity: 0.2; } }
-.dragon-breath-warning { animation: dragon-roar 0.1s linear infinite; text-shadow: 0 0 18px #ff3d0b; }
-.dragon-shield-ready { animation: dragon-shield 0.3s ease-in-out infinite alternate; box-shadow: 0 0 24px #ffd34d; }
-@keyframes dragon-shield { from { transform: scale(1); } to { transform: scale(1.08); } }
+
 
 .troll-gate { animation: title-unlock-in 0.25s ease-out; }
 .troll-contract {
@@ -848,7 +836,7 @@ body {
 .troll-glitch-text { animation: aura-glitch 2.2s steps(1) infinite; }
 
 .troll-party-cursor, .troll-party-cursor * {
-  cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><text y='26' font-size='26'>🎉</text></svg>") 4 4, auto !important;
+  cursor: var(--troll-cursor, url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><text y='26' font-size='26'>🎉</text></svg>") 4 4), auto !important;
 }
 .troll-party-banner { background: linear-gradient(90deg, #ffe08a, #ff6b8a, #62d8ff, #9dffbf, #ffe08a); background-size: 200% 100%; animation: troll-party-banner 4s linear infinite; }
 @keyframes troll-party-banner { to { background-position: 200% 0; } }
@@ -864,6 +852,10 @@ body {
 .troll-abyss body { background-color: #061024; }
 .troll-abyss-water { background: linear-gradient(to bottom, rgb(10 60 90 / 0.18), rgb(3 10 40 / 0.55)); animation: troll-abyss-darken 600s linear forwards; }
 @keyframes troll-abyss-darken { from { opacity: 0.5; } to { opacity: 1; } }
+.troll-abyss-d1 { animation-duration: 900s; filter: opacity(0.7); }
+.troll-abyss-d3 { background: linear-gradient(to bottom, rgb(10 60 90 / 0.3), rgb(2 6 24 / 0.78)); animation-duration: 300s; }
+.troll-abyss-fish { position: absolute; left: -60px; font-size: 30px; opacity: 0.75; filter: saturate(0.6) brightness(0.8); animation: troll-fish linear infinite; }
+@keyframes troll-fish { from { transform: translateX(0) translateY(0); } 50% { transform: translateX(55vw) translateY(-18px); } to { transform: translateX(calc(100vw + 120px)) translateY(0); } }
 .troll-abyss-bubble { position: absolute; bottom: -20px; width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgb(180 255 250 / 0.6); background: rgb(180 255 250 / 0.08); animation: aura-bubble linear infinite; --dx: 30px; }
 
 .troll-saisi {
@@ -877,8 +869,39 @@ body {
 @keyframes troll-stamp { from { transform: translate(-50%, -50%) rotate(var(--rot, -12deg)) scale(2.4); opacity: 0; } to { transform: translate(-50%, -50%) rotate(var(--rot, -12deg)) scale(1); opacity: 0.85; } }
 
 #sid-app { transition: transform 0.9s cubic-bezier(.6, .1, .3, 1); }
-#sid-app.troll-mirror { transform: scaleX(-1); }
-#sid-app.troll-mirror.troll-flip { transform: scale(-1, -1); }
+#sid-app.troll-mirror, #sid-app.troll-mirror-horizontal { transform: scaleX(-1); }
+#sid-app.troll-mirror.troll-flip, #sid-app.troll-mirror-horizontal.troll-flip, #sid-app.troll-mirror-vertical.troll-flip { transform: scale(-1, -1); }
+#sid-app.troll-mirror-vertical { transform: scaleY(-1); }
+#sid-app.troll-mirror-rotation { transform: rotate(4deg); }
+#sid-app.troll-mirror-rotation.troll-flip { transform: rotate(180deg); }
+#sid-app.troll-mirror-toupie { animation: troll-tangue 5s ease-in-out infinite; }
+#sid-app.troll-mirror-toupie.troll-flip { animation: troll-toupie 2.6s cubic-bezier(.5, 0, .3, 1); }
+
+/* Aperçus du panneau des farces */
+.troll-preview { min-height: 9rem; }
+.troll-preview-mirror { transition: transform 0.9s cubic-bezier(.6, .1, .3, 1); }
+.troll-preview-mirror.troll-mirror-horizontal { transform: scaleX(-1); }
+.troll-preview-mirror.troll-mirror-vertical { transform: scaleY(-1); }
+.troll-preview-mirror.troll-mirror-horizontal.troll-flip, .troll-preview-mirror.troll-mirror-vertical.troll-flip { transform: scale(-1, -1); }
+.troll-preview-mirror.troll-mirror-rotation { transform: rotate(6deg); }
+.troll-preview-mirror.troll-mirror-rotation.troll-flip { transform: rotate(180deg); }
+.troll-preview-mirror.troll-mirror-toupie { animation: troll-tangue 3s ease-in-out infinite; }
+.troll-preview-mirror.troll-mirror-toupie.troll-flip { animation: troll-toupie 2.6s cubic-bezier(.5, 0, .3, 1); }
+.troll-preview-timer { width: 100%; animation: troll-preview-timer linear infinite; transform-origin: left; }
+@keyframes troll-preview-timer { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+.troll-preview-haunt { left: 70%; top: 18%; filter: drop-shadow(0 0 12px rgb(200 220 255 / 0.8)); animation: troll-preview-haunt 4s ease-in-out infinite; }
+@keyframes troll-preview-haunt { 0% { transform: translate(0, 0); } 25% { transform: translate(-180%, 120%); } 50% { transform: translate(-60%, 260%); opacity: 0.6; } 75% { transform: translate(40%, 140%); } 100% { transform: translate(0, 0); } }
+.troll-preview-confetto { top: -10px; animation: troll-preview-confetto 3s linear infinite; }
+@keyframes troll-preview-confetto { from { transform: translateY(0) rotate(0deg); } to { transform: translateY(12rem) rotate(540deg); } }
+.troll-preview-float { animation: troll-preview-float 4s ease-in-out infinite; }
+@keyframes troll-preview-float { from { transform: translateY(20px); } 50% { transform: translateY(-40px) rotate(6deg); } to { transform: translateY(20px); } }
+.troll-preview-sink { animation: troll-preview-sink linear infinite alternate; }
+@keyframes troll-preview-sink { from { transform: translateY(0); } to { transform: translateY(-45%); } }
+.troll-preview-fish { left: -40px; animation: troll-preview-fish 7s linear infinite; }
+@keyframes troll-preview-fish { from { transform: translateX(0); } to { transform: translateX(calc(100% + 34rem)); } }
+.dragon-preview { min-height: 16rem; }
+@keyframes troll-tangue { 0%, 100% { transform: rotate(-2.5deg); } 50% { transform: rotate(2.5deg); } }
+@keyframes troll-toupie { from { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(0.8); } to { transform: rotate(360deg) scale(1); } }
 
 /* Secrets */
 .sid-speck { width: 10px; height: 10px; margin: -5px 0 0 -5px; padding: 0; line-height: 10px; font-size: 7px; color: rgb(237 230 211 / 0.09); background: none; border: 0; cursor: default; transition: color 0.4s, text-shadow 0.4s; }

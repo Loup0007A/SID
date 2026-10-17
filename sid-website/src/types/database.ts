@@ -184,7 +184,7 @@ export interface ChatMessage {
   is_bold: boolean;
   is_italic: boolean;
   color: string | null;
-  troll_tag?: { kind: string; by: string } | null;
+  troll_tag?: { kind: string; by: string; phrase?: string; color?: string } | null;
   created_at: string;
 }
 
