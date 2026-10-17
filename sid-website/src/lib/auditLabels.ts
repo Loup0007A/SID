@@ -40,7 +40,7 @@ export const ACTION_LABELS: Record<string, string> = {
   troll_shield_on: "Bouclier anti-farces posé",
   troll_shield_off: "Bouclier anti-farces retiré",
   trolls_toggled: "Farces activées / coupées",
-  decor_changed: "Décor saisonnier changé",
+  decor_changed: "Affichage événementiel changé",
 };
 
 export const FIELD_LABELS: Record<string, string> = {
