@@ -15,11 +15,14 @@ import { SectionGate } from "@/components/SectionGate";
 import { registerServiceWorker } from "@/lib/push";
 import { SandboxBanner } from "@/components/SandboxBanner";
 import { leaveSandbox } from "@/lib/sandbox";
+import { TermsBanner } from "@/components/TermsBanner";
+import { SiteFooter } from "@/components/SiteFooter";
 
 /** Titre affiché dans la barre du haut pour la page en cours. */
 function pageTitle(pathname: string): string | null {
   if (pathname === "/dashboard") return null;
   if (pathname.startsWith("/dashboard/profile/")) return "Dossier d'un membre";
+  if (pathname.startsWith("/dashboard/admin/members/")) return "Fiche d'un membre";
   return entryForPath(pathname)?.label ?? null;
 }
 
@@ -32,6 +35,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [loading, setLoading] = useState(true);
   const [isStaff, setIsStaff] = useState(false);
   const [perms, setPerms] = useState<Set<PermissionKey>>(new Set());
+  const [openAlerts, setOpenAlerts] = useState(0);
 
   useEffect(() => {
     // Enregistre le service worker dès l'arrivée sur le dashboard (pas
@@ -81,9 +85,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       } catch {
         // silencieux
       }
+
+      // Détecteur d'activité inhabituelle (au plus toutes les 3 minutes, quel
+      // que soit le membre qui se connecte) ; l'administration voit ensuite
+      // le nombre d'alertes à traiter dans la barre du haut.
+      try {
+        await supabase.rpc("maybe_scan_activity_alerts");
+        if (can(permissions, "manage_users") && !profile?.sandbox_expires_at) {
+          const { data: n } = await supabase.rpc("count_open_alerts");
+          setOpenAlerts(Number(n) || 0);
+        }
+      } catch {
+        // silencieux : migration 0060 pas encore lancée
+      }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Titre de l'onglet : la page en cours (pratique avec plusieurs onglets et
+  // dans l'historique du navigateur).
+  useEffect(() => {
+    const t = pageTitle(pathname);
+    document.title = t ? `${t} · S.I.D.` : "S.I.D. — Dossier Central";
+  }, [pathname]);
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -151,6 +175,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="min-h-screen text-paper">
       <ScrollMemory />
       {profile?.sandbox_expires_at && <SandboxBanner nickname={profile.nickname} expiresAt={profile.sandbox_expires_at} permissions={perms} />}
+      {profile && !profile.sandbox_expires_at && <TermsBanner acceptedVersion={profile.terms_version} />}
       {profile && <AnnouncementBanner />}
 
       <header className="glass-panel sticky top-0 z-20 border-x-0 border-t-0 pt-[env(safe-area-inset-top)]">
@@ -181,6 +206,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 {profile.is_founder && <span className="stamp text-red">Fondateur</span>}
               </span>
             )}
+            {openAlerts > 0 && (
+              <Link
+                href="/dashboard/admin/alerts"
+                scroll={false}
+                title={`${openAlerts} alerte${openAlerts > 1 ? "s" : ""} d'activité à traiter`}
+                className="flex h-9 shrink-0 items-center gap-1 rounded-lg border border-red/60 bg-red/15 px-2.5 font-mono text-xs text-red hover:bg-red hover:text-ink"
+              >
+                ⚠️ {openAlerts}
+              </Link>
+            )}
             {profile && <NotificationBell userId={profile.id} />}
             <SettingsButton />
             <button
@@ -203,6 +238,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {children}
         </SectionGate>
       </main>
+      <SiteFooter />
     </div>
   );
 }

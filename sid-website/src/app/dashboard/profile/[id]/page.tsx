@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import type { Profile } from "@/types/database";
 import { RankCard } from "@/components/RankCard";
 import { ProfileStyle, profileSkinClass } from "@/components/ProfileStyle";
+import Link from "next/link";
+import { loadCurrentUser, can } from "@/lib/permissions";
 
 type VisibleProfile = Partial<Profile> & { id: string; nickname: string };
 type MemberRole = { user_id: string; role_name: string; role_color: string; role_rank: number };
@@ -18,6 +20,7 @@ export default function MemberProfilePage() {
   const [roles, setRoles] = useState<MemberRole[]>([]);
   const [isSelf, setIsSelf] = useState(false);
   const [css, setCss] = useState<string>("");
+  const [isStaff, setIsStaff] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -32,6 +35,8 @@ export default function MemberProfilePage() {
         return;
       }
 
+      const { permissions } = await loadCurrentUser();
+      setIsStaff(can(permissions, "manage_users"));
       const { data } = await supabase.rpc("get_visible_profile", { target: params.id, viewer: user.id });
       setProfile((data as VisibleProfile) ?? null);
 
@@ -59,6 +64,11 @@ export default function MemberProfilePage() {
         <RankCard rank={profile.member_rank ?? "E"} />
         <div>
           <h1 className="font-display text-2xl uppercase tracking-wide text-red">{profile.nickname}</h1>
+          {isStaff && (
+            <Link href={`/dashboard/admin/members/${profile.id}`} className="font-mono text-xs uppercase text-blue-light underline">
+              Fiche d&apos;administration →
+            </Link>
+          )}
           {profile.is_invisible && (
             <p className="font-mono text-xs text-paper/50">👻 Compte invisible : les autres membres ne voient pas ce dossier.</p>
           )}

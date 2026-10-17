@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { inputClass, labelClass } from "@/lib/ui";
 import { ResendConfirmation } from "@/components/ResendConfirmation";
+import Link from "next/link";
+import { TERMS_VERSION } from "@/components/legal/LegalContent";
 
 
 export default function RegisterPage() {
@@ -27,6 +29,7 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [accepted, setAccepted] = useState(false);
 
   function update<K extends keyof typeof form>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -50,6 +53,8 @@ export default function RegisterPage() {
           equipment: form.equipment,
           description: form.description,
           age: form.age,
+          // Acceptation des CGU et de la politique de confidentialité (case obligatoire).
+          terms_version: TERMS_VERSION,
         },
       },
     });
@@ -186,11 +191,21 @@ export default function RegisterPage() {
           </div>
         </div>
 
+        <label className="flex items-start gap-2 font-body text-sm text-paper/80">
+          <input type="checkbox" required className="mt-1 accent-red" checked={accepted} onChange={(e) => setAccepted(e.target.checked)} />
+          <span>
+            J&apos;ai lu et j&apos;accepte les{" "}
+            <Link href="/cgu" target="_blank" className="text-blue-light underline">conditions d&apos;utilisation</Link> et la{" "}
+            <Link href="/confidentialite" target="_blank" className="text-blue-light underline">politique de confidentialité</Link>.
+            Si j&apos;ai moins de 15 ans, un de mes parents est d&apos;accord.
+          </span>
+        </label>
+
         {error && <p className="font-mono text-xs text-red">{error}</p>}
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !accepted}
           className="rounded-lg w-full bg-red py-3 font-display uppercase tracking-wide text-ink hover:bg-red-light disabled:opacity-50"
         >
           {loading ? "Transmission…" : "Transmettre ma candidature"}

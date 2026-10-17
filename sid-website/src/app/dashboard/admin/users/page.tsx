@@ -20,6 +20,8 @@ export default function AdminUsersPage() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [message, setMessage] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | ProfileStatus | "invisible">("all");
+  const [sortBy, setSortBy] = useState<"recent" | "seen" | "name">("recent");
   const [resetResult, setResetResult] = useState<{ userId: string; password: string } | null>(null);
   const [resettingId, setResettingId] = useState<string | null>(null);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
@@ -131,9 +133,18 @@ export default function AdminUsersPage() {
     return <p className="font-body text-paper/60">Tu n&apos;as pas la permission de gérer les comptes.</p>;
   }
 
-  const filtered = profiles.filter((p) =>
-    `${p.nickname} ${p.first_name} ${p.last_name}`.toLowerCase().includes(search.toLowerCase())
-  );
+  const seen = (p: Profile) => (p.last_seen_at ? new Date(p.last_seen_at).getTime() : 0);
+  const filtered = profiles
+    .filter((p) => `${p.nickname} ${p.first_name} ${p.last_name}`.toLowerCase().includes(search.toLowerCase()))
+    .filter((p) => statusFilter === "all" || (statusFilter === "invisible" ? p.is_invisible : p.status === statusFilter))
+    .sort((a, b) =>
+      sortBy === "name" ? a.nickname.localeCompare(b.nickname, "fr") : sortBy === "seen" ? seen(b) - seen(a) : new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  const lastSeen = (p: Profile) => {
+    if (!p.last_seen_at) return "jamais venu";
+    const d = Math.floor((Date.now() - new Date(p.last_seen_at).getTime()) / 86400000);
+    return d === 0 ? "vu aujourd'hui" : d === 1 ? "vu hier" : `vu il y a ${d} j`;
+  };
 
   return (
     <div className="space-y-6">
@@ -144,12 +155,27 @@ export default function AdminUsersPage() {
         </Link>
       </div>
 
-      <input
-        placeholder="Rechercher un membre…"
-        className={inputClass}
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
+      <div className="flex flex-wrap gap-2">
+        <input
+          placeholder="Rechercher un membre…"
+          className={`${inputClass} min-w-[12rem] flex-1`}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <select className={`${inputClass} w-auto`} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}>
+          <option value="all">Tous les comptes ({profiles.length})</option>
+          <option value="active">Actifs</option>
+          <option value="pending">En attente</option>
+          <option value="banned">Bannis</option>
+          <option value="rejected">Refusés</option>
+          <option value="invisible">Invisibles</option>
+        </select>
+        <select className={`${inputClass} w-auto`} value={sortBy} onChange={(e) => setSortBy(e.target.value as typeof sortBy)}>
+          <option value="recent">Plus récents</option>
+          <option value="seen">Dernière visite</option>
+          <option value="name">Nom</option>
+        </select>
+      </div>
 
       {message && <p className="font-mono text-sm text-red">{message}</p>}
 
@@ -157,7 +183,7 @@ export default function AdminUsersPage() {
         {filtered.map((p) => (
           <div key={p.id} className="glass-card flex flex-wrap items-center gap-3 p-4">
             <div className="min-w-[10rem] flex-1">
-              <Link href={`/dashboard/profile/${p.id}`} className="font-display uppercase hover:text-blue-light hover:underline">
+              <Link href={`/dashboard/admin/members/${p.id}`} className="font-display uppercase hover:text-blue-light hover:underline" title="Fiche : activité, alertes, actions">
                 {p.nickname}
               </Link>
               <p className="font-mono text-xs text-paper/60">
@@ -165,10 +191,18 @@ export default function AdminUsersPage() {
                 {p.is_muted && <span className="ml-1 text-red">· Mute</span>}
                 {p.is_founder && <span className="ml-1 text-blue-light">· Fondateur</span>}
                 {p.is_invisible && <span className="ml-1 text-paper/80">· 👻 Invisible</span>}
+                {p.sandbox_expires_at && <span className="ml-1 text-yellow-300">· 🧪 Test</span>}
+                <span className="ml-1 text-paper/40">· {lastSeen(p)}</span>
               </p>
             </div>
 
             <div className="flex flex-wrap gap-2">
+              <Link
+                href={`/dashboard/admin/members/${p.id}`}
+                className="rounded-lg border border-blue bg-blue/10 px-3 py-1.5 font-mono text-xs uppercase text-blue-light hover:bg-blue hover:text-ink"
+              >
+                Fiche
+              </Link>
               <button
                 onClick={() => toggleBan(p)}
                 disabled={p.is_founder}

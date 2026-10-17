@@ -517,3 +517,12 @@ body {
   animation: rank-s-shimmer 2.5s linear infinite;
 }
 .rank-divin .rank-card-title { position: relative; color: #ffe9a8; letter-spacing: 0.2em; }
+
+/* Pages légales (CGU, confidentialité) */
+.legal { font-family: var(--font-body); line-height: 1.65; }
+.legal p, .legal ul { margin: 0.6rem 0; }
+.legal ul { list-style: disc; padding-left: 1.3rem; }
+.legal li { margin: 0.3rem 0; }
+.legal a { text-decoration: underline; }
+.legal .legal-h2 { font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; font-size: 1.15rem; margin: 1.6rem 0 0.4rem; }
+.legal .legal-meta { font-family: var(--font-mono); font-size: 0.75rem; opacity: 0.7; }

@@ -47,6 +47,7 @@ export const NAV_ENTRIES: NavEntry[] = [
   { key: "chat", href: "/dashboard/chat", label: "Messagerie", description: "Messages privés et groupes", emoji: "💬", group: "espace", section: "chat" },
   { key: "notifications", href: "/dashboard/notifications", label: "Notifications", description: "Tout ce qui t'est arrivé récemment", emoji: "🔔", group: "espace" },
   { key: "settings", href: "/dashboard/settings", label: "Réglages", description: "Apparence de tes cartes", emoji: "⚙️", group: "espace" },
+  { key: "privacy", href: "/dashboard/privacy", label: "Mes données", description: "Ce que le S.I.D. garde sur toi", emoji: "🔐", group: "espace" },
 
   { key: "quests", href: "/dashboard/quests", label: "Quêtes", description: "Missions ouvertes et en cours", emoji: "📜", group: "jeu", section: "quests" },
   { key: "tech", href: "/dashboard/tech", label: "Arbre technologique", description: "Dépense tes points de simulation", emoji: "🌳", group: "entrainement" },
@@ -78,7 +79,8 @@ export const NAV_ENTRIES: NavEntry[] = [
   { key: "economy", href: "/dashboard/admin/economy", label: "Économie", description: "Soldes, salaires, impôts", emoji: "💰", group: "admin", perm: ["manage_economy"] },
   { key: "simulation", href: "/dashboard/admin/simulation", label: "Simulation", description: "La population simulée", emoji: "🧬", group: "admin", perm: ["manage_economy"] },
   { key: "stats", href: "/dashboard/admin/stats", label: "Statistiques", description: "Activité du site", emoji: "📊", group: "admin", perm: ["manage_users"] },
-  { key: "users", href: "/dashboard/admin/users", label: "Comptes", description: "Bannir, muter, mots de passe", emoji: "🛡️", group: "admin", perm: ["manage_users"] },
+  { key: "users", href: "/dashboard/admin/users", label: "Comptes", description: "Fiches des membres, bannir, muter", emoji: "🛡️", group: "admin", perm: ["manage_users"] },
+  { key: "alerts", href: "/dashboard/admin/alerts", label: "Alertes", description: "Activité inhabituelle à vérifier", emoji: "🚨", group: "admin", perm: ["manage_users"] },
   { key: "moderation", href: "/dashboard/admin/moderation", label: "Modération", description: "Annonces, maintenance, sanctions", emoji: "⚖️", group: "admin", perm: ["manage_users"] },
   { key: "sandbox", href: "/dashboard/admin/sandbox", label: "Bac à sable", description: "Tester le site avec un compte temporaire", emoji: "🧪", group: "admin", perm: ["manage_users"] },
   { key: "audit", href: "/dashboard/admin/audit", label: "Journal d'audit", description: "Qui a fait quoi, et quand", emoji: "🕵️", group: "admin", perm: ["manage_users"] },
