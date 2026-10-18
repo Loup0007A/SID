@@ -1,17 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { MapPlace, CityBuilding, CharacterPosition, ActivePosition } from "@/types/map";
 import { findShortestPath } from "@/lib/pathfinding";
 import { inputClass, labelClass } from "@/lib/ui";
-
-function formatCountdown(secondsLeft: number) {
-  const s = Math.max(0, Math.round(secondsLeft));
-  const m = Math.floor(s / 60);
-  const rem = s % 60;
-  return `${m}:${rem.toString().padStart(2, "0")}`;
-}
+import { formatCountdown, formatMinutes, tripState } from "@/lib/travel";
 
 export default function MapPage() {
   const supabase = createClient();
@@ -21,6 +15,7 @@ export default function MapPage() {
   const [myPosition, setMyPosition] = useState<CharacterPosition | null>(null);
   const [roster, setRoster] = useState<ActivePosition[]>([]);
   const [message, setMessage] = useState<string | null>(null);
+  const [arrival, setArrival] = useState<string | null>(null);
 
   // Point de départ (une seule fois, jamais après)
   const [spawnPlaceId, setSpawnPlaceId] = useState("");
@@ -42,7 +37,7 @@ export default function MapPage() {
   // chronomètre live (recalculé côté client à partir de travel_started_at,
   // pas d'un simple compteur qui dérive)
   const [now, setNow] = useState(() => Date.now());
-  const [activeRouteWeight, setActiveRouteWeight] = useState<number | null>(null);
+  const advancingRef = useRef(false);
   const [routes, setRoutes] = useState<import("@/types/map").MapRoute[]>([]);
 
   const placeName = useCallback((id: string | null) => places.find((p) => p.id === id)?.name ?? "Lieu inconnu", [places]);
@@ -69,6 +64,7 @@ export default function MapPage() {
       setPrefNote(pos.note ?? "");
       setPrefVisible(pos.is_visible ?? true);
     }
+    return pos;
   }
 
   useEffect(() => {
@@ -92,40 +88,45 @@ export default function MapPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Récupère le poids (en minutes) de la route active, pour le compte à
-  // rebours — recalculé si le segment actif change.
+  // Trajet en cours : le compte à rebours tourne chaque seconde ; quand une
+  // étape se termine, le serveur enchaîne la suivante (ou pose l'arrivée) et
+  // on l'affiche tout de suite. Toutes les 20 s, on relit aussi la position
+  // (un trajet lancé ou terminé depuis la Cartographie apparaît ici).
   useEffect(() => {
-    (async () => {
-      if (!myPosition?.route_id) {
-        setActiveRouteWeight(null);
-        return;
-      }
-      const { data } = await supabase.from("map_routes").select("travel_minutes, path_points").eq("id", myPosition.route_id).single();
-      if (!data) {
-        setActiveRouteWeight(null);
-        return;
-      }
-      if (data.travel_minutes != null) {
-        setActiveRouteWeight(data.travel_minutes);
-      } else {
-        const points = (data.path_points ?? []) as { x: number; y: number }[];
-        let len = 0;
-        for (let i = 1; i < points.length; i++) {
-          len += Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y);
-        }
-        setActiveRouteWeight(Math.max(5, len * 2));
-      }
-    })();
-  }, [myPosition?.route_id]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!myPosition?.travel_started_at || !userId) return;
+    const tick = setInterval(() => setNow(Date.now()), 1000);
+    const poll = setInterval(() => {
+      refreshMine(userId);
+    }, 20_000);
+    return () => {
+      clearInterval(tick);
+      clearInterval(poll);
+    };
+  }, [myPosition?.travel_started_at, userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Tick d'affichage du compte à rebours (aucune écriture en base ici — la
-  // progression réelle est recalculée à partir de travel_started_at côté
-  // serveur via advance_my_travel()).
+  const trip = tripState(myPosition, routes, now);
+
   useEffect(() => {
-    if (!myPosition?.travel_started_at) return;
-    const interval = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(interval);
-  }, [myPosition?.travel_started_at]);
+    if (!trip || trip.legSecondsLeft > 0 || advancingRef.current || !userId) return;
+    advancingRef.current = true;
+    (async () => {
+      const before = myPosition;
+      try {
+        await supabase.rpc("advance_my_travel");
+      } catch {
+        // silencieux : on relit la position quoi qu'il arrive
+      }
+      const after = await refreshMine(userId);
+      if (before?.travel_started_at && after && !after.travel_started_at) {
+        setArrival(`Tu es arrivé à ${placeName(after.place_id)}.`);
+        refresh();
+      }
+      // Laisse le temps au serveur si l'horloge du téléphone avance un peu.
+      setTimeout(() => {
+        advancingRef.current = false;
+      }, 4000);
+    })();
+  }, [trip && trip.legSecondsLeft <= 0 ? Math.floor(now / 5000) : -1, myPosition?.travel_started_at, userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function spawn() {
     if (!userId || !spawnPlaceId) {
@@ -182,6 +183,7 @@ export default function MapPage() {
     }
     setLaunching(true);
     setMessage(null);
+    setArrival(null);
     const { error } = await supabase.rpc("start_travel", {
       p_planned_path: plan.steps.map((s) => ({ route_id: s.route_id, to_place_id: s.to_place_id })),
     });
@@ -190,24 +192,12 @@ export default function MapPage() {
       setMessage(`Échec du départ : ${error.message}`);
       return;
     }
-    setMessage(`Trajet lancé — arrivée estimée dans ${Math.round(plan.totalMinutes)} min.`);
     setDestPlaceId("");
     if (userId) await refreshMine(userId);
     await refresh();
   }
 
-  const isTraveling = !!myPosition?.route_id && !!myPosition?.travel_started_at;
-  let secondsLeft = 0;
-  let progressPct = 0;
-  if (isTraveling && activeRouteWeight != null && myPosition?.travel_started_at) {
-    const startedMs = new Date(myPosition.travel_started_at).getTime();
-    const totalMs = activeRouteWeight * 60_000;
-    const elapsedMs = now - startedMs;
-    secondsLeft = Math.max(0, (totalMs - elapsedMs) / 1000);
-    progressPct = Math.min(100, Math.max(0, (elapsedMs / totalMs) * 100));
-  }
-  const stepsRemaining = (myPosition?.planned_path?.length ?? 1) - 1;
-
+  const isTraveling = !!trip;
   const destEta = myPosition?.place_id && destPlaceId ? findShortestPath(routes, myPosition.place_id, destPlaceId) : null;
 
   return (
@@ -222,6 +212,9 @@ export default function MapPage() {
         (aucune téléportation possible).
       </p>
 
+      {arrival && (
+        <p className="glass-card border border-blue/50 p-3 font-mono text-sm text-blue-light">📍 {arrival}</p>
+      )}
       {message && <p className="font-mono text-sm text-red">{message}</p>}
 
       {!myPosition?.spawned ? (
@@ -268,13 +261,25 @@ export default function MapPage() {
         <>
           {isTraveling ? (
             <div className="glass-card space-y-2 border border-blue/50 p-4">
-              <p className="font-display uppercase text-blue-light">En trajet…</p>
+              <p className="font-display uppercase text-blue-light">
+                {trip!.isFlight ? "🕊️ En vol" : "🛣 En trajet"} vers {placeName(trip!.destinationId)}
+              </p>
+              {trip!.legCount > 1 && (
+                <p className="font-mono text-xs text-paper/60">
+                  Étape en cours : vers {placeName(trip!.nextStopId)} — encore {trip!.legCount - 1} étape
+                  {trip!.legCount - 1 > 1 ? "s" : ""} après
+                </p>
+              )}
               <div className="h-2 w-full overflow-hidden rounded-full bg-white/10">
-                <div className="h-full bg-blue transition-all" style={{ width: `${progressPct}%` }} />
+                <div className="h-full bg-blue transition-all" style={{ width: `${Math.round(trip!.legProgress * 100)}%` }} />
               </div>
               <p className="font-mono text-xs text-paper/70">
-                Arrivée {stepsRemaining > 0 ? `à cette étape ` : ""}dans {formatCountdown(secondsLeft)}
-                {stepsRemaining > 0 && ` (encore ${stepsRemaining} étape${stepsRemaining > 1 ? "s" : ""} après celle-ci)`}
+                {trip!.totalSecondsLeft <= 0
+                  ? "Arrivée en cours…"
+                  : `Arrivée dans ${formatCountdown(trip!.totalSecondsLeft)}`}
+              </p>
+              <p className="font-body text-xs text-paper/50">
+                Le trajet continue même si tu fermes la page ou passes sur la Cartographie : tu arriveras à l&apos;heure prévue.
               </p>
             </div>
           ) : (
@@ -303,7 +308,9 @@ export default function MapPage() {
               </div>
               {destPlaceId && (
                 <p className="font-mono text-xs text-paper/60">
-                  {destEta ? `≈ ${Math.round(destEta.totalMinutes)} min de trajet` : "Aucun itinéraire connu vers ce lieu."}
+                  {destEta
+                    ? `≈ ${formatMinutes(destEta.totalMinutes)} de trajet à pied${destEta.steps.length > 1 ? ` (${destEta.steps.length} étapes)` : ""} — plus rapide avec une monture`
+                    : "Aucun itinéraire connu vers ce lieu."}
                 </p>
               )}
               <button
@@ -369,7 +376,7 @@ export default function MapPage() {
                   <span className="font-display uppercase">{r.nickname}</span>
                 </div>
                 <span className="font-mono text-xs text-paper/60">
-                  {r.route_id ? "En déplacement…" : r.place_id ? placeName(r.place_id) : r.note || "Position inconnue"}
+                  {r.travel_started_at || r.route_id ? "En déplacement…" : r.place_id ? placeName(r.place_id) : r.note || "Position inconnue"}
                 </span>
               </li>
             ))}

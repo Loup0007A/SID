@@ -26,7 +26,12 @@ export interface CharacterPosition {
   route_id: string | null;
   route_progress: number | null;
   travel_started_at: string | null;
-  planned_path: { route_id: string; to_place_id: string }[] | null;
+  /** durée de l'étape en cours (minutes, monture comprise) — posée par le serveur */
+  travel_duration_minutes?: number | null;
+  /** vol libre (Cartographie) : lieu visé */
+  flight_target_place_id?: string | null;
+  /** étapes restantes, étape en cours comprise ; durée figée au départ */
+  planned_path: { route_id: string; to_place_id: string; minutes?: number }[] | null;
   note: string | null;
   is_visible: boolean;
   /** true une fois le point de départ posé (set_initial_position) — au-delà, tout changement de lieu passe par un trajet. */
@@ -44,6 +49,8 @@ export interface ActivePosition {
   route_id: string | null;
   route_progress: number | null;
   travel_started_at: string | null;
+  flight_target_place_id?: string | null;
+  planned_path?: { route_id: string; to_place_id: string; minutes?: number }[] | null;
   note: string | null;
   is_visible: boolean;
   updated_at: string;

@@ -301,14 +301,14 @@ export default function QuestsPage() {
   }
 
   const canManage = can(permissions, "manage_quests");
-  const isTraveling = !!myPosition?.route_id;
-  // Destination finale du trajet en cours (dernier segment du parcours
-  // planifié), pour savoir vers QUELLE quête précisément on se dirige —
-  // myPosition.place_id est vide tant qu'on est en chemin.
+  // Trajet en cours (à pied, à monture ou en vol, lancé d'ici ou depuis la
+  // Cartographie) et sa destination finale, pour savoir vers QUELLE quête
+  // précisément on se dirige.
+  const isTraveling = !!myPosition?.travel_started_at;
   const travelDestinationPlaceId =
     myPosition?.planned_path && myPosition.planned_path.length > 0
       ? myPosition.planned_path[myPosition.planned_path.length - 1].to_place_id
-      : null;
+      : myPosition?.flight_target_place_id ?? null;
 
   return (
     <div className="space-y-6">
