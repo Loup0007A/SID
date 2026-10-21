@@ -1213,3 +1213,146 @@ html.decor-noel:not(.troll-abyss) body {
   .nl-aurora, .nl-star, .nl-snow-layer, .nl-smoke, .nl-bulb, .nl-leg, .nl-trail circle, .decor-noel .sid-wordmark { animation: none !important; }
   .nl-sparkles, .nl-comet { display: none; }
 }
+
+/* =========================================================
+   Titres d'événement (Lot 42) : farces Nuée et Blizzard, auras.
+   ========================================================= */
+.ev-bat-shape { fill: #241433; overflow: visible; filter: drop-shadow(0 0 2px rgb(255 138 42 / 0.6)); }
+.ev-bat-eye { fill: #ff8a2a; }
+.ev-bat-wing { transform-box: fill-box; animation: hw-flap 0.2s ease-in-out infinite alternate; }
+.ev-bat-wing-l { transform-origin: 100% 60%; }
+.ev-bat-wing-r { transform-origin: 0% 60%; }
+.ev-bat-shape.is-folded .ev-bat-wing { animation: none; transform: scaleX(0.42) scaleY(0.9); }
+
+.troll-bat-fly { position: absolute; right: -70px; width: 54px; opacity: 0; animation: troll-bat-cross var(--t) cubic-bezier(.45, .05, .55, .95) var(--d) both; }
+@keyframes troll-bat-cross {
+  0% { opacity: 0; transform: translate(0, var(--y)) scale(var(--s)); }
+  10% { opacity: 1; }
+  40% { transform: translate(-40vw, calc(var(--y) - 50px)) scale(var(--s)); }
+  70% { transform: translate(-75vw, calc(var(--y) + 40px)) scale(var(--s)); }
+  90% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-120vw, calc(var(--y) - 30px)) scale(var(--s)); }
+}
+.troll-bat-hang {
+  position: absolute; width: 46px; height: 30px; padding: 0; border: 0; background: none; cursor: pointer;
+  transform-origin: 50% 0; animation: troll-bat-sway 2.8s ease-in-out infinite alternate;
+}
+.troll-bat-hang svg { width: 100%; height: 100%; transform: rotate(180deg); filter: drop-shadow(0 0 3px rgb(255 138 42 / 0.9)); }
+.troll-bat-hang::before { content: ""; position: absolute; left: 50%; top: -6px; width: 1px; height: 8px; background: rgb(236 228 250 / 0.35); }
+.troll-bat-hang.is-leaving { animation: troll-bat-leave 1.2s ease-in both; pointer-events: none; }
+.troll-bat-hang.is-leaving svg { transform: none; }
+@keyframes troll-bat-sway { from { transform: rotate(-7deg); } to { transform: rotate(7deg); } }
+@keyframes troll-bat-leave { to { transform: translate(var(--away, 30vw), -40vh) scale(0.5); opacity: 0; } }
+
+.troll-snow { position: absolute; inset: 0; overflow: hidden; }
+.troll-snow-layer { position: absolute; left: -10%; right: -10%; top: -260px; height: calc(100% + 260px); background-repeat: repeat; will-change: transform; }
+.troll-snow-a {
+  background-size: 200px 200px; opacity: 0.8;
+  background-image:
+    radial-gradient(2px 2px at 20px 30px, #fff 60%, transparent 61%), radial-gradient(1.6px 1.6px at 90px 120px, #fff 60%, transparent 61%),
+    radial-gradient(2px 2px at 160px 60px, #fff 60%, transparent 61%), radial-gradient(1.6px 1.6px at 130px 180px, #fff 60%, transparent 61%),
+    radial-gradient(1.8px 1.8px at 50px 160px, #fff 60%, transparent 61%), radial-gradient(1.4px 1.4px at 180px 140px, #fff 60%, transparent 61%);
+  animation: troll-snow-fall 7s linear infinite;
+}
+.troll-snow-b {
+  background-size: 260px 260px; opacity: 0.85;
+  background-image:
+    radial-gradient(3px 3px at 40px 80px, #fff 55%, transparent 62%), radial-gradient(2.6px 2.6px at 150px 20px, #fff 55%, transparent 62%),
+    radial-gradient(3.2px 3.2px at 210px 160px, #fff 55%, transparent 62%), radial-gradient(2.4px 2.4px at 100px 220px, #fff 55%, transparent 62%);
+  animation: troll-snow-fall-b 5s linear infinite;
+}
+.troll-snow-c {
+  background-size: 340px 340px; opacity: 0.9;
+  background-image:
+    radial-gradient(4.5px 4.5px at 60px 120px, #fff 50%, transparent 62%), radial-gradient(4px 4px at 250px 40px, #fff 50%, transparent 62%),
+    radial-gradient(5px 5px at 300px 260px, #fff 50%, transparent 62%);
+  animation: troll-snow-fall-c 3.4s linear infinite;
+}
+.troll-snow-i1 .troll-snow-a { animation-duration: 10s; } .troll-snow-i1 .troll-snow-b { animation-duration: 8s; }
+.troll-snow-i3 .troll-snow-a { animation-duration: 5s; } .troll-snow-i3 .troll-snow-b { animation-duration: 3.4s; } .troll-snow-i3 .troll-snow-c { animation-duration: 2.4s; }
+@keyframes troll-snow-fall { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-60px, 200px, 0); } }
+@keyframes troll-snow-fall-b { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-90px, 260px, 0); } }
+@keyframes troll-snow-fall-c { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-140px, 340px, 0); } }
+.troll-frost {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 15%, rgb(255 255 255 / 0.35), transparent 40%),
+    radial-gradient(ellipse at 80% 85%, rgb(255 255 255 / 0.3), transparent 45%),
+    rgb(220 236 252 / 0.55);
+  -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px);
+  -webkit-mask-image: radial-gradient(ellipse at center, transparent calc((1 - var(--frost)) * 75%), #000 calc((1 - var(--frost)) * 75% + 22%));
+  mask-image: radial-gradient(ellipse at center, transparent calc((1 - var(--frost)) * 75%), #000 calc((1 - var(--frost)) * 75% + 22%));
+  opacity: calc(0.25 + var(--frost) * 0.75);
+  transition: opacity 0.15s linear;
+}
+
+/* Aperçus des panneaux d'options. */
+.troll-preview .troll-bat-fly { width: 30px; right: auto; left: 105%; animation-name: troll-bat-preview; }
+@keyframes troll-bat-preview { 0% { left: 105%; opacity: 0; } 10%, 90% { opacity: 1; } 100% { left: -15%; opacity: 0; } }
+.troll-preview .troll-bat-hang { width: 30px; height: 20px; }
+
+/* Auras des titres d'événement. */
+.aura-chauvesouris { background: radial-gradient(ellipse at 80% 0%, rgb(255 140 50 / 0.18), transparent 60%), linear-gradient(to bottom, rgb(40 16 60 / 0.35), rgb(10 4 18 / 0.5)); }
+.aura-chauvesouris .aura-p {
+  width: calc(16px * var(--s)); height: calc(8px * var(--s));
+  background: #1d0f2a; filter: drop-shadow(0 0 2px rgb(255 138 42 / 0.6));
+  clip-path: polygon(0 30%, 30% 0, 45% 35%, 50% 15%, 55% 35%, 70% 0, 100% 30%, 80% 60%, 60% 50%, 50% 100%, 40% 50%, 20% 60%);
+  animation-name: aura-bat; animation-timing-function: ease-in-out; animation-iteration-count: infinite;
+}
+@keyframes aura-bat {
+  0% { transform: translate(0, 0) scaleY(1); opacity: 0; }
+  10% { opacity: 1; }
+  50% { transform: translate(calc(var(--dx) * 2), -30px) scaleY(0.4); }
+  100% { transform: translate(calc(var(--dx) * 4), -60px) scaleY(1); opacity: 0; }
+}
+.aura-lutin { background: linear-gradient(to bottom, rgb(180 215 255 / 0.12), rgb(200 32 47 / 0.12)); }
+.aura-lutin .aura-p {
+  top: -12px !important; color: #f4f9ff; font-size: calc(12px * var(--s)); text-shadow: 0 0 6px rgb(200 230 255 / 0.9);
+  animation-name: aura-flake; animation-timing-function: linear; animation-iteration-count: infinite;
+}
+@keyframes aura-flake {
+  0% { transform: translate(0, -10px) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: translate(var(--dx), 200px) rotate(360deg); opacity: 0.3; }
+}
+
+/* Vitrine : titres d'événement. */
+.event-title-ribbon {
+  position: absolute; top: 10px; right: -34px; width: 130px; transform: rotate(35deg); text-align: center;
+  font: 600 9px/1.9 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: #0b0b12;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .troll-snow-layer, .troll-bat-hang, .ev-bat-wing { animation: none !important; }
+  .troll-bat-fly { display: none; }
+}
+
+/* Créatures d'événement qu'on peut attraper. */
+.ev-lone-bat {
+  position: fixed; left: 0; z-index: 9060; width: 58px; height: 30px; padding: 0; border: 0; background: none; cursor: pointer;
+  animation: ev-lone-ltr 12s linear both;
+}
+.ev-lone-bat svg { width: 100%; height: 100%; }
+.ev-lone-rtl { animation-name: ev-lone-rtl; }
+@keyframes ev-lone-ltr {
+  0% { transform: translate(-70px, 0); } 15% { transform: translate(14vw, -26px); } 30% { transform: translate(28vw, 18px); }
+  45% { transform: translate(43vw, -30px); } 60% { transform: translate(58vw, 22px); } 75% { transform: translate(74vw, -18px); }
+  100% { transform: translate(calc(100vw + 70px), 10px); }
+}
+@keyframes ev-lone-rtl {
+  0% { transform: translate(calc(100vw + 70px), 0) scaleX(-1); } 20% { transform: translate(78vw, 24px) scaleX(-1); }
+  40% { transform: translate(56vw, -22px) scaleX(-1); } 60% { transform: translate(36vw, 26px) scaleX(-1); }
+  80% { transform: translate(16vw, -16px) scaleX(-1); } 100% { transform: translate(-70px, 8px) scaleX(-1); }
+}
+.ev-catch-sleigh {
+  position: fixed; right: 0; z-index: 9060; width: clamp(170px, 20vw, 250px); padding: 0; border: 0; background: none; cursor: pointer;
+  animation: nl-fly 14s cubic-bezier(.4, .05, .55, .95) both;
+}
+.ev-catch-sleigh svg { width: 100%; height: auto; }
+.ev-catch-note {
+  position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 24px); z-index: 9470; transform: translateX(-50%);
+  max-width: min(92vw, 420px); padding: 8px 14px; border-radius: 999px; text-align: center;
+  background: rgb(12 14 24 / 0.9); border: 1px solid rgb(255 255 255 / 0.18); color: #f4f1e8;
+  font: 13px/1.35 var(--font-body); box-shadow: 0 10px 30px -10px rgb(0 0 0 / 0.7);
+  animation: title-unlock-in 0.25s ease-out;
+}

@@ -1,5 +1,6 @@
 "use client";
 
+import { BatShape, SnowLayers } from "@/components/trolls/EventEffects";
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { mentalQuestion } from "@/lib/mentalCalc";
 import type { TrollPower } from "@/lib/titles";
@@ -265,6 +266,56 @@ function PartyPanel({ value: o, onChange, ctx, everyone }: Props<"fete"> & { eve
         ))}
         <span className="absolute bottom-3 right-6 text-2xl">{o.cursor}</span>
         <span className="troll-preview-float absolute bottom-0 left-4 text-2xl">{theme.floaters[0]}</span>
+      </Preview>
+    </div>
+  );
+}
+
+function NueePanel({ value: o, onChange, ctx }: Props<"nuee">) {
+  const set = (p: Partial<TrollOptions["nuee"]>) => onChange({ ...o, ...p });
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <div className="space-y-4">
+        <Field label="Nuées" hint="Fréquence et taille des vols qui traversent l'écran.">
+          <Seg value={o.density} onChange={(density) => set({ density })} accent={ctx.accent} options={[{ v: 1, label: "Quelques-unes" }, { v: 2, label: "Une nuée" }, { v: 3, label: "Le ciel noir" }]} />
+        </Field>
+        <Field label="Accrochées en haut de la page" hint="Il faut cliquer dessus pour les chasser ; elles reviennent.">
+          <Slider value={o.hanging} min={0} max={5} onChange={(hanging) => set({ hanging })} accent={ctx.accent} />
+        </Field>
+      </div>
+      <Preview who={ctx.target} className="h-48 bg-ink">
+        <MiniPage />
+        {Array.from({ length: o.hanging }, (_, i) => (
+          <span key={i} className="troll-bat-hang" style={{ left: `${10 + i * 17}%`, top: "6px" }}>
+            <BatShape folded />
+          </span>
+        ))}
+        {Array.from({ length: [4, 7, 11][o.density - 1] }, (_, i) => (
+          <BatShape
+            key={`${o.density}-${i}`}
+            className="troll-bat-fly"
+            style={{ top: `${20 + ((i * 37) % 60)}%`, animationIterationCount: "infinite", "--d": `${(i % 5) * 0.3}s`, "--s": 0.7, "--y": "0px", "--t": "3.6s" } as React.CSSProperties}
+          />
+        ))}
+      </Preview>
+    </div>
+  );
+}
+
+function BlizzardPanel({ value: o, onChange, ctx }: Props<"blizzard">) {
+  const set = (p: Partial<TrollOptions["blizzard"]>) => onChange({ ...o, ...p });
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <div className="space-y-4">
+        <Field label="Tempête">
+          <Seg value={o.intensity} onChange={(intensity) => set({ intensity })} accent={ctx.accent} options={[{ v: 1, label: "Flocons" }, { v: 2, label: "Tempête" }, { v: 3, label: "Blizzard" }]} />
+        </Field>
+        <Toggle checked={o.frost} onChange={(frost) => set({ frost })} accent={ctx.accent} label="Givre sur l'écran (il faut frotter pour y voir clair) ❄" />
+      </div>
+      <Preview who={ctx.target} className="h-48 bg-ink">
+        <MiniPage />
+        <SnowLayers intensity={o.intensity} />
+        {o.frost && <div className="troll-frost" style={{ "--frost": [0.5, 0.65, 0.8][o.intensity - 1] } as React.CSSProperties} />}
       </Preview>
     </div>
   );
@@ -757,6 +808,10 @@ export function TrollOptionsEditor({
       return <ContractPanel {...(p as Props<"avenant">)} />;
     case "defi_dragon":
       return <DragonPanel {...(p as Props<"defi_dragon">)} />;
+    case "nuee":
+      return <NueePanel {...(p as Props<"nuee">)} />;
+    case "blizzard":
+      return <BlizzardPanel {...(p as Props<"blizzard">)} />;
     default:
       return null;
   }

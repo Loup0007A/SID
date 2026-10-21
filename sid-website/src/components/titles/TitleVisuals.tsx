@@ -67,6 +67,8 @@ const PARTICLES: Partial<Record<TitleId, { count: number; glyphs?: string[] }>> 
   arpenteur: { count: 28, glyphs: ["✦", "·", "✧", "·"] },
   scribe: { count: 18, glyphs: LETTERS },
   metronome: { count: 3 },
+  chauvesouris: { count: 12 },
+  lutin: { count: 24, glyphs: ["❄", "❅", "❆", "·"] },
 };
 
 /**

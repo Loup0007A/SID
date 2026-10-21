@@ -209,6 +209,8 @@ export type TrollOptions = {
   avenant: { clauses: string[]; dodges: number; signature: boolean };
   reseau: { map: Record<string, string>; logic: string; every: number };
   defi_dragon: { skin: DragonSkin; spectators: boolean; finale: DragonFinale | null; players: string[] };
+  nuee: { density: number; hanging: number };
+  blizzard: { intensity: number; frost: boolean };
 };
 
 /** Bornes qui dépendent du niveau du titre (comme en base). */
@@ -229,6 +231,8 @@ export function defaultOptions<P extends TrollPower>(power: P, level = 1): Troll
     avenant: { clauses: [], dodges: 3, signature: false },
     reseau: { map: {}, logic: "rotation", every: 30 },
     defi_dragon: { skin: "demon", spectators: false, finale: null, players: [] },
+    nuee: { density: 2, hanging: 3 },
+    blizzard: { intensity: 2, frost: true },
   };
   return all[power];
 }
@@ -302,6 +306,12 @@ export function readOptions<P extends TrollPower>(power: P, params: Record<strin
         finale: p.finale === "carboniser" || p.finale === "devorer" ? p.finale : null,
         players: Array.isArray(p.players) ? (p.players as unknown[]).filter((x): x is string => typeof x === "string") : [],
       };
+      break;
+    case "nuee":
+      o = { density: num(p.density, 2, 1, 3), hanging: num(p.hanging, 3, 0, 5) };
+      break;
+    case "blizzard":
+      o = { intensity: num(p.intensity, 2, 1, 3), frost: bool(p.frost, true) };
       break;
     default:
       o = { ...d, ...p };

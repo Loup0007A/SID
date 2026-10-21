@@ -3,7 +3,8 @@
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { POWERS, TITLES, TITLE_BY_ID, isTitleId, roman, type TitleId, TITLES_CHANGED_EVENT } from "@/lib/titles";
+import { EVENTS, EVENT_TITLES, POWERS, SECRET_TITLES, TITLES, TITLE_BY_ID, isTitleId, roman, type TitleDef, type TitleId, TITLES_CHANGED_EVENT } from "@/lib/titles";
+import { useSiteDecor } from "@/components/seasonal/siteDecor";
 import { TitleAuraLayer, TitleBadge, titleStyle } from "@/components/titles/TitleVisuals";
 import { TrollPanel, type TrollStatus } from "@/components/titles/TrollPanel";
 
@@ -19,6 +20,7 @@ function TitlesInner() {
   const [dragon, setDragon] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const decor = useSiteDecor();
 
   const load = useCallback(async () => {
     const {
@@ -63,14 +65,88 @@ function TitlesInner() {
 
   const equipped = me.equipped ? TITLE_BY_ID[me.equipped] : null;
   const ownedCount = owned.size;
+  const equippedId = me.equipped;
+
+  function card(t: TitleDef) {
+    const o = owned.get(t.id);
+    const n = holders.get(t.id) ?? 0;
+    const isEquipped = equippedId === t.id;
+    if (!o) {
+      return (
+        <div key={t.id} className="glass-card title-locked relative space-y-2 overflow-hidden p-5">
+          <EventRibbon t={t} />
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-black/40 font-display text-xl text-paper/30">?</span>
+            <div>
+              <p className="font-display text-lg uppercase tracking-wide text-paper/40">{t.event ? `Titre de ${EVENTS[t.event].name}` : "Titre secret"}</p>
+              <p className="font-mono text-[10px] uppercase tracking-wide text-paper/35">
+                {n === 0 ? "Personne ne l'a encore trouvé" : `${n} porteur${n > 1 ? "s" : ""}`}
+              </p>
+            </div>
+          </div>
+          <p className="font-body text-sm italic text-paper/60">« {t.riddle} »</p>
+            {t.event && (
+              <p className={`font-mono text-[10px] uppercase tracking-wide ${decor?.[t.event] ? "text-[#9fe3cf]" : "text-paper/40"}`}>
+                {decor?.[t.event]
+                  ? `${EVENTS[t.event].emoji} À chercher maintenant, pendant ${EVENTS[t.event].name}`
+                  : `Revient à ${EVENTS[t.event].name} (${EVENTS[t.event].period})`}
+              </p>
+            )}
+        </div>
+      );
+    }
+    return (
+      <div key={t.id} className="glass-card relative min-h-[190px] overflow-hidden p-5" style={titleStyle(t.id)}>
+        <TitleAuraLayer titleId={t.id} compact />
+        <EventRibbon t={t} />
+        <div className="relative z-[1] flex h-full flex-col gap-2">
+          <div className="flex items-center gap-3">
+            <span className="text-3xl drop-shadow" aria-hidden>{t.emoji}</span>
+            <div className="min-w-0">
+              <p className="font-display text-lg uppercase leading-tight tracking-wide" style={{ color: t.colors[0] }}>
+                {t.name}
+              </p>
+              {t.maxLevel > 1 && (
+                <p className="font-mono text-[10px] uppercase tracking-wide text-paper/70">
+                  Niveau {roman(o.level)} / {roman(t.maxLevel)}
+                </p>
+              )}
+            </div>
+          </div>
+          <p className="font-body text-xs text-paper/75">
+            <strong>{POWERS[t.power].name}.</strong> {POWERS[t.power].description}
+          </p>
+          <p className="font-mono text-[10px] text-paper/50">
+            {t.how} · le {new Date(o.obtained_at).toLocaleDateString("fr-FR")}
+          </p>
+          <div className="mt-auto pt-1">
+            {isEquipped ? (
+              <TitleBadge titleId={t.id} level={o.level} size="sm" />
+            ) : (
+              <button
+                onClick={() => equip(t.id)}
+                disabled={busy !== null}
+                className="rounded-lg px-3 py-1.5 font-display text-xs uppercase tracking-wide text-ink"
+                style={{ background: `linear-gradient(110deg, ${t.colors[0]}, ${t.colors[1]})` }}
+              >
+                {busy === t.id ? "…" : "Équiper"}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
 
   return (
     <div className="space-y-8">
       <div className="space-y-2">
         <h1 className="font-display text-2xl uppercase tracking-wide text-red">Titres</h1>
         <p className="max-w-2xl font-body text-sm text-paper/70">
-          Douze titres secrets. Chacun s&apos;obtient d&apos;une façon cachée, transforme ton dossier une fois équipé et
-          donne un pouvoir de farce. Tu en possèdes <strong className="text-paper">{ownedCount}</strong> sur {TITLES.length}.
+          Douze titres secrets, et un titre par événement. Chacun s&apos;obtient d&apos;une façon cachée, transforme ton
+          dossier une fois équipé et donne un pouvoir de farce. Tu en possèdes{" "}
+          <strong className="text-paper">{ownedCount}</strong> sur {TITLES.length}.
         </p>
       </div>
 
@@ -113,70 +189,27 @@ function TitlesInner() {
       {equipped && <TrollPanel status={status} myId={me.id} myName={me.nickname} initialTarget={params.get("target")} onChange={load} />}
 
       {/* Collection */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {TITLES.map((t) => {
-          const o = owned.get(t.id);
-          const n = holders.get(t.id) ?? 0;
-          const isEquipped = me.equipped === t.id;
-          if (!o) {
-            return (
-              <div key={t.id} className="glass-card title-locked relative space-y-2 overflow-hidden p-5">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-black/40 font-display text-xl text-paper/30">?</span>
-                  <div>
-                    <p className="font-display text-lg uppercase tracking-wide text-paper/40">Titre secret</p>
-                    <p className="font-mono text-[10px] uppercase tracking-wide text-paper/35">
-                      {n === 0 ? "Personne ne l'a encore trouvé" : `${n} porteur${n > 1 ? "s" : ""}`}
-                    </p>
-                  </div>
-                </div>
-                <p className="font-body text-sm italic text-paper/60">« {t.riddle} »</p>
-              </div>
-            );
-          }
-          return (
-            <div key={t.id} className="glass-card relative min-h-[190px] overflow-hidden p-5" style={titleStyle(t.id)}>
-              <TitleAuraLayer titleId={t.id} compact />
-              <div className="relative z-[1] flex h-full flex-col gap-2">
-                <div className="flex items-center gap-3">
-                  <span className="text-3xl drop-shadow" aria-hidden>{t.emoji}</span>
-                  <div className="min-w-0">
-                    <p className="font-display text-lg uppercase leading-tight tracking-wide" style={{ color: t.colors[0] }}>
-                      {t.name}
-                    </p>
-                    {t.maxLevel > 1 && (
-                      <p className="font-mono text-[10px] uppercase tracking-wide text-paper/70">
-                        Niveau {roman(o.level)} / {roman(t.maxLevel)}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <p className="font-body text-xs text-paper/75">
-                  <strong>{POWERS[t.power].name}.</strong> {POWERS[t.power].description}
-                </p>
-                <p className="font-mono text-[10px] text-paper/50">
-                  {t.how} · le {new Date(o.obtained_at).toLocaleDateString("fr-FR")}
-                </p>
-                <div className="mt-auto pt-1">
-                  {isEquipped ? (
-                    <TitleBadge titleId={t.id} level={o.level} size="sm" />
-                  ) : (
-                    <button
-                      onClick={() => equip(t.id)}
-                      disabled={busy !== null}
-                      className="rounded-lg px-3 py-1.5 font-display text-xs uppercase tracking-wide text-ink"
-                      style={{ background: `linear-gradient(110deg, ${t.colors[0]}, ${t.colors[1]})` }}
-                    >
-                      {busy === t.id ? "…" : "Équiper"}
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          );
-        })}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">{SECRET_TITLES.map(card)}</div>
+
+      <div className="space-y-3">
+        <div>
+          <h2 className="font-display text-lg uppercase tracking-wide text-paper">Titres d&apos;événement</h2>
+          <p className="max-w-2xl font-body text-sm text-paper/60">
+            Un par événement. Il ne s&apos;obtient que pendant l&apos;événement… mais se garde pour toujours.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">{EVENT_TITLES.map(card)}</div>
       </div>
     </div>
+  );
+}
+
+function EventRibbon({ t }: { t: TitleDef }) {
+  if (!t.event) return null;
+  return (
+    <span className="event-title-ribbon z-[2]" style={{ background: `linear-gradient(90deg, ${t.colors[0]}, ${t.colors[1]})` }}>
+      {EVENTS[t.event].emoji} {EVENTS[t.event].name}
+    </span>
   );
 }
 

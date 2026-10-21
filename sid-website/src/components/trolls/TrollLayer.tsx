@@ -8,6 +8,7 @@ import { POWERS, TROLLS_REFRESH_EVENT, type ActiveTroll } from "@/lib/titles";
 import { DragonArena } from "@/components/trolls/DragonArena";
 import { readOptions } from "@/lib/trollOptions";
 import { CalcGate, ContractGate, Haunt404 } from "@/components/trolls/GateEffects";
+import { BatSwarm, Blizzard } from "@/components/trolls/EventEffects";
 import { AbyssEffect, Bailiff, LinkScramble, MirrorEffect, PartyMode, Rationing, RewriteEffect } from "@/components/trolls/AmbientEffects";
 
 const CHIP_TEXT: Partial<Record<ActiveTroll["power"], string>> = {
@@ -23,6 +24,8 @@ const CHIP_TEXT: Partial<Record<ActiveTroll["power"], string>> = {
   calcul: "calcul mental à chaque page",
   avenant: "un contrat à chaque page",
   defi_dragon: "un dragon te défie",
+  nuee: "des chauves-souris partout",
+  blizzard: "tempête de neige",
 };
 
 function chipText(t: ActiveTroll) {
@@ -138,6 +141,8 @@ export function TrollLayer({ nickname }: { nickname: string }) {
       {has("miroir") && <MirrorEffect troll={has("miroir")!} />}
       {has("reecriture") && <RewriteEffect troll={has("reecriture")!} />}
       {has("rationnement") && <Rationing troll={has("rationnement")!} />}
+      {has("nuee") && <BatSwarm troll={has("nuee")!} />}
+      {has("blizzard") && <Blizzard troll={has("blizzard")!} />}
 
       {active.filter((t) => t.power !== "defi_dragon").length > 0 && (
         <div data-troll-ui className="troll-chip fixed bottom-3 left-3 z-[9450] max-w-[calc(100vw-1.5rem)] space-y-1">

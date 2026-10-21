@@ -22,6 +22,8 @@ import { TrollLayer } from "@/components/trolls/TrollLayer";
 import { TitleUnlock } from "@/components/titles/TitleUnlock";
 import { Sceau2 } from "@/components/sceaux/s2";
 import { Sceau1 } from "@/components/sceaux/s1";
+import { Sceau7 } from "@/components/sceaux/s7";
+import { Sceau8 } from "@/components/sceaux/s8";
 import { PresenceTracker } from "@/components/presence/PresenceTracker";
 
 /** Titre affiché dans la barre du haut pour la page en cours. */
@@ -254,6 +256,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </main>
       <SiteFooter />
       {profile && <Sceau1 />}
+      {profile && <Sceau7 />}
+      {profile && <Sceau8 />}
     </div>
     {profile && <PresenceTracker />}
     {profile && <TrollLayer nickname={profile.nickname} />}

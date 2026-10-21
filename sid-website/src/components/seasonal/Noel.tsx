@@ -45,7 +45,7 @@ function Reindeer({ x, nose = false }: { x: number; nose?: boolean }) {
   );
 }
 
-function Sleigh({
+export function Sleigh({
   className = "",
   style,
 }: {

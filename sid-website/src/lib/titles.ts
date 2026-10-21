@@ -21,7 +21,10 @@ export type TitleId =
   | "arpenteur"
   | "scribe"
   | "metronome"
-  | "juriste";
+  | "juriste"
+  // Titres d'événement (un par événement, à obtenir pendant l'événement).
+  | "chauvesouris"
+  | "lutin";
 
 export type TrollPower =
   | "defi_dragon"
@@ -35,7 +38,9 @@ export type TrollPower =
   | "miroir"
   | "reecriture"
   | "rationnement"
-  | "avenant";
+  | "avenant"
+  | "nuee"
+  | "blizzard";
 
 export interface TitleDef {
   id: TitleId;
@@ -49,7 +54,16 @@ export interface TitleDef {
   /** Comment il a été obtenu (montré une fois le titre débloqué). */
   how: string;
   power: TrollPower;
+  /** Titre d'événement : ne s'obtient que pendant cet événement (puis se garde). */
+  event?: EventKey;
 }
+
+/** Les événements du S.I.D. (même clé que le réglage d'affichage en base). */
+export type EventKey = "halloween" | "noel";
+export const EVENTS: Record<EventKey, { name: string; emoji: string; period: string }> = {
+  halloween: { name: "Halloween", emoji: "🎃", period: "du 15 octobre au 2 novembre" },
+  noel: { name: "Noël", emoji: "🎄", period: "du 1er décembre au 6 janvier" },
+};
 
 export interface PowerDef {
   key: TrollPower;
@@ -180,7 +194,33 @@ export const TITLES: TitleDef[] = [
     how: commentObtenu("juriste"),
     power: "avenant",
   },
+  {
+    id: "chauvesouris",
+    name: "Maître des Chauves-Souris",
+    emoji: "🦇",
+    colors: ["#ffa24a", "#5b2a86"],
+    maxLevel: 1,
+    riddle: "Quand les citrouilles s'allument, une aile noire passe parfois seule. Ne la laisse pas filer, encore et encore.",
+    how: commentObtenu("chauvesouris"),
+    power: "nuee",
+    event: "halloween",
+  },
+  {
+    id: "lutin",
+    name: "Lutin Clandestin",
+    emoji: "🧝",
+    colors: ["#e6f3ff", "#c8202f"],
+    maxLevel: 1,
+    riddle: "Il ne passe qu'une fois par nuit au-dessus des archives. Certains soirs, il se laisse attraper.",
+    how: commentObtenu("lutin"),
+    power: "blizzard",
+    event: "noel",
+  },
 ];
+
+/** Titres secrets permanents, et titres d'événement. */
+export const SECRET_TITLES = TITLES.filter((t) => !t.event);
+export const EVENT_TITLES = TITLES.filter((t) => t.event);
 
 export const POWERS: Record<TrollPower, PowerDef> = {
   defi_dragon: {
@@ -243,6 +283,16 @@ export const POWERS: Record<TrollPower, PowerDef> = {
     key: "avenant",
     name: "Avenant obligatoire",
     description: "Avant chaque page, ta cible doit lire et signer un contrat absurde dont la case s'enfuit. 10 minutes.",
+  },
+  nuee: {
+    key: "nuee",
+    name: "Nuée",
+    description: "Des nuées de chauves-souris traversent l'écran de ta cible, et quelques-unes s'accrochent en haut de ses pages : il faut cliquer dessus pour les chasser. 10 minutes.",
+  },
+  blizzard: {
+    key: "blizzard",
+    name: "Blizzard",
+    description: "Une tempête de neige s'abat sur le site de ta cible et le givre envahit son écran : il faut frotter (souris ou doigt) pour y voir clair. 10 minutes.",
   },
 };
 
