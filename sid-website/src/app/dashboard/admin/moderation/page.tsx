@@ -6,12 +6,31 @@ import type { Profile } from "@/types/database";
 import type { Announcement, AnnouncementSeverity, MaintenanceFlag, SanctionType, SanctionView } from "@/types/admin";
 import { inputClass, labelClass } from "@/lib/ui";
 import clsx from "clsx";
-import { DECOR_CHANGED_EVENT, type SiteDecor } from "@/components/seasonal/Halloween";
+import { DECOR_CHANGED_EVENT, type DecorKey, type DecorMode, type SiteDecor } from "@/components/seasonal/siteDecor";
 
-const DECOR_MODES: { v: SiteDecor["halloween_mode"]; label: string; hint: string }[] = [
-  { v: "auto", label: "Automatique", hint: "Du 15 octobre au 2 novembre (heure de Paris)." },
+const DECOR_MODES: { v: DecorMode; label: string; hint: string }[] = [
+  { v: "auto", label: "Automatique", hint: "Pendant la période de l'événement (heure de Paris)." },
   { v: "on", label: "Toujours", hint: "Affiché tout de suite, jusqu'à ce que tu changes d'avis." },
   { v: "off", label: "Désactivé", hint: "Aucune décoration, même pendant la période." },
+];
+
+const DECOR_EVENTS: { key: DecorKey; title: string; period: string; color: string; description: string }[] = [
+  {
+    key: "halloween",
+    title: "🎃 Halloween",
+    period: "du 15 octobre au 2 novembre",
+    color: "text-[#ff9a3c]",
+    description:
+      "Dossier : lune, cimetière, chauves-souris, toile d'araignée, citrouille du pied de page. Carte : toile, chauves-souris, sceau en citrouille, bords teintés. Wiki : lune, citrouilles sur les vagues, mer orangée.",
+  },
+  {
+    key: "noel",
+    title: "🎄 Noël",
+    period: "du 1er décembre au 6 janvier",
+    color: "text-[#9fe3cf]",
+    description:
+      "Dossier : neige, aurore, étoile, collines et chalet, guirlande sous la barre du haut, traîneau, cadeau du pied de page. Carte : guirlande, givre sur les bords, sceau en sapin, traîneau. Wiki : neige, étoile, mer givrée, cadeaux sur les vagues.",
+  },
 ];
 
 const SECTION_LABELS: Record<string, string> = {
@@ -76,9 +95,9 @@ export default function ModerationPage() {
     const { data } = await supabase.rpc("site_decor");
     if (data) setDecor(data as SiteDecor);
   }
-  async function changeDecor(mode: SiteDecor["halloween_mode"]) {
+  async function changeDecor(key: DecorKey, mode: DecorMode) {
     setDecorSaving(true);
-    const { data, error } = await supabase.rpc("set_site_decor", { p_decor: "halloween", p_mode: mode });
+    const { data, error } = await supabase.rpc("set_site_decor", { p_decor: key, p_mode: mode });
     setDecorSaving(false);
     if (error) {
       setMessage(`Échec : ${error.message}`);
@@ -270,39 +289,48 @@ export default function ModerationPage() {
           Décorations d&apos;événement sur les trois sites (Dossier Central, Cartographie, Wiki), visibles par tous :
           purement visuelles, elles ne changent rien au fonctionnement.
         </p>
-        <div className="glass-card flex flex-wrap items-center gap-4 p-4">
-          <div className="min-w-[12rem] flex-1 space-y-1">
-            <p className="font-display uppercase">🎃 Halloween</p>
-            <p className="font-body text-xs text-paper/60">
-              Dossier : lune, cimetière, chauves-souris, toile d&apos;araignée, citrouille du pied de page. Carte : toile,
-              chauves-souris, sceau en citrouille, bords teintés. Wiki : lune, citrouilles sur les vagues, mer orangée.
-            </p>
-            {decor && (
-              <span className={clsx("font-mono text-xs uppercase", decor.halloween ? "text-[#ff9a3c]" : "text-paper/50")}>
-                {decor.halloween ? "Affiché en ce moment" : "Pas affiché en ce moment"}
-              </span>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Décor d'Halloween">
-            {DECOR_MODES.map((m) => (
-              <button
-                key={m.v}
-                role="radio"
-                aria-checked={decor?.halloween_mode === m.v}
-                title={m.hint}
-                disabled={decorSaving || !decor}
-                onClick={() => changeDecor(m.v)}
-                className={clsx(
-                  "rounded-lg px-4 py-2 font-mono text-xs uppercase disabled:opacity-50",
-                  decor?.halloween_mode === m.v ? "bg-blue text-ink" : "border border-white/20 text-paper/70 hover:bg-white/10"
+        {DECOR_EVENTS.map((ev) => {
+          const shown = decor ? !!decor[ev.key] : false;
+          const mode = decor ? (decor[`${ev.key}_mode` as const] ?? null) : null;
+          const missing = !!decor && mode === null;
+          return (
+            <div key={ev.key} className="glass-card flex flex-wrap items-center gap-4 p-4">
+              <div className="min-w-[12rem] flex-1 space-y-1">
+                <p className="font-display uppercase">{ev.title}</p>
+                <p className="font-body text-xs text-paper/60">{ev.description}</p>
+                {decor && !missing && (
+                  <span className={clsx("font-mono text-xs uppercase", shown ? ev.color : "text-paper/50")}>
+                    {shown ? "Affiché en ce moment" : "Pas affiché en ce moment"}
+                  </span>
                 )}
-              >
-                {m.label}
-              </button>
-            ))}
-          </div>
-          {decor && <p className="basis-full font-mono text-[11px] text-paper/45">{DECOR_MODES.find((m) => m.v === decor.halloween_mode)?.hint}</p>}
-        </div>
+                {missing && <span className="font-mono text-xs text-red">Migration 0064 à lancer dans Supabase.</span>}
+              </div>
+              <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={`Décor : ${ev.title}`}>
+                {DECOR_MODES.map((m) => (
+                  <button
+                    key={m.v}
+                    role="radio"
+                    aria-checked={mode === m.v}
+                    title={m.hint}
+                    disabled={decorSaving || !decor || missing}
+                    onClick={() => changeDecor(ev.key, m.v)}
+                    className={clsx(
+                      "rounded-lg px-4 py-2 font-mono text-xs uppercase disabled:opacity-50",
+                      mode === m.v ? "bg-blue text-ink" : "border border-white/20 text-paper/70 hover:bg-white/10"
+                    )}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+              {mode && (
+                <p className="basis-full font-mono text-[11px] text-paper/45">
+                  {mode === "auto" ? `Automatique : ${ev.period} (heure de Paris).` : DECOR_MODES.find((m) => m.v === mode)?.hint}
+                </p>
+              )}
+            </div>
+          );
+        })}
       </section>
 
       {/* Sanctions */}

@@ -1040,3 +1040,176 @@ html.decor-halloween:not(.troll-abyss) body {
   .hw-cloud, .hw-fog, .hw-spider, .hw-wing, .decor-halloween .sid-wordmark { animation: none !important; }
   .hw-candies { display: none; }
 }
+
+/* =========================================================
+   Décor de Noël (Lot 41) — activé par la base (site_decor),
+   réglé depuis Modération. Rien ne capte les clics, sauf le cadeau.
+   ========================================================= */
+html.decor-noel:not(.troll-abyss) body {
+  background-color: #141c2e;
+  background-image:
+    radial-gradient(ellipse 70% 50% at 8% -12%, rgb(64 196 170 / 0.22), transparent 62%),
+    radial-gradient(ellipse 55% 45% at 92% -6%, rgb(120 150 255 / 0.16), transparent 58%),
+    radial-gradient(ellipse 60% 45% at 85% 108%, rgb(255 176 92 / 0.14), transparent 62%),
+    radial-gradient(ellipse 60% 50% at 10% 104%, rgb(170 200 255 / 0.10), transparent 60%);
+}
+
+/* Arrière-plan : aurore, étoile, neige, collines (derrière tout le contenu). */
+.nl-back { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+.nl-aurora {
+  position: absolute; left: -10%; right: -10%; top: -8%; height: 46%;
+  background:
+    radial-gradient(ellipse 40% 50% at 20% 30%, rgb(80 230 190 / 0.12), transparent 70%),
+    radial-gradient(ellipse 35% 45% at 55% 20%, rgb(110 140 255 / 0.10), transparent 70%);
+  filter: blur(8px); animation: nl-aurora 26s ease-in-out infinite alternate;
+}
+@keyframes nl-aurora { from { transform: translateX(-4%) skewX(-4deg); opacity: 0.8; } to { transform: translateX(4%) skewX(4deg); opacity: 1; } }
+
+.nl-star { position: absolute; top: 92px; right: max(5vw, 20px); width: clamp(64px, 8vw, 110px); overflow: visible; animation: nl-shine 5s ease-in-out infinite; }
+.nl-star-rays { fill: rgb(255 240 200 / 0.55); }
+.nl-star-core { fill: rgb(255 248 225 / 0.8); }
+.nl-star-heart { fill: #fffdf3; }
+.nl-star { filter: drop-shadow(0 0 10px rgb(255 226 150 / 0.7)) drop-shadow(0 0 30px rgb(255 210 120 / 0.35)); }
+@keyframes nl-shine { 0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.9; } 50% { transform: scale(1.08) rotate(4deg); opacity: 1; } }
+@media (max-width: 640px) { .nl-star { top: 70px; right: 10px; width: 46px; opacity: 0.7; } }
+
+/* Neige : une tuile de flocons qui descend d'une tuile, en boucle (seule la transformation bouge). */
+.nl-snow { position: absolute; inset: 0; overflow: hidden; }
+.nl-snow-layer { position: absolute; left: 0; right: 0; top: -260px; height: calc(100% + 260px); background-repeat: repeat; will-change: transform; }
+.nl-snow-far {
+  background-size: 260px 260px; opacity: 0.45; animation: nl-fall 26s linear infinite;
+  background-image:
+    radial-gradient(1.2px 1.2px at 20px 30px, #fff 60%, transparent 61%), radial-gradient(1.2px 1.2px at 90px 140px, #fff 60%, transparent 61%),
+    radial-gradient(1px 1px at 170px 60px, #fff 60%, transparent 61%), radial-gradient(1.2px 1.2px at 230px 200px, #fff 60%, transparent 61%),
+    radial-gradient(1px 1px at 140px 230px, #fff 60%, transparent 61%), radial-gradient(1px 1px at 50px 210px, #fff 60%, transparent 61%),
+    radial-gradient(1.2px 1.2px at 200px 110px, #fff 60%, transparent 61%);
+}
+.nl-snow-mid {
+  background-size: 260px 260px; opacity: 0.55; animation: nl-fall-sway 17s linear infinite;
+  background-image:
+    radial-gradient(2px 2px at 40px 80px, #fff 60%, transparent 61%), radial-gradient(1.8px 1.8px at 150px 20px, #fff 60%, transparent 61%),
+    radial-gradient(2px 2px at 210px 160px, #fff 60%, transparent 61%), radial-gradient(1.6px 1.6px at 100px 220px, #fff 60%, transparent 61%);
+}
+.nl-snow-near {
+  background-size: 340px 340px; opacity: 0.5; animation: nl-fall-sway 11s linear infinite;
+  background-image:
+    radial-gradient(3px 3px at 60px 120px, #fff 50%, transparent 62%), radial-gradient(2.6px 2.6px at 250px 40px, #fff 50%, transparent 62%),
+    radial-gradient(3px 3px at 300px 260px, #fff 50%, transparent 62%);
+  top: -340px; height: calc(100% + 340px);
+}
+.nl-snow-far { animation-name: nl-fall; }
+@keyframes nl-fall { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(0, 260px, 0); } }
+@keyframes nl-fall-sway {
+  0% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(14px, 130px, 0); }
+  100% { transform: translate3d(0, 260px, 0); }
+}
+.nl-snow-near { animation-name: nl-fall-sway-near; }
+@keyframes nl-fall-sway-near {
+  0% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(-18px, 170px, 0); }
+  100% { transform: translate3d(0, 340px, 0); }
+}
+@media (max-width: 640px), (hover: none) { .nl-snow-near { display: none; } }
+
+.nl-hills { position: absolute; left: 0; bottom: 0; width: 100%; height: 130px; }
+.nl-hill-far { fill: #d5e2f4; opacity: 0.09; }
+.nl-hill { fill: #e4eefb; opacity: 0.16; }
+.nl-fir { fill: #0e1a2c; }
+.nl-fir-snow { fill: #dfe9f7; opacity: 0.55; }
+.nl-fir-top { fill: #ffd76a; filter: drop-shadow(0 0 3px #ffc845); }
+.nl-cabin-body { fill: #0e1a2c; }
+.nl-cabin-roof { fill: #dfe9f7; opacity: 0.6; }
+.nl-window { fill: #ffc861; filter: drop-shadow(0 0 4px #ffb43c); }
+.nl-smoke { fill: none; stroke: rgb(220 230 245 / 0.14); stroke-width: 5; stroke-linecap: round; animation: nl-smoke 9s ease-in-out infinite alternate; }
+@keyframes nl-smoke { from { transform: translateX(0); opacity: 0.7; } to { transform: translateX(5px); opacity: 1; } }
+
+/* Ampoules (sapin, guirlande). */
+.nl-bulb { animation: nl-twinkle 2.6s ease-in-out infinite; }
+.nl-bulb-r { fill: #ff5a5a; filter: drop-shadow(0 0 3px #ff4a4a); }
+.nl-bulb-o { fill: #ffd257; filter: drop-shadow(0 0 3px #ffc23a); }
+.nl-bulb-g { fill: #5fdc8a; filter: drop-shadow(0 0 3px #3fd070); }
+.nl-bulb-b { fill: #6cc2ff; filter: drop-shadow(0 0 3px #4aa8ff); }
+@keyframes nl-twinkle { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+
+/* Guirlande accrochée sous la barre du haut. */
+.nl-garland-box { position: absolute; left: 0; right: 0; top: 100%; height: 0; pointer-events: none; }
+.nl-garland { position: absolute; left: 0; top: 0; pointer-events: none; overflow: hidden; }
+.nl-wire { fill: none; stroke: #20301f; stroke-width: 1.4; }
+.nl-socket { fill: #3b4a35; }
+
+/* Premier plan : traîneau et étoile filante. */
+.nl-front { position: fixed; inset: 0; z-index: 21; pointer-events: none; overflow: hidden; }
+.nl-sleigh { fill: #231d33; overflow: visible; filter: drop-shadow(0 0 2px rgb(255 214 120 / 0.75)); }
+.nl-sleigh .nl-stroke { fill: none; stroke: #231d33; stroke-width: 1.7; stroke-linecap: round; }
+.nl-sleigh .nl-antler { stroke-width: 0.9; }
+.nl-sleigh .nl-runner { stroke-width: 1.8; }
+.nl-sleigh .nl-hat { stroke-width: 2.6; }
+.nl-sleigh .nl-rein { fill: none; stroke: rgb(255 214 120 / 0.55); stroke-width: 0.6; }
+.nl-sleigh .nl-nose { fill: #ff4040; filter: drop-shadow(0 0 3px #ff2b2b); }
+.nl-sleigh .nl-pompom { fill: #f4f6fb; }
+.nl-sleigh .nl-trail circle { fill: #ffe39a; animation: nl-trail 0.9s ease-out infinite; }
+@keyframes nl-trail { from { opacity: 1; transform: translate(0, 0); } to { opacity: 0; transform: translate(6px, 4px); } }
+.nl-sleigh .nl-leg { animation: nl-gallop 0.5s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 50% 0; }
+@keyframes nl-gallop { from { transform: rotate(-9deg); } to { transform: rotate(9deg); } }
+.nl-fly { position: absolute; top: 110px; right: 0; width: clamp(170px, 20vw, 250px); opacity: 0; animation: nl-fly 13s cubic-bezier(.4, .05, .55, .95) 0s both; }
+@keyframes nl-fly {
+  0% { opacity: 0; transform: translate(30%, 40px) rotate(-4deg); }
+  6% { opacity: 1; }
+  35% { transform: translate(-35vw, -10px) rotate(-2deg); }
+  65% { transform: translate(-70vw, 20px) rotate(2deg); }
+  92% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-115vw, -30px) rotate(-3deg); }
+}
+.nl-comet {
+  position: absolute; top: 14vh; right: 18vw; width: 140px; height: 2px; border-radius: 2px;
+  background: linear-gradient(90deg, rgb(255 255 255 / 0), rgb(255 246 214 / 0.95));
+  transform: rotate(-24deg); animation: nl-comet 1.6s ease-out both;
+}
+@keyframes nl-comet {
+  from { opacity: 0; transform: translate(0, 0) rotate(-24deg) scaleX(0.3); }
+  20% { opacity: 1; }
+  to { opacity: 0; transform: translate(-36vw, 15vh) rotate(-24deg) scaleX(1); }
+}
+
+/* Le S.I.D. sous la neige, la phrase de l'accueil. */
+.decor-noel .sid-wordmark { position: relative; text-shadow: 0 0 10px rgb(255 90 90 / 0.35); }
+.decor-noel .sid-wordmark::before {
+  content: ""; position: absolute; left: -2px; right: 0; top: 0.2em; height: 0.3em; border-radius: 6px 8px 3px 3px;
+  background:
+    radial-gradient(circle at 18% 100%, #f4f8ff 2.5px, transparent 3px),
+    radial-gradient(circle at 62% 100%, #f4f8ff 2px, transparent 2.5px),
+    linear-gradient(#f4f8ff, #dde8f8);
+  background-size: 100% 100%;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
+}
+.nl-greeting { color: #9fe3cf; }
+
+/* Cadeau du pied de page. */
+.nl-gift { display: inline-flex; width: 22px; height: 22px; padding: 0; border: 0; background: none; cursor: pointer; border-radius: 6px; }
+.nl-gift svg { width: 100%; height: 100%; overflow: visible; transition: transform 0.2s; }
+.nl-box, .nl-box-lid { fill: #d6343b; }
+.nl-box-lid { fill: #e5454c; }
+.nl-ribbon, .nl-bow { fill: #ffd257; }
+.nl-gift:hover svg { transform: rotate(-6deg) scale(1.12); }
+.nl-gift:focus-visible { outline: 2px solid #ffd257; outline-offset: 2px; }
+.nl-lid { transform-box: fill-box; transform-origin: 50% 100%; }
+.nl-lid-pop { animation: nl-lid 0.6s cubic-bezier(.3, 1.6, .5, 1) both; }
+@keyframes nl-lid { 0% { transform: translateY(0); } 40% { transform: translateY(-7px) rotate(-12deg); } 100% { transform: translateY(0); } }
+.nl-bubble {
+  position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%); z-index: 5;
+  width: max-content; max-width: min(70vw, 260px); padding: 6px 10px; border-radius: 10px; text-align: center;
+  background: #15233a; border: 1px solid rgb(255 210 87 / 0.5); color: #eef4ff;
+  font: italic 13px/1.35 var(--font-body); box-shadow: 0 6px 20px -6px rgb(0 0 0 / 0.6);
+  animation: title-unlock-in 0.2s ease-out;
+}
+.nl-sparkles span { position: absolute; left: 50%; top: 0; font-size: 13px; pointer-events: none; animation: hw-candy 0.9s cubic-bezier(.2, .7, .4, 1) both; }
+
+/* Écrans tactiles : pas de clignotement permanent (économie de batterie). */
+@media (hover: none) {
+  .nl-bulb, .nl-smoke, .nl-aurora { animation: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nl-aurora, .nl-star, .nl-snow-layer, .nl-smoke, .nl-bulb, .nl-leg, .nl-trail circle, .decor-noel .sid-wordmark { animation: none !important; }
+  .nl-sparkles, .nl-comet { display: none; }
+}

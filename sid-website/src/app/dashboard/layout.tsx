@@ -1,5 +1,6 @@
 "use client";
 
+import { NoelGarland } from "@/components/seasonal/Noel";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -190,6 +191,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {profile && <AnnouncementBanner />}
 
       <header className="glass-panel sticky top-0 z-20 border-x-0 border-t-0 pt-[env(safe-area-inset-top)]">
+        <NoelGarland />
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 sm:px-6">
           <Link href="/dashboard" scroll={false} className="flex shrink-0 items-center gap-2" aria-label="Accueil du S.I.D.">
             {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -11,6 +11,7 @@ import "@fontsource/jetbrains-mono/400.css";
 import "@fontsource/jetbrains-mono/500.css";
 import "./globals.css";
 import { HalloweenDecor } from "@/components/seasonal/Halloween";
+import { NoelDecor } from "@/components/seasonal/Noel";
 
 export const metadata: Metadata = {
   title: "S.I.D. — Dossier Central",
@@ -50,6 +51,7 @@ export default function RootLayout({
       <body className="font-body">
         {children}
         <HalloweenDecor />
+        <NoelDecor />
       </body>
     </html>
   );

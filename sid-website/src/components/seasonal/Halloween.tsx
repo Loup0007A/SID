@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { createClient } from "@/lib/supabase/client";
+import { useSiteDecor } from "@/components/seasonal/siteDecor";
 
 /**
  * Décor d'Halloween (Lot 37). La base décide s'il est affiché
@@ -11,46 +11,7 @@ import { createClient } from "@/lib/supabase/client";
  * du pied de page.
  */
 
-export type SiteDecor = { halloween: boolean; halloween_mode: "auto" | "on" | "off" };
-export const DECOR_CHANGED_EVENT = "sid:decor-changed";
-
-let cache: { at: number; value: SiteDecor } | null = null;
-let inflight: Promise<SiteDecor> | null = null;
-
-async function fetchDecor(force = false): Promise<SiteDecor> {
-  if (!force && cache && Date.now() - cache.at < 5 * 60_000) return cache.value;
-  if (!force && inflight) return inflight;
-  inflight = (async () => {
-    const { data, error } = await createClient().rpc("site_decor");
-    const value: SiteDecor = !error && data ? (data as SiteDecor) : { halloween: false, halloween_mode: "auto" };
-    cache = { at: Date.now(), value };
-    inflight = null;
-    return value;
-  })();
-  return inflight;
-}
-
-/** Le décor en vigueur ; se met à jour quand l'administration le change. */
-export function useSiteDecor(): SiteDecor | null {
-  const [decor, setDecor] = useState<SiteDecor | null>(cache?.value ?? null);
-  useEffect(() => {
-    let alive = true;
-    fetchDecor().then((d) => alive && setDecor(d));
-    const onChange = (e: Event) => {
-      const d = (e as CustomEvent<SiteDecor | undefined>).detail;
-      if (d) {
-        cache = { at: Date.now(), value: d };
-        setDecor(d);
-      } else fetchDecor(true).then((v) => alive && setDecor(v));
-    };
-    window.addEventListener(DECOR_CHANGED_EVENT, onChange);
-    return () => {
-      alive = false;
-      window.removeEventListener(DECOR_CHANGED_EVENT, onChange);
-    };
-  }, []);
-  return decor;
-}
+export { DECOR_CHANGED_EVENT, useSiteDecor, type SiteDecor } from "@/components/seasonal/siteDecor";
 
 /* ---------------------------------------------------------------
    Dessins

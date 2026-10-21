@@ -15,6 +15,7 @@ import type { SimulationOverview } from "@/types/simulationRuns";
 import { BirthdaysToday } from "@/components/sceaux/s6";
 import { OnlineNow } from "@/components/presence/OnlineNow";
 import { HalloweenGreeting } from "@/components/seasonal/Halloween";
+import { NoelGreeting } from "@/components/seasonal/Noel";
 
 export default function DashboardHome() {
   const supabase = createClient();
@@ -89,6 +90,7 @@ export default function DashboardHome() {
             {profile ? `Bonjour, ${profile.nickname}` : "Bienvenue"}
           </h1>
           <HalloweenGreeting />
+          <NoelGreeting />
         </div>
         <Link href="/dashboard/bank" scroll={false} className="glass-card px-5 py-3 transition hover:-translate-y-0.5">
           <p className="font-mono text-[10px] uppercase tracking-wide text-paper/60">Solde</p>
