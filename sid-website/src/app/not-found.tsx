@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { GlitchGame } from "@/components/secrets/GlitchGame";
+import { Sceau3 } from "@/components/sceaux/s3";
 
 export default function NotFound() {
   return (
@@ -17,7 +17,7 @@ export default function NotFound() {
           </Link>
         </div>
       </div>
-      <GlitchGame />
+      <Sceau3 />
     </main>
   );
 }

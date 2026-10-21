@@ -1,0 +1,10 @@
+{
+  "name": "scelle",
+  "private": true,
+  "type": "module",
+  "description": "Outil de scellement des titres secrets (hors build du site).",
+  "dependencies": {
+    "esbuild": "0.24.0",
+    "javascript-obfuscator": "4.1.1"
+  }
+}

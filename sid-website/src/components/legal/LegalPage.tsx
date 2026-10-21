@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { SiteFooter } from "@/components/SiteFooter";
-import { LegalReadTracker } from "@/components/secrets/LegalReadTracker";
+import { Sceau4 } from "@/components/sceaux/s4";
 
 /** Mise en page des pages publiques (CGU, confidentialité) : lisibles sans être connecté. */
 export function LegalPage({ title, children, page }: { title: string; children: React.ReactNode; page?: "cgu" | "confidentialite" }) {
@@ -19,7 +19,7 @@ export function LegalPage({ title, children, page }: { title: string; children: 
       <article className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
         <h1 className="mb-2 font-display text-3xl uppercase tracking-wide text-red">{title}</h1>
         <div className="glass-card p-5 sm:p-8">{children}</div>
-        {page && <LegalReadTracker page={page} />}
+        {page && <Sceau4 page={page} />}
       </article>
       <SiteFooter />
     </main>

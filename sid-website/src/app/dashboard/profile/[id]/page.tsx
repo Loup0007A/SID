@@ -10,7 +10,7 @@ import Link from "next/link";
 import { loadCurrentUser, can } from "@/lib/permissions";
 import { useEquippedTitles } from "@/lib/useEquippedTitles";
 import { TitleAuraLayer, TitleBadge } from "@/components/titles/TitleVisuals";
-import { BirthdayGift } from "@/components/secrets/Birthday";
+import { BirthdayGift } from "@/components/sceaux/s6";
 
 type VisibleProfile = Partial<Profile> & { id: string; nickname: string };
 type MemberRole = { user_id: string; role_name: string; role_color: string; role_rank: number };

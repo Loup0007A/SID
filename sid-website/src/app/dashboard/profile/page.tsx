@@ -6,7 +6,7 @@ import type { Profile } from "@/types/database";
 import { inputClass, labelClass } from "@/lib/ui";
 import { RankCard } from "@/components/RankCard";
 import Link from "next/link";
-import { BirthdaySetting } from "@/components/secrets/Birthday";
+import { BirthdaySetting } from "@/components/sceaux/s6";
 import { TitleAuraLayer, TitleBadge } from "@/components/titles/TitleVisuals";
 import { useEquippedTitles } from "@/lib/useEquippedTitles";
 import { isPushSupported, getPushPermission, hasActivePushSubscription, subscribeToPush, unsubscribeFromPush, needsIosInstallFirst } from "@/lib/push";

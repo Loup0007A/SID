@@ -19,8 +19,8 @@ import { TermsBanner } from "@/components/TermsBanner";
 import { SiteFooter } from "@/components/SiteFooter";
 import { TrollLayer } from "@/components/trolls/TrollLayer";
 import { TitleUnlock } from "@/components/titles/TitleUnlock";
-import { HiddenButton } from "@/components/secrets/HiddenButton";
-import { AbyssDive } from "@/components/secrets/AbyssDive";
+import { Sceau2 } from "@/components/sceaux/s2";
+import { Sceau1 } from "@/components/sceaux/s1";
 import { PresenceTracker } from "@/components/presence/PresenceTracker";
 
 /** Titre affiché dans la barre du haut pour la page en cours. */
@@ -248,10 +248,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <SectionGate section={entryForPath(pathname)?.section} bypass={isStaff}>
           {children}
         </SectionGate>
-        {profile && <HiddenButton />}
+        {profile && <Sceau2 />}
       </main>
       <SiteFooter />
-      {profile && <AbyssDive />}
+      {profile && <Sceau1 />}
     </div>
     {profile && <PresenceTracker />}
     {profile && <TrollLayer nickname={profile.nickname} />}

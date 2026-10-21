@@ -12,7 +12,7 @@ import { ConstructionTape } from "@/components/ConstructionTape";
 import { useSuspendedSections } from "@/lib/maintenance";
 import { MemberStatBars } from "@/components/MemberStatBars";
 import type { SimulationOverview } from "@/types/simulationRuns";
-import { BirthdaysToday } from "@/components/secrets/Birthday";
+import { BirthdaysToday } from "@/components/sceaux/s6";
 import { OnlineNow } from "@/components/presence/OnlineNow";
 import { HalloweenGreeting } from "@/components/seasonal/Halloween";
 

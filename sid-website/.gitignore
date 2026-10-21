@@ -13,3 +13,6 @@ next-env.d.ts
 .DS_Store
 *.log
 .vercel
+
+# Sources lisibles des titres (déchiffrées depuis scripts/scelle/coffre.bin) : jamais sur GitHub
+.scelle/
