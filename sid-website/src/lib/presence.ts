@@ -14,6 +14,8 @@ import { SIMULATION_SITES, type SimulationKind } from "@/lib/simulationSites";
 export type PresenceExtra = "jeu" | "arene_dragon" | "arene_joueur" | "arene_tribune";
 
 export const PRESENCE_ACTIVITY_EVENT = "sid:activity";
+/** Émis après chaque signal de présence envoyé (le tableau « En ligne » peut se mettre à jour). */
+export const PRESENCE_PINGED_EVENT = "sid:presence-pinged";
 
 /** Une page annonce une activité particulière (null pour l'effacer). */
 export function announceActivity(extra: PresenceExtra | null) {

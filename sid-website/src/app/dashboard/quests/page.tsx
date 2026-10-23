@@ -62,75 +62,62 @@ export default function QuestsPage() {
   async function refresh(uid?: string | null) {
     const activeUserId = uid !== undefined ? uid : userId;
 
+    // Tout part en même temps : un seul aller-retour pour toute la page.
     // Les quêtes accomplies ou échouées ne restent pas affichées sur le
     // panneau principal (uniquement celles encore "ouvertes"/"en cours").
-    const { data, error } = await supabase
-      .from("quests")
-      .select("*")
-      .in("status", ["open", "in_progress"])
-      .order("created_at", { ascending: false });
-    if (error) {
-      setMessage(`Impossible de charger les quêtes : ${error.message}`);
+    const [questsRes, countsRes, mineRes, statsRes, powerRes, posRes, pendingRes] = await Promise.all([
+      supabase.from("quests").select("*").in("status", ["open", "in_progress"]).order("created_at", { ascending: false }),
+      supabase.rpc("quest_participant_counts"),
+      activeUserId ? supabase.from("quest_participants").select("quest_id").eq("user_id", activeUserId) : null,
+      activeUserId ? supabase.from("member_stats").select("intelligence, strength, technique").eq("user_id", activeUserId).maybeSingle() : null,
+      activeUserId ? supabase.from("profiles").select("power_score").eq("id", activeUserId).maybeSingle() : null,
+      activeUserId ? supabase.from("character_positions").select("*").eq("user_id", activeUserId).maybeSingle() : null,
+      supabase.rpc("list_pending_expiry_quests"),
+    ]);
+
+    if (questsRes.error) {
+      setMessage(`Impossible de charger les quêtes : ${questsRes.error.message}`);
       return;
     }
-    setQuests(data ?? []);
-
-    const { data: countsData } = await supabase.rpc("quest_participant_counts");
-    setCounts(new Map(((countsData ?? []) as { quest_id: string; participant_count: number }[]).map((c) => [c.quest_id, c.participant_count])));
+    setQuests(questsRes.data ?? []);
+    setCounts(new Map(((countsRes.data ?? []) as { quest_id: string; participant_count: number }[]).map((c) => [c.quest_id, c.participant_count])));
 
     if (activeUserId) {
-      const { data: mine } = await supabase.from("quest_participants").select("quest_id").eq("user_id", activeUserId);
-      setMyQuestIds(new Set((mine ?? []).map((m) => m.quest_id)));
-
-      const [{ data: st }, { data: prof }] = await Promise.all([
-        supabase.from("member_stats").select("intelligence, strength, technique").eq("user_id", activeUserId).maybeSingle(),
-        supabase.from("profiles").select("power_score").eq("id", activeUserId).maybeSingle(),
-      ]);
+      setMyQuestIds(new Set((mineRes?.data ?? []).map((m) => m.quest_id)));
+      const st = statsRes?.data;
+      const prof = powerRes?.data;
       setMe({
         intelligence: Number(st?.intelligence ?? 0),
         strength: Number(st?.strength ?? 0),
         technique: Number(st?.technique ?? 0),
         power: Number(prof?.power_score ?? 0),
       });
-
-      const { data: pos } = await supabase.from("character_positions").select("*").eq("user_id", activeUserId).maybeSingle();
-      setMyPosition((pos as CharacterPosition) ?? null);
+      setMyPosition((posRes?.data as CharacterPosition) ?? null);
     }
 
-    const { data: pending } = await supabase.rpc("list_pending_expiry_quests");
-    setPendingQuests((pending ?? []) as Quest[]);
+    setPendingQuests((pendingRes.data ?? []) as Quest[]);
   }
 
   useEffect(() => {
     (async () => {
-      const { profile, permissions } = await loadCurrentUser();
-      setPermissions(permissions);
-      setUserId(profile?.id ?? null);
-      const { data: m } = await supabase.from("profiles").select("*").eq("status", "active");
-      setMembers(visibleMembers(m ?? [], profile?.id, can(permissions, "manage_users")));
-
-      const [{ data: p }, { data: r }] = await Promise.all([
+      // En parallèle : le profil, la liste des membres, la carte, et
+      // l'entretien (quêtes dont la date limite est dépassée — validation
+      // auto ou mise en attente de confirmation — et trajet en cours, qui
+      // peut arriver à destination ou passer à l'étape suivante).
+      const [{ profile, permissions }, { data: m }, { data: p }, { data: r }] = await Promise.all([
+        loadCurrentUser(),
+        supabase.from("profiles").select("*").eq("status", "active"),
         supabase.from("map_places").select("id, name, type"),
         supabase.from("map_routes").select("*"),
+        // Silencieux : sans effet si la migration correspondante manque.
+        Promise.resolve(supabase.rpc("process_expired_quests")).catch(() => null),
+        Promise.resolve(supabase.rpc("advance_my_travel")).catch(() => null),
       ]);
+      setPermissions(permissions);
+      setUserId(profile?.id ?? null);
+      setMembers(visibleMembers(m ?? [], profile?.id, can(permissions, "manage_users")));
       setPlaces(p ?? []);
       setRoutes((r ?? []) as MapRoute[]);
-
-      // Traite les quêtes dont la date limite est dépassée (validation auto
-      // si l'objectif est atteint, ou mise en attente de confirmation si on
-      // est proche) — se déclenche simplement à la consultation de la page.
-      try {
-        await supabase.rpc("process_expired_quests");
-      } catch {
-        // silencieux
-      }
-      // Fait avancer un trajet en cours (arrivée à destination, passage à
-      // l'étape suivante d'un trajet multi-segments…).
-      try {
-        await supabase.rpc("advance_my_travel");
-      } catch {
-        // silencieux
-      }
 
       await refresh(profile?.id ?? null);
     })();

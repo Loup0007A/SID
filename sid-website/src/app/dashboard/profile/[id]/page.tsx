@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { currentUser } from "@/lib/session";
 import type { Profile } from "@/types/database";
 import { RankCard } from "@/components/RankCard";
 import { ProfileStyle, profileSkinClass } from "@/components/ProfileStyle";
@@ -10,7 +11,7 @@ import Link from "next/link";
 import { loadCurrentUser, can } from "@/lib/permissions";
 import { useEquippedTitles } from "@/lib/useEquippedTitles";
 import { TitleAuraLayer, TitleBadge } from "@/components/titles/TitleVisuals";
-import { BirthdayGift } from "@/components/sceaux/s6";
+import { BirthdayGift } from "@/components/lazy/Seals";
 
 type VisibleProfile = Partial<Profile> & { id: string; nickname: string };
 type MemberRole = { user_id: string; role_name: string; role_color: string; role_rank: number };
@@ -32,7 +33,7 @@ export default function MemberProfilePage() {
     (async () => {
       const {
         data: { user },
-      } = await supabase.auth.getUser();
+      } = await currentUser();
       if (!user) return;
 
       if (user.id === params.id) {
@@ -41,16 +42,17 @@ export default function MemberProfilePage() {
         return;
       }
 
-      const { profile: me, permissions } = await loadCurrentUser();
+      // Tout part en même temps (un seul aller-retour).
+      const [{ profile: me, permissions }, { data }, { data: rolesData }, { data: styleRows }] = await Promise.all([
+        loadCurrentUser(),
+        supabase.rpc("get_visible_profile", { target: params.id, viewer: user.id }),
+        supabase.rpc("list_member_roles"),
+        supabase.rpc("get_profile_css_for", { p_section: "profile", p_user_ids: [params.id] }),
+      ]);
       setIsStaff(can(permissions, "manage_users"));
       setCanTroll(!!me?.equipped_title);
-      const { data } = await supabase.rpc("get_visible_profile", { target: params.id, viewer: user.id });
       setProfile((data as VisibleProfile) ?? null);
-
-      const { data: rolesData } = await supabase.rpc("list_member_roles");
       setRoles(((rolesData ?? []) as MemberRole[]).filter((r) => r.user_id === params.id));
-
-      const { data: styleRows } = await supabase.rpc("get_profile_css_for", { p_section: "profile", p_user_ids: [params.id] });
       const row = ((styleRows ?? []) as { user_id: string; css: string }[])[0];
       setCss(row?.css ?? "");
     })();

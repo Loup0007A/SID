@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { currentUserId } from "@/lib/session";
 import { loadCurrentUser, can } from "@/lib/permissions";
 import type { PermissionKey, Profile, Quest, Wallet } from "@/types/database";
 import { QuestCard } from "@/components/QuestCard";
@@ -12,11 +13,9 @@ import { ConstructionTape } from "@/components/ConstructionTape";
 import { useSuspendedSections } from "@/lib/maintenance";
 import { MemberStatBars } from "@/components/MemberStatBars";
 import type { SimulationOverview } from "@/types/simulationRuns";
-import { BirthdaysToday } from "@/components/sceaux/s6";
+import { BirthdaysToday } from "@/components/lazy/Seals";
 import { OnlineNow } from "@/components/presence/OnlineNow";
-import { HalloweenGreeting } from "@/components/seasonal/Halloween";
-import { NoelGreeting } from "@/components/seasonal/Noel";
-import { HolidayGreeting } from "@/components/seasonal/Holidays";
+import { SeasonalGreeting } from "@/components/seasonal/Seasonal";
 
 export default function DashboardHome() {
   const supabase = createClient();
@@ -30,18 +29,35 @@ export default function DashboardHome() {
   const [todo, setTodo] = useState<{ notifs: number; pending: number; alerts: number; deletions: number }>({ notifs: 0, pending: 0, alerts: 0, deletions: 0 });
 
   useEffect(() => {
+    let alive = true;
     (async () => {
+      const uid = await currentUserId();
+      if (!uid) return;
+
+      // Tout ce qui ne dépend que du membre part en même temps (un seul
+      // aller-retour au lieu d'une file de requêtes l'une après l'autre).
+      const walletP = supabase.from("wallets").select("*").eq("user_id", uid).single();
+      const notifsP = supabase.from("notifications").select("id", { count: "exact", head: true }).eq("user_id", uid).eq("is_read", false);
+      // Facteurs de puissance (absent tant que la migration 0049 n'est pas appliquée).
+      const overviewP = supabase.rpc("get_simulation_overview");
+      const countsP = supabase.rpc("quest_participant_counts");
+      // « En cours » : on exclut les quêtes déjà accomplies ou échouées.
+      const mineP = supabase
+        .from("quest_participants")
+        .select("quest_id, quests!inner(*)")
+        .eq("user_id", uid)
+        .in("quests.status", ["open", "in_progress"]);
+
       const { profile, permissions } = await loadCurrentUser();
+      if (!alive) return;
       setProfile(profile);
       setPermissions(permissions);
       if (!profile) return;
 
-      const { data: w } = await supabase.from("wallets").select("*").eq("user_id", profile.id).single();
-      setWallet(w);
-
       const isAdmin = can(permissions, "manage_users") && !profile.sandbox_expires_at;
-      const [notifs, pending, alerts, deletions] = await Promise.all([
-        supabase.from("notifications").select("id", { count: "exact", head: true }).eq("user_id", profile.id).eq("is_read", false),
+      const [w, notifs, pending, alerts, deletions] = await Promise.all([
+        walletP,
+        notifsP,
         can(permissions, "recruit", "manage_users")
           ? supabase.from("profiles").select("id", { count: "exact", head: true }).eq("status", "pending")
           : Promise.resolve({ count: 0 }),
@@ -50,6 +66,8 @@ export default function DashboardHome() {
           ? supabase.from("privacy_requests").select("id", { count: "exact", head: true }).eq("status", "pending")
           : Promise.resolve({ count: 0 }),
       ]);
+      if (!alive) return;
+      setWallet(w.data);
       setTodo({
         notifs: notifs.count ?? 0,
         pending: ("count" in pending ? pending.count : 0) ?? 0,
@@ -57,25 +75,15 @@ export default function DashboardHome() {
         deletions: ("count" in deletions ? deletions.count : 0) ?? 0,
       });
 
-      // Facteurs de puissance (absent tant que la migration 0049 n'est pas appliquée).
-      const { data: overview } = await supabase.rpc("get_simulation_overview");
+      const [{ data: overview }, { data: countsData }, { data: mine }] = await Promise.all([overviewP, countsP, mineP]);
+      if (!alive) return;
       if (overview) setTraining(overview as SimulationOverview);
-
-      const { data: countsData } = await supabase.rpc("quest_participant_counts");
       setCounts(new Map(((countsData ?? []) as { quest_id: string; participant_count: number }[]).map((c) => [c.quest_id, c.participant_count])));
-
-      const { data: participations } = await supabase.from("quest_participants").select("quest_id").eq("user_id", profile.id);
-      const questIds = (participations ?? []).map((p) => p.quest_id);
-      if (questIds.length) {
-        // "En cours" : on exclut les quêtes déjà accomplies ou échouées.
-        const { data: quests } = await supabase
-          .from("quests")
-          .select("*")
-          .in("id", questIds)
-          .in("status", ["open", "in_progress"]);
-        setMyQuests(quests ?? []);
-      }
+      setMyQuests(((mine ?? []) as unknown as { quests: Quest }[]).map((r) => r.quests).filter(Boolean));
     })();
+    return () => {
+      alive = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -90,9 +98,7 @@ export default function DashboardHome() {
           <h1 className="font-display text-3xl uppercase tracking-wide">
             {profile ? `Bonjour, ${profile.nickname}` : "Bienvenue"}
           </h1>
-          <HalloweenGreeting />
-          <NoelGreeting />
-          <HolidayGreeting />
+          <SeasonalGreeting />
         </div>
         <Link href="/dashboard/bank" scroll={false} className="glass-card px-5 py-3 transition hover:-translate-y-0.5">
           <p className="font-mono text-[10px] uppercase tracking-wide text-paper/60">Solde</p>

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useSiteDecor } from "@/components/seasonal/siteDecor";
 import type { EventKey } from "@/lib/events";
+import { CURSOR_EVENT, CURSOR_KEY, readCursorMode, type CursorMode } from "@/lib/cursorPrefs";
 
 /**
  * Traînée du curseur et petit éclat au clic, seulement avec une souris
@@ -12,28 +13,6 @@ import type { EventKey } from "@/lib/events";
  * Réglable dans Réglages → Curseur (complet, clic seulement, désactivé) ;
  * coupé si le système demande moins d'animations.
  */
-
-export type CursorMode = "full" | "click" | "off";
-export const CURSOR_KEY = "sid-cursor";
-export const CURSOR_EVENT = "sid:cursor-changed";
-
-export function readCursorMode(): CursorMode {
-  try {
-    const v = localStorage.getItem(CURSOR_KEY);
-    return v === "click" || v === "off" ? v : "full";
-  } catch {
-    return "full";
-  }
-}
-
-export function writeCursorMode(mode: CursorMode) {
-  try {
-    localStorage.setItem(CURSOR_KEY, mode);
-  } catch {
-    /* navigation privée : tant pis, le réglage vaut pour cette page */
-  }
-  window.dispatchEvent(new CustomEvent(CURSOR_EVENT, { detail: mode }));
-}
 
 type Shape = "dot" | "star" | "heart" | "flake" | "note";
 type Palette = { colors: string[]; shape: Shape; glow: number };

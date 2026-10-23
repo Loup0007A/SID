@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import clsx from "clsx";
 import { createClient } from "@/lib/supabase/client";
+import { currentUser } from "@/lib/session";
 import { loadCurrentUser, can } from "@/lib/permissions";
 import { visibleMembers } from "@/lib/visibility";
 import type { ChatChannel, ChatMessage, Profile, DmPartner } from "@/types/database";
@@ -53,16 +54,16 @@ function ChatInner() {
   const [membersToAdd, setMembersToAdd] = useState<string[]>([]);
 
   async function refreshChannels(uid: string) {
-    const { data: parts } = await supabase.from("chat_participants").select("channel_id").eq("user_id", uid);
-    const ids = (parts ?? []).map((p) => p.channel_id);
-    if (ids.length === 0) {
-      setChannels([]);
-      return;
-    }
-    const { data: chans } = await supabase.from("chat_channels").select("*").in("id", ids).order("created_at", { ascending: false });
-    setChannels(chans ?? []);
-
-    const { data: partners } = await supabase.rpc("list_dm_partner_names");
+    // Salons (via ses participations) et noms des correspondants : en même temps.
+    const [{ data: parts }, { data: partners }] = await Promise.all([
+      supabase.from("chat_participants").select("channel_id, chat_channels(*)").eq("user_id", uid),
+      supabase.rpc("list_dm_partner_names"),
+    ]);
+    const chans = ((parts ?? []) as unknown as { chat_channels: ChatChannel | null }[])
+      .map((p) => p.chat_channels)
+      .filter((c): c is ChatChannel => !!c)
+      .sort((a, b) => (a.created_at < b.created_at ? 1 : a.created_at > b.created_at ? -1 : 0));
+    setChannels(chans);
     setDmPartners(new Map(((partners ?? []) as DmPartner[]).map((p) => [p.channel_id, p.partner_nickname])));
   }
 
@@ -70,23 +71,25 @@ function ChatInner() {
     (async () => {
       const {
         data: { user },
-      } = await supabase.auth.getUser();
+      } = await currentUser();
       if (!user) return;
       setUserId(user.id);
 
-      const { data: m } = await supabase.from("profiles").select("*").eq("status", "active");
+      // Membres, droits et salons : tout part en même temps.
+      const channelsP = refreshChannels(user.id);
+      const [{ data: m }, { permissions }] = await Promise.all([
+        supabase.from("profiles").select("*").eq("status", "active"),
+        loadCurrentUser(),
+      ]);
       setProfiles(new Map((m ?? []).map((p) => [p.id, p])));
-
       // Seuls les admins (permission manage_users, ou fondateur) peuvent
       // utiliser les commandes de troll — pas seulement les non-mutes.
-      const { permissions } = await loadCurrentUser();
       const admin = can(permissions, "manage_users");
       setIsAdmin(admin);
       // Les comptes invisibles n'apparaissent pas dans les listes de choix
       // (leurs messages restent signés de leur nom).
       setMembers(visibleMembers(m ?? [], user.id, admin));
-
-      await refreshChannels(user.id);
+      await channelsP;
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

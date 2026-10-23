@@ -4,13 +4,33 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { currentUser } from "@/lib/session";
 import { POWERS, TROLLS_REFRESH_EVENT, type ActiveTroll } from "@/lib/titles";
-import { DragonArena } from "@/components/trolls/DragonArena";
+import dynamic from "next/dynamic";
 import { readOptions } from "@/lib/trollOptions";
-import { CalcGate, ContractGate, Haunt404 } from "@/components/trolls/GateEffects";
-import { BatSwarm, Blizzard } from "@/components/trolls/EventEffects";
-import { AprilFools, EasterBells, Fanfare, Fireworks, GeneralStrike, LoveStorm, Truce } from "@/components/trolls/HolidayEffects";
-import { AbyssEffect, Bailiff, LinkScramble, MirrorEffect, PartyMode, Rationing, RewriteEffect } from "@/components/trolls/AmbientEffects";
+
+// Chaque effet n'est téléchargé que lorsqu'une farce de ce type vise le
+// membre : sans farce en cours, rien de tout cela n'est chargé.
+const DragonArena = dynamic(() => import("@/components/trolls/DragonArena").then((m) => m.DragonArena), { ssr: false });
+const CalcGate = dynamic(() => import("@/components/trolls/GateEffects").then((m) => m.CalcGate), { ssr: false });
+const ContractGate = dynamic(() => import("@/components/trolls/GateEffects").then((m) => m.ContractGate), { ssr: false });
+const Haunt404 = dynamic(() => import("@/components/trolls/GateEffects").then((m) => m.Haunt404), { ssr: false });
+const BatSwarm = dynamic(() => import("@/components/trolls/EventEffects").then((m) => m.BatSwarm), { ssr: false });
+const Blizzard = dynamic(() => import("@/components/trolls/EventEffects").then((m) => m.Blizzard), { ssr: false });
+const AprilFools = dynamic(() => import("@/components/trolls/HolidayEffects").then((m) => m.AprilFools), { ssr: false });
+const EasterBells = dynamic(() => import("@/components/trolls/HolidayEffects").then((m) => m.EasterBells), { ssr: false });
+const Fanfare = dynamic(() => import("@/components/trolls/HolidayEffects").then((m) => m.Fanfare), { ssr: false });
+const Fireworks = dynamic(() => import("@/components/trolls/HolidayEffects").then((m) => m.Fireworks), { ssr: false });
+const GeneralStrike = dynamic(() => import("@/components/trolls/HolidayEffects").then((m) => m.GeneralStrike), { ssr: false });
+const LoveStorm = dynamic(() => import("@/components/trolls/HolidayEffects").then((m) => m.LoveStorm), { ssr: false });
+const Truce = dynamic(() => import("@/components/trolls/HolidayEffects").then((m) => m.Truce), { ssr: false });
+const AbyssEffect = dynamic(() => import("@/components/trolls/AmbientEffects").then((m) => m.AbyssEffect), { ssr: false });
+const Bailiff = dynamic(() => import("@/components/trolls/AmbientEffects").then((m) => m.Bailiff), { ssr: false });
+const LinkScramble = dynamic(() => import("@/components/trolls/AmbientEffects").then((m) => m.LinkScramble), { ssr: false });
+const MirrorEffect = dynamic(() => import("@/components/trolls/AmbientEffects").then((m) => m.MirrorEffect), { ssr: false });
+const PartyMode = dynamic(() => import("@/components/trolls/AmbientEffects").then((m) => m.PartyMode), { ssr: false });
+const Rationing = dynamic(() => import("@/components/trolls/AmbientEffects").then((m) => m.Rationing), { ssr: false });
+const RewriteEffect = dynamic(() => import("@/components/trolls/AmbientEffects").then((m) => m.RewriteEffect), { ssr: false });
 
 const CHIP_TEXT: Partial<Record<ActiveTroll["power"], string>> = {
   flatterie: "tes messages se terminent par un compliment pour lui",
@@ -72,10 +92,8 @@ export function TrollLayer({ nickname }: { nickname: string }) {
 
   useEffect(() => {
     setMounted(true);
-    refresh();
-    supabase.auth.getUser().then(({ data }) => setMyId(data.user?.id ?? null));
+    currentUser().then(({ data }) => setMyId(data.user?.id ?? null));
     const poll = setInterval(refresh, 20000);
-    const tick = setInterval(() => setNow(Date.now()), 1000);
     // Une farce vient d'être lancée d'ici (l'arène du dragon s'ouvre aussitôt).
     const onLaunched = (e: Event) => {
       const id = (e as CustomEvent<{ open?: number | null }>).detail?.open;
@@ -85,15 +103,24 @@ export function TrollLayer({ nickname }: { nickname: string }) {
     window.addEventListener(TROLLS_REFRESH_EVENT, onLaunched);
     return () => {
       clearInterval(poll);
-      clearInterval(tick);
       window.removeEventListener(TROLLS_REFRESH_EVENT, onLaunched);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refresh]);
 
+  // Au chargement puis à chaque changement de page.
   useEffect(() => {
     refresh();
   }, [pathname, refresh]);
+
+  // Compte à rebours des farces : l'horloge ne tourne que s'il y en a.
+  const hasTrolls = trolls.length > 0;
+  useEffect(() => {
+    if (!hasTrolls) return;
+    setNow(Date.now());
+    const tick = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(tick);
+  }, [hasTrolls]);
 
   const active = trolls.filter((t) => new Date(t.ends_at).getTime() > now && !dismissed.has(t.id));
 

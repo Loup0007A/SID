@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { PRESENCE_ACTIVITY_EVENT, type PresenceExtra } from "@/lib/presence";
+import { PRESENCE_ACTIVITY_EVENT, PRESENCE_PINGED_EVENT, type PresenceExtra } from "@/lib/presence";
 
 const PING_MS = 45_000; // un signal toutes les 45 s (le navigateur ralentit les onglets cachés)
 const IDLE_MS = 5 * 60_000; // sans clic ni touche depuis 5 min : « absent »
@@ -28,6 +28,7 @@ export function PresenceTracker() {
     const idle = hidden || Date.now() - lastInput.current > IDLE_MS;
     try {
       await supabase.rpc("presence_ping", { p_page: pathRef.current, p_extra: extra.current, p_idle: idle });
+      window.dispatchEvent(new Event(PRESENCE_PINGED_EVENT));
     } catch {
       // silencieux : migration 0063 pas encore lancée
     }

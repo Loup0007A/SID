@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { currentUser } from "@/lib/session";
 import type { MapPlace, CityBuilding, CharacterPosition, ActivePosition } from "@/types/map";
 import { findShortestPath } from "@/lib/pathfinding";
 import { inputClass, labelClass } from "@/lib/ui";
@@ -71,19 +72,20 @@ export default function MapPage() {
     (async () => {
       const {
         data: { user },
-      } = await supabase.auth.getUser();
+      } = await currentUser();
       if (!user) return;
       setUserId(user.id);
 
-      // Fait avancer / finaliser le trajet en cours avant d'afficher quoi que ce soit
+      // La carte (lieux, routes, présents) n'attend pas : elle part tout de
+      // suite. Le trajet en cours avance / se finalise avant de relire sa
+      // propre position.
+      const mapP = refresh();
       try {
         await supabase.rpc("advance_my_travel");
       } catch {
         // silencieux
       }
-
-      await refreshMine(user.id);
-      await refresh();
+      await Promise.all([refreshMine(user.id), mapP]);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

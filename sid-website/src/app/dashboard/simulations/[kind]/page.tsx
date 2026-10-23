@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import clsx from "clsx";
 import { createClient } from "@/lib/supabase/client";
+import { currentUser } from "@/lib/session";
 import { ConstructionTape } from "@/components/ConstructionTape";
 import { MemberStatBars } from "@/components/MemberStatBars";
 import {
@@ -127,7 +128,7 @@ export default function SimulationPage() {
     const fromLink = new URLSearchParams(window.location.search).get("raid");
     if (fromLink) setHighlightRaid(fromLink);
     (async () => {
-      const { data: auth } = await supabase.auth.getUser();
+      const { data: auth } = await currentUser();
       if (!auth.user) return;
       const { data: prof } = await supabase.from("profiles").select("nickname").eq("id", auth.user.id).maybeSingle();
       setMe({ id: auth.user.id, name: prof?.nickname ?? "Allié" });

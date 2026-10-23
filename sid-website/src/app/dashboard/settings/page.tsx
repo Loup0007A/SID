@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { currentUser } from "@/lib/session";
 import { PROFILE_CSS_SECTIONS } from "@/types/profileStyle";
 import type { ProfileCssSection, ProfileStyleRow } from "@/types/profileStyle";
 import { ProfileStyle, profileSkinClass } from "@/components/ProfileStyle";
@@ -16,7 +17,7 @@ import {
   type CssBuilderOptions,
 } from "@/lib/profileCssBuilder";
 import clsx from "clsx";
-import { readCursorMode, writeCursorMode, type CursorMode } from "@/components/CursorTrail";
+import { readCursorMode, writeCursorMode, type CursorMode } from "@/lib/cursorPrefs";
 
 const ACCENT_LABEL: Record<ProfileCssSection, string> = {
   org_chart: "titre du poste",
@@ -64,14 +65,16 @@ export default function SettingsPage() {
     (async () => {
       const {
         data: { user },
-      } = await supabase.auth.getUser();
+      } = await currentUser();
       if (!user) return;
       setUserId(user.id);
 
-      const { data: profileRow } = await supabase.from("profiles").select("nickname").eq("id", user.id).single();
+      const [{ data: profileRow }, { data }] = await Promise.all([
+        supabase.from("profiles").select("nickname").eq("id", user.id).single(),
+        supabase.rpc("get_my_profile_css"),
+      ]);
       if (profileRow?.nickname) setNickname(profileRow.nickname);
 
-      const { data } = await supabase.rpc("get_my_profile_css");
       const rows = (data ?? []) as ProfileStyleRow[];
       const savedNext = { org_chart: "", roster: "", leaderboard: "", profile: "" } as Record<ProfileCssSection, string>;
       rows.forEach((r) => {

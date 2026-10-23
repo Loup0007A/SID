@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useSuspendedSections, type MaintenanceSection } from "@/lib/maintenance";
 
 /**
  * Bannière d'avertissement si la section `sectionKey` (ex: "shop", "chat",
@@ -12,17 +11,10 @@ import { createClient } from "@/lib/supabase/client";
  * elle-même.
  */
 export function MaintenanceNotice({ sectionKey }: { sectionKey: string }) {
-  const supabase = createClient();
-  const [state, setState] = useState<{ disabled: boolean; message: string | null } | null>(null);
-
-  useEffect(() => {
-    (async () => {
-      const { data } = await supabase.rpc("list_maintenance_flags");
-      const row = (data ?? []).find((f: { key: string; is_enabled: boolean; message: string | null }) => f.key === sectionKey);
-      setState(row ? { disabled: !row.is_enabled, message: row.message } : { disabled: false, message: null });
-    })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sectionKey]);
+  // Même liste (et même requête) que la barre du haut.
+  const suspended = useSuspendedSections();
+  const flag = suspended[sectionKey as MaintenanceSection];
+  const state = flag ? { disabled: true, message: flag.message } : null;
 
   if (!state?.disabled) return null;
 

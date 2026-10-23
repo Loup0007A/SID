@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import clsx from "clsx";
 import { createClient } from "@/lib/supabase/client";
+import { currentUser } from "@/lib/session";
 
 interface TechNode {
   key: string;
@@ -37,7 +38,7 @@ export default function TechTreePage() {
   const [buying, setBuying] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
-    const { data: auth } = await supabase.auth.getUser();
+    const { data: auth } = await currentUser();
     if (!auth.user) return;
     const [{ data: n }, { data: mine }, { data: ov }, { data: prof }] = await Promise.all([
       supabase.from("tech_nodes").select("*").order("sort"),

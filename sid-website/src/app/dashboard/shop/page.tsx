@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { currentUserId } from "@/lib/session";
 import { loadCurrentUser, can } from "@/lib/permissions";
 import { SHOP_EFFECT_LABELS, type ShopItem, type ShopItemEffect, type PermissionKey, type Wallet } from "@/types/database";
 import type { ShopItemStats } from "@/types/stats";
@@ -55,16 +56,20 @@ export default function ShopPage() {
 
   useEffect(() => {
     (async () => {
-      const { profile, permissions } = await loadCurrentUser();
+      // Vitrine, profil et ce qui est à soi : tout part en même temps.
+      const uid = await currentUserId();
+      const [{ profile, permissions }, , , w, biz] = await Promise.all([
+        loadCurrentUser(),
+        refresh(),
+        uid ? refreshMine() : null,
+        uid ? supabase.from("wallets").select("*").eq("user_id", uid).single() : null,
+        uid ? supabase.rpc("list_my_businesses") : null,
+      ]);
       setPermissions(permissions);
       setUserId(profile?.id ?? null);
-      await refresh();
       if (profile) {
-        await refreshMine();
-        const { data: w } = await supabase.from("wallets").select("*").eq("user_id", profile.id).single();
-        setWallet(w);
-        const { data: biz } = await supabase.rpc("list_my_businesses");
-        setMyBusinesses((biz ?? []) as Business[]);
+        setWallet(w?.data ?? null);
+        setMyBusinesses((biz?.data ?? []) as Business[]);
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps

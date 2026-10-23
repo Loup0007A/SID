@@ -124,7 +124,7 @@ export default function RegisterPage() {
       <form onSubmit={handleSubmit} className="glass-card mx-auto max-w-2xl space-y-5 p-8">
         <div className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="Logo S.I.D." className="h-14 w-14 rounded-full" />
+          <img src="/logo.webp" width={56} height={56} decoding="async" alt="Logo S.I.D." className="h-14 w-14 rounded-full" />
           <div>
             <p className="font-mono text-xs uppercase tracking-[0.3em] text-red">Formulaire d&apos;engagement</p>
             <h1 className="font-display text-3xl uppercase tracking-wide">Candidature S.I.D.</h1>

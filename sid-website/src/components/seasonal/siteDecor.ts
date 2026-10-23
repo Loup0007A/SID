@@ -17,16 +17,38 @@ export type SiteDecor = Partial<Record<DecorKey, boolean>> & Partial<Record<`${D
 export const DECOR_CHANGED_EVENT = "sid:decor-changed";
 
 const NONE: SiteDecor = {};
-let cache: { at: number; value: SiteDecor } | null = null;
+const STORE_KEY = "sid-decor-v1";
+const FRESH_MS = 5 * 60_000;
+
+// Gardé aussi le temps de la visite (sessionStorage) : à l'ouverture d'une
+// autre page, le décor (et son code) peut se charger sans attendre la base.
+function fromStore(): { at: number; value: SiteDecor } | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(STORE_KEY);
+    if (!raw) return null;
+    const c = JSON.parse(raw) as { at: number; value: SiteDecor };
+    return Date.now() - c.at < FRESH_MS ? c : null;
+  } catch {
+    return null;
+  }
+}
+
+let cache: { at: number; value: SiteDecor } | null = fromStore();
 let inflight: Promise<SiteDecor> | null = null;
 
 async function fetchDecor(force = false): Promise<SiteDecor> {
-  if (!force && cache && Date.now() - cache.at < 5 * 60_000) return cache.value;
+  if (!force && cache && Date.now() - cache.at < FRESH_MS) return cache.value;
   if (!force && inflight) return inflight;
   inflight = (async () => {
     const { data, error } = await createClient().rpc("site_decor");
     const value: SiteDecor = !error && data ? { ...NONE, ...(data as SiteDecor) } : NONE;
     cache = { at: Date.now(), value };
+    try {
+      sessionStorage.setItem(STORE_KEY, JSON.stringify(cache));
+    } catch {
+      /* stockage indisponible */
+    }
     inflight = null;
     return value;
   })();
@@ -34,15 +56,26 @@ async function fetchDecor(force = false): Promise<SiteDecor> {
 }
 
 /** Le décor en vigueur ; se met à jour quand l'administration le change. */
+// Avant la première hydratation, on rend comme le serveur (rien) pour éviter
+// un décalage ; le décor gardé est appliqué juste après.
+let hydrated = false;
+
 export function useSiteDecor(): SiteDecor | null {
-  const [decor, setDecor] = useState<SiteDecor | null>(cache?.value ?? null);
+  const [decor, setDecor] = useState<SiteDecor | null>(hydrated ? (cache?.value ?? null) : null);
   useEffect(() => {
+    hydrated = true;
     let alive = true;
+    if (cache && Date.now() - cache.at < FRESH_MS) setDecor(cache.value);
     fetchDecor().then((d) => alive && setDecor(d));
     const onChange = (e: Event) => {
       const d = (e as CustomEvent<SiteDecor | undefined>).detail;
       if (d) {
         cache = { at: Date.now(), value: { ...NONE, ...d } };
+        try {
+          sessionStorage.setItem(STORE_KEY, JSON.stringify(cache));
+        } catch {
+          /* stockage indisponible */
+        }
         setDecor(cache.value);
       } else fetchDecor(true).then((v) => alive && setDecor(v));
     };

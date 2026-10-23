@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { currentUser } from "@/lib/session";
 import type { Profile } from "@/types/database";
 import { inputClass, labelClass } from "@/lib/ui";
 import { RankCard } from "@/components/RankCard";
 import Link from "next/link";
-import { BirthdaySetting } from "@/components/sceaux/s6";
+import { BirthdaySetting } from "@/components/lazy/Seals";
 import { TitleAuraLayer, TitleBadge } from "@/components/titles/TitleVisuals";
 import { useEquippedTitles } from "@/lib/useEquippedTitles";
 import { isPushSupported, getPushPermission, hasActivePushSubscription, subscribeToPush, unsubscribeFromPush, needsIosInstallFirst } from "@/lib/push";
@@ -53,13 +54,15 @@ export default function ProfilePage() {
     (async () => {
       const {
         data: { user },
-      } = await supabase.auth.getUser();
+      } = await currentUser();
       if (!user) return;
       setMyId(user.id);
-      const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+      // Dossier et achats : en même temps.
+      const [{ data }, { data: purchasesData }] = await Promise.all([
+        supabase.from("profiles").select("*").eq("id", user.id).single(),
+        supabase.rpc("list_my_purchases"),
+      ]);
       setProfile(data);
-
-      const { data: purchasesData } = await supabase.rpc("list_my_purchases");
       setPurchases(purchasesData ?? []);
 
       setPushSupported(isPushSupported());

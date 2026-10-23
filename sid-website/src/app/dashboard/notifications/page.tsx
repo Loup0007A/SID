@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import { createClient } from "@/lib/supabase/client";
+import { currentUser } from "@/lib/session";
 import type { AppNotification } from "@/types/notifications";
 
 const TYPE_ICON: Record<string, string> = {
@@ -49,7 +50,7 @@ export default function NotificationsPage() {
     (async () => {
       const {
         data: { user },
-      } = await supabase.auth.getUser();
+      } = await currentUser();
       if (!user || cancelled) return;
       setUserId(user.id);
       await refresh(user.id);

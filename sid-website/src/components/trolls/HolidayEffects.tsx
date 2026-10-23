@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { readOptions, FANFARE_TEMPOS, LOVE_COLORS } from "@/lib/trollOptions";
 import type { ActiveTroll } from "@/lib/titles";
-import { Bells, Bleuet, Dove, Egg, PaperFish, Patrouille } from "@/components/seasonal/Holidays";
+import { Bells, Bleuet, Dove, Egg, PaperFish, Patrouille } from "@/components/seasonal/drawings";
 
 /**
  * Farces des titres de fête (Lot 44). Tout est posé dans des calques fixes ;

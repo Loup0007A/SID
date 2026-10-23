@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Sceau3 } from "@/components/sceaux/s3";
+import { Sceau3 } from "@/components/lazy/Seals";
 
 export default function NotFound() {
   return (

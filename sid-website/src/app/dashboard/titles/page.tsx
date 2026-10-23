@@ -3,6 +3,7 @@
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { currentUser } from "@/lib/session";
 import { EVENTS, EVENT_TITLES, POWERS, SECRET_TITLES, TITLES, TITLE_BY_ID, isTitleId, roman, type TitleDef, type TitleId, TITLES_CHANGED_EVENT } from "@/lib/titles";
 import { useSiteDecor } from "@/components/seasonal/siteDecor";
 import { TitleAuraLayer, TitleBadge, titleStyle } from "@/components/titles/TitleVisuals";
@@ -25,7 +26,7 @@ function TitlesInner() {
   const load = useCallback(async () => {
     const {
       data: { user },
-    } = await supabase.auth.getUser();
+    } = await currentUser();
     if (!user) return;
     const [{ data: prof }, { data: mine, error: e1 }, { data: counts }, { data: st }, { data: eq }] = await Promise.all([
       supabase.from("profiles").select("id, nickname, equipped_title").eq("id", user.id).single(),

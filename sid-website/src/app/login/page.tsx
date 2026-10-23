@@ -49,7 +49,7 @@ export default function LoginPage() {
       <form onSubmit={handleSubmit} className="glass-card w-full max-w-sm space-y-4 p-8">
         <div className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="Logo S.I.D." className="h-12 w-12 rounded-full" />
+          <img src="/logo.webp" width={48} height={48} decoding="async" alt="Logo S.I.D." className="h-12 w-12 rounded-full" />
           <h1 className="font-display text-2xl uppercase tracking-wide">Accès au dossier</h1>
         </div>
 

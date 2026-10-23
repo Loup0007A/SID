@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { currentUser } from "@/lib/session";
 import type { Wallet, BankAccount } from "@/types/database";
 import type { BusinessSharePricePoint, MarketEntry, MarketSettings, MyShareholding, SellResult } from "@/types/business";
 import { LineChart } from "@/components/LineChart";
@@ -50,22 +51,21 @@ export default function BankPage() {
   async function refresh() {
     const {
       data: { user },
-    } = await supabase.auth.getUser();
+    } = await currentUser();
     if (!user) return;
 
-    const { data: w } = await supabase.from("wallets").select("*").eq("user_id", user.id).single();
+    // Tout part en même temps (un seul aller-retour).
+    const [{ data: w }, { data: b }, { data: overview }, { data: s }, { data: shares }] = await Promise.all([
+      supabase.from("wallets").select("*").eq("user_id", user.id).single(),
+      supabase.from("bank_accounts").select("*").eq("user_id", user.id).maybeSingle(),
+      supabase.rpc("list_market_overview"),
+      supabase.rpc("get_market_settings"),
+      supabase.rpc("get_my_shareholdings"),
+    ]);
     setWallet(w);
-
-    const { data: b } = await supabase.from("bank_accounts").select("*").eq("user_id", user.id).maybeSingle();
     setBankAccount(b);
-
-    const { data: overview } = await supabase.rpc("list_market_overview");
     setMarket((overview ?? []) as MarketEntry[]);
-
-    const { data: s } = await supabase.rpc("get_market_settings");
     if (s) setSettings(s as MarketSettings);
-
-    const { data: shares } = await supabase.rpc("get_my_shareholdings");
     setMyShares((shares ?? []) as MyShareholding[]);
 
     if (shares && (shares as MyShareholding[]).length > 0) {

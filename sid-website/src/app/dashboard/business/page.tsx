@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { currentUser } from "@/lib/session";
 import type { Business, BusinessEmployee, MyEmployment, BusinessTransaction, MarketSettings } from "@/types/business";
 import type { Profile, SalaryFrequency } from "@/types/database";
 import { inputClass, labelClass } from "@/lib/ui";
@@ -42,20 +43,20 @@ export default function BusinessPage() {
   async function refresh() {
     const {
       data: { user },
-    } = await supabase.auth.getUser();
+    } = await currentUser();
     if (!user) return;
 
-    const { data } = await supabase.rpc("list_my_businesses");
+    // Tout part en même temps (un seul aller-retour).
+    const [{ data }, { data: m }, { permissions }, { data: emp }, { data: settings }] = await Promise.all([
+      supabase.rpc("list_my_businesses"),
+      supabase.from("profiles").select("*").eq("status", "active"),
+      loadCurrentUser(),
+      supabase.rpc("get_my_employments"),
+      supabase.rpc("get_market_settings"),
+    ]);
     setMyBusinesses((data ?? []) as Business[]);
-
-    const { data: m } = await supabase.from("profiles").select("*").eq("status", "active");
-    const { permissions } = await loadCurrentUser();
     setMembers(visibleMembers(m ?? [], user.id, can(permissions, "manage_users")));
-
-    const { data: emp } = await supabase.rpc("get_my_employments");
     setMyEmployments((emp ?? []) as MyEmployment[]);
-
-    const { data: settings } = await supabase.rpc("get_market_settings");
     if (settings) setMarketSettings(settings as MarketSettings);
   }
 

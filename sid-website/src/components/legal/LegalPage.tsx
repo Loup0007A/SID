@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { SiteFooter } from "@/components/SiteFooter";
-import { Sceau4 } from "@/components/sceaux/s4";
+import { Sceau4 } from "@/components/lazy/Seals";
 
 /** Mise en page des pages publiques (CGU, confidentialité) : lisibles sans être connecté. */
 export function LegalPage({ title, children, page }: { title: string; children: React.ReactNode; page?: "cgu" | "confidentialite" }) {
@@ -10,7 +10,7 @@ export function LegalPage({ title, children, page }: { title: string; children: 
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3 sm:px-6">
           <Link href="/dashboard" className="flex items-center gap-2" aria-label="Retour au S.I.D.">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="" className="h-9 w-9 rounded-full" />
+            <img src="/logo.webp" width={36} height={36} decoding="async" alt="" className="h-9 w-9 rounded-full" />
             <span className="font-display text-xl uppercase tracking-wide text-red">S.I.D.</span>
           </Link>
           <span className="truncate font-display uppercase tracking-wide text-paper/80">{title}</span>

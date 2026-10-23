@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { currentUser } from "@/lib/session";
 import type { Profile } from "@/types/database";
 import { inputClass, buttonPrimary, buttonOutline, buttonGhostRed } from "@/lib/ui";
 import { TERMS_VERSION, TERMS_DATE } from "@/components/legal/LegalContent";
@@ -33,11 +34,13 @@ export default function PrivacyPage() {
   async function refresh() {
     const {
       data: { user },
-    } = await supabase.auth.getUser();
+    } = await currentUser();
     if (!user) return;
-    const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
+    const [{ data }, { data: req }] = await Promise.all([
+      supabase.from("profiles").select("*").eq("id", user.id).single(),
+      supabase.from("privacy_requests").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
+    ]);
     setProfile(data as Profile);
-    const { data: req } = await supabase.from("privacy_requests").select("*").eq("user_id", user.id).order("created_at", { ascending: false });
     setRequests((req ?? []) as PrivacyRequest[]);
   }
 

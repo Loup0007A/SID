@@ -1,12 +1,14 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { QuestCard } from "@/components/QuestCard";
 import type { Quest } from "@/types/database";
 
+// Page publique, identique pour tout le monde : préparée à l'avance et
+// servie par le CDN, puis remise à jour toutes les 30 s au plus.
 export const revalidate = 30;
 
 export default async function HomePage() {
-  const supabase = createClient();
+  const supabase = createPublicClient();
   const { data: quests } = await supabase
     .from("quests")
     .select("*")
@@ -23,7 +25,7 @@ export default async function HomePage() {
           <div className="flex items-center gap-4">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/logo.png"
+              src="/logo.webp" width={96} height={96} decoding="async"
               alt="Logo S.I.D."
               className="h-16 w-16 shrink-0 rounded-full ring-2 ring-white/15 sm:h-20 sm:w-20 md:h-24 md:w-24"
             />

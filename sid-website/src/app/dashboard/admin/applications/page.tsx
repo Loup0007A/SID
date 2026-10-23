@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { currentUser } from "@/lib/session";
 import type { Profile } from "@/types/database";
 import { inputClass, labelClass } from "@/lib/ui";
 
@@ -51,7 +52,7 @@ export default function ApplicationsPage() {
     setMessage(null);
     const {
       data: { user },
-    } = await supabase.auth.getUser();
+    } = await currentUser();
     if (!user) return;
 
     const { data: existing } = await supabase

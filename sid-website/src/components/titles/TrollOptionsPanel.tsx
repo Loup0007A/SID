@@ -1,7 +1,7 @@
 "use client";
 
 import { BatShape, SnowLayers } from "@/components/trolls/EventEffects";
-import { Bells, Bleuet, Egg, PaperFish, Patrouille } from "@/components/seasonal/Holidays";
+import { Bells, Bleuet, Egg, PaperFish, Patrouille } from "@/components/seasonal/drawings";
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { mentalQuestion } from "@/lib/mentalCalc";
 import type { TrollPower } from "@/lib/titles";

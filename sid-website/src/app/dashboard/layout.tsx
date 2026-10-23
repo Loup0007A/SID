@@ -1,11 +1,11 @@
 "use client";
 
-import { NoelGarland } from "@/components/seasonal/Noel";
-import { HolidayGarland } from "@/components/seasonal/Holidays";
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { currentUserId } from "@/lib/session";
 import { loadCurrentUser, can } from "@/lib/permissions";
 import type { PermissionKey, Profile } from "@/types/database";
 import { NotificationBell } from "@/components/NotificationBell";
@@ -20,13 +20,55 @@ import { leaveSandbox } from "@/lib/sandbox";
 import { TermsBanner } from "@/components/TermsBanner";
 import { SiteFooter } from "@/components/SiteFooter";
 import { TrollLayer } from "@/components/trolls/TrollLayer";
-import { TitleUnlock } from "@/components/titles/TitleUnlock";
-import { Sceau2 } from "@/components/sceaux/s2";
-import { Sceau1 } from "@/components/sceaux/s1";
-import { Sceau7 } from "@/components/sceaux/s7";
-import { Sceau8 } from "@/components/sceaux/s8";
-import { Sceau9 } from "@/components/sceaux/s9";
-import { PresenceTracker } from "@/components/presence/PresenceTracker";
+import { SeasonalGarland, anyHoliday } from "@/components/seasonal/Seasonal";
+import { useSiteDecor } from "@/components/seasonal/siteDecor";
+import { AfterIdle } from "@/components/lazy/AfterIdle";
+import { Sceau1, Sceau2, Sceau7, Sceau8, Sceau9 } from "@/components/lazy/Seals";
+
+// Pas urgents : téléchargés une fois la page affichée.
+const TitleUnlock = dynamic(() => import("@/components/titles/TitleUnlock").then((m) => m.TitleUnlock), { ssr: false });
+const PresenceTracker = dynamic(() => import("@/components/presence/PresenceTracker").then((m) => m.PresenceTracker), { ssr: false });
+
+/**
+ * Le profil (et les permissions) du dernier passage, gardé dans le navigateur
+ * pour afficher le tableau de bord tout de suite à l'ouverture suivante ; la
+ * version à jour arrive juste après et remplace celle-ci.
+ */
+type MeSnapshot = { profile: Profile; perms: PermissionKey[] };
+const ME_KEY = "sid-me-v1";
+
+function readSnapshot(uid: string): MeSnapshot | null {
+  try {
+    const raw = localStorage.getItem(ME_KEY);
+    if (!raw) return null;
+    const snap = JSON.parse(raw) as MeSnapshot;
+    return snap.profile?.id === uid ? snap : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeSnapshot(profile: Profile | null, perms: Set<PermissionKey>) {
+  try {
+    // Seulement pour un compte actif et hors bac à sable : sinon, on attend toujours la version à jour.
+    if (profile && profile.status === "active" && !profile.sandbox_expires_at) localStorage.setItem(ME_KEY, JSON.stringify({ profile, perms: Array.from(perms) }));
+    else localStorage.removeItem(ME_KEY);
+  } catch {
+    /* stockage indisponible : pas de raccourci, rien de grave */
+  }
+}
+
+/** Au plus une fois par `ms` dans ce navigateur. */
+function due(key: string, ms: number) {
+  try {
+    const last = Number(localStorage.getItem(key) || 0);
+    if (Date.now() - last < ms) return false;
+    localStorage.setItem(key, String(Date.now()));
+  } catch {
+    /* sans stockage : on fait comme avant, à chaque ouverture */
+  }
+  return true;
+}
 
 /** Titre affiché dans la barre du haut pour la page en cours. */
 function pageTitle(pathname: string): string | null {
@@ -43,9 +85,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  // Profil confirmé par la base (et pas seulement repris du dernier passage).
+  const [fresh, setFresh] = useState(false);
   const [isStaff, setIsStaff] = useState(false);
   const [perms, setPerms] = useState<Set<PermissionKey>>(new Set());
   const [openAlerts, setOpenAlerts] = useState(0);
+  const decor = useSiteDecor();
 
   useEffect(() => {
     // Enregistre le service worker dès l'arrivée sur le dashboard (pas
@@ -53,62 +98,71 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     // condition pour qu'iOS propose "Ajouter à l'écran d'accueil".
     registerServiceWorker();
 
+    let alive = true;
     (async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        router.push("/login");
+      // Session lue sur place : pas d'aller-retour réseau.
+      const uid = await currentUserId();
+      if (!uid) {
+        router.replace("/login");
         return;
       }
 
+      // Affichage immédiat avec le profil du dernier passage, s'il y en a un.
+      const snap = readSnapshot(uid);
+      if (snap && alive) {
+        const p = new Set(snap.perms);
+        setProfile(snap.profile);
+        setPerms(p);
+        setIsStaff(can(p, "manage_users"));
+        setLoading(false);
+      }
+
       const { profile, permissions } = await loadCurrentUser();
+      if (!alive) return;
+      if (!profile) {
+        try {
+          localStorage.removeItem(ME_KEY);
+        } catch {}
+        router.replace("/login");
+        return;
+      }
       setProfile(profile);
       setPerms(permissions);
       setIsStaff(can(permissions, "manage_users"));
+      setFresh(true);
       setLoading(false);
+      writeSnapshot(profile, permissions);
 
-      // Traite l'économie du jour pour TOUT LE MONDE (pas seulement soi) :
-      // salaires en retard, intérêts bancaires, intérêts de dette. Se
-      // déclenche à la connexion de n'importe quel membre — pas de
-      // dépendance à pg_cron.
-      try {
-        await supabase.rpc("process_daily_economy");
-      } catch {
-        // silencieux
-      }
-
-      // Fait avancer un trajet en cours (intégration carte / sid-map) —
-      // couvre le cas où l'utilisateur navigue sans repasser par la page
-      // Carte ou Quêtes.
-      try {
-        await supabase.rpc("advance_my_travel");
-      } catch {
-        // silencieux : ne s'applique que si character_positions existe
-      }
-
-      // Enregistre la visite du jour (pour les statistiques admin : membres
-      // actifs aujourd'hui, visites, heure la plus active…).
-      try {
-        await supabase.rpc("record_visit");
-      } catch {
-        // silencieux
-      }
-
-      // Détecteur d'activité inhabituelle (au plus toutes les 3 minutes, quel
-      // que soit le membre qui se connecte) ; l'administration voit ensuite
-      // le nombre d'alertes à traiter dans la barre du haut.
-      try {
-        await supabase.rpc("maybe_scan_activity_alerts");
-        if (can(permissions, "manage_users") && !profile?.sandbox_expires_at) {
-          const { data: n } = await supabase.rpc("count_open_alerts");
-          setOpenAlerts(Number(n) || 0);
+      // Entretien, une fois la page et ses données arrivées (rien de tout
+      // ceci n'est affiché) : en parallèle, et pas à chaque ouverture.
+      const idle = (window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
+      const later = (cb: () => void) => (idle ? idle(cb, { timeout: 3000 }) : setTimeout(cb, 1200));
+      later(async () => {
+        const jobs: PromiseLike<unknown>[] = [
+          // Fait avancer un trajet en cours (intégration carte / sid-map).
+          supabase.rpc("advance_my_travel"),
+          // Visite du jour (statistiques admin : membres actifs, visites…).
+          supabase.rpc("record_visit"),
+        ];
+        // Économie du jour pour TOUT LE MONDE (salaires en retard, intérêts,
+        // marché) : rattrape le temps écoulé, donc inutile à chaque page.
+        if (due("sid-run-economy", 5 * 60_000)) jobs.push(supabase.rpc("process_daily_economy"));
+        // Détecteur d'activité inhabituelle (la base ne le relance pas plus d'une fois toutes les 3 min).
+        if (due("sid-run-scan", 3 * 60_000)) jobs.push(supabase.rpc("maybe_scan_activity_alerts"));
+        if (can(permissions, "manage_users") && !profile.sandbox_expires_at) {
+          jobs.push(
+            supabase.rpc("count_open_alerts").then(({ data: n }) => {
+              if (alive) setOpenAlerts(Number(n) || 0);
+            }),
+          );
         }
-      } catch {
-        // silencieux : migration 0060 pas encore lancée
-      }
+        // Silencieux : certaines fonctions n'existent que si leur migration a été lancée.
+        await Promise.allSettled(jobs);
+      });
     })();
+    return () => {
+      alive = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -125,14 +179,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     } catch {
       // silencieux
     }
+    try {
+      localStorage.removeItem(ME_KEY);
+    } catch {}
     await supabase.auth.signOut();
     router.push("/login");
     router.refresh();
   }
 
-  if (loading) {
-    return <div className="flex min-h-screen items-center justify-center text-paper">Ouverture du dossier…</div>;
-  }
+  // Pendant que le profil arrive (première ouverture seulement), la page est
+  // déjà montée mais invisible : elle charge ses propres données en même
+  // temps, au lieu d'attendre le profil pour commencer.
+  const booting = loading;
 
   // Compte de test (bac à sable) expiré : plus d'accès, retour au compte d'admin.
   if (profile?.sandbox_expires_at && new Date(profile.sandbox_expires_at).getTime() <= Date.now()) {
@@ -191,16 +249,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div id="sid-app" className="min-h-screen text-paper">
       <ScrollMemory />
       {profile?.sandbox_expires_at && <SandboxBanner nickname={profile.nickname} expiresAt={profile.sandbox_expires_at} permissions={perms} />}
-      {profile && !profile.sandbox_expires_at && <TermsBanner acceptedVersion={profile.terms_version} />}
+      {fresh && profile && !profile.sandbox_expires_at && <TermsBanner acceptedVersion={profile.terms_version} />}
       {profile && <AnnouncementBanner />}
 
       <header className="glass-panel sticky top-0 z-20 border-x-0 border-t-0 pt-[env(safe-area-inset-top)]">
-        <NoelGarland />
-        <HolidayGarland />
+        <SeasonalGarland />
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 sm:px-6">
           <Link href="/dashboard" scroll={false} className="flex shrink-0 items-center gap-2" aria-label="Accueil du S.I.D.">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="" className="h-9 w-9 rounded-full" />
+            <img src="/logo.webp" width={36} height={36} decoding="async" alt="" className="h-9 w-9 rounded-full" />
             <span className="sid-wordmark hidden font-display text-xl uppercase tracking-wide text-red sm:inline">S.I.D.</span>
           </Link>
 
@@ -252,20 +309,35 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </header>
 
       <main className="relative mx-auto max-w-6xl p-4 sm:p-6">
-        <SectionGate section={entryForPath(pathname)?.section} bypass={isStaff}>
-          {children}
-        </SectionGate>
-        {profile && <Sceau2 />}
+        {booting && (
+          <p className="pointer-events-none absolute inset-x-0 top-24 text-center text-paper" role="status">
+            Ouverture du dossier…
+          </p>
+        )}
+        <div style={booting ? { visibility: "hidden" } : undefined} aria-busy={booting || undefined}>
+          <SectionGate section={entryForPath(pathname)?.section} bypass={isStaff}>
+            {children}
+          </SectionGate>
+        </div>
+        {profile && fresh && (
+          <AfterIdle>
+            <Sceau2 />
+          </AfterIdle>
+        )}
       </main>
       <SiteFooter />
-      {profile && <Sceau1 />}
-      {profile && <Sceau7 />}
-      {profile && <Sceau8 />}
-      {profile && <Sceau9 />}
     </div>
-    {profile && <PresenceTracker />}
     {profile && <TrollLayer nickname={profile.nickname} />}
-    {profile && <TitleUnlock userId={profile.id} equipped={profile.equipped_title ?? null} />}
+    {profile && fresh && <PresenceTracker />}
+    {profile && fresh && (
+      <AfterIdle>
+        <TitleUnlock userId={profile.id} equipped={profile.equipped_title ?? null} />
+        <Sceau1 />
+        {decor?.halloween && <Sceau7 />}
+        {decor?.noel && <Sceau8 />}
+        {anyHoliday(decor) && <Sceau9 />}
+      </AfterIdle>
+    )}
     </>
   );
 }

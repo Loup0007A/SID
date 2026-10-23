@@ -158,7 +158,10 @@ async function brouiller(source, graine) {
     splitStringsChunkLength: 5,
     stringArray: true,
     stringArrayThreshold: 1,
-    stringArrayEncoding: ["rc4"],
+    // base64 plutôt que rc4 : tout aussi illisible à l'œil, mais le décodage
+    // au chargement est ~10 fois plus rapide (rc4 coûtait jusqu'à ~100 ms
+    // par composant sur un téléphone).
+    stringArrayEncoding: ["base64"],
     stringArrayRotate: true,
     stringArrayShuffle: true,
     stringArrayWrappersCount: 2,

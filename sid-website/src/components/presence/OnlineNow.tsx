@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { activityOf, sinceLabel, type OnlineMember } from "@/lib/presence";
+import { PRESENCE_PINGED_EVENT, activityOf, sinceLabel, type OnlineMember } from "@/lib/presence";
 import { useEquippedTitles } from "@/lib/useEquippedTitles";
 import { TitleBadge } from "@/components/titles/TitleVisuals";
 
@@ -44,10 +44,19 @@ export function OnlineNow() {
     const t = setInterval(load, 30_000);
     const onVis = () => document.visibilityState === "visible" && load();
     document.addEventListener("visibilitychange", onVis);
+    // Premier signal de présence envoyé : on se voit dans la liste tout de suite.
+    let pinged = false;
+    const onPing = () => {
+      if (pinged) return;
+      pinged = true;
+      load();
+    };
+    window.addEventListener(PRESENCE_PINGED_EVENT, onPing);
     return () => {
       clearTimeout(first);
       clearInterval(t);
       document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener(PRESENCE_PINGED_EVENT, onPing);
     };
   }, [load]);
 
