@@ -10,8 +10,11 @@ import "@fontsource/source-serif-4/400-italic.css";
 import "@fontsource/jetbrains-mono/400.css";
 import "@fontsource/jetbrains-mono/500.css";
 import "./globals.css";
+import "./holidays.css";
 import { HalloweenDecor } from "@/components/seasonal/Halloween";
 import { NoelDecor } from "@/components/seasonal/Noel";
+import { HolidayDecor } from "@/components/seasonal/Holidays";
+import { CursorTrail } from "@/components/CursorTrail";
 
 export const metadata: Metadata = {
   title: "S.I.D. — Dossier Central",
@@ -52,6 +55,8 @@ export default function RootLayout({
         {children}
         <HalloweenDecor />
         <NoelDecor />
+        <HolidayDecor />
+        <CursorTrail />
       </body>
     </html>
   );

@@ -8,6 +8,7 @@
  */
 
 import { commentObtenu } from "@/lib/cachet";
+import type { EventKey } from "@/lib/events";
 
 export type TitleId =
   | "dragon"
@@ -24,7 +25,14 @@ export type TitleId =
   | "juriste"
   // Titres d'événement (un par événement, à obtenir pendant l'événement).
   | "chauvesouris"
-  | "lutin";
+  | "lutin"
+  | "cupidon"
+  | "farceur"
+  | "chasseur"
+  | "meneur"
+  | "maestro"
+  | "artificier"
+  | "veilleur";
 
 export type TrollPower =
   | "defi_dragon"
@@ -40,7 +48,14 @@ export type TrollPower =
   | "rationnement"
   | "avenant"
   | "nuee"
-  | "blizzard";
+  | "blizzard"
+  | "coup_de_foudre"
+  | "poisson"
+  | "cloches"
+  | "greve"
+  | "fanfare"
+  | "artifice"
+  | "treve";
 
 export interface TitleDef {
   id: TitleId;
@@ -58,12 +73,7 @@ export interface TitleDef {
   event?: EventKey;
 }
 
-/** Les événements du S.I.D. (même clé que le réglage d'affichage en base). */
-export type EventKey = "halloween" | "noel";
-export const EVENTS: Record<EventKey, { name: string; emoji: string; period: string }> = {
-  halloween: { name: "Halloween", emoji: "🎃", period: "du 15 octobre au 2 novembre" },
-  noel: { name: "Noël", emoji: "🎄", period: "du 1er décembre au 6 janvier" },
-};
+export { EVENTS, type EventKey } from "@/lib/events";
 
 export interface PowerDef {
   key: TrollPower;
@@ -216,6 +226,83 @@ export const TITLES: TitleDef[] = [
     power: "blizzard",
     event: "noel",
   },
+  {
+    id: "cupidon",
+    name: "Cupidon Masqué",
+    emoji: "💘",
+    colors: ["#ff8ab4", "#b3124a"],
+    maxLevel: 1,
+    riddle: "Quand février rougit, un cœur ailé file au-dessus des pages. Ne le laisse pas s'envoler.",
+    how: commentObtenu("cupidon"),
+    power: "coup_de_foudre",
+    event: "saint_valentin",
+  },
+  {
+    id: "farceur",
+    name: "Farceur d'Avril",
+    emoji: "🐟",
+    colors: ["#ffb08a", "#2d8fd8"],
+    maxLevel: 1,
+    riddle: "Le premier jour d'avril, des poissons se collent là où personne ne regarde.",
+    how: commentObtenu("farceur"),
+    power: "poisson",
+    event: "poisson_avril",
+  },
+  {
+    id: "chasseur",
+    name: "Chasseur d'Œufs",
+    emoji: "🥚",
+    colors: ["#ffe08a", "#7cc98c"],
+    maxLevel: 1,
+    riddle: "Quand les cloches reviennent de Rome, elles sèment des œufs dans les recoins du S.I.D.",
+    how: commentObtenu("chasseur"),
+    power: "cloches",
+    event: "paques",
+  },
+  {
+    id: "meneur",
+    name: "Meneur du 1er Mai",
+    emoji: "✊",
+    colors: ["#f4fff6", "#2f8a4f"],
+    maxLevel: 1,
+    riddle: "Le premier jour de mai, un brin porte-bonheur pousse quelque part sur le site. Cueille-le, encore.",
+    how: commentObtenu("meneur"),
+    power: "greve",
+    event: "premier_mai",
+  },
+  {
+    id: "maestro",
+    name: "Maestro",
+    emoji: "🎼",
+    colors: ["#d6b8ff", "#ff7a4a"],
+    maxLevel: 1,
+    riddle: "Le jour le plus long, une note dorée s'échappe de la scène. Rattrape-la avant qu'elle ne s'éteigne.",
+    how: commentObtenu("maestro"),
+    power: "fanfare",
+    event: "fete_musique",
+  },
+  {
+    id: "artificier",
+    name: "Artificier",
+    emoji: "🎆",
+    colors: ["#8fb3ff", "#e23a3a"],
+    maxLevel: 1,
+    riddle: "Le soir de la fête nationale, attrape la fusée avant qu'elle n'éclate.",
+    how: commentObtenu("artificier"),
+    power: "artifice",
+    event: "quatorze_juillet",
+  },
+  {
+    id: "veilleur",
+    name: "Veilleur du Souvenir",
+    emoji: "🕊️",
+    colors: ["#c9d6f2", "#3f6fe0"],
+    maxLevel: 1,
+    riddle: "Le onzième jour du onzième mois, une fleur bleue invite au silence.",
+    how: commentObtenu("veilleur"),
+    power: "treve",
+    event: "armistice",
+  },
 ];
 
 /** Titres secrets permanents, et titres d'événement. */
@@ -288,6 +375,41 @@ export const POWERS: Record<TrollPower, PowerDef> = {
     key: "nuee",
     name: "Nuée",
     description: "Des nuées de chauves-souris traversent l'écran de ta cible, et quelques-unes s'accrochent en haut de ses pages : il faut cliquer dessus pour les chasser. 10 minutes.",
+  },
+  coup_de_foudre: {
+    key: "coup_de_foudre",
+    name: "Coup de foudre",
+    description: "Des cœurs s'envolent sur tout le site de ta cible, chacun de ses clics en fait jaillir, et ton nom passe de temps en temps dans un grand cœur. 10 minutes.",
+  },
+  poisson: {
+    key: "poisson",
+    name: "Poisson d'avril",
+    description: "Des poissons en papier se collent partout sur l'écran de ta cible (il faut les décoller, ils reviennent), et de fausses nouvelles tombent : « Poisson d'avril ! ». 10 minutes.",
+  },
+  cloches: {
+    key: "cloches",
+    name: "Cloches de Pâques",
+    description: "Des cloches survolent le site de ta cible et laissent tomber des œufs en chocolat qui s'entassent en bas de l'écran. Il faut les croquer pour faire de la place. 10 minutes.",
+  },
+  greve: {
+    key: "greve",
+    name: "Grève générale",
+    description: "Les boutons du site de ta cible se mettent en grève les uns après les autres : impossible de cliquer dessus tant que la grève dure. Pancartes en prime. 10 minutes.",
+  },
+  fanfare: {
+    key: "fanfare",
+    name: "Fanfare",
+    description: "Tout le site de ta cible danse en rythme et des notes s'envolent à chaque clic. Sans le moindre son. 10 minutes.",
+  },
+  artifice: {
+    key: "artifice",
+    name: "Feu d'artifice",
+    description: "Des feux d'artifice éclatent sur l'écran de ta cible, et la Patrouille de France passe en laissant ses fumées bleu-blanc-rouge par-dessus. 10 minutes.",
+  },
+  treve: {
+    key: "treve",
+    name: "Trêve",
+    description: "Le contraire d'une farce : ta cible voit des bleuets fleurir et une colombe passer, avec ton message, et pendant ce temps personne ne peut la viser d'une autre farce. 10 minutes.",
   },
   blizzard: {
     key: "blizzard",

@@ -16,6 +16,7 @@ import {
   type CssBuilderOptions,
 } from "@/lib/profileCssBuilder";
 import clsx from "clsx";
+import { readCursorMode, writeCursorMode, type CursorMode } from "@/components/CursorTrail";
 
 const ACCENT_LABEL: Record<ProfileCssSection, string> = {
   org_chart: "titre du poste",
@@ -165,6 +166,8 @@ export default function SettingsPage() {
         {message && <p className="font-mono text-sm text-red">{message}</p>}
       </section>
 
+      <CursorSettings />
+
       {PROFILE_CSS_SECTIONS.map(({ key, label, hint }) => {
         const currentMode = mode[key];
         const previewCss = currentMode === "visual" ? buildCss(key, options[key]) : rawDrafts[key];
@@ -250,6 +253,48 @@ export default function SettingsPage() {
         );
       })}
     </div>
+  );
+}
+
+const CURSOR_CHOICES: { v: CursorMode; label: string; hint: string }[] = [
+  { v: "full", label: "Traînée + clic", hint: "Une petite traînée suit la souris, un éclat à chaque clic." },
+  { v: "click", label: "Clic seulement", hint: "Juste l'éclat au clic." },
+  { v: "off", label: "Désactivé", hint: "Curseur normal." },
+];
+
+/** Réglé sur cet appareil (navigateur), pas sur le compte. */
+function CursorSettings() {
+  const [mode, setMode] = useState<CursorMode | null>(null);
+  useEffect(() => setMode(readCursorMode()), []);
+  return (
+    <section className="glass-card space-y-3 p-6">
+      <div>
+        <h2 className="font-display text-lg uppercase">Curseur</h2>
+        <p className="font-body text-sm text-paper/70">
+          Seulement avec une souris, sur ordinateur. Les couleurs suivent la fête du moment. Réglage propre à ce navigateur.
+        </p>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {CURSOR_CHOICES.map((c) => (
+          <button
+            key={c.v}
+            type="button"
+            onClick={() => {
+              writeCursorMode(c.v);
+              setMode(c.v);
+            }}
+            title={c.hint}
+            className={clsx(
+              "rounded-lg border px-3 py-1.5 font-mono text-xs uppercase transition",
+              mode === c.v ? "border-blue bg-blue text-ink" : "border-white/15 text-paper/70 hover:border-white/30 hover:text-paper",
+            )}
+          >
+            {c.label}
+          </button>
+        ))}
+      </div>
+      {mode && <p className="font-mono text-[10px] text-paper/50">{CURSOR_CHOICES.find((c) => c.v === mode)?.hint}</p>}
+    </section>
   );
 }
 

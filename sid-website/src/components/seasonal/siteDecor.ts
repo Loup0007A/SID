@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import type { EventKey } from "@/lib/events";
 
 /**
  * Affichage événementiel : la base décide ce qui est affiché (site_decor),
@@ -9,17 +10,13 @@ import { createClient } from "@/lib/supabase/client";
  * Dossier Central, la Cartographie et le Wiki.
  */
 export type DecorMode = "auto" | "on" | "off";
-export type SiteDecor = {
-  halloween: boolean;
-  halloween_mode: DecorMode;
-  /** Absents tant que la migration 0064 n'est pas passée. */
-  noel?: boolean;
-  noel_mode?: DecorMode;
-};
-export type DecorKey = "halloween" | "noel";
+export type DecorKey = EventKey;
+/** Pour chaque événement : affiché ou non, et son réglage (`<clé>_mode`). Les
+ *  clés absentes (migration pas encore lancée) valent « non affiché ». */
+export type SiteDecor = Partial<Record<DecorKey, boolean>> & Partial<Record<`${DecorKey}_mode`, DecorMode>>;
 export const DECOR_CHANGED_EVENT = "sid:decor-changed";
 
-const NONE: SiteDecor = { halloween: false, halloween_mode: "auto", noel: false, noel_mode: "auto" };
+const NONE: SiteDecor = {};
 let cache: { at: number; value: SiteDecor } | null = null;
 let inflight: Promise<SiteDecor> | null = null;
 

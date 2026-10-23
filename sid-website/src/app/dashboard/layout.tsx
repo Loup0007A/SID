@@ -1,6 +1,7 @@
 "use client";
 
 import { NoelGarland } from "@/components/seasonal/Noel";
+import { HolidayGarland } from "@/components/seasonal/Holidays";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -24,6 +25,7 @@ import { Sceau2 } from "@/components/sceaux/s2";
 import { Sceau1 } from "@/components/sceaux/s1";
 import { Sceau7 } from "@/components/sceaux/s7";
 import { Sceau8 } from "@/components/sceaux/s8";
+import { Sceau9 } from "@/components/sceaux/s9";
 import { PresenceTracker } from "@/components/presence/PresenceTracker";
 
 /** Titre affiché dans la barre du haut pour la page en cours. */
@@ -194,6 +196,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       <header className="glass-panel sticky top-0 z-20 border-x-0 border-t-0 pt-[env(safe-area-inset-top)]">
         <NoelGarland />
+        <HolidayGarland />
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 sm:px-6">
           <Link href="/dashboard" scroll={false} className="flex shrink-0 items-center gap-2" aria-label="Accueil du S.I.D.">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -258,6 +261,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {profile && <Sceau1 />}
       {profile && <Sceau7 />}
       {profile && <Sceau8 />}
+      {profile && <Sceau9 />}
     </div>
     {profile && <PresenceTracker />}
     {profile && <TrollLayer nickname={profile.nickname} />}

@@ -1,6 +1,7 @@
 "use client";
 
 import { BatShape, SnowLayers } from "@/components/trolls/EventEffects";
+import { Bells, Bleuet, Egg, PaperFish, Patrouille } from "@/components/seasonal/Holidays";
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { mentalQuestion } from "@/lib/mentalCalc";
 import type { TrollPower } from "@/lib/titles";
@@ -14,9 +15,11 @@ import {
   BAILIFF_WORDS,
   DRAGON_FINALES,
   DRAGON_SKINS,
+  FANFARE_TEMPOS,
   FLATTERY_COLORS,
   FLATTERY_DEFAULT,
   HAUNT_CREATURES,
+  LOVE_COLORS,
   MIRROR_MODES,
   PARTY_CURSORS,
   PARTY_THEMES,
@@ -30,7 +33,9 @@ import {
   type BailiffTone,
   type DragonFinale,
   type DragonSkin,
+  type FanfareTempo,
   type HauntCreature,
+  type LoveColor,
   type MirrorMode,
   type PartyTheme,
   type RewriteTheme,
@@ -316,6 +321,198 @@ function BlizzardPanel({ value: o, onChange, ctx }: Props<"blizzard">) {
         <MiniPage />
         <SnowLayers intensity={o.intensity} />
         {o.frost && <div className="troll-frost" style={{ "--frost": [0.5, 0.65, 0.8][o.intensity - 1] } as React.CSSProperties} />}
+      </Preview>
+    </div>
+  );
+}
+
+function LovePanel({ value: o, onChange, ctx }: Props<"coup_de_foudre">) {
+  const set = (p: Partial<TrollOptions["coup_de_foudre"]>) => onChange({ ...o, ...p });
+  const pal = LOVE_COLORS[o.color].colors;
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <div className="space-y-4">
+        <Field label="Couleur des cœurs">
+          <Seg value={o.color} onChange={(color) => set({ color: color as LoveColor })} accent={ctx.accent} options={(Object.keys(LOVE_COLORS) as LoveColor[]).map((k) => ({ v: k, label: LOVE_COLORS[k].label }))} />
+        </Field>
+        <Toggle checked={o.name} onChange={(name) => set({ name })} accent={ctx.accent} label={`Ton nom (${ctx.me}) passe dans un grand cœur`} />
+      </div>
+      <Preview who={ctx.target} className="h-48 bg-ink">
+        <MiniPage />
+        {Array.from({ length: 9 }, (_, i) => (
+          <span key={i} className="troll-heart-rise" style={{ left: `${8 + i * 10}%`, color: pal[i % pal.length], fontSize: 14 + (i % 3) * 6, animationDuration: `${3 + (i % 4)}s`, animationIterationCount: "infinite", animationDelay: `${-i * 0.6}s`, "--dx": "10px", "--rise": "-240px" } as React.CSSProperties}>
+            ♥
+          </span>
+        ))}
+        {o.name && (
+          <p className="absolute inset-x-0 top-1/2 text-center font-display text-2xl" style={{ color: pal[0], textShadow: `0 0 12px ${pal[0]}` }}>
+            ♥ {ctx.me} ♥
+          </p>
+        )}
+      </Preview>
+    </div>
+  );
+}
+
+function FoolsPanel({ value: o, onChange, ctx }: Props<"poisson">) {
+  const set = (p: Partial<TrollOptions["poisson"]>) => onChange({ ...o, ...p });
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <div className="space-y-4">
+        <Field label="Poissons collés à l'écran" hint="Il faut cliquer pour les décoller ; ils reviennent.">
+          <Slider value={o.count} min={2} max={12} onChange={(count) => set({ count })} accent={ctx.accent} />
+        </Field>
+        <Toggle checked={o.fake} onChange={(fake) => set({ fake })} accent={ctx.accent} label="Fausses notifications (« Tu as reçu 50 000 000 zénis… Poisson d'avril ! »)" />
+      </div>
+      <Preview who={ctx.target} className="h-48 bg-ink">
+        <MiniPage />
+        {Array.from({ length: Math.min(o.count, 8) }, (_, i) => (
+          <span key={i} className="absolute w-12" style={{ left: `${(i * 37) % 80 + 4}%`, top: `${(i * 23) % 70 + 10}%`, transform: `rotate(${(i % 2 ? 1 : -1) * (10 + i * 3)}deg)` }}>
+            <PaperFish color={["#ff9a76", "#7fd8ff", "#ffd86b", "#c9a6ff"][i % 4]} />
+          </span>
+        ))}
+      </Preview>
+    </div>
+  );
+}
+
+function BellsPanel({ value: o, onChange, ctx }: Props<"cloches">) {
+  const set = (p: Partial<TrollOptions["cloches"]>) => onChange({ ...o, ...p });
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <div className="space-y-4">
+        <Field label="Œufs en chocolat" hint="Ils s'entassent en bas de l'écran ; il faut les croquer pour faire de la place.">
+          <Seg value={o.amount} onChange={(amount) => set({ amount })} accent={ctx.accent} options={[{ v: 1, label: "Quelques-uns" }, { v: 2, label: "Une pluie" }, { v: 3, label: "Une avalanche" }]} />
+        </Field>
+      </div>
+      <Preview who={ctx.target} className="h-48 bg-ink">
+        <MiniPage />
+        <div className="absolute right-4 top-2 w-24">
+          <Bells />
+        </div>
+        <div className="absolute inset-x-0 bottom-1 flex flex-wrap-reverse justify-center gap-0.5 px-4">
+          {Array.from({ length: [5, 10, 18][o.amount - 1] }, (_, i) => (
+            <span key={i} className="w-5">
+              <Egg hue={i} />
+            </span>
+          ))}
+        </div>
+      </Preview>
+    </div>
+  );
+}
+
+function StrikePanel({ value: o, onChange, ctx }: Props<"greve">) {
+  const set = (p: Partial<TrollOptions["greve"]>) => onChange({ ...o, ...p });
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <div className="space-y-4">
+        <Field label="Boutons en grève" hint="Un bouton en grève ne répond plus pendant quelques secondes.">
+          <Seg value={o.every} onChange={(every) => set({ every })} accent={ctx.accent} options={[{ v: 1, label: "Grève perlée" }, { v: 2, label: "Grève" }, { v: 3, label: "Grève générale" }]} />
+        </Field>
+        <Toggle checked={o.placards} onChange={(placards) => set({ placards })} accent={ctx.accent} label="Manifestation avec pancartes en bas de l'écran ✊" />
+      </div>
+      <Preview who={ctx.target} className="h-48 bg-ink">
+        <MiniPage />
+        <div className="troll-picket" style={{ position: "absolute", left: "8%", top: "56%", width: "38%", height: 26 }}>
+          <span>EN GRÈVE ✊</span>
+        </div>
+        {o.placards && (
+          <div className="absolute bottom-1 right-3 flex gap-2">
+            <div className="troll-placard">
+              <span className="!text-[9px]">Plus de zénis !</span>
+              <i className="!h-4" />
+            </div>
+          </div>
+        )}
+      </Preview>
+    </div>
+  );
+}
+
+function FanfarePanel({ value: o, onChange, ctx }: Props<"fanfare">) {
+  const set = (p: Partial<TrollOptions["fanfare"]>) => onChange({ ...o, ...p });
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <div className="space-y-4">
+        <Field label="Tempo">
+          <Seg value={o.tempo} onChange={(tempo) => set({ tempo: tempo as FanfareTempo })} accent={ctx.accent} options={(Object.keys(FANFARE_TEMPOS) as FanfareTempo[]).map((k) => ({ v: k, label: FANFARE_TEMPOS[k].label }))} />
+        </Field>
+        <Toggle checked={o.bounce} onChange={(bounce) => set({ bounce })} accent={ctx.accent} label="Les cartes du site dansent en rythme" />
+      </div>
+      <Preview who={ctx.target} className="h-48 bg-ink">
+        <div style={{ animation: o.bounce ? `troll-fanfare-bounce ${FANFARE_TEMPOS[o.tempo].ms}ms ease-in-out infinite alternate` : undefined }}>
+          <MiniPage />
+        </div>
+        {["♪", "♫", "♬", "♪", "♩"].map((g, i) => (
+          <span key={i} className="troll-note-rise" style={{ left: `${10 + i * 18}%`, color: ["#c9a6ff", "#ff9c6e", "#6ec8ff", "#ffe14d"][i % 4], animationDuration: `${3 + i * 0.5}s`, animationIterationCount: "infinite", animationDelay: `${-i * 0.7}s`, "--dx": "12px", "--rise": "-240px" } as React.CSSProperties}>
+            {g}
+          </span>
+        ))}
+      </Preview>
+    </div>
+  );
+}
+
+function FireworksPanel({ value: o, onChange, ctx }: Props<"artifice">) {
+  const set = (p: Partial<TrollOptions["artifice"]>) => onChange({ ...o, ...p });
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <div className="space-y-4">
+        <Field label="Feu d'artifice">
+          <Seg value={o.intensity} onChange={(intensity) => set({ intensity })} accent={ctx.accent} options={[{ v: 1, label: "Bouquet" }, { v: 2, label: "Spectacle" }, { v: 3, label: "Final" }]} />
+        </Field>
+        <Toggle checked={o.patrouille} onChange={(patrouille) => set({ patrouille })} accent={ctx.accent} label="La Patrouille de France passe par-dessus 🇫🇷" />
+      </div>
+      <Preview who={ctx.target} className="h-48 bg-ink">
+        <MiniPage />
+        {[
+          [25, 35, "#6ea8ff"],
+          [70, 25, "#ff5a5a"],
+          [50, 55, "#ffd76a"],
+        ].slice(0, o.intensity).map(([x, y, c], k) => (
+          <span key={k} className="hd-fw" style={{ left: `${x}%`, top: `${y}%`, "--c": c, "--r": "40px" } as React.CSSProperties}>
+            {Array.from({ length: 12 }, (_, i) => (
+              <i key={i} style={{ "--a": `${i * 30}deg`, animationDelay: `${k * 0.9}s`, animationDuration: "2.6s" } as React.CSSProperties} />
+            ))}
+          </span>
+        ))}
+        {o.patrouille && (
+          <div className="absolute left-4 top-3 w-40 [transform:scaleX(-1)]">
+            <Patrouille />
+          </div>
+        )}
+      </Preview>
+    </div>
+  );
+}
+
+function TrucePanel({ value: o, onChange, ctx }: Props<"treve">) {
+  const set = (p: Partial<TrollOptions["treve"]>) => onChange({ ...o, ...p });
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <div className="space-y-4">
+        <Field label="Ton message (facultatif)" hint="Affiché sous « … t'offre une trêve ».">
+          <TextInput value={o.message} onChange={(message) => set({ message })} max={60} placeholder="Paix sur le S.I.D." />
+        </Field>
+        <p className="font-body text-xs text-paper/60">
+          Une farce douce : des bleuets fleurissent sur le site de {ctx.target}, une colombe passe, et pendant 10 minutes personne ne peut le viser
+          d&apos;une autre farce.
+        </p>
+      </div>
+      <Preview who={ctx.target} className="h-48 bg-ink">
+        <MiniPage />
+        <div className="absolute inset-x-6 top-3 rounded-lg border border-[#6f95ff]/50 bg-black/70 p-2 text-center font-body text-xs text-paper">
+          🕊️ {ctx.me} t&apos;offre une trêve
+          {o.message && <p className="italic text-[#b9ccff]">« {o.message} »</p>}
+        </div>
+        <div className="absolute inset-x-0 bottom-0 flex justify-around">
+          {Array.from({ length: 8 }, (_, i) => (
+            <span key={i} className="w-5">
+              <Bleuet />
+            </span>
+          ))}
+        </div>
       </Preview>
     </div>
   );
@@ -812,6 +1009,20 @@ export function TrollOptionsEditor({
       return <NueePanel {...(p as Props<"nuee">)} />;
     case "blizzard":
       return <BlizzardPanel {...(p as Props<"blizzard">)} />;
+    case "coup_de_foudre":
+      return <LovePanel {...(p as Props<"coup_de_foudre">)} />;
+    case "poisson":
+      return <FoolsPanel {...(p as Props<"poisson">)} />;
+    case "cloches":
+      return <BellsPanel {...(p as Props<"cloches">)} />;
+    case "greve":
+      return <StrikePanel {...(p as Props<"greve">)} />;
+    case "fanfare":
+      return <FanfarePanel {...(p as Props<"fanfare">)} />;
+    case "artifice":
+      return <FireworksPanel {...(p as Props<"artifice">)} />;
+    case "treve":
+      return <TrucePanel {...(p as Props<"treve">)} />;
     default:
       return null;
   }

@@ -7,6 +7,7 @@ import type { Announcement, AnnouncementSeverity, MaintenanceFlag, SanctionType,
 import { inputClass, labelClass } from "@/lib/ui";
 import clsx from "clsx";
 import { DECOR_CHANGED_EVENT, type DecorKey, type DecorMode, type SiteDecor } from "@/components/seasonal/siteDecor";
+import { EVENTS, EVENT_ORDER } from "@/lib/events";
 
 const DECOR_MODES: { v: DecorMode; label: string; hint: string }[] = [
   { v: "auto", label: "Automatique", hint: "Pendant la période de l'événement (heure de Paris)." },
@@ -14,24 +15,7 @@ const DECOR_MODES: { v: DecorMode; label: string; hint: string }[] = [
   { v: "off", label: "Désactivé", hint: "Aucune décoration, même pendant la période." },
 ];
 
-const DECOR_EVENTS: { key: DecorKey; title: string; period: string; color: string; description: string }[] = [
-  {
-    key: "halloween",
-    title: "🎃 Halloween",
-    period: "du 15 octobre au 2 novembre",
-    color: "text-[#ff9a3c]",
-    description:
-      "Dossier : lune, cimetière, chauves-souris, toile d'araignée, citrouille du pied de page. Carte : toile, chauves-souris, sceau en citrouille, bords teintés. Wiki : lune, citrouilles sur les vagues, mer orangée.",
-  },
-  {
-    key: "noel",
-    title: "🎄 Noël",
-    period: "du 1er décembre au 6 janvier",
-    color: "text-[#9fe3cf]",
-    description:
-      "Dossier : neige, aurore, étoile, collines et chalet, guirlande sous la barre du haut, traîneau, cadeau du pied de page. Carte : guirlande, givre sur les bords, sceau en sapin, traîneau. Wiki : neige, étoile, mer givrée, cadeaux sur les vagues.",
-  },
-];
+const DECOR_EVENTS = EVENT_ORDER.map((k) => EVENTS[k]);
 
 const SECTION_LABELS: Record<string, string> = {
   shop: "Boutique",
@@ -296,16 +280,18 @@ export default function ModerationPage() {
           return (
             <div key={ev.key} className="glass-card flex flex-wrap items-center gap-4 p-4">
               <div className="min-w-[12rem] flex-1 space-y-1">
-                <p className="font-display uppercase">{ev.title}</p>
+                <p className="font-display uppercase">
+                  {ev.emoji} {ev.name}
+                </p>
                 <p className="font-body text-xs text-paper/60">{ev.description}</p>
                 {decor && !missing && (
-                  <span className={clsx("font-mono text-xs uppercase", shown ? ev.color : "text-paper/50")}>
+                  <span className={clsx("font-mono text-xs uppercase", !shown && "text-paper/50")} style={shown ? { color: ev.color } : undefined}>
                     {shown ? "Affiché en ce moment" : "Pas affiché en ce moment"}
                   </span>
                 )}
-                {missing && <span className="font-mono text-xs text-red">Migration 0064 à lancer dans Supabase.</span>}
+                {missing && <span className="font-mono text-xs text-red">Migration 0067 à lancer dans Supabase.</span>}
               </div>
-              <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={`Décor : ${ev.title}`}>
+              <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={`Décor : ${ev.name}`}>
                 {DECOR_MODES.map((m) => (
                   <button
                     key={m.v}

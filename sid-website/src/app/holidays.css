@@ -1,0 +1,410 @@
+/* =========================================================
+   Décors des fêtes (Lot 44) — composants dans
+   src/components/seasonal/Holidays.tsx. Rien ne capte les clics, sauf
+   l'objet du pied de page.
+   ========================================================= */
+
+/* Fond de chaque fête (comme Halloween et Noël). */
+html.decor-saint_valentin:not(.troll-abyss) body {
+  background-color: #241526;
+  background-image:
+    radial-gradient(ellipse 70% 50% at 10% -10%, rgb(255 90 150 / 0.24), transparent 62%),
+    radial-gradient(ellipse 55% 45% at 92% 0%, rgb(255 170 200 / 0.12), transparent 58%),
+    radial-gradient(ellipse 60% 45% at 80% 108%, rgb(180 40 90 / 0.24), transparent 62%);
+}
+html.decor-poisson_avril:not(.troll-abyss) body {
+  background-color: #0f2130;
+  background-image:
+    radial-gradient(ellipse 70% 50% at 15% -10%, rgb(80 200 255 / 0.2), transparent 62%),
+    radial-gradient(ellipse 60% 45% at 85% 105%, rgb(255 154 118 / 0.14), transparent 62%),
+    linear-gradient(to bottom, transparent 60%, rgb(10 60 90 / 0.25));
+}
+html.decor-paques:not(.troll-abyss) body {
+  background-color: #1e2537;
+  background-image:
+    radial-gradient(ellipse 60% 45% at 92% -8%, rgb(255 214 120 / 0.28), transparent 62%),
+    radial-gradient(ellipse 70% 50% at 10% 105%, rgb(150 230 160 / 0.16), transparent 62%),
+    radial-gradient(ellipse 50% 40% at 40% -10%, rgb(255 179 199 / 0.12), transparent 60%);
+}
+html.decor-premier_mai:not(.troll-abyss) body {
+  background-color: #12231e;
+  background-image:
+    radial-gradient(ellipse 70% 50% at 12% -8%, rgb(140 230 170 / 0.18), transparent 62%),
+    radial-gradient(ellipse 60% 45% at 88% 105%, rgb(240 255 240 / 0.08), transparent 62%);
+}
+html.decor-fete_musique:not(.troll-abyss) body {
+  background-color: #171533;
+  background-image:
+    radial-gradient(ellipse 60% 45% at 15% 105%, rgb(201 166 255 / 0.22), transparent 62%),
+    radial-gradient(ellipse 60% 45% at 85% 105%, rgb(255 138 92 / 0.18), transparent 62%),
+    radial-gradient(ellipse 70% 40% at 50% -10%, rgb(110 140 255 / 0.12), transparent 60%);
+}
+html.decor-quatorze_juillet:not(.troll-abyss) body {
+  background-color: #0e1630;
+  background-image:
+    radial-gradient(ellipse 60% 45% at 10% -10%, rgb(60 110 255 / 0.22), transparent 62%),
+    radial-gradient(ellipse 60% 45% at 90% -10%, rgb(255 80 80 / 0.14), transparent 62%),
+    radial-gradient(ellipse 80% 40% at 50% 110%, rgb(255 210 120 / 0.12), transparent 62%);
+}
+html.decor-armistice:not(.troll-abyss) body {
+  background-color: #1b2029;
+  background-image:
+    radial-gradient(ellipse 70% 45% at 85% -10%, rgb(220 228 240 / 0.12), transparent 62%),
+    radial-gradient(ellipse 80% 40% at 50% 110%, rgb(63 111 224 / 0.12), transparent 62%);
+}
+
+.hd-back { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+.hd-front { position: fixed; inset: 0; z-index: 21; pointer-events: none; overflow: hidden; }
+.hd-ground { position: absolute; left: 0; bottom: 0; width: 100%; height: 130px; }
+
+/* Particules : montent, tombent ou dérivent. */
+.hd-particles { position: absolute; inset: 0; overflow: hidden; }
+.hd-p { position: absolute; display: block; font-size: calc(16px * var(--s)); opacity: var(--o); will-change: transform; animation-timing-function: linear; animation-iteration-count: infinite; }
+.hd-rise .hd-p { bottom: -30px; animation-name: hd-rise; }
+.hd-fall .hd-p { top: -30px; animation-name: hd-fall; }
+@keyframes hd-rise { from { transform: translate(0, 0) rotate(-10deg); } 50% { transform: translate(calc(var(--dx) * 0.5), -55vh) rotate(8deg); } to { transform: translate(var(--dx), -115vh) rotate(-6deg); } }
+@keyframes hd-fall { from { transform: translate(0, 0) rotate(0deg); } 50% { transform: translate(calc(var(--dx) * 0.5), 55vh) rotate(180deg); } to { transform: translate(var(--dx), 115vh) rotate(360deg); } }
+.hd-hearts .hd-p { color: #ff7aa8; text-shadow: 0 0 8px rgb(255 90 150 / 0.6); }
+.hd-hearts .hd-p:nth-child(3n) { color: #ff3d6e; }
+.hd-hearts .hd-p:nth-child(4n) { color: #ffc2d6; }
+.hd-bubbles .hd-p { color: rgb(190 240 255 / 0.9); }
+.hd-petals .hd-p { color: #ffd1e0; }
+.hd-petals .hd-p:nth-child(3n) { color: #fff1a8; }
+.hd-petals .hd-p:nth-child(4n) { color: #c9f2c0; }
+.hd-white-petals .hd-p { color: #f4fff6; font-size: calc(10px * var(--s)); }
+.hd-notes .hd-p { color: #c9a6ff; text-shadow: 0 0 8px rgb(201 166 255 / 0.7); }
+.hd-notes .hd-p:nth-child(3n) { color: #ff9c6e; text-shadow: 0 0 8px rgb(255 140 90 / 0.7); }
+
+/* Lune (Saint-Valentin, 1er mai). */
+.hd-moon { position: absolute; top: 92px; right: max(5vw, 20px); width: clamp(70px, 9vw, 130px); aspect-ratio: 1; border-radius: 50%; opacity: 0.8; }
+.hd-moon-rose { background: radial-gradient(circle at 38% 34%, #fff3f7, #ffc4d6 55%, #e88aa8 100%); box-shadow: 0 0 60px 14px rgb(255 160 190 / 0.2), 0 0 160px 60px rgb(255 90 150 / 0.12); }
+.hd-moon-spring { background: radial-gradient(circle at 38% 34%, #fbfff6, #e6f5dc 55%, #c1d9b5 100%); box-shadow: 0 0 60px 14px rgb(220 255 220 / 0.14); }
+@media (max-width: 640px) { .hd-moon { top: 68px; right: 10px; width: 54px; opacity: 0.6; } }
+
+/* Saint-Valentin : pont des amoureux. */
+.hd-water { fill: #3a1c33; opacity: 0.7; }
+.hd-bridge { fill: #12070f; }
+.hd-rail { fill: none; stroke: #12070f; stroke-width: 2; }
+.hd-lock { fill: #ffb3c8; filter: drop-shadow(0 0 2px #ff7aa8); }
+
+/* Poisson d'avril : poissons en papier, algues. */
+.hd-swim .hd-fish { position: absolute; left: 0; width: 58px; opacity: 0.85; animation: hd-swim-ltr linear infinite; }
+.hd-swim .hd-fish.is-rtl { animation-name: hd-swim-rtl; }
+/* Le poisson en papier regarde à gauche : retourné quand il nage vers la droite. */
+@keyframes hd-swim-ltr { from { transform: translateX(-80px) scaleX(-1); } 50% { transform: translateX(50vw) translateY(18px) scaleX(-1); } to { transform: translateX(calc(100vw + 80px)) scaleX(-1); } }
+@keyframes hd-swim-rtl { from { transform: translateX(calc(100vw + 80px)); } 50% { transform: translateX(50vw) translateY(-14px); } to { transform: translateX(-80px); } }
+.hd-sand { fill: #d9c79c; opacity: 0.16; }
+.hd-weed { fill: #1f6b5a; opacity: 0.75; transform-box: fill-box; transform-origin: 50% 100%; animation: hd-sway 5s ease-in-out infinite alternate; }
+@keyframes hd-sway { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
+.decor-poisson_avril .sid-wordmark { position: relative; }
+.decor-poisson_avril .sid-wordmark::after {
+  content: ""; position: absolute; right: -26px; top: 2px; width: 26px; height: 14px; transform: rotate(-12deg);
+  background: center / contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 34'%3E%3Cpath d='M6 17 C14 4 34 2 46 12 L58 4 L56 17 L58 30 L46 22 C34 32 14 30 6 17 Z' fill='%23ff9a76'/%3E%3Ccircle cx='14' cy='15' r='2.6' fill='%23fff'/%3E%3Ccircle cx='13.4' cy='15.2' r='1.3' fill='%23222'/%3E%3C/svg%3E");
+}
+
+/* Pâques : aube, prairie, œufs, cloches. */
+.hd-dawn { position: absolute; top: -10%; right: -6%; width: 46vw; height: 46vw; max-width: 560px; max-height: 560px; border-radius: 50%; background: radial-gradient(circle, rgb(255 222 140 / 0.3), rgb(255 190 120 / 0.08) 45%, transparent 70%); }
+.hd-meadow-far { fill: #7fc98c; opacity: 0.12; }
+.hd-meadow { fill: #5fae6e; opacity: 0.2; }
+.hd-flower-0 { fill: #ffd1e0; } .hd-flower-1 { fill: #fff1a8; } .hd-flower-2 { fill: #ffffff; } .hd-flower-3 { fill: #c7b8ff; }
+.hd-nest { position: absolute; left: 0; right: 0; bottom: 6px; height: 40px; }
+.hd-nest .hd-egg { position: absolute; bottom: 0; width: 20px; filter: drop-shadow(0 2px 3px rgb(0 0 0 / 0.35)); }
+
+/* 1er mai : muguet. */
+.hd-muguet-row { position: absolute; left: 0; right: 0; bottom: 0; height: 90px; }
+.hd-muguet-row .hd-muguet { position: absolute; bottom: -4px; opacity: 0.85; }
+
+/* Fête de la musique : projecteurs, égaliseur, foule. */
+.hd-spots { position: absolute; inset: 0; }
+.hd-spot { position: absolute; bottom: -10%; width: 22vw; height: 120vh; transform-origin: 50% 100%; filter: blur(6px); opacity: 0.5; }
+.hd-spot-a { left: 6%; background: linear-gradient(to top, rgb(201 166 255 / 0.35), transparent 75%); clip-path: polygon(45% 100%, 55% 100%, 100% 0, 0 0); animation: hd-spot 9s ease-in-out infinite alternate; }
+.hd-spot-b { left: 40%; background: linear-gradient(to top, rgb(255 140 90 / 0.3), transparent 75%); clip-path: polygon(45% 100%, 55% 100%, 100% 0, 0 0); animation: hd-spot 11s ease-in-out -3s infinite alternate-reverse; }
+.hd-spot-c { right: 6%; background: linear-gradient(to top, rgb(110 200 255 / 0.3), transparent 75%); clip-path: polygon(45% 100%, 55% 100%, 100% 0, 0 0); animation: hd-spot 10s ease-in-out -6s infinite alternate; }
+@keyframes hd-spot { from { transform: rotate(-22deg); } to { transform: rotate(22deg); } }
+.hd-eq { position: absolute; left: 0; right: 0; bottom: 18px; height: 70px; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 2vw; opacity: 0.45; }
+.hd-eq i { width: calc(100% / 34); height: 100%; background: linear-gradient(to top, #ff8a5c, #c9a6ff); transform-origin: 50% 100%; animation: hd-eq ease-in-out infinite alternate; border-radius: 2px 2px 0 0; }
+@keyframes hd-eq { from { transform: scaleY(0.15); } to { transform: scaleY(1); } }
+.hd-crowd { fill: #0b0a18; }
+
+/* 14 juillet : feux d'artifice, Paris. */
+.hd-fireworks { position: absolute; inset: 0; }
+.hd-fw { position: absolute; width: 0; height: 0; }
+.hd-fw i {
+  position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 50%; background: var(--c); box-shadow: 0 0 8px 2px var(--c);
+  opacity: 0; animation: hd-fw 8.5s cubic-bezier(.15, .7, .4, 1) infinite;
+}
+@keyframes hd-fw {
+  0% { transform: rotate(var(--a)) translateY(0) scale(1); opacity: 0; }
+  2% { opacity: 1; }
+  14% { transform: rotate(var(--a)) translateY(calc(var(--r) * -1)) scale(0.9); opacity: 1; }
+  22%, 100% { transform: rotate(var(--a)) translateY(calc(var(--r) * -1.15)) translateX(4px) scale(0.3); opacity: 0; }
+}
+.hd-city { fill: #070b1a; }
+.hd-eiffel { fill: #090e20; }
+.hd-eiffel-light { fill: #ffe39a; filter: drop-shadow(0 0 4px #ffd76a); animation: hd-blink 1.6s steps(1) infinite; }
+@keyframes hd-blink { 50% { opacity: 0.2; } }
+.decor-quatorze_juillet .sid-wordmark { background-image: linear-gradient(90deg, #2f5bd8 0 33%, #f2f2f2 33% 66%, #e23a3a 66%); background-size: 100% 2px; background-repeat: no-repeat; background-position: 0 100%; padding-bottom: 2px; }
+
+/* 11 novembre : sobre. */
+.hd-mist { position: absolute; left: -10%; right: -10%; bottom: 0; height: 220px; background: radial-gradient(ellipse 60% 60% at 50% 100%, rgb(220 228 240 / 0.12), transparent 70%); }
+.hd-bleuets { position: absolute; left: 0; right: 0; bottom: 0; height: 70px; }
+.hd-bleuets .hd-bleuet { position: absolute; opacity: 0.8; }
+.hd-field { fill: #2a3326; opacity: 0.45; }
+.hd-wheat { fill: none; stroke: #8a7f55; stroke-width: 1.2; opacity: 0.45; }
+.decor-armistice .sid-wordmark { position: relative; }
+.decor-armistice .sid-wordmark::after { content: "✿"; position: absolute; right: -16px; top: -2px; font-size: 12px; color: #4f7be6; }
+
+.decor-saint_valentin .sid-wordmark { text-shadow: 0 0 10px rgb(255 90 150 / 0.55); }
+.decor-fete_musique .sid-wordmark { text-shadow: 0 0 10px rgb(201 166 255 / 0.6); }
+.decor-paques .sid-wordmark { text-shadow: 0 0 10px rgb(255 214 120 / 0.5); }
+.decor-premier_mai .sid-wordmark { text-shadow: 0 0 10px rgb(180 255 200 / 0.4); }
+
+/* Survols : une fois par visite. */
+.hd-fly { position: absolute; top: 110px; right: 0; width: clamp(150px, 18vw, 230px); opacity: 0; animation: hd-fly 14s cubic-bezier(.4, .05, .55, .95) both; }
+.hd-fly-art { width: 100%; height: auto; overflow: visible; display: block; }
+@keyframes hd-fly {
+  0% { opacity: 0; transform: translate(30%, 40px) rotate(-3deg); }
+  6% { opacity: 1; }
+  35% { transform: translate(-35vw, -10px) rotate(-1deg); }
+  65% { transform: translate(-70vw, 20px) rotate(2deg); }
+  92% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-115vw, -20px) rotate(-2deg); }
+}
+.hd-fly-armistice { animation-duration: 20s; }
+/* Ces dessins regardent vers la droite : on les retourne (le vol va vers la gauche). */
+.hd-fly-saint_valentin .hd-fly-art, .hd-fly-premier_mai .hd-fly-art, .hd-fly-armistice .hd-fly-art, .hd-fly-quatorze_juillet .hd-fly-art { transform: scaleX(-1); }
+.hd-fly-quatorze_juillet { width: clamp(220px, 28vw, 380px); animation-duration: 9s; top: 90px; }
+.hd-cupid { fill: #f6d7c6; filter: drop-shadow(0 0 3px rgb(255 170 200 / 0.8)); }
+.hd-cupid .hd-wing { fill: #ffffff; opacity: 0.9; transform-box: fill-box; transform-origin: 100% 100%; animation: hd-flap 0.3s ease-in-out infinite alternate; }
+.hd-stroke, .hd-arrow { fill: none; stroke: #f6d7c6; stroke-width: 2.4; stroke-linecap: round; }
+.hd-bow { fill: none; stroke: #d6a14a; stroke-width: 2.4; }
+.hd-string { stroke: #fff; stroke-width: 0.6; }
+.hd-arrow { stroke: #d6a14a; stroke-width: 1.4; }
+.hd-arrow-head { fill: #ff3d6e; }
+.hd-trail text { fill: #ff7aa8; font-size: 10px; animation: nl-trail 0.9s ease-out infinite; }
+@keyframes hd-flap { from { transform: scaleY(1); } to { transform: scaleY(0.4); } }
+.hd-bell path:first-child { fill: #ffd257; }
+.hd-bell { filter: drop-shadow(0 0 4px rgb(255 210 87 / 0.7)); }
+.hd-bell-clapper { fill: #b88a1c; }
+.hd-ribbon { fill: none; stroke: #ff7aa8; stroke-width: 2.4; stroke-linecap: round; }
+.hd-drop-eggs { animation: hd-drop 1.8s ease-in infinite; }
+@keyframes hd-drop { from { transform: translateY(-18px); opacity: 0; } 20% { opacity: 1; } to { transform: translateY(26px); opacity: 0; } }
+.hd-pigeon, .hd-dove { fill: #e9edf4; filter: drop-shadow(0 0 3px rgb(255 255 255 / 0.5)); }
+.hd-pigeon { fill: #9aa3b5; }
+.hd-pigeon .hd-wing, .hd-dove .hd-wing { transform-box: fill-box; transform-origin: 50% 100%; animation: hd-flap 0.35s ease-in-out infinite alternate; }
+.hd-dove .hd-wing { animation-duration: 0.6s; }
+.hd-eye { fill: #1b1b24; }
+.hd-olive { fill: none; stroke: #7da35a; stroke-width: 1.6; stroke-linecap: round; }
+.hd-flying-note { font-size: 26px; fill: #c9a6ff; filter: drop-shadow(0 0 4px rgb(201 166 255 / 0.9)); animation: hd-note-bob 0.8s ease-in-out infinite alternate; }
+.hd-flying-note:nth-child(2n) { fill: #ff9c6e; }
+@keyframes hd-note-bob { from { transform: translateY(-4px); } to { transform: translateY(4px); } }
+.hd-jet { fill: #d6dcea; }
+.hd-smoke-b { fill: #2f5bd8; opacity: 0.7; }
+.hd-smoke-w { fill: #f4f6fb; opacity: 0.7; }
+.hd-smoke-r { fill: #e23a3a; opacity: 0.7; }
+.hd-patrouille rect { filter: blur(1.5px); }
+
+/* Guirlandes. */
+.hd-wire { fill: none; stroke: #3a3140; stroke-width: 1.3; }
+.hd-garland-bunting .hd-wire { stroke: #c8ccd8; stroke-width: 1; }
+.hd-garland-muguet .hd-wire { stroke: #3f7a4a; }
+.hd-g-heart.hd-g-c0 { fill: #ff4d7a; } .hd-g-heart.hd-g-c1 { fill: #ffb3c8; } .hd-g-heart.hd-g-c2 { fill: #e2325f; }
+.hd-g-heart { filter: drop-shadow(0 0 3px rgb(255 90 150 / 0.6)); }
+.hd-g-fish.hd-g-c0 { fill: #ff9a76; } .hd-g-fish.hd-g-c1 { fill: #7fd8ff; } .hd-g-fish.hd-g-c2 { fill: #ffd86b; } .hd-g-fish.hd-g-c3 { fill: #8ef0b8; }
+.hd-g-egg.hd-g-c0 { fill: #ffb3c7; } .hd-g-egg.hd-g-c1 { fill: #b8e0ff; } .hd-g-egg.hd-g-c2 { fill: #ffe08a; } .hd-g-egg.hd-g-c3 { fill: #c7f0b8; } .hd-g-egg.hd-g-c4 { fill: #d9c2ff; }
+.hd-g-bell { fill: #fbfff7; filter: drop-shadow(0 0 2px rgb(255 255 255 / 0.6)); }
+.hd-g-note { font-size: 15px; } .hd-g-note.hd-g-c0 { fill: #c9a6ff; } .hd-g-note.hd-g-c1 { fill: #ff9c6e; } .hd-g-note.hd-g-c2 { fill: #6ec8ff; }
+.hd-g-flag.hd-g-f0 { fill: #2f5bd8; } .hd-g-flag.hd-g-f1 { fill: #f2f2f2; } .hd-g-flag.hd-g-f2 { fill: #e23a3a; }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .hd-garland-hearts .hd-g-item, .hd-garland-eggs .hd-g-item, .hd-garland-fish .hd-g-item, .hd-garland-muguet .hd-g-item { animation: hd-dangle 3s ease-in-out infinite alternate; }
+}
+@keyframes hd-dangle { from { rotate: -6deg; } to { rotate: 6deg; } }
+.hd-ribbon-line { position: absolute; left: 0; right: 0; top: 100%; height: 3px; background: linear-gradient(90deg, #2f5bd8 0 33.3%, #e8ebf2 33.3% 66.6%, #e23a3a 66.6%); opacity: 0.55; pointer-events: none; }
+
+/* Phrase de l'accueil. */
+.hd-greeting-saint_valentin { color: #ff9cc0; }
+.hd-greeting-poisson_avril { color: #8fdcff; }
+.hd-greeting-paques { color: #ffd86b; }
+.hd-greeting-premier_mai { color: #b7f5c9; }
+.hd-greeting-fete_musique { color: #c9a6ff; }
+.hd-greeting-quatorze_juillet { color: #a9c6ff; }
+.hd-greeting-armistice { color: #b4c3dd; }
+
+/* Objet du pied de page. */
+.hd-footer { display: inline-flex; width: 24px; height: 22px; padding: 0; border: 0; background: none; cursor: pointer; border-radius: 6px; }
+.hd-footer svg { width: 100%; height: 100%; overflow: visible; transition: transform 0.2s; }
+.hd-footer:hover svg { transform: rotate(-8deg) scale(1.12); }
+.hd-footer:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.hd-footer.is-open svg { animation: hd-pop 0.5s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes hd-pop { 40% { transform: scale(1.3) rotate(-10deg); } }
+.hd-bubble {
+  position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%); z-index: 5;
+  width: max-content; max-width: min(78vw, 300px); padding: 6px 10px; border-radius: 10px; text-align: center;
+  background: #1c1a2c; border: 1px solid rgb(255 255 255 / 0.25); color: #f4f1e8;
+  font: italic 13px/1.4 var(--font-body); box-shadow: 0 6px 20px -6px rgb(0 0 0 / 0.6);
+  animation: title-unlock-in 0.2s ease-out;
+}
+.hd-bubble-saint_valentin { border-color: rgb(255 122 168 / 0.6); }
+.hd-bubble-armistice { font-style: normal; border-color: rgb(79 123 230 / 0.6); }
+
+/* Écrans tactiles et « réduire les animations » : moins de mouvement. */
+@media (hover: none) {
+  .hd-spot, .hd-eq i, .hd-weed { animation: none; }
+  .hd-eq i { transform: scaleY(0.5); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hd-p, .hd-swim .hd-fish, .hd-spot, .hd-eq i, .hd-fw i, .hd-weed, .hd-eiffel-light, .hd-trail text, .hd-flying-note, .hd-drop-eggs { animation: none !important; }
+  .hd-fly, .hd-particles, .hd-swim, .hd-fireworks { display: none; }
+}
+
+/* =========================================================
+   Farces des titres de fête
+   ========================================================= */
+/* Coup de foudre */
+.troll-heart-rise { position: absolute; bottom: -40px; animation: troll-heart-rise linear forwards; text-shadow: 0 0 10px currentColor; will-change: transform; }
+@keyframes troll-heart-rise { from { transform: translate(0, 0) rotate(-10deg); opacity: 0.9; } to { transform: translate(var(--dx), var(--rise, -110vh)) rotate(12deg); opacity: 0.2; } }
+.troll-heart-burst { position: absolute; transform: translate(-50%, -50%); animation: troll-heart-burst ease-out forwards; text-shadow: 0 0 8px currentColor; }
+@keyframes troll-heart-burst { from { transform: translate(-50%, -50%) scale(0.4); opacity: 1; } to { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.2); opacity: 0; } }
+.troll-love-banner {
+  position: absolute; top: 38%; left: 0; white-space: nowrap; font: 700 clamp(28px, 6vw, 64px)/1 var(--font-display); letter-spacing: 0.04em;
+  text-shadow: 0 0 18px currentColor, 0 0 40px rgb(255 90 150 / 0.6); animation: troll-love-banner 7s ease-in-out forwards;
+}
+.troll-love-banner span { display: inline-block; animation: troll-beat 0.7s ease-in-out infinite alternate; }
+@keyframes troll-love-banner { from { transform: translateX(100vw); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } to { transform: translateX(-110%); opacity: 0; } }
+@keyframes troll-beat { from { transform: scale(1); } to { transform: scale(1.25); } }
+
+/* Poisson d'avril */
+.troll-stuck-fish { position: absolute; width: 74px; padding: 0; border: 0; background: none; cursor: pointer; transform: rotate(var(--r)); animation: troll-fish-stick 0.4s cubic-bezier(.3, 1.6, .5, 1) both; filter: drop-shadow(0 3px 4px rgb(0 0 0 / 0.35)); }
+.troll-stuck-fish svg { width: 100%; height: auto; display: block; }
+.troll-tape { position: absolute; left: 34%; top: -6px; width: 22px; height: 10px; background: rgb(255 248 220 / 0.75); transform: rotate(-8deg); }
+.troll-stuck-fish.is-peeling { animation: troll-fish-peel 0.9s ease-in forwards; pointer-events: none; }
+@keyframes troll-fish-stick { from { transform: rotate(var(--r)) scale(1.6); opacity: 0; } to { transform: rotate(var(--r)) scale(1); opacity: 1; } }
+@keyframes troll-fish-peel { 30% { transform: rotate(calc(var(--r) + 40deg)) translateY(-10px); } to { transform: rotate(calc(var(--r) + 200deg)) translateY(60vh); opacity: 0; } }
+.troll-fake-notif {
+  position: absolute; top: 76px; right: 16px; max-width: min(340px, calc(100vw - 32px)); padding: 10px 14px; border-radius: 12px;
+  background: rgb(20 24 38 / 0.95); border: 1px solid rgb(255 255 255 / 0.15); color: #f4f1e8; font: 13px/1.4 var(--font-body);
+  box-shadow: 0 10px 30px -10px rgb(0 0 0 / 0.7); animation: title-unlock-in 0.25s ease-out; display: grid; gap: 2px;
+}
+.troll-fake-notif.is-revealed { background: #ff9a76; color: #1b1b24; border-color: transparent; animation: troll-fake-flip 0.4s ease-out; }
+@keyframes troll-fake-flip { from { transform: rotateX(90deg); } to { transform: rotateX(0); } }
+
+/* Cloches de Pâques */
+.troll-bells-fly { position: absolute; top: 70px; right: 0; width: 170px; animation: hd-fly 9s cubic-bezier(.4, .05, .55, .95) both; }
+.troll-choco-egg { position: absolute; bottom: var(--b); width: 30px; padding: 0; border: 0; background: none; cursor: pointer; animation: troll-egg-fall 1.6s cubic-bezier(.5, 0, .9, .6) both; filter: drop-shadow(0 2px 3px rgb(0 0 0 / 0.4)); }
+.troll-choco-egg svg { width: 100%; height: auto; display: block; }
+.troll-choco-egg.is-landed { animation: none; }
+.troll-choco-egg.is-eaten { animation: troll-egg-eat 0.4s ease-in forwards; pointer-events: none; }
+@keyframes troll-egg-fall { from { transform: translateY(calc(-100vh + 90px)) rotate(-30deg); } 85% { transform: translateY(0) rotate(10deg); } 92% { transform: translateY(-8px) rotate(-4deg); } to { transform: translateY(0) rotate(0); } }
+@keyframes troll-egg-eat { to { transform: scale(0.2) rotate(30deg); opacity: 0; } }
+
+/* Grève générale */
+.troll-picket {
+  position: fixed; display: flex; align-items: center; justify-content: center; border-radius: 8px; cursor: not-allowed;
+  background: repeating-linear-gradient(-45deg, rgb(226 58 58 / 0.88) 0 10px, rgb(255 255 255 / 0.88) 10px 20px);
+  box-shadow: 0 0 0 2px #e23a3a; animation: title-unlock-in 0.2s ease-out;
+}
+.troll-picket span { padding: 1px 6px; border-radius: 4px; background: #1b1b24; color: #fff; font: 700 10px/1.4 var(--font-mono); letter-spacing: 0.08em; white-space: nowrap; }
+.troll-march { position: absolute; left: 0; bottom: 8px; display: flex; gap: 26px; animation: troll-march 16s linear forwards; }
+@keyframes troll-march { from { transform: translateX(100vw); } to { transform: translateX(-120%); } }
+.troll-placard { display: flex; flex-direction: column; align-items: center; animation: troll-bob 0.6s ease-in-out infinite alternate; }
+.troll-placard span { padding: 6px 10px; background: #fff7e6; color: #b3121b; border: 2px solid #1b1b24; font: 700 12px/1.2 var(--font-display); text-transform: uppercase; white-space: nowrap; transform: rotate(-3deg); }
+.troll-placard i { width: 3px; height: 34px; background: #8a6a44; }
+@keyframes troll-bob { from { transform: translateY(0) rotate(-2deg); } to { transform: translateY(-5px) rotate(2deg); } }
+
+/* Fanfare */
+html.troll-fanfare .glass-card, html.troll-fanfare .glass-panel { animation: troll-fanfare-bounce var(--beat, 600ms) ease-in-out infinite alternate; }
+html.troll-fanfare .glass-card:nth-child(2n) { animation-delay: calc(var(--beat, 600ms) / -2); }
+@keyframes troll-fanfare-bounce { from { transform: translateY(0) rotate(-0.6deg); } to { transform: translateY(-6px) rotate(0.6deg); } }
+.troll-note-rise { position: absolute; bottom: -30px; font-size: 26px; animation: troll-heart-rise linear forwards; text-shadow: 0 0 8px currentColor; }
+.troll-note-burst { position: absolute; font-size: 22px; transform: translate(-50%, -50%); animation: troll-note-burst ease-out forwards; text-shadow: 0 0 8px currentColor; }
+@keyframes troll-note-burst { from { transform: translate(-50%, -50%) scale(0.5); opacity: 1; } to { transform: translate(calc(-50% + var(--dx)), -90px) scale(1.3); opacity: 0; } }
+.troll-baton { position: absolute; right: 14px; bottom: 60px; font-size: 34px; transform-origin: 30% 90%; animation: troll-baton var(--beat, 600ms) ease-in-out infinite alternate; }
+@keyframes troll-baton { from { transform: rotate(-18deg); } to { transform: rotate(18deg); } }
+
+/* Feu d'artifice */
+.troll-fw { position: absolute; width: 0; height: 0; }
+.troll-fw-rocket { position: absolute; left: -1px; top: 0; width: 2px; height: 60px; background: linear-gradient(to bottom, var(--c), transparent); animation: troll-fw-rocket 0.5s ease-out forwards; }
+@keyframes troll-fw-rocket { from { transform: translateY(40vh); opacity: 1; } to { transform: translateY(0); opacity: 0; } }
+.troll-fw i { position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 50%; background: var(--c); box-shadow: 0 0 10px 2px var(--c); opacity: 0; animation: troll-fw 1.7s cubic-bezier(.15, .7, .4, 1) 0.45s forwards; }
+@keyframes troll-fw { 0% { transform: rotate(var(--a)) translateY(0); opacity: 1; } 60% { opacity: 1; } to { transform: rotate(var(--a)) translateY(calc(var(--r) * -1)) translateX(6px) scale(0.3); opacity: 0; } }
+.troll-patrouille { position: absolute; top: 18%; left: 0; width: min(90vw, 760px); animation: troll-jets 7s linear forwards; }
+.troll-patrouille svg { width: 100%; height: auto; transform: scaleX(-1); }
+@keyframes troll-jets { from { transform: translateX(100vw); } to { transform: translateX(-110%); } }
+
+/* Trêve */
+.troll-truce-field { position: absolute; left: 0; right: 0; bottom: 0; height: 60px; }
+.troll-truce-field .hd-bleuet { position: absolute; animation: troll-grow 1.6s cubic-bezier(.3, 1.4, .5, 1) both; transform-origin: 50% 100%; }
+@keyframes troll-grow { from { transform: scale(0); } to { transform: scale(1); } }
+.troll-truce-dove { position: absolute; top: 16%; right: 0; width: 140px; animation: hd-fly 20s linear both; }
+.troll-truce-dove svg { transform: scaleX(-1); }
+.troll-truce-banner {
+  position: absolute; top: 72px; left: 50%; transform: translateX(-50%); width: min(92vw, 440px); padding: 12px 18px; border-radius: 14px; text-align: center;
+  background: rgb(20 26 40 / 0.92); border: 1px solid rgb(111 149 255 / 0.5); color: #eef2fb; font: 15px/1.45 var(--font-body);
+  box-shadow: 0 12px 40px -12px rgb(0 0 0 / 0.7); animation: title-unlock-in 0.4s ease-out;
+}
+.troll-truce-msg { font-style: italic; color: #b9ccff; }
+.troll-truce-note { margin-top: 4px; font: 11px/1.4 var(--font-mono); color: rgb(238 242 251 / 0.55); }
+
+@media (prefers-reduced-motion: reduce) {
+  .troll-heart-rise, .troll-note-rise, .troll-love-banner, .troll-march, .troll-patrouille, .troll-truce-dove, .troll-bells-fly { display: none; }
+  html.troll-fanfare .glass-card, html.troll-fanfare .glass-panel, .troll-baton { animation: none; }
+}
+
+/* =========================================================
+   Fêtes : ce qui se laisse attraper (titres)
+   ========================================================= */
+.ev9-fly { position: fixed; left: 0; z-index: 9060; width: 66px; height: 42px; padding: 0; border: 0; background: none; cursor: pointer; animation: ev9-ltr 11s linear both; }
+.ev9-fly.ev9-rtl { animation-name: ev9-rtl; }
+.ev9-fly::before, .ev9-rocket::before, .ev9-hidden::before { content: ""; position: absolute; inset: -12px; }
+@keyframes ev9-ltr {
+  0% { transform: translate(-80px, 0); } 20% { transform: translate(19vw, -22px); } 40% { transform: translate(39vw, 16px); }
+  60% { transform: translate(59vw, -20px); } 80% { transform: translate(79vw, 14px); } 100% { transform: translate(calc(100vw + 80px), -6px); }
+}
+@keyframes ev9-rtl {
+  0% { transform: translate(calc(100vw + 80px), 0); } 20% { transform: translate(79vw, 18px); } 40% { transform: translate(59vw, -20px); }
+  60% { transform: translate(39vw, 16px); } 80% { transform: translate(19vw, -18px); } 100% { transform: translate(-80px, 6px); }
+}
+.ev9-winged { position: relative; display: block; width: 100%; height: 100%; }
+.ev9-heart { position: absolute; left: 50%; top: 50%; width: 30px; height: 28px; margin: -13px 0 0 -15px; fill: #ff4f8b; filter: drop-shadow(0 0 6px rgb(255 92 147 / 0.9)); }
+.ev9-wing { position: absolute; top: 5px; width: 22px; height: 15px; background: linear-gradient(to bottom, #fff, #ffd9e6); opacity: 0.95; }
+.ev9-wing.l { left: 1px; border-radius: 90% 10% 70% 30%; transform-origin: 100% 85%; animation: ev9-flap-l 0.26s ease-in-out infinite alternate; }
+.ev9-wing.r { right: 1px; border-radius: 10% 90% 30% 70%; transform-origin: 0 85%; animation: ev9-flap-r 0.26s ease-in-out infinite alternate; }
+@keyframes ev9-flap-l { from { transform: rotate(-28deg); } to { transform: rotate(14deg); } }
+@keyframes ev9-flap-r { from { transform: rotate(28deg); } to { transform: rotate(-14deg); } }
+.ev9-fete_musique { border-radius: 50%; background: radial-gradient(circle, rgb(255 215 106 / 0.42), rgb(255 176 46 / 0.12) 55%, transparent 72%); }
+.ev9-note { display: block; font-size: 40px; line-height: 42px; color: #ffd76a; text-shadow: 0 0 10px #ffb02e, 0 0 24px rgb(255 176 46 / 0.6); animation: ev9-note 0.9s ease-in-out infinite alternate; }
+@keyframes ev9-note { from { transform: rotate(-14deg) scale(0.95); } to { transform: rotate(14deg) scale(1.08); } }
+
+.ev9-rocket { position: fixed; bottom: -72px; z-index: 9060; width: 24px; height: 72px; margin-left: -12px; padding: 0; border: 0; background: none; cursor: pointer; animation: ev9-rise 4.2s cubic-bezier(.3, .55, .5, 1) both; }
+.ev9-rocket svg { width: 100%; height: 100%; display: block; }
+@keyframes ev9-rise { 0% { transform: translate(0, 0) rotate(-3deg); } 50% { transform: translate(10px, -45vh) rotate(3deg); } 100% { transform: translate(18px, -78vh) rotate(-2deg); } }
+.ev9-spark { position: absolute; left: 50%; bottom: -4px; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; background: #ffd76a; box-shadow: 0 0 10px 4px #ffb02e; animation: ev9-spark 0.1s linear infinite alternate; }
+@keyframes ev9-spark { from { transform: scale(0.7); opacity: 0.7; } to { transform: scale(1.3); opacity: 1; } }
+.ev9-boom { position: fixed; top: 21vh; z-index: 9060; width: 0; height: 0; pointer-events: none; margin-left: 6px; }
+.ev9-boom i { position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 50%; background: var(--c); box-shadow: 0 0 10px 2px var(--c); animation: ev9-boom 1.6s cubic-bezier(.15, .7, .4, 1) forwards; }
+@keyframes ev9-boom { 0% { transform: rotate(var(--a)) translateY(0); opacity: 1; } 60% { opacity: 1; } to { transform: rotate(var(--a)) translateY(-90px) translateX(6px) scale(0.3); opacity: 0; } }
+
+.ev9-hidden { position: fixed; z-index: 45; padding: 0; border: 0; background: none; cursor: pointer; opacity: 0.85; transition: opacity 0.2s; }
+.ev9-hidden:hover { opacity: 1; }
+.ev9-hidden svg { display: block; width: 100%; height: auto; filter: drop-shadow(0 2px 3px rgb(0 0 0 / 0.45)); animation: ev9-peek 3.4s ease-in-out infinite; }
+.ev9-hidden.ev9-poisson_avril { width: 40px; }
+.ev9-hidden.ev9-paques { width: 22px; }
+.ev9-hidden.ev9-premier_mai { width: 24px; }
+@keyframes ev9-peek { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-2px) rotate(4deg); } }
+
+.ev9-bleuet { position: fixed; z-index: 9060; width: 40px; height: 40px; margin: -20px 0 0 -20px; padding: 0; border: 0; background: none; cursor: pointer; animation: ev9-bloom 1.6s ease-out both; }
+.ev9-bleuet svg { width: 100%; height: 100%; filter: drop-shadow(0 0 8px rgb(111 149 255 / 0.7)); animation: ev9-breathe 4s ease-in-out infinite; }
+.ev9-bleuet.is-silent { opacity: 0; pointer-events: none; }
+@keyframes ev9-bloom { from { transform: scale(0) rotate(-60deg); opacity: 0; } to { transform: scale(1) rotate(0); opacity: 1; } }
+@keyframes ev9-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+.ev9-silence { position: fixed; inset: 0; z-index: 9400; display: flex; align-items: center; justify-content: center; pointer-events: none; background: rgb(6 8 16 / 0.72); animation: ev9-fade 1.2s ease-out both; }
+@keyframes ev9-fade { from { opacity: 0; } to { opacity: 1; } }
+.ev9-silence-box { text-align: center; color: #dfe6f7; padding: 0 24px; }
+.ev9-silence-flower { width: 64px; height: 64px; margin: 0 auto 14px; display: block; filter: drop-shadow(0 0 14px rgb(111 149 255 / 0.6)); }
+.ev9-silence-title { font: 600 13px/1.4 var(--font-mono); letter-spacing: 0.3em; text-transform: uppercase; color: #9db7e8; }
+.ev9-silence-count { font: 300 64px/1.1 var(--font-display); margin: 6px 0; font-variant-numeric: tabular-nums; }
+.ev9-silence-hint { font: 13px/1.4 var(--font-body); color: rgb(223 230 247 / 0.65); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ev9-wing, .ev9-note, .ev9-spark, .ev9-hidden svg, .ev9-bleuet svg { animation: none; }
+}

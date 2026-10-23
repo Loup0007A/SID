@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Sceau5 } from "@/components/sceaux/s5";
 import { HalloweenLantern } from "@/components/seasonal/Halloween";
 import { NoelGift } from "@/components/seasonal/Noel";
+import { HolidayFooter } from "@/components/seasonal/Holidays";
 
 /** Pied de page : liens légaux et données personnelles, sur toutes les pages. */
 export function SiteFooter() {
@@ -11,6 +12,7 @@ export function SiteFooter() {
         <Sceau5 />
         <HalloweenLantern />
         <NoelGift />
+        <HolidayFooter />
         <Link href="/cgu" className="hover:text-paper hover:underline">Conditions d&apos;utilisation</Link>
         <Link href="/confidentialite" className="hover:text-paper hover:underline">Confidentialité</Link>
         <Link href="/dashboard/privacy" className="hover:text-paper hover:underline">Mes données</Link>

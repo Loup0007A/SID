@@ -211,7 +211,27 @@ export type TrollOptions = {
   defi_dragon: { skin: DragonSkin; spectators: boolean; finale: DragonFinale | null; players: string[] };
   nuee: { density: number; hanging: number };
   blizzard: { intensity: number; frost: boolean };
+  coup_de_foudre: { color: LoveColor; name: boolean };
+  poisson: { count: number; fake: boolean };
+  cloches: { amount: number };
+  greve: { every: number; placards: boolean };
+  fanfare: { tempo: FanfareTempo; bounce: boolean };
+  artifice: { intensity: number; patrouille: boolean };
+  treve: { message: string };
 };
+
+export const LOVE_COLORS = {
+  rose: { label: "Rose", colors: ["#ff8ab4", "#ffc2d6", "#ff5c93"] },
+  rouge: { label: "Rouge passion", colors: ["#e2325f", "#ff3d3d", "#b3124a"] },
+  arcenciel: { label: "Arc-en-ciel", colors: ["#ff5c5c", "#ffb02e", "#ffe14d", "#5fdc8a", "#5ab8ff", "#b48aff"] },
+} as const;
+export type LoveColor = keyof typeof LOVE_COLORS;
+export const FANFARE_TEMPOS = {
+  lent: { label: "Valse (lent)", ms: 900 },
+  moyen: { label: "Marche (moyen)", ms: 600 },
+  rapide: { label: "Galop (rapide)", ms: 380 },
+} as const;
+export type FanfareTempo = keyof typeof FANFARE_TEMPOS;
 
 /** Bornes qui dépendent du niveau du titre (comme en base). */
 export const hauntMaxChance = (level: number) => Math.min(75, 35 + 10 * (Math.max(level, 1) - 1));
@@ -233,6 +253,13 @@ export function defaultOptions<P extends TrollPower>(power: P, level = 1): Troll
     defi_dragon: { skin: "demon", spectators: false, finale: null, players: [] },
     nuee: { density: 2, hanging: 3 },
     blizzard: { intensity: 2, frost: true },
+    coup_de_foudre: { color: "rose", name: true },
+    poisson: { count: 6, fake: true },
+    cloches: { amount: 2 },
+    greve: { every: 2, placards: true },
+    fanfare: { tempo: "moyen", bounce: true },
+    artifice: { intensity: 2, patrouille: true },
+    treve: { message: "" },
   };
   return all[power];
 }
@@ -312,6 +339,27 @@ export function readOptions<P extends TrollPower>(power: P, params: Record<strin
       break;
     case "blizzard":
       o = { intensity: num(p.intensity, 2, 1, 3), frost: bool(p.frost, true) };
+      break;
+    case "coup_de_foudre":
+      o = { color: pick(p.color, Object.keys(LOVE_COLORS) as LoveColor[], "rose"), name: bool(p.name, true) };
+      break;
+    case "poisson":
+      o = { count: num(p.count, 6, 2, 12), fake: bool(p.fake, true) };
+      break;
+    case "cloches":
+      o = { amount: num(p.amount, 2, 1, 3) };
+      break;
+    case "greve":
+      o = { every: num(p.every, 2, 1, 3), placards: bool(p.placards, true) };
+      break;
+    case "fanfare":
+      o = { tempo: pick(p.tempo, Object.keys(FANFARE_TEMPOS) as FanfareTempo[], "moyen"), bounce: bool(p.bounce, true) };
+      break;
+    case "artifice":
+      o = { intensity: num(p.intensity, 2, 1, 3), patrouille: bool(p.patrouille, true) };
+      break;
+    case "treve":
+      o = { message: txt(p.message, 60) };
       break;
     default:
       o = { ...d, ...p };

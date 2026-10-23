@@ -9,6 +9,7 @@ import { DragonArena } from "@/components/trolls/DragonArena";
 import { readOptions } from "@/lib/trollOptions";
 import { CalcGate, ContractGate, Haunt404 } from "@/components/trolls/GateEffects";
 import { BatSwarm, Blizzard } from "@/components/trolls/EventEffects";
+import { AprilFools, EasterBells, Fanfare, Fireworks, GeneralStrike, LoveStorm, Truce } from "@/components/trolls/HolidayEffects";
 import { AbyssEffect, Bailiff, LinkScramble, MirrorEffect, PartyMode, Rationing, RewriteEffect } from "@/components/trolls/AmbientEffects";
 
 const CHIP_TEXT: Partial<Record<ActiveTroll["power"], string>> = {
@@ -26,6 +27,13 @@ const CHIP_TEXT: Partial<Record<ActiveTroll["power"], string>> = {
   defi_dragon: "un dragon te défie",
   nuee: "des chauves-souris partout",
   blizzard: "tempête de neige",
+  coup_de_foudre: "des cœurs partout",
+  poisson: "des poissons collés partout",
+  cloches: "il pleut des œufs",
+  greve: "les boutons sont en grève",
+  fanfare: "tout danse",
+  artifice: "le ciel s'embrase",
+  treve: "aucune autre farce ne peut te viser",
 };
 
 function chipText(t: ActiveTroll) {
@@ -143,6 +151,13 @@ export function TrollLayer({ nickname }: { nickname: string }) {
       {has("rationnement") && <Rationing troll={has("rationnement")!} />}
       {has("nuee") && <BatSwarm troll={has("nuee")!} />}
       {has("blizzard") && <Blizzard troll={has("blizzard")!} />}
+      {has("coup_de_foudre") && <LoveStorm troll={has("coup_de_foudre")!} />}
+      {has("poisson") && <AprilFools troll={has("poisson")!} />}
+      {has("cloches") && <EasterBells troll={has("cloches")!} />}
+      {gated && has("greve") && <GeneralStrike troll={has("greve")!} />}
+      {has("fanfare") && <Fanfare troll={has("fanfare")!} />}
+      {has("artifice") && <Fireworks troll={has("artifice")!} />}
+      {has("treve") && <Truce troll={has("treve")!} />}
 
       {active.filter((t) => t.power !== "defi_dragon").length > 0 && (
         <div data-troll-ui className="troll-chip fixed bottom-3 left-3 z-[9450] max-w-[calc(100vw-1.5rem)] space-y-1">
