@@ -34,6 +34,7 @@ const CACHET = ["cachet.json", "src/lib/cachet.js"];
 const SQL = [
   ["sql/0061_titres_trolls.sql", "supabase/migrations/0061_titres_trolls.sql"],
   ["sql/0065_titres_evenement.sql", "supabase/migrations/0065_titres_evenement.sql"],
+  ["sql/0066_farces_remise_a_niveau.sql", "supabase/migrations/0066_farces_remise_a_niveau.sql"],
 ];
 
 function cle() {
@@ -166,6 +167,28 @@ async function brouiller(source, graine) {
   return `${client ? '"use client";\n' : ""}// Code scellé : voir scripts/scelle/scelle.mjs.\n/* eslint-disable */\n// @ts-nocheck\n${sortie}\n`;
 }
 
+// ---------------------------------------------------------------- Tailwind
+// Tailwind ne génère que les classes qu'il lit dans src/ : celles des
+// composants brouillés seraient perdues (fond transparent, positions…). On
+// les recopie, triées, dans un fichier qu'il lit.
+function classesUtilisees(sources) {
+  const out = new Set();
+  const prendre = (txt) =>
+    txt
+      .replace(/\$\{[^}]*\}/g, " ")
+      .split(/\s+/)
+      .filter((t) => /^[!-]?[a-z0-9[][a-z0-9:\-\[\]#/.%_(),']*$/i.test(t) && t.length > 1)
+      .forEach((t) => out.add(t));
+  for (const src of sources) {
+    for (const m of src.matchAll(/className=(?:"([^"]*)"|\{`([^`]*)`\}|\{([^}]*)\})/g)) {
+      if (m[1] != null) prendre(m[1]);
+      else if (m[2] != null) prendre(m[2]);
+      else for (const lit of (m[3] ?? "").matchAll(/"([^"]*)"|'([^']*)'|`([^`]*)`/g)) prendre(lit[1] ?? lit[2] ?? lit[3] ?? "");
+    }
+  }
+  return [...out].sort();
+}
+
 // ---------------------------------------------------------------- commandes
 const cmd = process.argv[2];
 if (cmd === "ouvrir") {
@@ -173,11 +196,20 @@ if (cmd === "ouvrir") {
 } else if (cmd === "sceller") {
   const phrase = cle();
   if (!existsSync(LISIBLE)) throw new Error(".scelle/ absent : lance d'abord « ouvrir »");
+  const sources = [];
   for (const [src, dst] of COMPOSANTS) {
     mkdirSync(dirname(join(SITE, dst)), { recursive: true });
-    writeFileSync(join(SITE, dst), await brouiller(readFileSync(join(LISIBLE, src), "utf8"), dst));
+    const code = readFileSync(join(LISIBLE, src), "utf8");
+    sources.push(code);
+    writeFileSync(join(SITE, dst), await brouiller(code, dst));
     console.log("brouillé :", dst);
   }
+  const classes = classesUtilisees(sources);
+  writeFileSync(
+    join(SITE, "src/components/sceaux/classes.ts"),
+    `// Classes Tailwind des composants scellés (généré par scripts/scelle/scelle.mjs) :\n// sans ce fichier, Tailwind ne les voit pas dans le code brouillé.\nexport const CLASSES_SCELLEES = ${JSON.stringify(classes.join(" "))};\n`
+  );
+  console.log(`classes Tailwind : ${classes.length}`);
   const cachet = JSON.parse(readFileSync(join(LISIBLE, CACHET[0]), "utf8"));
   writeFileSync(
     join(SITE, CACHET[1]),

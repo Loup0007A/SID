@@ -131,18 +131,80 @@ export function AbyssEffect({ troll }: { troll: ActiveTroll }) {
   const o = readOptions("abysses", troll.params, troll.level);
   useEffect(() => {
     document.documentElement.classList.add("troll-abyss");
+    const sp = ABYSS_SPEEDS[o.speed];
+    const sinkPerMs = sp.px / sp.ms;
+    // Tout passe par une seule boucle d'animation : la page coule en continu
+    // (pas par à-coups), et sur téléphone le doigt inversé garde de l'élan.
+    let raf = 0;
+    let last = performance.now();
+    let acc = 0;
+    let touching = false;
+    let pauseUntil = 0;
+    let vel = 0; // px/ms, élan après un geste inversé
+    let lastY = 0;
+    let lastT = 0;
+    const frame = (t: number) => {
+      const dt = Math.min(64, t - last);
+      last = t;
+      if (!touching && vel !== 0) {
+        acc += vel * dt;
+        vel *= Math.pow(0.94, dt / 16);
+        if (Math.abs(vel) < 0.01) vel = 0;
+      }
+      if (!touching && vel === 0 && t > pauseUntil) acc += sinkPerMs * dt;
+      const step = Math.trunc(acc);
+      if (step) {
+        window.scrollBy(0, step);
+        acc -= step;
+      }
+      raf = requestAnimationFrame(frame);
+    };
+    raf = requestAnimationFrame(frame);
+
     const onWheel = (e: WheelEvent) => {
       if (inTrollUi(e.target)) return;
       e.preventDefault();
       window.scrollBy({ top: -e.deltaY, left: 0 });
+      pauseUntil = performance.now() + 250;
+    };
+    const onTouchStart = (e: TouchEvent) => {
+      touching = true;
+      vel = 0;
+      lastY = e.touches[0]?.clientY ?? 0;
+      lastT = performance.now();
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      if (!o.invert || inTrollUi(e.target)) return;
+      const y = e.touches[0]?.clientY;
+      if (y == null) return;
+      e.preventDefault();
+      const now = performance.now();
+      const dy = y - lastY; // doigt vers le bas = la page descend (inversé)
+      acc += dy;
+      const v = dy / Math.max(1, now - lastT);
+      vel = vel * 0.6 + v * 0.4;
+      lastY = y;
+      lastT = now;
+    };
+    const onTouchEnd = () => {
+      touching = false;
+      // Sans inversion, on laisse finir l'élan natif avant de recouler.
+      pauseUntil = performance.now() + (o.invert ? 300 : 1200);
+      if (!o.invert) vel = 0;
     };
     if (o.invert) window.addEventListener("wheel", onWheel, { passive: false });
-    const sp = ABYSS_SPEEDS[o.speed];
-    const sink = setInterval(() => window.scrollBy(0, sp.px), sp.ms);
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: false });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+    window.addEventListener("touchcancel", onTouchEnd, { passive: true });
     return () => {
       document.documentElement.classList.remove("troll-abyss");
+      cancelAnimationFrame(raf);
       window.removeEventListener("wheel", onWheel);
-      clearInterval(sink);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
+      window.removeEventListener("touchcancel", onTouchEnd);
     };
   }, [o.invert, o.speed]);
   return (

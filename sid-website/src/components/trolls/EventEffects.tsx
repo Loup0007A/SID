@@ -43,40 +43,62 @@ export function SnowLayers({ intensity, className = "" }: { intensity: number; c
    chauves-souris accrochées en haut de la page qu'il faut chasser.
    --------------------------------------------------------------- */
 
+// Une chauve-souris toutes les « gap » secondes en moyenne (au hasard), parfois en petit groupe.
 const SWARM = [
-  { every: 24, size: 8 },
-  { every: 16, size: 14 },
-  { every: 10, size: 22 },
+  { gap: 2.6, max: 6, group: 0.12 },
+  { gap: 1.3, max: 12, group: 0.2 },
+  { gap: 0.6, max: 22, group: 0.3 },
 ];
 
-type Hanger = { id: number; x: number; y: number; leaving: boolean };
+type Hanger = { id: number; x: number; y: number; away: number; leaving: boolean };
+type Flyer = { id: number; ltr: boolean; top: number; size: number; t: number; amp: number; wob: number; delay: number };
+
+const rand = (a: number, b: number) => a + Math.random() * (b - a);
 
 export function BatSwarm({ troll }: { troll: ActiveTroll }) {
   const o = readOptions("nuee", troll.params, troll.level);
   const spec = SWARM[o.density - 1] ?? SWARM[1];
-  const [wave, setWave] = useState(0);
+  const [flyers, setFlyers] = useState<Flyer[]>([]);
   const [hangers, setHangers] = useState<Hanger[]>([]);
   const next = useRef(1);
 
-  // Une nuée toutes les N secondes.
+  // Apparitions au hasard (intervalles exponentiels), de n'importe quel côté.
   useEffect(() => {
-    setWave(1);
-    const t = setInterval(() => setWave((w) => w + 1), spec.every * 1000);
-    return () => clearInterval(t);
-  }, [spec.every]);
+    let timer: ReturnType<typeof setTimeout>;
+    const one = (delay = 0): Flyer => ({
+      id: next.current++,
+      ltr: Math.random() < 0.5,
+      top: rand(4, 88),
+      size: rand(30, 66),
+      t: rand(3.2, 7.5),
+      amp: rand(10, 60),
+      wob: rand(0.5, 1.4),
+      delay,
+    });
+    const spawn = () => {
+      const n = Math.random() < spec.group ? 2 + Math.floor(Math.random() * 3) : 1;
+      setFlyers((fs) => (fs.length >= spec.max ? fs : [...fs, ...Array.from({ length: n }, (_, i) => one(i * rand(0.1, 0.35)))]));
+      timer = setTimeout(spawn, -Math.log(1 - Math.random()) * spec.gap * 1000 + 120);
+    };
+    timer = setTimeout(spawn, rand(200, 1200));
+    return () => clearTimeout(timer);
+  }, [spec.gap, spec.max, spec.group]);
 
   // Les chauves-souris accrochées : une chassée revient s'accrocher un peu plus tard.
   useEffect(() => {
-    const spawn = (): Hanger => ({ id: next.current++, x: 6 + Math.random() * 86, y: 2 + Math.random() * 16, leaving: false });
+    const spawn = (): Hanger => ({ id: next.current++, x: rand(4, 92), y: rand(1, 22), away: Math.random() < 0.5 ? -40 : 40, leaving: false });
     setHangers(Array.from({ length: o.hanging }, spawn));
     if (!o.hanging) return;
-    const t = setInterval(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    const back = () => {
       setHangers((hs) => {
         const staying = hs.filter((h) => !h.leaving);
         return staying.length < o.hanging ? [...staying, spawn()] : staying;
       });
-    }, 25_000);
-    return () => clearInterval(t);
+      timer = setTimeout(back, rand(12_000, 35_000));
+    };
+    timer = setTimeout(back, rand(12_000, 35_000));
+    return () => clearTimeout(timer);
   }, [o.hanging]);
 
   function shoo(id: number) {
@@ -86,22 +108,18 @@ export function BatSwarm({ troll }: { troll: ActiveTroll }) {
 
   return (
     <div data-troll-ui className="pointer-events-none fixed inset-0 z-[9050] overflow-hidden">
-      {wave > 0 &&
-        Array.from({ length: spec.size }, (_, i) => (
-          <BatShape
-            key={`${wave}-${i}`}
-            className="troll-bat-fly"
-            style={
-              {
-                top: `${8 + ((i * 37 + wave * 13) % 70)}%`,
-                "--d": `${(i % 7) * 0.18}s`,
-                "--s": 0.55 + ((i * 7) % 5) * 0.12,
-                "--y": `${((i * 29) % 60) - 30}px`,
-                "--t": `${4.5 + (i % 4) * 0.6}s`,
-              } as React.CSSProperties
-            }
-          />
-        ))}
+      {flyers.map((f) => (
+        <span
+          key={f.id}
+          className={`troll-bat-path ${f.ltr ? "is-ltr" : ""}`}
+          style={{ top: `${f.top}%`, width: f.size, animationDuration: `${f.t}s`, animationDelay: `${f.delay}s` } as React.CSSProperties}
+          onAnimationEnd={(e) => {
+            if (e.target === e.currentTarget) setFlyers((fs) => fs.filter((x) => x.id !== f.id));
+          }}
+        >
+          <BatShape className="troll-bat-wobble" style={{ "--amp": `${f.amp}px`, animationDuration: `${f.wob}s` } as React.CSSProperties} />
+        </span>
+      ))}
       {hangers.map((h) => (
         <button
           key={h.id}
@@ -109,7 +127,7 @@ export function BatSwarm({ troll }: { troll: ActiveTroll }) {
           aria-label="Chasser la chauve-souris"
           onClick={() => shoo(h.id)}
           className={`troll-bat-hang pointer-events-auto ${h.leaving ? "is-leaving" : ""}`}
-          style={{ left: `${h.x}%`, top: `${h.y}vh` }}
+          style={{ left: `${h.x}%`, top: `${h.y}vh`, "--away": `${h.away}vw` } as React.CSSProperties}
         >
           <BatShape folded={!h.leaving} />
         </button>

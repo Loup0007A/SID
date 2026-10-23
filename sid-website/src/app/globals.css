@@ -1233,6 +1233,15 @@ html.decor-noel:not(.troll-abyss) body {
   90% { opacity: 1; }
   100% { opacity: 0; transform: translate(-120vw, calc(var(--y) - 30px)) scale(var(--s)); }
 }
+/* Nuée : chaque chauve-souris a son côté, sa hauteur, sa vitesse et son vol. */
+.troll-bat-path { position: absolute; left: 0; display: block; animation: troll-bat-rtl linear both; will-change: transform; }
+.troll-bat-path.is-ltr { animation-name: troll-bat-ltr; }
+.troll-bat-path.is-ltr svg { transform: scaleX(-1); }
+.troll-bat-path svg { display: block; width: 100%; height: auto; }
+@keyframes troll-bat-rtl { from { transform: translateX(calc(100vw + 20px)); } to { transform: translateX(-90px); } }
+@keyframes troll-bat-ltr { from { transform: translateX(-90px); } to { transform: translateX(calc(100vw + 20px)); } }
+.troll-bat-wobble { animation: troll-bat-wobble ease-in-out infinite alternate; }
+@keyframes troll-bat-wobble { from { translate: 0 calc(var(--amp) * -1); } to { translate: 0 var(--amp); } }
 .troll-bat-hang {
   position: absolute; width: 46px; height: 30px; padding: 0; border: 0; background: none; cursor: pointer;
   transform-origin: 50% 0; animation: troll-bat-sway 2.8s ease-in-out infinite alternate;
@@ -1324,7 +1333,7 @@ html.decor-noel:not(.troll-abyss) body {
 
 @media (prefers-reduced-motion: reduce) {
   .troll-snow-layer, .troll-bat-hang, .ev-bat-wing { animation: none !important; }
-  .troll-bat-fly { display: none; }
+  .troll-bat-fly, .troll-bat-path { display: none; }
 }
 
 /* Créatures d'événement qu'on peut attraper. */
