@@ -11,6 +11,7 @@ import { inputClass, labelClass } from "@/lib/ui";
 import { CONTRACT_TYPES } from "@/lib/contractTypes";
 import { findShortestPath } from "@/lib/pathfinding";
 import { formatStat, unmetRequirements, type MemberCharacteristics } from "@/lib/questRequirements";
+import { SidIcon } from "@/components/icons/SidIcon";
 
 export default function QuestsPage() {
   const supabase = createClient();
@@ -343,7 +344,7 @@ export default function QuestsPage() {
 
       {isTraveling && (
         <p className="glass-panel rounded-lg px-4 py-2 font-mono text-xs uppercase text-blue-light">
-          🧭 Tu es actuellement en déplacement — suis le compte à rebours sur la page{" "}
+          <SidIcon name="compass" /> Tu es actuellement en déplacement — suis le compte à rebours sur la page{" "}
           <a href="/dashboard/map" className="underline">Carte</a>.
         </p>
       )}
@@ -488,15 +489,15 @@ export default function QuestsPage() {
                 <p className="text-center font-mono text-[10px] uppercase text-paper/50">Financée par le S.I.D.</p>
               )}
               <p className="text-center font-mono text-[10px] uppercase text-blue-light">
-                🏅 {q.reputation_reward != null ? `+${q.reputation_reward} de renommée` : "Renommée : calcul automatique selon ton niveau"}
+                <SidIcon name="medal" /> {q.reputation_reward != null ? `+${q.reputation_reward} de renommée` : "Renommée : calcul automatique selon ton niveau"}
               </p>
 
               {questPlace && (
                 <div className="glass-card space-y-1 p-3 text-center">
-                  <p className="font-mono text-xs uppercase text-blue-light">🗺️ {questPlace.name}</p>
+                  <p className="font-mono text-xs uppercase text-blue-light"><SidIcon name="map" /> {questPlace.name}</p>
                   {isTravelingToThisQuest ? (
                     <p className="rounded border border-blue bg-blue/10 py-1 font-mono text-[10px] uppercase text-blue-light">
-                      🧭 En trajet vers cette quête —{" "}
+                      <SidIcon name="compass" /> En trajet vers cette quête —{" "}
                       <a href="/dashboard/map" className="underline">
                         voir le compte à rebours
                       </a>
@@ -553,7 +554,7 @@ export default function QuestsPage() {
 
               {alreadyIn && (
                 <p className="rounded-lg w-full border border-blue/60 py-1 text-center font-mono text-xs uppercase text-blue-light">
-                  {isTravelingToThisQuest ? "🧭 En trajet — Déjà prise" : "Déjà prise"}
+                  {isTravelingToThisQuest ? <><SidIcon name="compass" /> En trajet — Déjà prise</> : "Déjà prise"}
                 </p>
               )}
 

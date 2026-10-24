@@ -4,7 +4,9 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { daysUntil, useSiteDecor } from "@/components/seasonal/siteDecor";
 import type { EventKey } from "@/lib/events";
-import { Bells, Bleuet, Dove, Egg, HeartPath, MuguetSprig, PaperFish, Patrouille } from "@/components/seasonal/drawings";
+import { Bells, Bleuet, BleuetStem, Dove, Egg, HeartPath, MuguetSprig, PaperFish, Patrouille, Pigeon } from "@/components/seasonal/drawings";
+import { Glyph } from "@/components/icons/SidIcon";
+import { Mini, MiniArt, type MiniKind } from "./minis";
 import { ArmisticeScene, AvrilScene, JuilletScene, MuguetScene, MusiqueScene, PaquesScene, ValentinScene } from "./scenes";
 
 export { Bells, Bleuet, Dove, Egg, HeartPath, MuguetSprig, PaperFish, Patrouille };
@@ -40,7 +42,7 @@ function useHoliday(): HolidayKey | null {
    Particules (cœurs, pétales, notes, bulles…)
    --------------------------------------------------------------- */
 
-type ParticleSpec = { glyphs: string[]; count: number; mode: "rise" | "fall" | "drift"; className?: string };
+type ParticleSpec = { glyphs: MiniKind[]; count: number; mode: "rise" | "fall" | "drift"; className?: string };
 
 function Particles({ spec }: { spec: ParticleSpec }) {
   const [few, setFew] = useState(false);
@@ -66,7 +68,7 @@ function Particles({ spec }: { spec: ParticleSpec }) {
     <div className={`hd-particles hd-${spec.mode} ${spec.className ?? ""}`} aria-hidden>
       {parts.map((p) => (
         <span key={p.i} className="hd-p" style={p.style}>
-          {p.glyph}
+          <Mini kind={p.glyph} />
         </span>
       ))}
     </div>
@@ -82,7 +84,7 @@ function ValentinBack() {
     <>
       <div className="hd-moon hd-moon-rose" />
       <ValentinScene />
-      <Particles spec={{ glyphs: ["♥", "♥", "❤", "♡"], count: 14, mode: "rise", className: "hd-hearts" }} />
+      <Particles spec={{ glyphs: ["heart", "heart", "heart", "heartLine"], count: 14, mode: "rise", className: "hd-hearts" }} />
     </>
   );
 }
@@ -92,7 +94,7 @@ function AvrilBack() {
   return (
     <>
       <AvrilScene />
-      <Particles spec={{ glyphs: ["◦", "°", "○"], count: 16, mode: "rise", className: "hd-bubbles" }} />
+      <Particles spec={{ glyphs: ["bubble", "bubble", "bubble"], count: 16, mode: "rise", className: "hd-bubbles" }} />
       <div className="hd-swim" aria-hidden>
         {fish.map((c, i) => (
           <PaperFish key={i} color={c} className={i % 2 ? "is-rtl" : ""} style={{ top: `${18 + i * 14}%`, animationDelay: `${-i * 7}s`, animationDuration: `${26 + i * 5}s` }} />
@@ -106,7 +108,7 @@ function PaquesBack() {
   return (
     <>
       <PaquesScene />
-      <Particles spec={{ glyphs: ["❀", "✿", "•", "❁"], count: 14, mode: "fall", className: "hd-petals" }} />
+      <Particles spec={{ glyphs: ["blossom", "sakura", "petal", "blossom"], count: 14, mode: "fall", className: "hd-petals" }} />
       <div className="hd-nest" aria-hidden>
         {[0, 1, 2, 3].map((i) => (
           <Egg key={i} hue={i * 2 + 1} style={{ left: `${[9, 31, 74, 91][i]}%`, transform: `rotate(${[-14, 10, -6, 16][i]}deg)` }} />
@@ -120,7 +122,7 @@ function MuguetBack() {
   return (
     <>
       <MuguetScene />
-      <Particles spec={{ glyphs: ["•", "·", "•"], count: 14, mode: "fall", className: "hd-white-petals" }} />
+      <Particles spec={{ glyphs: ["petal", "bell", "petal"], count: 14, mode: "fall", className: "hd-white-petals" }} />
       <div className="hd-muguet-row" aria-hidden>
         {Array.from({ length: 9 }, (_, i) => (
           <MuguetSprig key={i} style={{ left: `${2 + i * 12 + rnd(i, 2) * 4}%`, height: `${54 + rnd(i, 3) * 26}px`, transform: `scaleX(${i % 2 ? -1 : 1})` }} />
@@ -139,7 +141,7 @@ function MusiqueBack() {
         <i className="hd-spot hd-spot-c" />
       </div>
       <MusiqueScene />
-      <Particles spec={{ glyphs: ["♪", "♫", "♬", "♩"], count: 14, mode: "rise", className: "hd-notes" }} />
+      <Particles spec={{ glyphs: ["note", "notes", "noteBeam", "noteQuarter"], count: 14, mode: "rise", className: "hd-notes" }} />
     </>
   );
 }
@@ -154,7 +156,7 @@ function ArmisticeBack() {
       <ArmisticeScene />
       <div className="hd-bleuets" aria-hidden>
         {Array.from({ length: 22 }, (_, i) => (
-          <Bleuet key={i} style={{ left: `${(i * 4.6 + rnd(i, 1) * 3).toFixed(1)}%`, bottom: `${(rnd(i, 2) * 30).toFixed(0)}px`, width: `${(16 + rnd(i, 3) * 14).toFixed(0)}px` }} />
+          <BleuetStem key={i} bud={i % 3 === 0} style={{ left: `${(i * 4.6 + rnd(i, 1) * 3).toFixed(1)}%`, bottom: `${(-8 + rnd(i, 2) * 14).toFixed(0)}px`, width: `${(18 + rnd(i, 3) * 14).toFixed(0)}px`, transform: `scaleX(${i % 2 ? -1 : 1}) rotate(${((rnd(i, 4) - 0.5) * 10).toFixed(1)}deg)` }} />
         ))}
       </div>
     </>
@@ -181,26 +183,12 @@ function Cupid() {
       </g>
       <g className="hd-trail">
         {[0, 1, 2, 3, 4].map((i) => (
-          <text key={i} x={10 - i * 9} y={40 + (i % 2) * 8} style={{ animationDelay: `${i * 0.15}s` }}>
-            ♥
-          </text>
+          <g key={i} transform={`translate(${10 - i * 9} ${36 + (i % 2) * 8})`}>
+            <g className="hd-trail-h" style={{ animationDelay: `${i * 0.15}s` }}>
+              <MiniArt kind="heart" size={9 - i} />
+            </g>
+          </g>
         ))}
-      </g>
-    </svg>
-  );
-}
-
-function Pigeon() {
-  return (
-    <svg viewBox="0 0 110 60" className="hd-fly-art" aria-hidden>
-      <g className="hd-pigeon">
-        <path d="M30 34 C40 24 60 22 74 28 C80 22 88 22 92 26 C86 28 84 32 84 36 C74 46 48 46 30 34 Z" />
-        <path className="hd-wing" d="M50 30 C46 12 60 4 72 10 C64 16 62 24 62 30 Z" />
-        <path d="M30 34 L16 30 L22 38 L14 42 L32 40 Z" />
-        <circle cx="86" cy="27" r="1.2" className="hd-eye" />
-      </g>
-      <g transform="translate(90 26) rotate(30) scale(0.45)">
-        <MuguetSprig />
       </g>
     </svg>
   );
@@ -209,10 +197,12 @@ function Pigeon() {
 function NoteStream() {
   return (
     <svg viewBox="0 0 160 60" className="hd-fly-art" aria-hidden>
-      {["♪", "♫", "♬", "♪", "♩", "♫"].map((g, i) => (
-        <text key={i} x={i * 26 + 6} y={30 + Math.sin(i * 1.3) * 16} className="hd-flying-note" style={{ animationDelay: `${i * 0.12}s` }}>
-          {g}
-        </text>
+      {(["note", "notes", "noteBeam", "note", "noteQuarter", "notes"] as MiniKind[]).map((g, i) => (
+        <g key={i} transform={`translate(${i * 26 + 14} ${(22 + Math.sin(i * 1.3) * 16).toFixed(1)})`}>
+          <g className="hd-flying-note" style={{ animationDelay: `${i * 0.12}s` }}>
+            <MiniArt kind={g} size={26} />
+          </g>
+        </g>
       ))}
     </svg>
   );
@@ -307,7 +297,7 @@ const SCENES: Record<HolidayKey, Scene> = {
     footer: {
       label: "Lettre d'amour",
       lines: ["Roses are red, le S.I.D. est bleu.", "Tu es le zéni de ma vie.", "Quelqu'un pense à toi… peut-être le dragon.", "Cupidon a raté sa cible. Il visait la banque.", "Un cœur offert, zéro zéni dépensé."],
-      burst: ["💗", "💖", "💘", "💕", "💗"],
+      burst: ["💗", "💘", "💗", "💘", "💗"],
     },
   },
   poisson_avril: {
@@ -363,7 +353,7 @@ const SCENES: Record<HolidayKey, Scene> = {
     footer: {
       label: "Guitare",
       lines: ["Fais du bruit !", "Le dragon joue de la batterie ce soir.", "Ce soir, la banque donne un concert de pièces.", "Un, deux, un, deux… le S.I.D. est prêt !"],
-      burst: ["♪", "♫", "🎶", "♬", "♪"],
+      burst: ["🎵", "🎶", "🎵", "🎶", "🎵"],
     },
   },
   quatorze_juillet: {
@@ -465,7 +455,7 @@ type GarlandKind = "hearts" | "fish" | "eggs" | "muguet" | "notes" | "bunting" |
 function GarlandItem({ kind, i }: { kind: GarlandKind; i: number }) {
   switch (kind) {
     case "hearts":
-      return <path d="M0 13 C-5 9 -7.5 6 -7.5 3.5 C-7.5 1.5 -6 0 -4 0 C-2.4 0 -1 1 0 2.4 C1 1 2.4 0 4 0 C6 0 7.5 1.5 7.5 3.5 C7.5 6 5 9 0 13 Z" className={`hd-g-heart hd-g-c${i % 3}`} transform="translate(0 4)" />;
+      return <MiniArt kind="heart" size={15} y={10} className={`hd-g-heart hd-g-c${i % 3}`} />;
     case "fish":
       return (
         <g transform={`translate(0 6) rotate(${i % 2 ? 8 : -8})`}>
@@ -479,14 +469,12 @@ function GarlandItem({ kind, i }: { kind: GarlandKind; i: number }) {
       return (
         <g transform="translate(0 2)">
           <path d="M0 0 Q2 6 0 12" fill="none" stroke="#4f9a5d" strokeWidth="1" />
-          <path d="M0 12 Q-3 13 -3.4 16.4 L-2.2 15.6 L-1 16.6 L0 15.8 L1 16.6 L2.2 15.6 L3.4 16.4 Q3 13 0 12 Z" className="hd-g-bell" />
+          <MiniArt kind="bell" size={9} y={15} color="#fbfff7" className="hd-g-bell" />
         </g>
       );
     case "notes":
       return (
-        <text y="16" textAnchor="middle" className={`hd-g-note hd-g-c${i % 3}`}>
-          {["♪", "♫", "♬"][i % 3]}
-        </text>
+        <MiniArt kind={(["note", "notes", "noteBeam"] as MiniKind[])[i % 3]} size={15} y={10} className={`hd-g-note hd-g-c${i % 3}`} />
       );
     case "bunting":
       return <path d="M-7 1 L7 1 L0 15 Z" className={`hd-g-flag hd-g-f${i % 3}`} />;
@@ -580,7 +568,7 @@ export function HolidayFooter() {
         <span key={burst} className="nl-sparkles" aria-hidden>
           {f.burst.map((c, i) => (
             <span key={i} style={{ "--x": `${(i - 2) * 16}px`, "--r": `${(i - 2) * 60}deg`, animationDelay: `${i * 40}ms` } as React.CSSProperties}>
-              {c}
+              <Glyph e={c} size="1.2em" />
             </span>
           ))}
         </span>

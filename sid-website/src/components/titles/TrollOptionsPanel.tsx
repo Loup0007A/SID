@@ -46,6 +46,8 @@ import {
   type RewriteTheme,
   type TrollOptions,
 } from "@/lib/trollOptions";
+import { SidIcon, Glyph } from "@/components/icons/SidIcon";
+import { Mini, type MiniKind } from "@/components/seasonal/minis";
 
 /* ---------------------------------------------------------------
    Briques
@@ -139,7 +141,7 @@ function TextInput({ value, onChange, max, placeholder }: { value: string; onCha
 function Preview({ who, children, className = "" }: { who: string; children: ReactNode; className?: string }) {
   return (
     <div className="space-y-1.5">
-      <p className="font-mono text-[11px] uppercase tracking-wide text-paper/50">👁 Aperçu — ce que verra {who}</p>
+      <p className="font-mono text-[11px] uppercase tracking-wide text-paper/50"><SidIcon name="eye" /> Aperçu — ce que verra {who}</p>
       <div className={`troll-preview relative overflow-hidden rounded-xl border border-white/10 ${className}`}>{children}</div>
     </div>
   );
@@ -191,7 +193,7 @@ function CalcPanel({ value: o, onChange, ctx }: Props<"calcul">) {
       </div>
       <Preview who={ctx.target} className="bg-[#0d0f16]">
         <div className="space-y-3 p-4 text-center">
-          <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#ffe95c]">⚡ Contrôle de vivacité</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-[#ffe95c]"><SidIcon name="bolt" /> Contrôle de vivacité</p>
           <div className="flex justify-center gap-1.5">
             {Array.from({ length: o.count }, (_, i) => (
               <span key={i} className={`h-2 w-8 rounded-full ${i === 0 ? "bg-[#ffe95c]" : "bg-white/15"}`} />
@@ -219,7 +221,7 @@ function HauntPanel({ value: o, onChange, ctx }: Props<"hantise">) {
     <div className="grid gap-4 md:grid-cols-2">
       <div className="space-y-4">
         <Field label="Créature">
-          <Seg value={o.creature} onChange={(creature) => set({ creature: creature as HauntCreature })} accent={ctx.accent} options={(Object.keys(HAUNT_CREATURES) as HauntCreature[]).map((k) => ({ v: k, label: `${HAUNT_CREATURES[k].emoji} ${HAUNT_CREATURES[k].label}` }))} />
+          <Seg value={o.creature} onChange={(creature) => set({ creature: creature as HauntCreature })} accent={ctx.accent} options={(Object.keys(HAUNT_CREATURES) as HauntCreature[]).map((k) => ({ v: k, label: <><Glyph e={HAUNT_CREATURES[k].emoji} /> {HAUNT_CREATURES[k].label}</> }))} />
         </Field>
         <Field label="Pages hantées" hint={`Jusqu'à ${maxC} % au niveau ${ctx.level} du titre.`}>
           <Slider value={Math.min(o.chance, maxC)} min={10} max={maxC} step={5} onChange={(chance) => set({ chance })} accent={ctx.accent} unit=" %" />
@@ -237,9 +239,9 @@ function HauntPanel({ value: o, onChange, ctx }: Props<"hantise">) {
             <p className="troll-glitch-text font-mono text-[10px] uppercase tracking-[0.3em] text-red">Erreur 404</p>
             <p className="font-display text-lg uppercase">Dossier introuvable</p>
             <p className="font-body text-[11px] text-paper/70">{o.message || "Cette page n'existe pas…"}</p>
-            <p className="font-mono text-[10px] text-paper/50">Attrape {c.emoji} de {ctx.me} : 0 / {Math.min(o.catches, maxK)}</p>
+            <p className="font-mono text-[10px] text-paper/50">Attrape <Glyph e={c.emoji} /> de {ctx.me} : 0 / {Math.min(o.catches, maxK)}</p>
           </div>
-          <span className="troll-preview-haunt absolute text-4xl">{c.emoji}</span>
+          <span className="troll-preview-haunt absolute text-4xl"><Glyph e={c.emoji} size="1em" /></span>
         </div>
       </Preview>
     </div>
@@ -254,7 +256,7 @@ function PartyPanel({ value: o, onChange, ctx, everyone }: Props<"fete"> & { eve
     <div className="grid gap-4 md:grid-cols-2">
       <div className="space-y-4">
         <Field label="Thème">
-          <Seg value={o.theme} onChange={(t) => set({ theme: t as PartyTheme })} accent={ctx.accent} options={(Object.keys(PARTY_THEMES) as PartyTheme[]).map((k) => ({ v: k, label: `${PARTY_THEMES[k].emoji} ${PARTY_THEMES[k].label}` }))} />
+          <Seg value={o.theme} onChange={(t) => set({ theme: t as PartyTheme })} accent={ctx.accent} options={(Object.keys(PARTY_THEMES) as PartyTheme[]).map((k) => ({ v: k, label: <><Glyph e={PARTY_THEMES[k].emoji} /> {PARTY_THEMES[k].label}</> }))} />
         </Field>
         <Field label="Bannière (facultatif)">
           <TextInput value={o.message} onChange={(message) => set({ message })} max={80} placeholder={theme.banner(everyone ? "tout le monde" : ctx.target)} />
@@ -268,14 +270,14 @@ function PartyPanel({ value: o, onChange, ctx, everyone }: Props<"fete"> & { eve
       </div>
       <Preview who={everyone ? "tout le S.I.D." : ctx.target} className="bg-ink" key={o.theme + o.density}>
         <div className="py-1 text-center font-display text-[11px] uppercase tracking-wider text-ink" style={{ backgroundImage: `linear-gradient(90deg, ${[...theme.colors, theme.colors[0]].join(", ")})` }}>
-          {theme.emoji} {banner} {theme.emoji}
+          <Glyph e={theme.emoji} /> {banner} <Glyph e={theme.emoji} />
         </div>
         <MiniPage />
         {Array.from({ length: 8 + o.density * 8 }, (_, i) => (
           <span key={i} className="troll-preview-confetto absolute h-2 w-1.5 rounded-[1px]" style={{ left: `${(i * 37) % 100}%`, background: theme.colors[i % theme.colors.length], animationDelay: `${-((i * 0.37) % 3)}s` }} />
         ))}
         <span className="absolute bottom-3 right-6 text-2xl">{o.cursor}</span>
-        <span className="troll-preview-float absolute bottom-0 left-4 text-2xl">{theme.floaters[0]}</span>
+        <span className="troll-preview-float absolute bottom-0 left-4 text-2xl"><Glyph e={theme.floaters[0]} size="1em" /></span>
       </Preview>
     </div>
   );
@@ -346,12 +348,12 @@ function LovePanel({ value: o, onChange, ctx }: Props<"coup_de_foudre">) {
         <MiniPage />
         {Array.from({ length: 9 }, (_, i) => (
           <span key={i} className="troll-heart-rise" style={{ left: `${8 + i * 10}%`, color: pal[i % pal.length], fontSize: 14 + (i % 3) * 6, animationDuration: `${3 + (i % 4)}s`, animationIterationCount: "infinite", animationDelay: `${-i * 0.6}s`, "--dx": "10px", "--rise": "-240px" } as React.CSSProperties}>
-            ♥
+            <Mini kind="heart" />
           </span>
         ))}
         {o.name && (
           <p className="absolute inset-x-0 top-1/2 text-center font-display text-2xl" style={{ color: pal[0], textShadow: `0 0 12px ${pal[0]}` }}>
-            ♥ {ctx.me} ♥
+            <Mini kind="heart" className="troll-love-heart" /> {ctx.me} <Mini kind="heart" className="troll-love-heart" />
           </p>
         )}
       </Preview>
@@ -415,12 +417,12 @@ function StrikePanel({ value: o, onChange, ctx }: Props<"greve">) {
         <Field label="Boutons en grève" hint="Un bouton en grève ne répond plus pendant quelques secondes.">
           <Seg value={o.every} onChange={(every) => set({ every })} accent={ctx.accent} options={[{ v: 1, label: "Grève perlée" }, { v: 2, label: "Grève" }, { v: 3, label: "Grève générale" }]} />
         </Field>
-        <Toggle checked={o.placards} onChange={(placards) => set({ placards })} accent={ctx.accent} label="Manifestation avec pancartes en bas de l'écran ✊" />
+        <Toggle checked={o.placards} onChange={(placards) => set({ placards })} accent={ctx.accent} label={<>Manifestation avec pancartes en bas de l&apos;écran <SidIcon name="fist" /></>} />
       </div>
       <Preview who={ctx.target} className="h-48 bg-ink">
         <MiniPage />
         <div className="troll-picket" style={{ position: "absolute", left: "8%", top: "56%", width: "38%", height: 26 }}>
-          <span>EN GRÈVE ✊</span>
+          <span>EN GRÈVE <SidIcon name="fist" /></span>
         </div>
         {o.placards && (
           <div className="absolute bottom-1 right-3 flex gap-2">
@@ -449,9 +451,9 @@ function FanfarePanel({ value: o, onChange, ctx }: Props<"fanfare">) {
         <div style={{ animation: o.bounce ? `troll-fanfare-bounce ${FANFARE_TEMPOS[o.tempo].ms}ms ease-in-out infinite alternate` : undefined }}>
           <MiniPage />
         </div>
-        {["♪", "♫", "♬", "♪", "♩"].map((g, i) => (
+        {(["note", "notes", "noteBeam", "note", "noteQuarter"] as MiniKind[]).map((g, i) => (
           <span key={i} className="troll-note-rise" style={{ left: `${10 + i * 18}%`, color: ["#c9a6ff", "#ff9c6e", "#6ec8ff", "#ffe14d"][i % 4], animationDuration: `${3 + i * 0.5}s`, animationIterationCount: "infinite", animationDelay: `${-i * 0.7}s`, "--dx": "12px", "--rise": "-240px" } as React.CSSProperties}>
-            {g}
+            <Mini kind={g} />
           </span>
         ))}
       </Preview>
@@ -467,7 +469,7 @@ function FireworksPanel({ value: o, onChange, ctx }: Props<"artifice">) {
         <Field label="Feu d'artifice">
           <Seg value={o.intensity} onChange={(intensity) => set({ intensity })} accent={ctx.accent} options={[{ v: 1, label: "Bouquet" }, { v: 2, label: "Spectacle" }, { v: 3, label: "Final" }]} />
         </Field>
-        <Toggle checked={o.patrouille} onChange={(patrouille) => set({ patrouille })} accent={ctx.accent} label="La Patrouille de France passe par-dessus 🇫🇷" />
+        <Toggle checked={o.patrouille} onChange={(patrouille) => set({ patrouille })} accent={ctx.accent} label={<>La Patrouille de France passe par-dessus <SidIcon name="tricolor" /></>} />
       </div>
       <Preview who={ctx.target} className="h-48 bg-ink">
         <MiniPage />
@@ -508,7 +510,7 @@ function TrucePanel({ value: o, onChange, ctx }: Props<"treve">) {
       <Preview who={ctx.target} className="h-48 bg-ink">
         <MiniPage />
         <div className="absolute inset-x-6 top-3 rounded-lg border border-[#6f95ff]/50 bg-black/70 p-2 text-center font-body text-xs text-paper">
-          🕊️ {ctx.me} t&apos;offre une trêve
+          <SidIcon name="dove" /> {ctx.me} t&apos;offre une trêve
           {o.message && <p className="italic text-[#b9ccff]">« {o.message} »</p>}
         </div>
         <div className="absolute inset-x-0 bottom-0 flex justify-around">
@@ -616,7 +618,7 @@ function AbyssPanel({ value: o, onChange, ctx }: Props<"abysses">) {
           <Seg value={o.darkness} onChange={(darkness) => set({ darkness })} accent={ctx.accent} options={[{ v: 1, label: "Lagon" }, { v: 2, label: "Abysses" }, { v: 3, label: "Fosse" }]} />
         </Field>
         <Toggle checked={o.invert} onChange={(invert) => set({ invert })} accent={ctx.accent} label="Molette inversée (descendre fait monter)" />
-        <Toggle checked={o.creatures} onChange={(creatures) => set({ creatures })} accent={ctx.accent} label="Créatures des profondeurs 🐙" />
+        <Toggle checked={o.creatures} onChange={(creatures) => set({ creatures })} accent={ctx.accent} label={<>Créatures des profondeurs <SidIcon name="octopus" /></>} />
       </div>
       <Preview who={ctx.target} className="bg-ink">
         <div className="troll-preview-sink" style={{ animationDuration: `${{ lent: 9, moyen: 6, rapide: 3.5 }[o.speed]}s` }}>
@@ -626,11 +628,11 @@ function AbyssPanel({ value: o, onChange, ctx }: Props<"abysses">) {
         <div className="pointer-events-none absolute inset-0" style={{ background: `linear-gradient(to bottom, rgb(10 60 90 / ${dark * 0.4}), rgb(3 10 40 / ${dark}))` }} />
         {o.creatures && (
           <>
-            <span className="troll-preview-fish absolute top-[30%] text-2xl">🐙</span>
-            <span className="troll-preview-fish absolute top-[62%] text-xl" style={{ animationDelay: "-3s", animationDirection: "reverse" }}>🐟</span>
+            <span className="troll-preview-fish absolute top-[30%] text-2xl"><SidIcon name="octopus" /></span>
+            <span className="troll-preview-fish absolute top-[62%] text-xl" style={{ animationDelay: "-3s", animationDirection: "reverse" }}><SidIcon name="fish" /></span>
           </>
         )}
-        {o.invert && <span className="absolute bottom-2 right-2 rounded-full bg-black/60 px-2 py-0.5 font-mono text-[10px] text-paper/80">🖱 inversée</span>}
+        {o.invert && <span className="absolute bottom-2 right-2 rounded-full bg-black/60 px-2 py-0.5 font-mono text-[10px] text-paper/80"><SidIcon name="mouse" /> inversée</span>}
       </Preview>
     </div>
   );
@@ -702,7 +704,7 @@ function FlatteryPanel({ value: o, onChange, ctx }: Props<"flatterie">) {
               {m}
               {(o.every === 1 || i % o.every === 0) && (
                 <span className="ml-1 font-bold" style={{ color: o.color }}>
-                  … et {ctx.me} {o.phrase || FLATTERY_DEFAULT} 🎭
+                  … et {ctx.me} {o.phrase || FLATTERY_DEFAULT} <SidIcon name="masks" />
                 </span>
               )}
             </p>
@@ -763,7 +765,7 @@ function RewritePanel({ value: o, onChange, ctx }: Props<"reecriture">) {
     <div className="grid gap-4 md:grid-cols-2">
       <div className="space-y-4">
         <Field label="Lexique">
-          <Seg value={o.theme} onChange={(t) => set({ theme: t as RewriteTheme })} accent={ctx.accent} options={(Object.keys(REWRITE_THEMES) as RewriteTheme[]).map((k) => ({ v: k, label: `${REWRITE_THEMES[k].emoji} ${REWRITE_THEMES[k].label}` }))} />
+          <Seg value={o.theme} onChange={(t) => set({ theme: t as RewriteTheme })} accent={ctx.accent} options={(Object.keys(REWRITE_THEMES) as RewriteTheme[]).map((k) => ({ v: k, label: <><Glyph e={REWRITE_THEMES[k].emoji} /> {REWRITE_THEMES[k].label}</> }))} />
         </Field>
         <Field label="Tes propres mots (6 au plus)" hint="Ils passent avant le lexique. Un mot exact, sans majuscule obligatoire.">
           <div className="space-y-1.5">
@@ -819,7 +821,7 @@ function RationPanel({ value: o, onChange, ctx }: Props<"rationnement">) {
         >
           Cliquer ({count})
         </button>
-        <p className={`rounded-full px-3 py-1 font-mono text-xs text-white ${wait > 0 ? "bg-[#5b2fc9]" : "bg-transparent"}`}>{wait > 0 ? `🎵 Tic… tac… encore ${Math.ceil(wait / 1000)} s` : " "}</p>
+        <p className={`rounded-full px-3 py-1 font-mono text-xs text-white ${wait > 0 ? "bg-[#5b2fc9]" : "bg-transparent"}`}>{wait > 0 ? <><SidIcon name="notes" /> Tic… tac… encore {Math.ceil(wait / 1000)} s</> : " "}</p>
       </Preview>
     </div>
   );
@@ -927,7 +929,7 @@ function DragonPanel({ value: o, onChange, ctx }: Props<"defi_dragon">) {
                   className={`rounded-xl border p-2 text-center transition ${o.skin === k ? "bg-white/10" : "border-white/10 hover:bg-white/5"}`}
                   style={o.skin === k ? { borderColor: ctx.accent } : undefined}
                 >
-                  <span className="block text-2xl">{DRAGON_SKINS[k].emoji}</span>
+                  <span className="block text-2xl"><Glyph e={DRAGON_SKINS[k].emoji} size="1em" className="mx-auto" /></span>
                   <span className="block font-display text-xs uppercase tracking-wide">{DRAGON_SKINS[k].label}</span>
                   <span className="block font-body text-[10px] leading-tight text-paper/50">{DRAGON_SKINS[k].hint}</span>
                 </button>
@@ -973,7 +975,7 @@ function DragonPanel({ value: o, onChange, ctx }: Props<"defi_dragon">) {
             checked={o.spectators}
             onChange={(spectators) => set({ spectators })}
             accent={ctx.accent}
-            label={<span>📣 Tout le S.I.D. en tribune, caméra de bataille · <strong>+{zenis(prices.spectators)}</strong></span>}
+            label={<span><SidIcon name="megaphone" /> Tout le S.I.D. en tribune, caméra de bataille · <strong>+{zenis(prices.spectators)}</strong></span>}
           />
 
           <Field label={`Cinématique de fin · +${zenis(prices.finale)}`}>
@@ -981,7 +983,7 @@ function DragonPanel({ value: o, onChange, ctx }: Props<"defi_dragon">) {
               value={o.finale ?? "none"}
               onChange={(f) => set({ finale: f === "none" ? null : (f as DragonFinale) })}
               accent={ctx.accent}
-              options={[{ v: "none", label: "Aucune" }, ...(Object.keys(DRAGON_FINALES) as DragonFinale[]).map((k) => ({ v: k, label: `${DRAGON_FINALES[k].emoji} ${DRAGON_FINALES[k].label}`, title: DRAGON_FINALES[k].hint }))]}
+              options={[{ v: "none", label: "Aucune" }, ...(Object.keys(DRAGON_FINALES) as DragonFinale[]).map((k) => ({ v: k, label: <><Glyph e={DRAGON_FINALES[k].emoji} /> {DRAGON_FINALES[k].label}</>, title: DRAGON_FINALES[k].hint }))]}
             />
           </Field>
         </div>
@@ -1005,7 +1007,7 @@ function DragonPanel({ value: o, onChange, ctx }: Props<"defi_dragon">) {
                   </li>
                 ))}
               </ol>
-              {o.spectators && <p className="font-mono text-[10px] text-[#ffb15c]">📣 Les autres membres reçoivent une convocation en tribune.</p>}
+              {o.spectators && <p className="font-mono text-[10px] text-[#ffb15c]"><SidIcon name="megaphone" /> Les autres membres reçoivent une convocation en tribune.</p>}
             </div>
           </Preview>
 

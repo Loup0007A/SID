@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { NETWORK_NODES } from "@/lib/titles";
+import { SidIcon, SvgIcon } from "@/components/icons/SidIcon";
 
 export type NetworkLogic = "fixe" | "rotation" | "aleatoire" | "echange";
 
@@ -152,7 +153,7 @@ export function NodeEditor({
             return (
               <g key={n.href} transform={`translate(${p.x} ${p.y})`} className={`ne-node ${hover === i ? "is-hover" : ""} ${out ? "is-linked" : ""} ${drag?.from === i ? "is-source" : ""}`}>
                 <circle r={NODE_R} />
-                <text y="7" textAnchor="middle" fontSize="20">{n.emoji}</text>
+                <SvgIcon name={n.icon} size={24} />
                 <text y={NODE_R + 14} textAnchor="middle" className="ne-label">{n.label}</text>
               </g>
             );
@@ -167,7 +168,7 @@ export function NodeEditor({
 
       <div className="flex flex-wrap justify-center gap-2">
         <button type="button" onClick={shuffle} className="rounded-lg border border-blue/60 px-3 py-1 font-mono text-xs uppercase text-blue hover:bg-blue hover:text-ink">
-          🎲 Tout mélanger
+          <SidIcon name="dice" /> Tout mélanger
         </button>
         <button type="button" onClick={() => onChange({})} className="rounded-lg border border-white/20 px-3 py-1 font-mono text-xs uppercase text-paper/70 hover:bg-white/10">
           Effacer

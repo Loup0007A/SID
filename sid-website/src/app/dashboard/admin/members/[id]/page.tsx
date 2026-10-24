@@ -8,6 +8,7 @@ import { loadCurrentUser, can } from "@/lib/permissions";
 import type { PermissionKey, Profile } from "@/types/database";
 import { ACTION_LABELS, POWER_NAMES, SANCTION_LABELS, describe } from "@/lib/auditLabels";
 import { ALERT_KINDS, SEVERITY, describeAlert, timeAgo, type AlertRow } from "@/lib/alerts";
+import { Glyph, GlyphText } from "@/components/icons/SidIcon";
 
 type Summary = {
   profil: Profile & { member_rank: string; power_score: number; is_muted: boolean; last_seen_at: string | null };
@@ -204,7 +205,7 @@ export default function MemberAdminPage() {
   const openAlerts = alerts.filter((a) => a.status === "open");
 
   const badge = (text: string, cls = "border-white/20 text-paper/70") => (
-    <span className={`rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase ${cls}`}>{text}</span>
+    <span className={`rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase ${cls}`}><GlyphText text={text} /></span>
   );
   const btn = "rounded-lg border px-3 py-1.5 font-mono text-xs uppercase disabled:opacity-40";
 
@@ -348,7 +349,7 @@ export default function MemberAdminPage() {
               onClick={() => setSource(s.key)}
               className={`rounded-full border px-2.5 py-1 font-mono text-[11px] ${source === s.key ? "border-blue bg-blue text-ink" : "border-white/15 text-paper/70 hover:bg-white/10"}`}
             >
-              {s.icon} {s.label}
+              <Glyph e={s.icon} /> {s.label}
             </button>
           ))}
         </div>
@@ -362,7 +363,7 @@ export default function MemberAdminPage() {
             {shown.map((r, i) => (
               <li key={i} className="flex flex-wrap items-baseline gap-x-3 gap-y-1 px-4 py-2">
                 <span className="w-28 shrink-0 font-mono text-[11px] text-paper/50">{dateTime(r.at)}</span>
-                <span className="w-5 shrink-0 text-center" aria-hidden>{ICON[r.source] ?? "•"}</span>
+                <span className="w-5 shrink-0 text-center" aria-hidden>{ICON[r.source] ? <Glyph e={ICON[r.source]} /> : "•"}</span>
                 <span className="min-w-[12rem] flex-1 font-body text-sm text-paper/90">
                   {describeRow(r)}
                   {r.actor && r.source !== "alerte" && r.source !== "troll" && <span className="font-mono text-[11px] text-paper/50"> · par {r.actor}</span>}

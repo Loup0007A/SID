@@ -7,6 +7,7 @@ import type { MapPlace, CityBuilding, CharacterPosition, ActivePosition } from "
 import { findShortestPath } from "@/lib/pathfinding";
 import { inputClass, labelClass } from "@/lib/ui";
 import { formatCountdown, formatMinutes, tripState } from "@/lib/travel";
+import { SidIcon } from "@/components/icons/SidIcon";
 
 export default function MapPage() {
   const supabase = createClient();
@@ -215,7 +216,7 @@ export default function MapPage() {
       </p>
 
       {arrival && (
-        <p className="glass-card border border-blue/50 p-3 font-mono text-sm text-blue-light">📍 {arrival}</p>
+        <p className="glass-card border border-blue/50 p-3 font-mono text-sm text-blue-light"><SidIcon name="pin" /> {arrival}</p>
       )}
       {message && <p className="font-mono text-sm text-red">{message}</p>}
 
@@ -264,7 +265,7 @@ export default function MapPage() {
           {isTraveling ? (
             <div className="glass-card space-y-2 border border-blue/50 p-4">
               <p className="font-display uppercase text-blue-light">
-                {trip!.isFlight ? "🕊️ En vol" : "🛣 En trajet"} vers {placeName(trip!.destinationId)}
+                {trip!.isFlight ? <><SidIcon name="dove" /> En vol</> : <><SidIcon name="road" /> En trajet</>} vers {placeName(trip!.destinationId)}
               </p>
               {trip!.legCount > 1 && (
                 <p className="font-mono text-xs text-paper/60">
@@ -286,7 +287,7 @@ export default function MapPage() {
             </div>
           ) : (
             <div className="glass-card space-y-1 p-4">
-              <p className="font-display uppercase text-blue-light">📍 {placeName(myPosition.place_id)}</p>
+              <p className="font-display uppercase text-blue-light"><SidIcon name="pin" /> {placeName(myPosition.place_id)}</p>
               {myPosition.building_id && (
                 <p className="font-mono text-xs text-paper/60">
                   Bâtiment : {buildings.find((b) => b.id === myPosition.building_id)?.name ?? "—"}

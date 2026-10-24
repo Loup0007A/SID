@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { mentalQuestion } from "@/lib/mentalCalc";
 import type { ActiveTroll } from "@/lib/titles";
 import { HAUNT_CREATURES, readOptions } from "@/lib/trollOptions";
+import { SidIcon, Glyph } from "@/components/icons/SidIcon";
 
 /* ---------------------------------------------------------------
    Calcul forcé (Éclair Vivant) : 3 calculs du niveau 50 par page.
@@ -69,7 +70,7 @@ export function CalcGate({ troll }: { troll: ActiveTroll }) {
   return (
     <div data-troll-ui className="troll-gate fixed inset-0 z-[9200] flex items-center justify-center bg-[#0d0f16]/95 p-4">
       <div className="w-full max-w-md space-y-4 rounded-2xl border border-[#ffe95c]/40 bg-black/40 p-6 text-center shadow-[0_0_60px_-10px_#ff8a00]">
-        <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-[#ffe95c]">⚡ Contrôle de vivacité</p>
+        <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-[#ffe95c]"><SidIcon name="bolt" /> Contrôle de vivacité</p>
         <p className="font-body text-sm text-paper/80">
           {troll.actor} exige {NEED} {NEED > 1 ? "calculs mentaux justes" : "calcul mental juste"}
           {o.reset && NEED > 1 ? " d'affilée" : ""} (niveau {o.level}) avant de te laisser voir cette page.
@@ -141,7 +142,7 @@ export function Haunt404({ troll }: { troll: ActiveTroll }) {
           <h1 className="font-display text-3xl uppercase tracking-wide">Dossier introuvable</h1>
           <p className="font-body text-paper/70">{o.message || `Cette page n'existe pas, ou a été dévorée par un${o.creature === "chauvesouris" || o.creature === "citrouille" ? "e" : ""} ${creature.label.toLowerCase()}.`}</p>
           <p className="font-mono text-xs text-paper/50">
-            Attrape {creature.emoji} de {troll.actor} pour la récupérer : {caught} / {need}
+            Attrape <Glyph e={creature.emoji} /> de {troll.actor} pour la récupérer : {caught} / {need}
           </p>
         </div>
       </div>
@@ -151,7 +152,7 @@ export function Haunt404({ troll }: { troll: ActiveTroll }) {
         style={{ left: `${pos.x}%`, top: `${pos.y}%`, transitionDuration: `${Math.max(250, 700 - level * 80)}ms` }}
         aria-label={creature.label}
       >
-        {creature.emoji}
+        <Glyph e={creature.emoji} size="1em" />
       </button>
     </div>
   );
@@ -260,7 +261,7 @@ export function ContractGate({ troll, nickname }: { troll: ActiveTroll; nickname
           onClick={() => setOpen(false)}
           className="w-full rounded-lg bg-[#7a1d14] py-2 font-display uppercase tracking-wide text-paper disabled:opacity-30"
         >
-          ✍️ Signer
+          <SidIcon name="pen" /> Signer
         </button>
       </div>
     </div>

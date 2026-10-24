@@ -1,5 +1,6 @@
 import "./scenes.css";
 import type { ReactNode } from "react";
+import { Daisy, Tulip } from "./drawings";
 
 /**
  * Paysages des fêtes (Lot 48) : un vrai décor en plusieurs plans derrière le
@@ -479,6 +480,13 @@ export function AvrilScene() {
    Pâques : soleil, nuages, collines fleuries, clocher
    --------------------------------------------------------------- */
 
+const TULIPS: [string, string, string][] = [
+  ["#c2185b", "#ff4f7e", "#ff8fab"],
+  ["#d9831a", "#ffb13d", "#ffd27a"],
+  ["#7b3fc4", "#a46cf0", "#cfa8ff"],
+  ["#c8324a", "#f2556c", "#ffd0d8"],
+];
+
 function BlossomTree({ x, y, s, i }: { x: number; y: number; s: number; i: number }) {
   const puffs = Array.from({ length: 22 }, (_, k) => {
     const a = rnd(i * 31 + k, 1) * Math.PI * 2;
@@ -538,18 +546,11 @@ export function PaquesScene() {
         {Array.from({ length: 46 }, (_, i) => {
           const x = rnd(i, 11) * W;
           const y = meadow(x) + 6 + rnd(i, 12) * 20;
-          const kind = i % 3;
-          return kind === 0 ? (
-            <g key={i} className={`pq-tulip pq-tulip-${i % 4}`}>
-              <path className="pq-stem" d={`M${f(x)} ${f(y)} L${f(x)} ${f(y - 18)}`} />
-              <path d={`M${f(x - 5)} ${f(y - 18)} L${f(x - 5)} ${f(y - 26)} L${f(x - 2)} ${f(y - 23)} L${f(x)} ${f(y - 28)} L${f(x + 2)} ${f(y - 23)} L${f(x + 5)} ${f(y - 26)} L${f(x + 5)} ${f(y - 18)} Q${f(x)} ${f(y - 14)} ${f(x - 5)} ${f(y - 18)} Z`} />
-            </g>
+          const s = 0.62 + rnd(i, 13) * 0.42;
+          return i % 3 === 0 ? (
+            <Tulip key={i} x={x} y={y} s={s} lean={(rnd(i, 14) - 0.5) * 14} color={TULIPS[i % TULIPS.length]} />
           ) : (
-            <g key={i} className="pq-daisy">
-              <path className="pq-stem" d={`M${f(x)} ${f(y)} L${f(x)} ${f(y - 12)}`} />
-              <circle cx={f(x)} cy={f(y - 14)} r="4" className="pq-petal" />
-              <circle cx={f(x)} cy={f(y - 14)} r="1.6" className="pq-heart" />
-            </g>
+            <Daisy key={i} x={x} y={y} s={s * 0.78} />
           );
         })}
       </Land>

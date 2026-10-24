@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { inputClass } from "@/lib/ui";
+import { SidIcon } from "@/components/icons/SidIcon";
 
 const COOLDOWN_SECONDS = 60;
 
@@ -83,7 +84,7 @@ export function ResendConfirmation({ email, onVerified }: { email: string; onVer
 
   return (
     <div className="space-y-3 rounded-lg border border-blue/40 bg-blue/10 p-3">
-      <p className="font-mono text-xs uppercase text-blue-light">✉️ Email de confirmation</p>
+      <p className="font-mono text-xs uppercase text-blue-light"><SidIcon name="envelope" /> Email de confirmation</p>
 
       <button
         type="button"

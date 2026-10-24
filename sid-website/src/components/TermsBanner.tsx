@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { TERMS_VERSION } from "@/components/legal/LegalContent";
+import { SidIcon } from "@/components/icons/SidIcon";
 
 /**
  * Demande d'accepter les CGU et la politique de confidentialité (une fois par
@@ -32,7 +33,7 @@ export function TermsBanner({ acceptedVersion, onAccepted }: { acceptedVersion: 
     <div className="border-b border-blue/40 bg-blue/15" role="region" aria-label="Conditions d'utilisation">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3 sm:px-6">
         <p className="min-w-[14rem] flex-1 font-body text-sm text-paper/90">
-          📜 {acceptedVersion ? "Nos conditions d'utilisation et notre politique de confidentialité ont changé." : "Le S.I.D. a maintenant des conditions d'utilisation et une politique de confidentialité."}{" "}
+          <SidIcon name="scroll" /> {acceptedVersion ? "Nos conditions d'utilisation et notre politique de confidentialité ont changé." : "Le S.I.D. a maintenant des conditions d'utilisation et une politique de confidentialité."}{" "}
           Prends deux minutes pour lire{" "}
           <Link href="/cgu" className="text-blue-light underline">les conditions</Link> et{" "}
           <Link href="/confidentialite" className="text-blue-light underline">ce que nous faisons de tes données</Link>.

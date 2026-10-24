@@ -9,6 +9,7 @@ import type { ShopItemStats } from "@/types/stats";
 import type { Business } from "@/types/business";
 import { inputClass, labelClass } from "@/lib/ui";
 import { LineChart } from "@/components/LineChart";
+import { SidIcon } from "@/components/icons/SidIcon";
 
 function effectivePrice(item: ShopItem) {
   const promoActive = item.sale_price != null && (!item.sale_ends_at || new Date(item.sale_ends_at) > new Date());
@@ -364,14 +365,14 @@ export default function ShopPage() {
                   onClick={() => hideItem(item)}
                   className="rounded-lg w-full border border-red/50 py-1 font-mono text-xs uppercase text-red/80 hover:bg-red hover:text-ink"
                 >
-                  🗑 Supprimer
+                  <SidIcon name="trash" /> Supprimer
                 </button>
 
                 <button
                   onClick={() => toggleStats(item.id)}
                   className="rounded-lg w-full border border-paper/30 py-1 font-mono text-xs uppercase text-paper hover:bg-paper hover:text-ink"
                 >
-                  {openStatsId === item.id ? "Masquer les statistiques" : "📊 Statistiques de vente"}
+                  {openStatsId === item.id ? "Masquer les statistiques" : <><SidIcon name="chart" /> Statistiques de vente</>}
                 </button>
 
                 {openStatsId === item.id && (
@@ -434,7 +435,7 @@ export default function ShopPage() {
                 <h3 className="font-display text-lg uppercase">{item.name}</h3>
                 {item.effect && (
                   <p className="rounded border border-blue/40 bg-blue/10 px-2 py-1 font-mono text-[10px] uppercase text-blue-light">
-                    ⏳ {SHOP_EFFECT_LABELS[item.effect]}
+                    <SidIcon name="hourglass" /> {SHOP_EFFECT_LABELS[item.effect]}
                   </p>
                 )}
                 {item.description && <p className="font-body text-sm text-paper/80">{item.description}</p>}
@@ -457,7 +458,7 @@ export default function ShopPage() {
                     onClick={() => hideItem(item)}
                     className="rounded-lg border border-red/50 py-1 font-mono text-xs uppercase text-red/80 hover:bg-red hover:text-ink"
                   >
-                    🗑 Supprimer mon objet
+                    <SidIcon name="trash" /> Supprimer mon objet
                   </button>
                 )}
                 {canManage && item.created_by !== userId && (

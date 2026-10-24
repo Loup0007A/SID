@@ -6,23 +6,35 @@ import clsx from "clsx";
 import { createClient } from "@/lib/supabase/client";
 import { currentUser } from "@/lib/session";
 import type { AppNotification } from "@/types/notifications";
+import { Glyph, GlyphText, SidIcon, splitLeadingEmoji, type IconName } from "@/components/icons/SidIcon";
 
-const TYPE_ICON: Record<string, string> = {
-  chat_message: "💬",
-  quest_validated: "✅",
-  quest_failed: "❌",
-  application_decision: "📋",
-  quest_confirmation_needed: "⏳",
-  travel_arrived: "🧭",
-  salary_paid: "💰",
-  money_received: "🤑",
-  raid_call: "⚔️",
-  sanction: "⚖️",
-  announcement: "📣",
-  admin_alert: "🚨",
-  title: "🏅",
-  troll: "🎭",
+const TYPE_ICON: Record<string, IconName> = {
+  chat_message: "chat",
+  quest_validated: "check",
+  quest_failed: "cross",
+  application_decision: "clipboard",
+  quest_confirmation_needed: "hourglass",
+  travel_arrived: "compass",
+  salary_paid: "coins",
+  money_received: "moneyFly",
+  raid_call: "swords",
+  sanction: "scales",
+  announcement: "megaphone",
+  admin_alert: "siren",
+  title: "medal",
+  troll: "masks",
 };
+
+/** Icône d'une notification : celle de son type, sinon celle de l'émoji de son titre (anciens textes). */
+function NotifTitle({ type, title }: { type: string; title: string }) {
+  const { emoji, rest } = splitLeadingEmoji(title);
+  const icon = TYPE_ICON[type];
+  return (
+    <>
+      {icon ? <SidIcon name={icon} size="1.3em" /> : emoji ? <Glyph e={emoji} size="1.3em" /> : <SidIcon name="bell" size="1.3em" />} <GlyphText text={rest} />
+    </>
+  );
+}
 
 export default function NotificationsPage() {
   const supabase = createClient();
@@ -116,7 +128,7 @@ export default function NotificationsPage() {
             >
               <div className="flex items-start justify-between gap-2">
                 <p className="font-display uppercase">
-                  {TYPE_ICON[n.type] ?? "🔔"} {n.title}
+                  <NotifTitle type={n.type} title={n.title} />
                   {n.count > 1 && <span className="ml-1 text-blue-light">×{n.count}</span>}
                 </p>
                 {!n.is_read && <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-red" />}

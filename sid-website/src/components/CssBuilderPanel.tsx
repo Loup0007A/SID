@@ -3,6 +3,7 @@
 import type { CssBuilderOptions, AnimationPreset, BorderStyle, BackgroundMode } from "@/lib/profileCssBuilder";
 import { ANIMATION_LABELS } from "@/lib/profileCssBuilder";
 import { labelClass, inputClass } from "@/lib/ui";
+import { SidIcon } from "@/components/icons/SidIcon";
 
 const BORDER_STYLES: { value: BorderStyle; label: string }[] = [
   { value: "none", label: "Aucune" },
@@ -144,7 +145,7 @@ export function CssBuilderPanel({
       <ColorField label={`Couleur d'accent (${accentLabel})`} value={options.accentColor} onChange={(v) => set("accentColor", v)} />
 
       <div className="space-y-2 border-t border-white/10 pt-4">
-        <label className={labelClass}>✨ Animation</label>
+        <label className={labelClass}><SidIcon name="sparkle" /> Animation</label>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {ANIMATION_ORDER.map((a) => (
             <button

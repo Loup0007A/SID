@@ -124,9 +124,15 @@ export function CursorTrail() {
         if (shape === "heart") g.fill(heart);
         else if (shape === "star") g.fill(star);
         else if (shape === "note") {
-          g.font = "9px serif";
-          g.textAlign = "center";
-          g.fillText("♪", 0, 3.5);
+          // Croche dessinée (même forme que les particules des fêtes), à l'échelle ~0.4.
+          g.save();
+          g.scale(0.4, 0.4);
+          g.beginPath();
+          g.ellipse(-3.4, 6.4, 4.4, 3.2, (-22 * Math.PI) / 180, 0, Math.PI * 2);
+          g.fill();
+          g.fillRect(-1, -10, 2, 16);
+          g.fill(new Path2D("M0 -10 C3.4 -8.4 7.6 -6 6.4 -0.6 C6 -3.8 3.6 -5.2 0 -5.6 Z"));
+          g.restore();
         } else {
           g.lineWidth = 0.9;
           g.lineCap = "round";

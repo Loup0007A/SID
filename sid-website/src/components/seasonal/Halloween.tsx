@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useSiteDecor } from "@/components/seasonal/siteDecor";
 import { HalloweenScene } from "./scenes";
+import { Glyph } from "@/components/icons/SidIcon";
 
 /**
  * Décor d'Halloween (Lot 37). La base décide s'il est affiché
@@ -231,7 +232,7 @@ export function HalloweenLantern() {
         <span key={burst} className="hw-candies" aria-hidden>
           {["🍬", "🍭", "🍬", "🍫", "🍬"].map((c, i) => (
             <span key={i} style={{ "--x": `${(i - 2) * 15}px`, "--r": `${(i - 2) * 70}deg`, animationDelay: `${i * 40}ms` } as React.CSSProperties}>
-              {c}
+              <Glyph e={c} size="1.2em" />
             </span>
           ))}
         </span>

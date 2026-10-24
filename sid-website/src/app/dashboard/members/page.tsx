@@ -7,6 +7,7 @@ import type { Profile } from "@/types/database";
 import { ProfileStyle, profileSkinClass } from "@/components/ProfileStyle";
 import { useEquippedTitles } from "@/lib/useEquippedTitles";
 import { TitleAuraLayer, TitleBadge } from "@/components/titles/TitleVisuals";
+import { SidIcon } from "@/components/icons/SidIcon";
 
 type RosterEntry = Partial<Profile> & { id: string; nickname: string };
 type MemberRole = { user_id: string; role_name: string; role_color: string; role_rank: number };
@@ -64,7 +65,7 @@ export default function MembersPage() {
                   {m.nickname}
                   {m.is_invisible && (
                     <span className="ml-2 align-middle font-mono text-[10px] normal-case text-paper/50" title="Compte invisible : seuls le membre et l'administration le voient ici">
-                      👻 invisible
+                      <SidIcon name="ghost" /> invisible
                     </span>
                   )}
                 </Link>
@@ -93,8 +94,8 @@ export default function MembersPage() {
                 <p className="font-mono text-xs text-paper/60">{[m.first_name, m.last_name].filter(Boolean).join(" ")}</p>
               )}
               {m.desired_role && <p className="font-mono text-xs text-paper/60">Rôle souhaité : {m.desired_role}</p>}
-              {m.weapons && <p className="font-body text-sm">🗡 {m.weapons}</p>}
-              {m.equipment && <p className="font-body text-sm">🎒 {m.equipment}</p>}
+              {m.weapons && <p className="font-body text-sm"><SidIcon name="dagger" /> {m.weapons}</p>}
+              {m.equipment && <p className="font-body text-sm"><SidIcon name="backpack" /> {m.equipment}</p>}
               {m.description && <p className="mt-1 font-body text-sm text-paper/80">{m.description}</p>}
               </div>
             </div>

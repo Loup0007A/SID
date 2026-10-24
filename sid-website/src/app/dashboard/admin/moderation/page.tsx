@@ -8,6 +8,7 @@ import { inputClass, labelClass } from "@/lib/ui";
 import clsx from "clsx";
 import { DECOR_CHANGED_EVENT, type DecorKey, type DecorMode, type SiteDecor } from "@/components/seasonal/siteDecor";
 import { EVENTS, EVENT_ORDER } from "@/lib/events";
+import { SidIcon } from "@/components/icons/SidIcon";
 
 const DECOR_MODES: { v: DecorMode; label: string; hint: string }[] = [
   { v: "auto", label: "Automatique", hint: "Pendant la période de l'événement (heure de Paris)." },
@@ -281,7 +282,7 @@ export default function ModerationPage() {
             <div key={ev.key} className="glass-card flex flex-wrap items-center gap-4 p-4">
               <div className="min-w-[12rem] flex-1 space-y-1">
                 <p className="font-display uppercase">
-                  {ev.emoji} {ev.name}
+                  <SidIcon name={ev.icon} /> {ev.name}
                 </p>
                 <p className="font-body text-xs text-paper/60">{ev.description}</p>
                 {decor && !missing && (

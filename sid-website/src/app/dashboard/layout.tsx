@@ -24,6 +24,7 @@ import { SeasonalGarland, anyHoliday } from "@/components/seasonal/Seasonal";
 import { useSiteDecor } from "@/components/seasonal/siteDecor";
 import { AfterIdle } from "@/components/lazy/AfterIdle";
 import { Sceau1, Sceau2, Sceau7, Sceau8, Sceau9, Sceau10, Sceau11 } from "@/components/lazy/Seals";
+import { SidIcon } from "@/components/icons/SidIcon";
 
 // Pas urgents : téléchargés une fois la page affichée.
 const TitleUnlock = dynamic(() => import("@/components/titles/TitleUnlock").then((m) => m.TitleUnlock), { ssr: false });
@@ -288,7 +289,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 title={`${openAlerts} alerte${openAlerts > 1 ? "s" : ""} d'activité à traiter`}
                 className="flex h-9 shrink-0 items-center gap-1 rounded-lg border border-red/60 bg-red/15 px-2.5 font-mono text-xs text-red hover:bg-red hover:text-ink"
               >
-                ⚠️ {openAlerts}
+                <SidIcon name="warning" /> {openAlerts}
               </Link>
             )}
             {profile && <NotificationBell userId={profile.id} />}
@@ -301,7 +302,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             >
               <span className="hidden sm:inline">Déconnexion</span>
               <span className="sm:hidden" aria-hidden>
-                ⏻
+                <SidIcon name="power" />
               </span>
             </button>
           </div>

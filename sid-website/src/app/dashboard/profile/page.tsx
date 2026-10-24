@@ -11,6 +11,7 @@ import { BirthdaySetting } from "@/components/lazy/Seals";
 import { TitleAuraLayer, TitleBadge } from "@/components/titles/TitleVisuals";
 import { useEquippedTitles } from "@/lib/useEquippedTitles";
 import { isPushSupported, getPushPermission, hasActivePushSubscription, subscribeToPush, unsubscribeFromPush, needsIosInstallFirst } from "@/lib/push";
+import { SidIcon } from "@/components/icons/SidIcon";
 
 const HIDEABLE_FIELDS: { key: keyof Profile; label: string }[] = [
   { key: "first_name", label: "Prénom IRL" },
@@ -298,14 +299,14 @@ export default function ProfilePage() {
       <div className="glass-card space-y-3 p-6">
         <h2 className="font-display text-lg uppercase">Notifications</h2>
         <p className="font-body text-sm text-paper/70">
-          Tu reçois déjà les notifications dans la cloche 🔔 en haut du site. Active en plus les notifications push
+          Tu reçois déjà les notifications dans la cloche <SidIcon name="bell" /> en haut du site. Active en plus les notifications push
           pour être alerté même quand l&apos;onglet est fermé (nouveau message, quête validée, décision requise…).
         </p>
         {!pushSupported ? (
           <p className="font-mono text-xs text-paper/50">Ce navigateur ne prend pas en charge les notifications push.</p>
         ) : needsIosInstall ? (
           <div className="space-y-2 rounded-lg border border-blue/40 bg-blue/10 p-3">
-            <p className="font-mono text-xs uppercase text-blue-light">📲 Sur iPhone/iPad</p>
+            <p className="font-mono text-xs uppercase text-blue-light"><SidIcon name="phone" /> Sur iPhone/iPad</p>
             <p className="font-body text-sm text-paper/80">
               Apple n&apos;autorise les notifications que pour un site ajouté à l&apos;écran d&apos;accueil — pas pour
               un onglet Safari classique. Pour les activer :
@@ -371,7 +372,7 @@ export default function ProfilePage() {
             disabled={invisibleSaving}
             onChange={(e) => toggleInvisible(e.target.checked)}
           />
-          {profile.is_invisible ? "👻 Mon compte est invisible" : "Rendre mon compte invisible"}
+          {profile.is_invisible ? <><SidIcon name="ghost" /> Mon compte est invisible</> : "Rendre mon compte invisible"}
         </label>
         {invisibleMessage && <p className="font-mono text-xs text-red">{invisibleMessage}</p>}
       </div>

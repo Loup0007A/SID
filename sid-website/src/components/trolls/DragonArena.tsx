@@ -8,6 +8,7 @@ import { connectArena, type ArenaBattle, type ArenaRole } from "@/lib/arenaRelay
 import { DRAGON_FINALES, readOptions } from "@/lib/trollOptions";
 import { SIMULATION_SITES } from "@/lib/simulationSites";
 import { announceActivity } from "@/lib/presence";
+import { SidIcon, Glyph } from "@/components/icons/SidIcon";
 
 /** Page de l'arène dans le jeu 3D (surchargeable pour les essais). */
 const ARENA_URL = process.env.NEXT_PUBLIC_ARENA_URL || `${SIMULATION_SITES.donjons.url ?? "https://loup0007a.github.io/3D-game-world/"}arena.html`;
@@ -189,7 +190,7 @@ export function DragonArena({
           onClick={quitArena}
           className="absolute right-3 top-3 z-10 rounded-full border border-white/25 bg-black/60 px-3 py-1.5 font-mono text-[11px] text-paper/80 backdrop-blur hover:bg-black/80 sm:right-auto sm:left-1/2 sm:top-auto sm:bottom-3 sm:-translate-x-1/2"
         >
-          {role === "dragon" ? "✕ Quitter l'arène" : role === "player" ? "🏃 Fuir l'arène" : "✕ Quitter la tribune"}
+          {role === "dragon" ? "✕ Quitter l'arène" : role === "player" ? <><SidIcon name="runner" /> Fuir l&apos;arène</> : "✕ Quitter la tribune"}
         </button>
       </div>
     );
@@ -198,7 +199,7 @@ export function DragonArena({
   if (stage === "chip") {
     return (
       <div data-troll-ui className="fixed bottom-16 right-3 z-[9460] w-[min(320px,calc(100vw-1.5rem))] space-y-2 rounded-xl border border-[#ff7a2f]/50 bg-black/85 p-3 font-body text-sm text-paper shadow-[0_0_30px_-8px_#ff5a1f] backdrop-blur">
-        <p className="font-display uppercase tracking-wide text-[#ffb15c]">🐉 Ton arène t&apos;attend</p>
+        <p className="font-display uppercase tracking-wide text-[#ffb15c]"><SidIcon name="dragon" /> Ton arène t&apos;attend</p>
         <p className="text-paper/75">Défi contre {listNames(battle.players.map((p) => p.name))}.</p>
         <div className="flex gap-2">
           <button onClick={() => setStage("arena")} className="flex-1 rounded-lg bg-gradient-to-r from-[#ff7a2f] to-[#b3121b] px-3 py-1.5 font-display text-xs uppercase tracking-wide text-ink">
@@ -217,7 +218,7 @@ export function DragonArena({
       <div data-troll-ui className="dragon-duel fixed inset-0 z-[9300] flex items-center justify-center p-4 text-paper">
         <div className="dragon-duel-sky absolute inset-0" />
         <div className="relative z-10 max-w-md space-y-3 text-center">
-          <p className="text-6xl">🏃💨</p>
+          <p className="text-6xl"><SidIcon name="runner" /><SidIcon name="runner" /></p>
           <p className="font-display text-2xl uppercase tracking-wide">Tu as fui</p>
           <p className="font-body text-paper/75">{troll.actor} est prévenu. Le dragon se souviendra de ta lâcheté…</p>
         </div>
@@ -241,15 +242,15 @@ export function DragonArena({
             feu : abats-le avant la fin du temps, ou fuis.
           </p>
           <p className="font-mono text-xs text-paper/60">
-            {o.spectators ? "📣 Tout le S.I.D. regarde depuis la tribune. " : ""}
-            {o.finale ? `${DRAGON_FINALES[o.finale].emoji} S'il gagne : ${DRAGON_FINALES[o.finale].label.toLowerCase()} en cinématique.` : ""}
+            {o.spectators ? <><SidIcon name="megaphone" /> Tout le S.I.D. regarde depuis la tribune. </> : ""}
+            {o.finale ? <><Glyph e={DRAGON_FINALES[o.finale].emoji} /> S&apos;il gagne : {DRAGON_FINALES[o.finale].label.toLowerCase()} en cinématique.</> : ""}
           </p>
           <div className="flex flex-wrap justify-center gap-3 pt-2">
             <button onClick={() => setStage("arena")} className="rounded-lg bg-gradient-to-r from-[#ff7a2f] to-[#b3121b] px-6 py-3 font-display text-lg uppercase tracking-wide text-ink shadow-lg shadow-red-900/50">
-              ⚔️ Entrer dans l&apos;arène
+              <SidIcon name="swords" /> Entrer dans l&apos;arène
             </button>
             <button onClick={flee} className="rounded-lg border border-white/30 bg-black/40 px-6 py-3 font-display text-lg uppercase tracking-wide text-paper/80 hover:bg-white/10">
-              🏃 Fuir
+              <SidIcon name="runner" /> Fuir
             </button>
           </div>
           <p className="font-mono text-[11px] text-paper/50">Entrée automatique dans {Math.max(0, left)} s…</p>
@@ -266,13 +267,13 @@ export function DragonArena({
           <DragonSvg breathing />
         </div>
         <div className="min-w-0 flex-1 space-y-1">
-          <p className="font-display text-sm uppercase tracking-wide text-[#ffb15c]">📣 Tout le S.I.D. en tribune !</p>
+          <p className="font-display text-sm uppercase tracking-wide text-[#ffb15c]"><SidIcon name="megaphone" /> Tout le S.I.D. en tribune !</p>
           <p className="font-body text-sm text-paper/85">
             {troll.actor} s&apos;est changé en dragon et affronte {listNames(battle.players.map((p) => p.name))} dans l&apos;arène.
           </p>
           <div className="flex flex-wrap items-center gap-2 pt-1">
             <button onClick={() => setStage("arena")} className="rounded-lg bg-gradient-to-r from-[#ff7a2f] to-[#b3121b] px-3 py-1.5 font-display text-xs uppercase tracking-wide text-ink">
-              🎥 Regarder ({Math.max(0, left)} s)
+              <SidIcon name="camera" /> Regarder ({Math.max(0, left)} s)
             </button>
             <button
               onClick={async () => {

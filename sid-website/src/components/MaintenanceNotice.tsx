@@ -1,6 +1,7 @@
 "use client";
 
 import { useSuspendedSections, type MaintenanceSection } from "@/lib/maintenance";
+import { SidIcon } from "@/components/icons/SidIcon";
 
 /**
  * Bannière d'avertissement si la section `sectionKey` (ex: "shop", "chat",
@@ -20,7 +21,7 @@ export function MaintenanceNotice({ sectionKey }: { sectionKey: string }) {
 
   return (
     <div className="glass-card border border-red/60 p-4 font-body text-sm text-red-light">
-      🚧 {state.message || "Cette section est temporairement fermée par l'administration."}
+      <SidIcon name="cone" /> {state.message || "Cette section est temporairement fermée par l'administration."}
     </div>
   );
 }

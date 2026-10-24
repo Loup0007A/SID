@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { daysUntil, useSiteDecor } from "@/components/seasonal/siteDecor";
 import { NoelScene } from "./scenes";
+import { Glyph } from "@/components/icons/SidIcon";
 
 /**
  * Décor de Noël (Lot 41). La base décide s'il est affiché (site_decor :
@@ -374,7 +375,7 @@ export function NoelGift() {
                 } as React.CSSProperties
               }
             >
-              {c}
+              <Glyph e={c} size="1.2em" />
             </span>
           ))}
         </span>

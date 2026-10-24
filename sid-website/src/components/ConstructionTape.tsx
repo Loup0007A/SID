@@ -4,6 +4,7 @@
  *    doit être en `relative overflow-hidden`) ;
  *  - "banner" : bandeau pleine largeur en haut d'une page.
  */
+import { SidIcon } from "@/components/icons/SidIcon";
 export function ConstructionTape({
   variant = "ribbon",
   label = "En développement",
@@ -14,7 +15,7 @@ export function ConstructionTape({
   if (variant === "banner") {
     return (
       <div className="construction-tape flex items-center justify-center rounded-lg px-3 py-3" role="note">
-        <span className="construction-tape-label text-xs sm:text-sm">🚧 {label}</span>
+        <span className="construction-tape-label text-xs sm:text-sm"><SidIcon name="cone" /> {label}</span>
       </div>
     );
   }

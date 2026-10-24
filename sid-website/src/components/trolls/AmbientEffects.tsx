@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { NETWORK_NODES, type ActiveTroll } from "@/lib/titles";
 import { ABYSS_SPEEDS, BAILIFF_DEFAULT_ITEMS, BAILIFF_TONES, PARTY_THEMES, makeRewriter, readOptions } from "@/lib/trollOptions";
+import { SidIcon, Glyph } from "@/components/icons/SidIcon";
 
 const APP_ID = "sid-app";
 const app = () => document.getElementById(APP_ID);
@@ -110,12 +111,12 @@ export function PartyMode({ troll, nickname }: { troll: ActiveTroll; nickname: s
         className="troll-party-banner absolute inset-x-0 top-0 py-1.5 text-center font-display text-sm uppercase tracking-wider text-ink"
         style={{ backgroundImage: `linear-gradient(90deg, ${[...theme.colors, theme.colors[0]].join(", ")})` }}
       >
-        {theme.emoji} {text}
-        {!troll.everyone && <span className="normal-case"> — offert par {troll.actor}</span>} {theme.emoji}
+        <Glyph e={theme.emoji} /> {text}
+        {!troll.everyone && <span className="normal-case"> — offert par {troll.actor}</span>} <Glyph e={theme.emoji} />
       </div>
       {Array.from({ length: o.density + 1 }, (_, i) => (
         <div key={i} className="troll-balloon" style={{ left: `${10 + ((i * 67) % 80)}%`, animationDelay: `${-i * 3.5}s` }}>
-          {theme.floaters[i % theme.floaters.length]}
+          <Glyph e={theme.floaters[i % theme.floaters.length]} size="1em" />
         </div>
       ))}
     </div>
@@ -219,7 +220,7 @@ export function AbyssEffect({ troll }: { troll: ActiveTroll }) {
             className="troll-abyss-fish"
             style={{ top: `${15 + ((i * 29) % 70)}%`, animationDelay: `${-i * 4.3}s`, animationDuration: `${16 + (i % 3) * 5}s`, animationDirection: i % 2 ? "reverse" : "normal" }}
           >
-            {DEEP[i % DEEP.length]}
+            <Glyph e={DEEP[i % DEEP.length]} size="1em" />
           </span>
         ))}
     </div>
@@ -445,7 +446,7 @@ export function Rationing({ troll }: { troll: ActiveTroll }) {
   if (!hint) return null;
   return (
     <div data-troll-ui className="troll-ration-hint pointer-events-none fixed z-[9400] rounded-full bg-[#5b2fc9] px-3 py-1 font-mono text-xs text-white shadow-lg" style={{ left: hint.x + 12, top: hint.y - 30 }}>
-      🎵 Tic… tac… encore {hint.s} s
+      <SidIcon name="notes" /> Tic… tac… encore {hint.s} s
     </div>
   );
 }

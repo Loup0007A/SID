@@ -13,6 +13,7 @@ import {
   type PopulationActivityPoint,
 } from "@/types/simulation";
 import clsx from "clsx";
+import { SidIcon } from "@/components/icons/SidIcon";
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
@@ -199,7 +200,7 @@ export default function SimulationPage() {
                   <tr key={a.id} className="border-b border-white/5">
                     <td className="p-2">
                       {a.first_name} {a.last_name}
-                      {a.is_child_of_sim && <span className="ml-1 text-paper/40">👶</span>}
+                      {a.is_child_of_sim && <span className="ml-1 text-paper/40"><SidIcon name="baby" /></span>}
                     </td>
                     <td className="p-2">{a.age}</td>
                     <td className="p-2">{a.sex}</td>
@@ -227,7 +228,7 @@ export default function SimulationPage() {
           </div>
 
           <div className="glass-card space-y-3 p-6">
-            <h2 className="font-display text-lg uppercase">📈 Ce qu&apos;ils font (30 derniers jours)</h2>
+            <h2 className="font-display text-lg uppercase"><SidIcon name="chart" /> Ce qu&apos;ils font (30 derniers jours)</h2>
             {activity.every((d) => d.items_bought === 0 && d.shares_bought === 0 && d.children === 0) ? (
               <p className="font-body text-sm text-paper/60">Pas encore assez d&apos;activité à afficher.</p>
             ) : (

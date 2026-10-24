@@ -8,6 +8,7 @@ import { currentUser } from "@/lib/session";
 import { POWERS, TROLLS_REFRESH_EVENT, type ActiveTroll } from "@/lib/titles";
 import dynamic from "next/dynamic";
 import { readOptions } from "@/lib/trollOptions";
+import { SidIcon, GlyphText } from "@/components/icons/SidIcon";
 
 // Chaque effet n'est téléchargé que lorsqu'une farce de ce type vise le
 // membre : sans farce en cours, rien de tout cela n'est chargé.
@@ -198,7 +199,7 @@ export function TrollLayer({ nickname }: { nickname: string }) {
             .filter((t) => t.power !== "defi_dragon")
             .map((t) => (
               <div key={t.id} className="flex items-center gap-2 rounded-full border border-white/15 bg-black/80 px-3 py-1.5 font-mono text-[11px] text-paper shadow-lg backdrop-blur">
-                <span aria-hidden>🎭</span>
+                <span aria-hidden><SidIcon name="masks" /></span>
                 <span className="truncate">
                   <strong>{t.actor}</strong> · {POWERS[t.power]?.name ?? t.power} — {chipText(t)}
                 </span>
@@ -210,7 +211,7 @@ export function TrollLayer({ nickname }: { nickname: string }) {
 
       {toast && (
         <div data-troll-ui className="fixed bottom-3 left-1/2 z-[9450] -translate-x-1/2 rounded-full border border-white/15 bg-black/85 px-4 py-2 font-mono text-xs text-paper shadow-lg">
-          {toast}
+          <GlyphText text={toast} />
         </div>
       )}
     </>

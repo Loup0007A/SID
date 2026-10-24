@@ -580,6 +580,9 @@ body {
   box-shadow: inset 0 0 0 1px rgb(var(--t1-rgb) / 0.45), inset 0 0 42px -12px rgb(var(--t1-rgb) / 0.7);
 }
 .aura-p { position: absolute; display: block; will-change: transform, opacity; }
+@media (hover: hover) {
+  .aura-flatteur .aura-p > svg, .aura-cupidon .aura-p > svg, .aura-maestro .aura-p > svg, .aura-lutin .aura-p > svg, .aura-veilleur .aura-p > svg, .aura-equilibre .aura-p > svg { filter: drop-shadow(0 0 4px currentColor); }
+}
 
 /* Dragon : braises et chaleur */
 .aura-dragon .aura-p {

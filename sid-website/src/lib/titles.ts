@@ -8,6 +8,7 @@
  */
 
 import { commentObtenu } from "@/lib/cachet";
+import type { IconName } from "@/components/icons/sidIcons";
 import type { EventKey } from "@/lib/events";
 
 export type TitleId =
@@ -65,6 +66,8 @@ export interface TitleDef {
   id: TitleId;
   name: string;
   emoji: string;
+  /** Icône S.I.D. (src/components/icons/sidIcons.tsx). */
+  icon: IconName;
   /** Deux couleurs du dégradé (clair → sombre). */
   colors: [string, string];
   maxLevel: number;
@@ -92,6 +95,7 @@ export const TITLES: TitleDef[] = [
     id: "dragon",
     name: "Fléau Draconique",
     emoji: "🐉",
+    icon: "dragon",
     colors: ["#ff7a2f", "#b3121b"],
     maxLevel: 1,
     riddle: "Au-delà du centième étage, un trône attend celui qui terrasse le Primordial.",
@@ -102,6 +106,7 @@ export const TITLES: TitleDef[] = [
     id: "architecte",
     name: "Architecte du Réseau",
     emoji: "🕸️",
+    icon: "web",
     colors: ["#62d8ff", "#2b5cff"],
     maxLevel: 1,
     riddle: "Cent potions, cent énigmes, cent problèmes… et une porte de plus.",
@@ -112,6 +117,7 @@ export const TITLES: TitleDef[] = [
     id: "foudre",
     name: "Éclair Vivant",
     emoji: "⚡",
+    icon: "bolt",
     colors: ["#ffe95c", "#ff8a00"],
     maxLevel: 1,
     riddle: "Le cent-unième circuit ne pardonne pas la moindre hésitation.",
@@ -122,6 +128,7 @@ export const TITLES: TitleDef[] = [
     id: "fantome",
     name: "Fantôme 404",
     emoji: "👻",
+    icon: "ghost",
     colors: ["#ff4df4", "#36e6ff"],
     maxLevel: 5,
     riddle: "Certaines pages n'existent pas. Très rarement, quelque chose y vit.",
@@ -132,6 +139,7 @@ export const TITLES: TitleDef[] = [
     id: "mecene",
     name: "Grand Mécène",
     emoji: "🎁",
+    icon: "gift",
     colors: ["#ffe08a", "#c98a1e"],
     maxLevel: 5,
     riddle: "Les cadeaux d'anniversaire les plus fous finissent toujours par revenir.",
@@ -142,6 +150,7 @@ export const TITLES: TitleDef[] = [
     id: "abyssal",
     name: "Abyssal",
     emoji: "🌊",
+    icon: "wave",
     colors: ["#2ee6d0", "#0b2a6e"],
     maxLevel: 1,
     riddle: "Tout en bas de la page, il y a encore plus bas. Le fond choisit qui il garde.",
@@ -152,6 +161,7 @@ export const TITLES: TitleDef[] = [
     id: "magnat",
     name: "Magnat Insatiable",
     emoji: "💰",
+    icon: "moneyBag",
     colors: ["#9dffbf", "#d9a92b"],
     maxLevel: 1,
     riddle: "Un milliard qui s'envole, vingt paquets qui arrivent, et le soleil ne s'est couché qu'une fois.",
@@ -162,6 +172,7 @@ export const TITLES: TitleDef[] = [
     id: "flatteur",
     name: "Lèche-Bottes Boursier",
     emoji: "💋",
+    icon: "lips",
     colors: ["#ff6b8a", "#b23b2e"],
     maxLevel: 1,
     riddle: "Dis-le en rouge et en gras à qui commande. Puis cours à la bourse avant que l'heure ne tourne.",
@@ -172,6 +183,7 @@ export const TITLES: TitleDef[] = [
     id: "arpenteur",
     name: "Arpenteur des Mondes",
     emoji: "🧭",
+    icon: "compass",
     colors: ["#a6d8ff", "#6a4dff"],
     maxLevel: 1,
     riddle: "Un million de kilomètres. Pas un de moins.",
@@ -182,6 +194,7 @@ export const TITLES: TitleDef[] = [
     id: "scribe",
     name: "Scribe Infini",
     emoji: "🪶",
+    icon: "quill",
     colors: ["#f6e6b8", "#9c6b2f"],
     maxLevel: 1,
     riddle: "Mille lignes d'encre sur une seule page de savoir.",
@@ -192,6 +205,7 @@ export const TITLES: TitleDef[] = [
     id: "metronome",
     name: "Métronome",
     emoji: "🎵",
+    icon: "metronome",
     colors: ["#d2a0ff", "#5b2fc9"],
     maxLevel: 1,
     riddle: "Un mot par jour, pas un de plus, pas un de moins. Pendant toute une lune.",
@@ -202,6 +216,7 @@ export const TITLES: TitleDef[] = [
     id: "juriste",
     name: "Lecteur des Petites Lignes",
     emoji: "📜",
+    icon: "gavel",
     colors: ["#e4e0d6", "#8a6a44"],
     maxLevel: 1,
     riddle: "Ceux qui lisent vraiment les conditions savent sur quoi insister ensuite.",
@@ -212,6 +227,7 @@ export const TITLES: TitleDef[] = [
     id: "chauvesouris",
     name: "Maître des Chauves-Souris",
     emoji: "🦇",
+    icon: "bat",
     colors: ["#ffa24a", "#5b2a86"],
     maxLevel: 1,
     riddle: "Quand les citrouilles s'allument, une aile noire passe parfois seule. Ne la laisse pas filer, encore et encore.",
@@ -223,6 +239,7 @@ export const TITLES: TitleDef[] = [
     id: "lutin",
     name: "Lutin Clandestin",
     emoji: "🧝",
+    icon: "elfHat",
     colors: ["#e6f3ff", "#c8202f"],
     maxLevel: 1,
     riddle: "Il ne passe qu'une fois par nuit au-dessus des archives. Certains soirs, il se laisse attraper.",
@@ -234,6 +251,7 @@ export const TITLES: TitleDef[] = [
     id: "cupidon",
     name: "Cupidon Masqué",
     emoji: "💘",
+    icon: "wingedHeart",
     colors: ["#ff8ab4", "#b3124a"],
     maxLevel: 1,
     riddle: "Quand février rougit, un cœur ailé file au-dessus des pages. Ne le laisse pas s'envoler.",
@@ -245,6 +263,7 @@ export const TITLES: TitleDef[] = [
     id: "farceur",
     name: "Farceur d'Avril",
     emoji: "🐟",
+    icon: "fish",
     colors: ["#ffb08a", "#2d8fd8"],
     maxLevel: 1,
     riddle: "Le premier jour d'avril, des poissons se collent là où personne ne regarde.",
@@ -256,6 +275,7 @@ export const TITLES: TitleDef[] = [
     id: "chasseur",
     name: "Chasseur d'Œufs",
     emoji: "🥚",
+    icon: "basket",
     colors: ["#ffe08a", "#7cc98c"],
     maxLevel: 1,
     riddle: "Quand les cloches reviennent de Rome, elles sèment des œufs dans les recoins du S.I.D.",
@@ -267,6 +287,7 @@ export const TITLES: TitleDef[] = [
     id: "meneur",
     name: "Meneur du 1er Mai",
     emoji: "✊",
+    icon: "fist",
     colors: ["#f4fff6", "#2f8a4f"],
     maxLevel: 1,
     riddle: "Le premier jour de mai, un brin porte-bonheur pousse quelque part sur le site. Cueille-le, encore.",
@@ -278,6 +299,7 @@ export const TITLES: TitleDef[] = [
     id: "maestro",
     name: "Maestro",
     emoji: "🎼",
+    icon: "clef",
     colors: ["#d6b8ff", "#ff7a4a"],
     maxLevel: 1,
     riddle: "Le jour le plus long, une note dorée s'échappe de la scène. Rattrape-la avant qu'elle ne s'éteigne.",
@@ -289,6 +311,7 @@ export const TITLES: TitleDef[] = [
     id: "artificier",
     name: "Artificier",
     emoji: "🎆",
+    icon: "rocket",
     colors: ["#8fb3ff", "#e23a3a"],
     maxLevel: 1,
     riddle: "Le soir de la fête nationale, attrape la fusée avant qu'elle n'éclate.",
@@ -300,6 +323,7 @@ export const TITLES: TitleDef[] = [
     id: "veilleur",
     name: "Veilleur du Souvenir",
     emoji: "🕊️",
+    icon: "bleuet",
     colors: ["#c9d6f2", "#3f6fe0"],
     maxLevel: 1,
     riddle: "Le onzième jour du onzième mois, une fleur bleue invite au silence.",
@@ -311,6 +335,7 @@ export const TITLES: TitleDef[] = [
     id: "veneur",
     name: "Grand Veneur",
     emoji: "🏹",
+    icon: "horn",
     colors: ["#ffb35c", "#7a2e12"],
     maxLevel: 1,
     riddle: "Quand la Grande Chasse est ouverte, des traces griffent les pages. Suis-les jusqu'au bout, et reviens le lendemain.",
@@ -322,6 +347,7 @@ export const TITLES: TitleDef[] = [
     id: "equilibre",
     name: "Enfant de l'Équilibre",
     emoji: "⚖️",
+    icon: "starBalance",
     colors: ["#cfd8ff", "#262b6b"],
     maxLevel: 1,
     riddle: "Les nuits de la Grande Chasse, une étoile file parfois au-dessus de l'accueil. Ceux qui la suivent trouvent un ciel où rien ne penche.",
@@ -500,19 +526,19 @@ export interface EquippedTitle {
 }
 
 /** Les pages qu'on peut rebrancher avec le Réseau détraqué. */
-export const NETWORK_NODES: { href: string; label: string; emoji: string }[] = [
-  { href: "/dashboard", label: "Accueil", emoji: "🏠" },
-  { href: "/dashboard/profile", label: "Dossier", emoji: "🪪" },
-  { href: "/dashboard/chat", label: "Messagerie", emoji: "💬" },
-  { href: "/dashboard/notifications", label: "Notifs", emoji: "🔔" },
-  { href: "/dashboard/quests", label: "Quêtes", emoji: "📜" },
-  { href: "/dashboard/map", label: "Carte", emoji: "🗺️" },
-  { href: "/dashboard/leaderboard", label: "Classement", emoji: "🏆" },
-  { href: "/dashboard/members", label: "Membres", emoji: "👥" },
-  { href: "/dashboard/shop", label: "Boutique", emoji: "🛒" },
-  { href: "/dashboard/bank", label: "Banque", emoji: "🏦" },
-  { href: "/dashboard/tech", label: "Techno", emoji: "🌳" },
-  { href: "/dashboard/titles", label: "Titres", emoji: "🏅" },
+export const NETWORK_NODES: { href: string; label: string; emoji: string; icon: IconName }[] = [
+  { href: "/dashboard", label: "Accueil", emoji: "🏠", icon: "home" },
+  { href: "/dashboard/profile", label: "Dossier", emoji: "🪪", icon: "profile" },
+  { href: "/dashboard/chat", label: "Messagerie", emoji: "💬", icon: "chat" },
+  { href: "/dashboard/notifications", label: "Notifs", emoji: "🔔", icon: "bell" },
+  { href: "/dashboard/quests", label: "Quêtes", emoji: "📜", icon: "scroll" },
+  { href: "/dashboard/map", label: "Carte", emoji: "🗺️", icon: "map" },
+  { href: "/dashboard/leaderboard", label: "Classement", emoji: "🏆", icon: "trophy" },
+  { href: "/dashboard/members", label: "Membres", emoji: "👥", icon: "people" },
+  { href: "/dashboard/shop", label: "Boutique", emoji: "🛒", icon: "cart" },
+  { href: "/dashboard/bank", label: "Banque", emoji: "🏦", icon: "bank" },
+  { href: "/dashboard/tech", label: "Techno", emoji: "🌳", icon: "tree" },
+  { href: "/dashboard/titles", label: "Titres", emoji: "🏅", icon: "medal" },
 ];
 
 /** Événement à déclencher quand un titre vient peut-être d'être gagné. */

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { SidIcon } from "@/components/icons/SidIcon";
 
 /**
  * Simple lien vers /dashboard/notifications, avec juste un badge de
@@ -57,7 +58,7 @@ export function NotificationBell({ userId }: { userId: string }) {
       className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/15 bg-white/5 text-paper hover:bg-white/10"
       aria-label="Notifications"
     >
-      🔔
+      <SidIcon name="bell" />
       {unreadCount > 0 && (
         <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red px-1 font-mono text-[9px] text-ink">
           {unreadCount > 9 ? "9+" : unreadCount}

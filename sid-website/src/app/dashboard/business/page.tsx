@@ -8,6 +8,7 @@ import type { Profile, SalaryFrequency } from "@/types/database";
 import { inputClass, labelClass } from "@/lib/ui";
 import { loadCurrentUser, can } from "@/lib/permissions";
 import { visibleMembers } from "@/lib/visibility";
+import { SidIcon } from "@/components/icons/SidIcon";
 
 const FREQUENCY_LABELS: Record<SalaryFrequency, string> = {
   daily: "Quotidien",
@@ -295,7 +296,7 @@ export default function BusinessPage() {
                 </div>
 
                 <p className="border-t border-white/10 pt-3 font-mono text-[10px] text-paper/50">
-                  📈 Le nombre total d&apos;actions peut augmenter tout seul : si le chiffre d&apos;affaires des 7
+                  <SidIcon name="chart" /> Le nombre total d&apos;actions peut augmenter tout seul : si le chiffre d&apos;affaires des 7
                   derniers jours dépasse {((marketSettings?.growth_revenue_threshold_pct ?? 0.05) * 100).toLocaleString("fr-FR")} % de la
                   capitalisation, l&apos;entreprise émet {((marketSettings?.growth_share_increase_pct ?? 0.02) * 100).toLocaleString("fr-FR")} %
                   d&apos;actions neuves (ajoutées au stock disponible à l&apos;achat), vérifié une fois par semaine.
@@ -368,13 +369,13 @@ export default function BusinessPage() {
                     onClick={() => togglePanel(b.id, "employees")}
                     className="rounded-lg flex-1 border border-blue py-1.5 font-mono text-xs uppercase text-blue hover:bg-blue hover:text-ink"
                   >
-                    {panel === "employees" ? "Masquer les employés" : "👥 Employés"}
+                    {panel === "employees" ? "Masquer les employés" : <><SidIcon name="people" /> Employés</>}
                   </button>
                   <button
                     onClick={() => togglePanel(b.id, "ledger")}
                     className="rounded-lg flex-1 border border-paper/40 py-1.5 font-mono text-xs uppercase text-paper hover:bg-paper hover:text-ink"
                   >
-                    {panel === "ledger" ? "Masquer le registre" : "📒 Registre"}
+                    {panel === "ledger" ? "Masquer le registre" : <><SidIcon name="book" /> Registre</>}
                   </button>
                   <button
                     onClick={() => closeBusiness(b.id, b.name)}

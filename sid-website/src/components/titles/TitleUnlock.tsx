@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { POWERS, TITLE_BY_ID, TITLES_CHANGED_EVENT, isTitleId, roman, type TitleId } from "@/lib/titles";
 import { TitleAuraLayer } from "@/components/titles/TitleVisuals";
+import { SidIcon } from "@/components/icons/SidIcon";
 
 type Unseen = { title_id: TitleId; level: number; upgraded_at: string | null };
 
@@ -52,7 +53,7 @@ export function TitleUnlock({ userId, equipped }: { userId: string; equipped: st
         <TitleAuraLayer titleId={t.id} />
         <div className="relative z-[1] space-y-3">
           <p className="font-mono text-xs uppercase tracking-[0.35em] text-paper/70">{upgraded ? "Titre amélioré" : "Nouveau titre"}</p>
-          <div className="title-unlock-emoji text-7xl" aria-hidden>{t.emoji}</div>
+          <div className="title-unlock-emoji" aria-hidden><SidIcon name={t.icon} size={84} /></div>
           <h2 className="font-display text-3xl uppercase tracking-wide" style={{ color: t.colors[0], textShadow: `0 0 22px ${t.colors[1]}` }}>
             {t.name}
             {t.maxLevel > 1 && <span className="ml-2">{roman(item.level)}</span>}

@@ -12,6 +12,7 @@ import { loadCurrentUser, can } from "@/lib/permissions";
 import { useEquippedTitles } from "@/lib/useEquippedTitles";
 import { TitleAuraLayer, TitleBadge } from "@/components/titles/TitleVisuals";
 import { BirthdayGift } from "@/components/lazy/Seals";
+import { SidIcon } from "@/components/icons/SidIcon";
 
 type VisibleProfile = Partial<Profile> & { id: string; nickname: string };
 type MemberRole = { user_id: string; role_name: string; role_color: string; role_rank: number };
@@ -86,7 +87,7 @@ export default function MemberProfilePage() {
           )}
           {canTroll && (
             <Link href={`/dashboard/titles?target=${profile.id}`} className="mr-3 font-mono text-xs uppercase text-[#ffb15c] underline">
-              🎭 Lui faire une farce
+              <SidIcon name="masks" /> Lui faire une farce
             </Link>
           )}
           {isStaff && (
@@ -95,7 +96,7 @@ export default function MemberProfilePage() {
             </Link>
           )}
           {profile.is_invisible && (
-            <p className="font-mono text-xs text-paper/50">👻 Compte invisible : les autres membres ne voient pas ce dossier.</p>
+            <p className="font-mono text-xs text-paper/50"><SidIcon name="ghost" /> Compte invisible : les autres membres ne voient pas ce dossier.</p>
           )}
           {(profile.first_name || profile.last_name) && (
             <p className="font-mono text-xs text-paper/60">{[profile.first_name, profile.last_name].filter(Boolean).join(" ")}</p>
@@ -119,8 +120,8 @@ export default function MemberProfilePage() {
       <div className="glass-card space-y-2 p-6">
         {profile.age !== undefined && profile.age !== null && <p className="font-mono text-xs text-paper/60">Âge : {profile.age}</p>}
         {profile.desired_role && <p className="font-mono text-xs text-paper/60">Rôle : {profile.desired_role}</p>}
-        {profile.weapons && <p className="font-body text-sm">🗡 {profile.weapons}</p>}
-        {profile.equipment && <p className="font-body text-sm">🎒 {profile.equipment}</p>}
+        {profile.weapons && <p className="font-body text-sm"><SidIcon name="dagger" /> {profile.weapons}</p>}
+        {profile.equipment && <p className="font-body text-sm"><SidIcon name="backpack" /> {profile.equipment}</p>}
         {profile.description && <p className="mt-2 font-body text-sm text-paper/80">{profile.description}</p>}
       </div>
     </div>

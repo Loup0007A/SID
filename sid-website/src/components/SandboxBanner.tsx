@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { PermissionKey } from "@/types/database";
 import { PERMISSION_LABELS, leaveSandbox, savedAdminNickname, timeLeft } from "@/lib/sandbox";
+import { SidIcon } from "@/components/icons/SidIcon";
 
 /** Bandeau affiché en haut de tout le site quand on navigue avec un compte de test. */
 export function SandboxBanner({ nickname, expiresAt, permissions }: { nickname: string; expiresAt: string; permissions: Set<PermissionKey> }) {
@@ -21,7 +22,7 @@ export function SandboxBanner({ nickname, expiresAt, permissions }: { nickname: 
   return (
     <div className="construction-tape" role="status">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2 sm:px-6">
-        <span className="construction-tape-label text-xs sm:text-sm">🧪 Bac à sable</span>
+        <span className="construction-tape-label text-xs sm:text-sm"><SidIcon name="brain" /> Bac à sable</span>
         <span className="rounded bg-ink/85 px-2 py-1 font-mono text-[11px] text-paper">
           Compte de test « {nickname} » · expire dans {timeLeft(expiresAt)} ·{" "}
           {perms.length ? `permissions : ${perms.join(", ")}` : "aucune permission d'administration"}

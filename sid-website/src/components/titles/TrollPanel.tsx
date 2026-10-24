@@ -7,6 +7,7 @@ import { NodeEditor, type NetworkLogic } from "@/components/titles/NodeEditor";
 import { TrollOptionsEditor } from "@/components/titles/TrollOptionsPanel";
 import { arenaCost, arenaPricesFrom, defaultOptions, type TrollOptions } from "@/lib/trollOptions";
 import { inputClass } from "@/lib/ui";
+import { SidIcon, GlyphText } from "@/components/icons/SidIcon";
 
 export type TrollStatus = {
   enabled: boolean;
@@ -174,7 +175,7 @@ export function TrollPanel({
         <div className="space-y-1">
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-paper/50">Pouvoir de {title.name}</p>
           <h2 className="font-display text-2xl uppercase tracking-wide" style={{ color: title.colors[0] }}>
-            {title.emoji} {power.name}
+            <SidIcon name={title.icon} /> {power.name}
           </h2>
           <p className="max-w-xl font-body text-sm text-paper/75">{power.description}</p>
         </div>
@@ -224,7 +225,7 @@ export function TrollPanel({
       {power.key !== "reseau" && opts && (
         <div className="space-y-3 rounded-xl border border-white/10 bg-black/20 p-4">
           <p className="font-mono text-xs uppercase tracking-[0.2em]" style={{ color: title.colors[0] }}>
-            ⚙ Réglages de la farce
+            <SidIcon name="gear" /> Réglages de la farce
           </p>
           <TrollOptionsEditor
             power={power.key}
@@ -243,9 +244,9 @@ export function TrollPanel({
           className="troll-launch rounded-lg px-5 py-2.5 font-display text-sm uppercase tracking-wide text-ink disabled:cursor-not-allowed disabled:opacity-40"
           style={{ background: `linear-gradient(110deg, ${title.colors[0]}, ${title.colors[1]})` }}
         >
-          {busy ? "…" : power.key === "defi_dragon" ? "🐉 Me transformer et provoquer" : "🎭 Lancer la farce"}
+          {busy ? "…" : power.key === "defi_dragon" ? <><SidIcon name="dragon" /> Me transformer et provoquer</> : <><SidIcon name="masks" /> Lancer la farce</>}
         </button>
-        {message && <p className={`font-mono text-xs ${message.ok ? "text-[#7dffb0]" : "text-red"}`}>{message.text}</p>}
+        {message && <p className={`font-mono text-xs ${message.ok ? "text-[#7dffb0]" : "text-red"}`}><GlyphText text={message.text} /></p>}
       </div>
 
       <p className="font-mono text-[10px] text-paper/40">
@@ -267,13 +268,13 @@ export function TrollPanel({
                 {r.cancelled && <span className="text-paper/40">annulée</span>}
                 {r.result?.winner && (
                   <span className="text-paper/60">
-                    {ARENA_RESULT[r.result.winner] ?? r.result.winner}
+                    <GlyphText text={ARENA_RESULT[r.result.winner] ?? r.result.winner} />
                     {r.result.victim_name ? ` · ${r.result.victim_name} y est resté` : ""}
                   </span>
                 )}
                 {r.responses.length > 0 && (
                   <span className="text-paper/60">
-                    {r.responses.slice(0, 6).map((x) => `${x.who} ${RESULT_LABELS[x.result] ?? x.result}`).join(" · ")}
+                    <GlyphText text={r.responses.slice(0, 6).map((x) => `${x.who} ${RESULT_LABELS[x.result] ?? x.result}`).join(" · ")} />
                     {r.responses.length > 6 ? ` · +${r.responses.length - 6}` : ""}
                   </span>
                 )}

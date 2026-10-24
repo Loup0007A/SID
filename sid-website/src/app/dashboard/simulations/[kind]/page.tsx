@@ -24,6 +24,7 @@ import type { RealtimeChannel } from "@supabase/supabase-js";
 import { connectRaid, sendRaidEvent, type ActiveRaid, type BossRaid } from "@/lib/bossRaids";
 import { BloodLockout } from "@/components/BloodLockout";
 import { announceActivity } from "@/lib/presence";
+import { SidIcon, GlyphText } from "@/components/icons/SidIcon";
 
 const RUN_STATUS_LABELS: Record<SimulationRunStatus, string> = {
   started: "En cours",
@@ -497,7 +498,7 @@ export default function SimulationPage() {
 
       <div className="flex flex-wrap items-center gap-4">
         <span className="text-5xl" aria-hidden>
-          {site.emoji}
+          <SidIcon name={site.icon} size="1em" />
         </span>
         <div>
           <h1 className="font-display text-3xl uppercase tracking-wide text-red">{site.label}</h1>
@@ -534,7 +535,7 @@ export default function SimulationPage() {
                 notice.tone === "info" && "border-white/15 bg-white/5 text-paper/80"
               )}
             >
-              {notice.text}
+              <GlyphText text={notice.text} />
             </p>
           )}
           {session ? (
@@ -645,7 +646,7 @@ export default function SimulationPage() {
               {resets > 0 && (
                 <div className="space-y-2 border-t border-white/10 pt-3">
                   <p className="font-mono text-xs text-paper/60">
-                    ⏳ Réinitialisations des délais : <span className="text-paper">{resets}</span>
+                    <SidIcon name="hourglass" /> Réinitialisations des délais : <span className="text-paper">{resets}</span>
                   </p>
                   <button
                     onClick={applyCooldownReset}
@@ -667,7 +668,7 @@ export default function SimulationPage() {
 
       {site.kind === "donjons" && (
         <section className="space-y-2">
-          <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-paper/50">⚔️ Raids en cours</h2>
+          <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-paper/50"><SidIcon name="swords" /> Raids en cours</h2>
           {raids.length === 0 ? (
             <p className="glass-card px-4 py-3 font-body text-sm text-paper/60">
               Aucun appel à l&apos;aide pour le moment. Si tu tombes face à un gardien, le jeu te proposera de demander de
@@ -688,7 +689,7 @@ export default function SimulationPage() {
                   >
                     <div className="font-mono text-xs">
                       <p className="text-paper">
-                        {r.dragon ? "🐉" : "👑"} <strong>{r.host_nickname ?? "Un membre"}</strong> appelle à l&apos;aide
+                        <SidIcon name={r.dragon ? "dragon" : "crown"} /> <strong>{r.host_nickname ?? "Un membre"}</strong> appelle à l&apos;aide
                         {mine && <span className="text-paper/50"> (ton raid)</span>}
                       </p>
                       <p className="text-paper/60">

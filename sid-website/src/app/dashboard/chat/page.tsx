@@ -13,6 +13,7 @@ import { isTrollCommand, playTrollEffect, TROLL_COMMANDS } from "@/lib/trollEffe
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { useEquippedTitles } from "@/lib/useEquippedTitles";
 import { TitleBadge } from "@/components/titles/TitleVisuals";
+import { SidIcon, GlyphText } from "@/components/icons/SidIcon";
 
 const COLOR_PRESETS = ["#D99A9A", "#8FB3D9", "#E8C547", "#3F8F5F", "#B23B2E", ""] as const;
 
@@ -364,7 +365,7 @@ function ChatInner() {
           {showNew ? "Annuler" : "Nouvelle discussion"}
         </button>
 
-        {message && <p className="rounded-lg bg-red/10 px-2 py-1 font-mono text-xs text-red">{message}</p>}
+        {message && <p className="rounded-lg bg-red/10 px-2 py-1 font-mono text-xs text-red"><GlyphText text={message} /></p>}
 
         {showNew && (
           <div className="glass-card space-y-3 p-3">
@@ -525,7 +526,7 @@ function ChatInner() {
                         {m.content}
                         {m.troll_tag?.kind === "flatterie" && (
                           <span className="ml-1 font-bold not-italic" style={{ color: m.troll_tag.color || "#B23B2E" }} title={`Flatterie obligatoire : une farce de ${m.troll_tag.by}`}>
-                            … et {m.troll_tag.by} {m.troll_tag.phrase || "est le meilleur !"} 🎭
+                            … et {m.troll_tag.by} {m.troll_tag.phrase || "est le meilleur !"} <SidIcon name="masks" />
                           </span>
                         )}
                         {m.edited_at && <span className="ml-1 font-mono text-[10px] opacity-60">(modifié)</span>}
@@ -565,7 +566,7 @@ function ChatInner() {
                     className="ml-auto rounded border border-white/20 px-2 py-0.5 font-mono text-xs text-paper/70 hover:border-blue hover:text-blue-light"
                     title="Commandes disponibles"
                   >
-                    😈 /commandes
+                    <SidIcon name="demon" /> /commandes
                   </button>
                 )}
               </div>
@@ -586,7 +587,7 @@ function ChatInner() {
                     onClick={() => setDraft("/troll")}
                     className="rounded border border-red/50 px-2 py-0.5 font-mono text-[10px] uppercase text-red hover:bg-red hover:text-ink"
                   >
-                    /troll (aléatoire) 😈
+                    /troll (aléatoire) <SidIcon name="demon" />
                   </button>
                 </div>
               )}

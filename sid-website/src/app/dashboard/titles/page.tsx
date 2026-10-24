@@ -8,6 +8,7 @@ import { EVENTS, EVENT_TITLES, POWERS, SECRET_TITLES, TITLES, TITLE_BY_ID, isTit
 import { useSiteDecor } from "@/components/seasonal/siteDecor";
 import { TitleAuraLayer, TitleBadge, titleStyle } from "@/components/titles/TitleVisuals";
 import { TrollPanel, type TrollStatus } from "@/components/titles/TrollPanel";
+import { SidIcon } from "@/components/icons/SidIcon";
 
 type Owned = { title_id: TitleId; level: number; obtained_at: string };
 
@@ -88,9 +89,13 @@ function TitlesInner() {
           <p className="font-body text-sm italic text-paper/60">« {t.riddle} »</p>
             {t.event && (
               <p className={`font-mono text-[10px] uppercase tracking-wide ${decor?.[t.event] ? "text-[#9fe3cf]" : "text-paper/40"}`}>
-                {decor?.[t.event]
-                  ? `${EVENTS[t.event].emoji} À chercher maintenant, pendant ${EVENTS[t.event].name}`
-                  : `Revient à ${EVENTS[t.event].name} (${EVENTS[t.event].period})`}
+                {decor?.[t.event] ? (
+                  <>
+                    <SidIcon name={EVENTS[t.event].icon} /> À chercher maintenant, pendant {EVENTS[t.event].name}
+                  </>
+                ) : (
+                  `Revient à ${EVENTS[t.event].name} (${EVENTS[t.event].period})`
+                )}
               </p>
             )}
         </div>
@@ -102,7 +107,7 @@ function TitlesInner() {
         <EventRibbon t={t} />
         <div className="relative z-[1] flex h-full flex-col gap-2">
           <div className="flex items-center gap-3">
-            <span className="text-3xl drop-shadow" aria-hidden>{t.emoji}</span>
+            <SidIcon name={t.icon} size={40} className="drop-shadow" />
             <div className="min-w-0">
               <p className="font-display text-lg uppercase leading-tight tracking-wide" style={{ color: t.colors[0] }}>
                 {t.name}
@@ -155,8 +160,8 @@ function TitlesInner() {
       <div className={`glass-card relative overflow-hidden p-6 ${equipped ? "min-h-[150px]" : ""}`}>
         {equipped && <TitleAuraLayer titleId={equipped.id} dragon={dragon} />}
         <div className="relative z-[1] flex flex-wrap items-center gap-4">
-          <div className="text-5xl drop-shadow-lg" aria-hidden>
-            {equipped ? equipped.emoji : "🏷️"}
+          <div className="drop-shadow-lg" aria-hidden>
+            <SidIcon name={equipped ? (dragon ? "dragon" : equipped.icon) : "tag"} size={60} />
           </div>
           <div className="min-w-0 flex-1 space-y-1">
             <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-paper/60">Titre équipé</p>
@@ -184,7 +189,7 @@ function TitlesInner() {
       </div>
 
       {equipped && status.shielded && (
-        <p className="font-mono text-xs text-paper/50">🛡 L&apos;administration t&apos;a mis à l&apos;abri des farces des autres.</p>
+        <p className="font-mono text-xs text-paper/50"><SidIcon name="shield" /> L&apos;administration t&apos;a mis à l&apos;abri des farces des autres.</p>
       )}
 
       {equipped && <TrollPanel status={status} myId={me.id} myName={me.nickname} initialTarget={params.get("target")} onChange={load} />}
@@ -209,7 +214,7 @@ function EventRibbon({ t }: { t: TitleDef }) {
   if (!t.event) return null;
   return (
     <span className="event-title-ribbon z-[2]" style={{ background: `linear-gradient(90deg, ${t.colors[0]}, ${t.colors[1]})` }}>
-      {EVENTS[t.event].emoji} {EVENTS[t.event].name}
+      <SidIcon name={EVENTS[t.event].icon} size="1.25em" /> {EVENTS[t.event].name}
     </span>
   );
 }

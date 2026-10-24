@@ -1,3 +1,4 @@
+import type { IconName } from "@/components/icons/sidIcons";
 /**
  * Présence en ligne (Lot 37) : ce que fait chaque membre en ce moment.
  *
@@ -63,28 +64,28 @@ const PHRASES: Record<string, string> = {
 };
 
 /** Ce qu'on affiche pour l'activité d'un membre. */
-export function activityOf(m: Pick<OnlineMember, "page" | "extra" | "masked">): { emoji: string; text: string; muted?: boolean } {
-  if (m.page == null) return { emoji: "🔒", text: "Activité masquée", muted: true };
-  if (m.extra === "arene_dragon") return { emoji: "🐉", text: "Dragon dans l'arène" };
-  if (m.extra === "arene_joueur") return { emoji: "⚔️", text: "Combat un dragon" };
-  if (m.extra === "arene_tribune") return { emoji: "🎥", text: "En tribune de l'arène" };
+export function activityOf(m: Pick<OnlineMember, "page" | "extra" | "masked">): { icon: IconName; text: string; muted?: boolean } {
+  if (m.page == null) return { icon: "padlock", text: "Activité masquée", muted: true };
+  if (m.extra === "arene_dragon") return { icon: "dragon", text: "Dragon dans l'arène" };
+  if (m.extra === "arene_joueur") return { icon: "swords", text: "Combat un dragon" };
+  if (m.extra === "arene_tribune") return { icon: "camera", text: "En tribune de l'arène" };
 
   const page = m.page;
-  if (page === "/dashboard") return { emoji: "🏠", text: "Sur l'accueil" };
-  if (page.startsWith("/dashboard/profile/")) return { emoji: "🪪", text: "Consulte un dossier" };
-  if (page === "/dashboard/admin") return { emoji: "🛡️", text: "Dans l'administration" };
+  if (page === "/dashboard") return { icon: "home", text: "Sur l'accueil" };
+  if (page.startsWith("/dashboard/profile/")) return { icon: "idcard", text: "Consulte un dossier" };
+  if (page === "/dashboard/admin") return { icon: "shieldUser", text: "Dans l'administration" };
 
   const sim = page.match(/^\/dashboard\/simulations\/([a-z]+)/);
   if (sim && sim[1] in SIMULATION_SITES) {
     const kind = sim[1] as SimulationKind;
     const site = SIMULATION_SITES[kind];
-    return m.extra === "jeu" ? { emoji: site.emoji, text: PLAYING[kind] } : { emoji: site.emoji, text: `Prépare une partie (${site.label})` };
+    return m.extra === "jeu" ? { icon: site.icon, text: PLAYING[kind] } : { icon: site.icon, text: `Prépare une partie (${site.label})` };
   }
 
   const entry = entryForPath(page);
-  if (!entry) return { emoji: "🧭", text: "Quelque part sur le site" };
-  if (entry.group === "admin") return { emoji: entry.emoji, text: `Administration · ${entry.label}` };
-  return { emoji: entry.emoji, text: PHRASES[entry.key] ?? entry.label };
+  if (!entry) return { icon: "compass", text: "Quelque part sur le site" };
+  if (entry.group === "admin") return { icon: entry.icon, text: `Administration · ${entry.label}` };
+  return { icon: entry.icon, text: PHRASES[entry.key] ?? entry.label };
 }
 
 /** « depuis 12 min », « depuis 1 h 05 ». */

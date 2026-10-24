@@ -7,6 +7,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { useSiteDecor } from "@/components/seasonal/siteDecor";
 import { Brasombre, Fang, HuntHorn, Pennant } from "@/components/seasonal/chasseArt";
+import { SidIcon } from "@/components/icons/SidIcon";
 
 /**
  * « La Grande Chasse » (Lot 46) : semaine des chasseurs autour du 11 mars.
@@ -321,7 +322,7 @@ export function ChasseGreeting() {
     if (!on) return setText(null);
     const { month, day } = parisDay();
     const pool = parisNight() ? NIGHT_GREETINGS : GREETINGS;
-    setText(month === 3 && day === 11 && !parisNight() ? "Grand jour de chasse : le cor sonne pour l'anniversaire de la Grande Chasse ! 🎉" : pool[Math.floor(Math.random() * pool.length)]);
+    setText(month === 3 && day === 11 && !parisNight() ? "Grand jour de chasse : le cor sonne pour l'anniversaire de la Grande Chasse !" : pool[Math.floor(Math.random() * pool.length)]);
   }, [on]);
   if (!on || !text) return null;
   return <p className="gc-greeting mt-1 font-body text-sm italic">{text}</p>;
@@ -432,7 +433,7 @@ export function ChasseBoard() {
   return (
     <section className="gc-board" aria-label="Tableau de chasse">
       <header className="gc-board-head">
-        <span className="gc-board-title">🏹 Tableau de chasse</span>
+        <span className="gc-board-title"><SidIcon name="bow" /> Tableau de chasse</span>
         <span className="gc-board-sub">La Grande Chasse · du 9 au 15 mars{countdown ? ` · ${countdown}` : ""}</span>
       </header>
       <div className="gc-board-grid">
@@ -476,7 +477,7 @@ export function ChasseBoard() {
             <ol className="gc-top">
               {board.top.map((t, i) => (
                 <li key={t.nickname + i}>
-                  <span className="gc-rank">{["🥇", "🥈", "🥉", "4.", "5."][i]}</span>
+                  <span className="gc-rank">{i < 3 ? <SidIcon name={(["podium1", "podium2", "podium3"] as const)[i]} /> : `${i + 1}.`}</span>
                   <span className="gc-name">{t.nickname}</span>
                   <span className="gc-score">
                     {t.days} j · {t.hunts} chasse{t.hunts > 1 ? "s" : ""}
@@ -490,7 +491,7 @@ export function ChasseBoard() {
         </div>
       </div>
       <footer className="gc-board-foot">
-        <span>💡 {tip}</span>
+        <span><SidIcon name="bulb" /> {tip}</span>
         <Link href="/dashboard/titles" scroll={false} className="gc-board-link">
           Les titres de la saison →
         </Link>

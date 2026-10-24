@@ -7,6 +7,7 @@ import type { Wallet, BankAccount } from "@/types/database";
 import type { BusinessSharePricePoint, MarketEntry, MarketSettings, MyShareholding, SellResult } from "@/types/business";
 import { LineChart } from "@/components/LineChart";
 import { inputClass, labelClass } from "@/lib/ui";
+import { SidIcon } from "@/components/icons/SidIcon";
 
 const cr = (n: number, digits = 2) => `${n.toLocaleString("fr-FR", { maximumFractionDigits: digits })} z`;
 
@@ -166,7 +167,7 @@ export default function BankPage() {
 
       {isInDebt && (
         <p className="glass-card border border-red/50 p-4 font-body text-sm text-red">
-          ⚠️ Ton solde est négatif — les intérêts d&apos;emprunt impayés t&apos;empêchent d&apos;acheter quoi que ce
+          <SidIcon name="warning" /> Ton solde est négatif — les intérêts d&apos;emprunt impayés t&apos;empêchent d&apos;acheter quoi que ce
           soit en boutique tant qu&apos;il n&apos;est pas remonté à 0 ou plus. Rembourse ton emprunt ou attends tes
           prochains revenus (salaire, quêtes…) pour te refaire.
         </p>
@@ -351,7 +352,7 @@ export default function BankPage() {
                     onClick={() => toggleChart(b.id)}
                     className="mt-3 font-mono text-[10px] uppercase text-blue-light underline"
                   >
-                    {openChartId === b.id ? "Masquer le graphique" : "📈 Voir le graphique du cours"}
+                    {openChartId === b.id ? "Masquer le graphique" : <><SidIcon name="chart" /> Voir le graphique du cours</>}
                   </button>
 
                   {openChartId === b.id && (

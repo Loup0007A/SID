@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import clsx from "clsx";
 import { createClient } from "@/lib/supabase/client";
 import { currentUser } from "@/lib/session";
+import { SidIcon, Glyph } from "@/components/icons/SidIcon";
 
 interface TechNode {
   key: string;
@@ -131,7 +132,7 @@ export default function TechTreePage() {
                     >
                       <div className="flex items-center gap-3">
                         <span className="text-3xl" aria-hidden>
-                          {n.emoji}
+                          <Glyph e={n.emoji} size="1em" />
                         </span>
                         <div className="min-w-0">
                           <p className="font-display uppercase tracking-wide">{n.label}</p>
@@ -151,7 +152,7 @@ export default function TechTreePage() {
                       )}
                       {locked && req && (
                         <p className="font-mono text-[11px] text-paper/60">
-                          🔒 Nécessite « {req.label} » niveau {n.requires_level}
+                          <SidIcon name="padlock" /> Nécessite « {req.label} » niveau {n.requires_level}
                         </p>
                       )}
                       {maxed || rankMaxed ? (

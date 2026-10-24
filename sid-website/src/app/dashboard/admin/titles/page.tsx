@@ -6,6 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { POWERS, TITLES, TITLE_BY_ID, isTitleId, roman, type TitleId, type TrollPower } from "@/lib/titles";
 import { inputClass } from "@/lib/ui";
+import { SidIcon } from "@/components/icons/SidIcon";
 
 type Overview = {
   enabled: boolean;
@@ -120,12 +121,12 @@ export default function AdminTitlesPage() {
             onClick={() => run(() => supabase.rpc("set_troll_shield", { p_user: shieldUser, p_on: true, p_reason: shieldReason }), "Bouclier posé.")}
             className="rounded-lg bg-blue px-4 py-2 font-display text-sm uppercase text-ink disabled:opacity-40"
           >
-            🛡 Protéger
+            <SidIcon name="shieldUser" /> Protéger
           </button>
         </div>
         {data.shields.map((s) => (
           <div key={s.user_id} className="flex flex-wrap items-center gap-2 font-mono text-xs">
-            <span>🛡 {s.nickname}</span>
+            <span><SidIcon name="shieldUser" /> {s.nickname}</span>
             {s.reason && <span className="text-paper/50">« {s.reason} »</span>}
             <button onClick={() => run(() => supabase.rpc("set_troll_shield", { p_user: s.user_id, p_on: false }), "Bouclier retiré.")} className="ml-auto text-red underline">
               Retirer
@@ -146,7 +147,7 @@ export default function AdminTitlesPage() {
           </select>
           <select className={inputClass} value={grantTitle} onChange={(e) => setGrantTitle(e.target.value as TitleId)}>
             {TITLES.map((t) => (
-              <option key={t.id} value={t.id}>{t.emoji} {t.name}</option>
+              <option key={t.id} value={t.id}>{t.name}</option>
             ))}
           </select>
           <button
@@ -167,7 +168,7 @@ export default function AdminTitlesPage() {
             return (
               <div key={t.id} className="glass-card space-y-2 p-4">
                 <p className="font-display uppercase" style={{ color: t.colors[0] }}>
-                  {t.emoji} {t.name} <span className="font-mono text-xs text-paper/50">({list.length})</span>
+                  <SidIcon name={t.icon} /> {t.name} <span className="font-mono text-xs text-paper/50">({list.length})</span>
                 </p>
                 <p className="font-mono text-[10px] text-paper/45">{t.how}</p>
                 {list.length === 0 && <p className="font-body text-xs text-paper/40">Personne.</p>}

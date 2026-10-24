@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SidIcon } from "@/components/icons/SidIcon";
 
 /** Lien vers /dashboard/settings, même gabarit que NotificationBell (bouton rond, icône seule). */
 export function SettingsButton() {
@@ -9,7 +10,7 @@ export function SettingsButton() {
       aria-label="Réglages"
       title="Réglages"
     >
-      ⚙️
+      <SidIcon name="gear" />
     </Link>
   );
 }

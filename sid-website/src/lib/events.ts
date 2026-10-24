@@ -1,3 +1,4 @@
+import type { IconName } from "@/components/icons/sidIcons";
 /**
  * Les événements du S.I.D. : même clé que le réglage d'affichage en base
  * (site_decor / set_site_decor, Modération → Affichage événementiel) et que
@@ -19,6 +20,7 @@ export type EventInfo = {
   key: EventKey;
   name: string;
   emoji: string;
+  icon: IconName;
   /** Période automatique, en clair. */
   period: string;
   /** Couleur du libellé « affiché en ce moment » (Modération). */
@@ -32,6 +34,7 @@ export const EVENT_LIST: EventInfo[] = [
     key: "saint_valentin",
     name: "Saint-Valentin",
     emoji: "💘",
+    icon: "heartArrow",
     period: "du 10 au 14 février",
     color: "#ff7aa8",
     description:
@@ -41,6 +44,7 @@ export const EVENT_LIST: EventInfo[] = [
     key: "poisson_avril",
     name: "Poisson d'avril",
     emoji: "🐟",
+    icon: "fish",
     period: "le 1er avril",
     color: "#7fd8ff",
     description:
@@ -50,6 +54,7 @@ export const EVENT_LIST: EventInfo[] = [
     key: "paques",
     name: "Pâques",
     emoji: "🥚",
+    icon: "egg",
     period: "du Vendredi saint au lundi de Pâques",
     color: "#ffd86b",
     description:
@@ -59,6 +64,7 @@ export const EVENT_LIST: EventInfo[] = [
     key: "premier_mai",
     name: "1er mai",
     emoji: "🌿",
+    icon: "muguet",
     period: "le 1er mai",
     color: "#b7f5c9",
     description:
@@ -68,6 +74,7 @@ export const EVENT_LIST: EventInfo[] = [
     key: "fete_musique",
     name: "Fête de la musique",
     emoji: "🎵",
+    icon: "notes",
     period: "le 21 juin",
     color: "#c9a6ff",
     description:
@@ -77,6 +84,7 @@ export const EVENT_LIST: EventInfo[] = [
     key: "quatorze_juillet",
     name: "14 juillet",
     emoji: "🎆",
+    icon: "firework",
     period: "les 13 et 14 juillet",
     color: "#7fb2ff",
     description:
@@ -86,6 +94,7 @@ export const EVENT_LIST: EventInfo[] = [
     key: "armistice",
     name: "11 novembre",
     emoji: "🕊️",
+    icon: "dove",
     period: "le 11 novembre",
     color: "#9db7e8",
     description:
@@ -95,6 +104,7 @@ export const EVENT_LIST: EventInfo[] = [
     key: "grande_chasse",
     name: "La Grande Chasse",
     emoji: "🏹",
+    icon: "bow",
     period: "du 9 au 15 mars",
     color: "#ffb35c",
     description:
@@ -104,6 +114,7 @@ export const EVENT_LIST: EventInfo[] = [
     key: "halloween",
     name: "Halloween",
     emoji: "🎃",
+    icon: "pumpkin",
     period: "du 15 octobre au 2 novembre",
     color: "#ff9a3c",
     description:
@@ -113,6 +124,7 @@ export const EVENT_LIST: EventInfo[] = [
     key: "noel",
     name: "Noël",
     emoji: "🎄",
+    icon: "fir",
     period: "du 1er décembre au 6 janvier",
     color: "#9fe3cf",
     description:

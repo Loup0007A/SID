@@ -1,3 +1,4 @@
+import type { IconName } from "@/components/icons/sidIcons";
 /**
  * Les trois simulations externes qui font progresser les facteurs de
  * puissance. C'est ICI qu'on branche un site quand il est prêt :
@@ -60,6 +61,7 @@ export interface SimulationSite {
   factor: StatKey;
   description: string;
   emoji: string;
+  icon: IconName;
   /** Dépôt GitHub du site. */
   repo: string;
   url: string | null;
@@ -74,6 +76,7 @@ export const SIMULATION_SITES: Record<SimulationKind, SimulationSite> = {
     factor: "strength",
     description: "100 niveaux : une île, ses reliques, son gardien et son portail. Chaque niveau terminé rapporte +1 Puissance (Puissance N = niveau N+1 ouvert).",
     emoji: "🏰",
+    icon: "castle",
     repo: "Loup0007A/3D-game-world",
     url: "https://loup0007a.github.io/3D-game-world/",
     inDevelopment: false,
@@ -85,6 +88,7 @@ export const SIMULATION_SITES: Record<SimulationKind, SimulationSite> = {
     factor: "intelligence",
     description: "Prépare des potions pour gagner en intelligence.",
     emoji: "🧪",
+    icon: "brain",
     repo: "Loup0007A/Potions",
     url: "https://intelligence-seven-henna.vercel.app/",
     inDevelopment: false,
@@ -96,6 +100,7 @@ export const SIMULATION_SITES: Record<SimulationKind, SimulationSite> = {
     factor: "technique",
     description: "Maîtrise de nouvelles techniques.",
     emoji: "🥋",
+    icon: "gi",
     repo: "Loup0007A/Techniques",
     url: "https://techniques-delta.vercel.app/",
     inDevelopment: false,

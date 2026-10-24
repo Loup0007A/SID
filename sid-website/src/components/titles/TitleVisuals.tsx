@@ -3,6 +3,8 @@
 import { useMemo } from "react";
 import type { CSSProperties } from "react";
 import { TITLE_BY_ID, titleLabel, type TitleId } from "@/lib/titles";
+import { SidIcon } from "@/components/icons/SidIcon";
+import { MiniGlyph } from "@/components/seasonal/minis";
 
 /** "#ff7a2f" -> "255 122 47" (pour rgb(var(--x) / alpha), compatible vieux Safari). */
 function rgbTriplet(hex: string): string {
@@ -43,7 +45,7 @@ export function TitleBadge({
       style={titleStyle(titleId)}
       title={dragon ? `${t.name} — forme draconique` : titleLabel(titleId, level)}
     >
-      <span aria-hidden className="title-badge-emoji">{dragon ? "🐉" : t.emoji}</span>
+      <SidIcon name={dragon ? "dragon" : t.icon} className="title-badge-emoji" />
       <span className="title-badge-text">{dragon ? "Forme draconique" : titleLabel(titleId, level)}</span>
     </span>
   );
@@ -75,7 +77,7 @@ const PARTICLES: Partial<Record<TitleId, { count: number; glyphs?: string[] }>> 
   meneur: { count: 20, glyphs: ["•", "•", "◦"] },
   maestro: { count: 14, glyphs: ["♪", "♫", "♬", "♩"] },
   artificier: { count: 24 },
-  veilleur: { count: 10, glyphs: ["✿", "❀"] },
+  veilleur: { count: 10, glyphs: ["❋", "❋", "✿"] },
   veneur: { count: 16 },
   equilibre: { count: 22, glyphs: ["✦", "·", "✧", "·", "·"] },
 };
@@ -107,7 +109,7 @@ export function TitleAuraLayer({ titleId, dragon = false, compact = false }: { t
     <div className={`aura-layer aura-${titleId}`} style={titleStyle(titleId)} aria-hidden>
       {parts.map((p) => (
         <span key={p.i} className="aura-p" style={p.style}>
-          {p.glyph}
+          {p.glyph && <MiniGlyph g={p.glyph} />}
         </span>
       ))}
 

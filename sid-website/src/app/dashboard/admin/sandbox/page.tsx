@@ -6,6 +6,7 @@ import { loadCurrentUser, can } from "@/lib/permissions";
 import type { PermissionKey, Profile } from "@/types/database";
 import { inputClass, labelClass, buttonPrimary, buttonGhostBlue, buttonGhostRed, buttonOutline } from "@/lib/ui";
 import { ALL_PERMISSIONS, PERMISSION_LABELS, enterSandbox, timeLeft } from "@/lib/sandbox";
+import { SidIcon } from "@/components/icons/SidIcon";
 
 type SandboxRow = {
   user_id: string;
@@ -186,7 +187,7 @@ export default function SandboxPage() {
 
       {creds && (
         <div className="glass-card space-y-3 border-blue/40 p-5">
-          <h2 className="font-display text-lg uppercase">🧪 {creds.nickname}</h2>
+          <h2 className="font-display text-lg uppercase"><SidIcon name="brain" /> {creds.nickname}</h2>
           <div className="grid gap-1 font-mono text-sm sm:grid-cols-[auto_1fr] sm:gap-x-4">
             <span className="text-paper/60">Email</span>
             <span className="break-all select-all">{creds.email}</span>
@@ -256,7 +257,7 @@ export default function SandboxPage() {
             Sans permission cochée, c&apos;est un simple membre. Tu ne peux donner que les permissions que tu as toi-même.
             {form.perms.has("manage_users") && (
               <span className="block text-red">
-                ⚠ Avec « Gestion des comptes », le compte de test pourra agir sur les vrais comptes (bannir, muter, mots de passe…).
+                <SidIcon name="warning" /> Avec « Gestion des comptes », le compte de test pourra agir sur les vrais comptes (bannir, muter, mots de passe…).
               </span>
             )}
           </p>
@@ -274,7 +275,7 @@ export default function SandboxPage() {
           <div key={r.user_id} className="glass-card flex flex-wrap items-center gap-3 p-4">
             <div className="min-w-[12rem] flex-1 space-y-1">
               <p className="font-display uppercase">
-                🧪 {r.nickname} <span className="font-mono text-xs normal-case text-paper/60">· rang {r.member_rank}</span>
+                <SidIcon name="brain" /> {r.nickname} <span className="font-mono text-xs normal-case text-paper/60">· rang {r.member_rank}</span>
               </p>
               <p className="font-mono text-xs text-paper/60">
                 {r.expired ? <span className="text-red">Expiré</span> : <>Expire dans {timeLeft(r.expires_at)}</>}

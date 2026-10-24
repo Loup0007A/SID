@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { readOptions, FANFARE_TEMPOS, LOVE_COLORS } from "@/lib/trollOptions";
 import type { ActiveTroll } from "@/lib/titles";
-import { Bells, Bleuet, Dove, Egg, PaperFish, Patrouille } from "@/components/seasonal/drawings";
+import { Bells, BleuetStem, Dove, Egg, PaperFish, Patrouille } from "@/components/seasonal/drawings";
+import { Mini, type MiniKind } from "@/components/seasonal/minis";
+import { SidIcon } from "@/components/icons/SidIcon";
 
 /**
  * Farces des titres de fête (Lot 44). Tout est posé dans des calques fixes ;
@@ -71,12 +73,12 @@ export function LoveStorm({ troll }: { troll: ActiveTroll }) {
           }
           onAnimationEnd={() => hearts.remove(h.id)}
         >
-          ♥
+          <Mini kind={h.id % 4 === 0 ? "heartLine" : "heart"} />
         </span>
       ))}
       {banner > 0 && (
         <div key={banner} className="troll-love-banner" style={{ color: palette[0] }}>
-          <span>♥</span> {troll.actor} <span>♥</span>
+          <span><Mini kind="heart" className="troll-love-heart" /></span> {troll.actor} <span><Mini kind="heart" className="troll-love-heart" /></span>
         </div>
       )}
     </div>
@@ -150,11 +152,11 @@ export function AprilFools({ troll }: { troll: ActiveTroll }) {
         <div className={`troll-fake-notif ${fake.revealed ? "is-revealed" : ""}`}>
           {fake.revealed ? (
             <>
-              <strong>🐟 Poisson d&apos;avril !</strong> <span>signé {troll.actor}</span>
+              <strong><SidIcon name="fish" /> Poisson d&apos;avril !</strong> <span>signé {troll.actor}</span>
             </>
           ) : (
             <>
-              <strong>🔔 Nouvelle notification</strong> <span>{fake.text}</span>
+              <strong><SidIcon name="bell" /> Nouvelle notification</strong> <span>{fake.text}</span>
             </>
           )}
         </div>
@@ -288,7 +290,7 @@ export function GeneralStrike({ troll }: { troll: ActiveTroll }) {
           onClick={(e) => e.stopPropagation()}
           title="Ce bouton est en grève."
         >
-          <span>EN GRÈVE ✊</span>
+          <span>EN GRÈVE <SidIcon name="fist" /></span>
         </div>
       ))}
       {march > 0 && (
@@ -308,8 +310,8 @@ export function GeneralStrike({ troll }: { troll: ActiveTroll }) {
 /* ---------------------------------------------------------------
    Fanfare (Maestro)
    --------------------------------------------------------------- */
-type FloatNote = { id: number; x: number; y?: number; g: string; t: number; color: string; dx: number };
-const NOTE_GLYPHS = ["♪", "♫", "♬", "♩"];
+type FloatNote = { id: number; x: number; y?: number; g: MiniKind; t: number; color: string; dx: number };
+const NOTE_GLYPHS: MiniKind[] = ["note", "notes", "noteBeam", "noteQuarter"];
 const NOTE_COLORS = ["#c9a6ff", "#ff9c6e", "#6ec8ff", "#ffe14d"];
 
 export function Fanfare({ troll }: { troll: ActiveTroll }) {
@@ -344,11 +346,11 @@ export function Fanfare({ troll }: { troll: ActiveTroll }) {
           style={{ left: n.y != null ? n.x : `${n.x}%`, top: n.y, color: n.color, animationDuration: `${n.t}s`, "--dx": `${n.dx}px` } as React.CSSProperties}
           onAnimationEnd={() => notes.remove(n.id)}
         >
-          {n.g}
+          <Mini kind={n.g} />
         </span>
       ))}
       <div className="troll-baton" aria-hidden>
-        🎼
+        <SidIcon name="clef" />
       </div>
     </div>
   );
@@ -420,7 +422,7 @@ export function Truce({ troll }: { troll: ActiveTroll }) {
     <div data-troll-ui className="pointer-events-none fixed inset-0 z-[9050] overflow-hidden">
       <div className="troll-truce-field">
         {Array.from({ length: 16 }, (_, i) => (
-          <Bleuet key={i} style={{ left: `${(i * 6.4 + (i % 3)).toFixed(1)}%`, bottom: `${(i % 4) * 7}px`, width: `${18 + (i % 5) * 4}px`, animationDelay: `${i * 0.25}s` }} />
+          <BleuetStem key={i} bud={i % 3 === 1} style={{ left: `${(i * 6.4 + (i % 3)).toFixed(1)}%`, bottom: `${(i % 4) * 4 - 6}px`, width: `${20 + (i % 5) * 4}px`, animationDelay: `${i * 0.25}s` }} />
         ))}
       </div>
       <div key={dove} className="troll-truce-dove">
@@ -428,7 +430,7 @@ export function Truce({ troll }: { troll: ActiveTroll }) {
       </div>
       {banner && (
         <div className="troll-truce-banner">
-          <p>🕊️ {troll.actor} t&apos;offre une trêve</p>
+          <p><SidIcon name="dove" /> {troll.actor} t&apos;offre une trêve</p>
           {o.message && <p className="troll-truce-msg">« {o.message} »</p>}
           <p className="troll-truce-note">Pendant ce temps, personne ne peut te viser d&apos;une autre farce.</p>
         </div>

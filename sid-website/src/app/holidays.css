@@ -64,16 +64,23 @@ html.decor-armistice:not(.troll-abyss) body {
 .hd-fall .hd-p { top: -30px; animation-name: hd-fall; }
 @keyframes hd-rise { from { transform: translate(0, 0) rotate(-10deg); } 50% { transform: translate(calc(var(--dx) * 0.5), -55vh) rotate(8deg); } to { transform: translate(var(--dx), -115vh) rotate(-6deg); } }
 @keyframes hd-fall { from { transform: translate(0, 0) rotate(0deg); } 50% { transform: translate(calc(var(--dx) * 0.5), 55vh) rotate(180deg); } to { transform: translate(var(--dx), 115vh) rotate(360deg); } }
-.hd-hearts .hd-p { color: #ff7aa8; text-shadow: 0 0 8px rgb(255 90 150 / 0.6); }
+.hd-p > svg { width: 1em; height: 1em; }
+.hd-hearts .hd-p { color: #ff7aa8; }
 .hd-hearts .hd-p:nth-child(3n) { color: #ff3d6e; }
 .hd-hearts .hd-p:nth-child(4n) { color: #ffc2d6; }
 .hd-bubbles .hd-p { color: rgb(190 240 255 / 0.9); }
 .hd-petals .hd-p { color: #ffd1e0; }
 .hd-petals .hd-p:nth-child(3n) { color: #fff1a8; }
 .hd-petals .hd-p:nth-child(4n) { color: #c9f2c0; }
-.hd-white-petals .hd-p { color: #f4fff6; font-size: calc(10px * var(--s)); }
-.hd-notes .hd-p { color: #c9a6ff; text-shadow: 0 0 8px rgb(201 166 255 / 0.7); }
-.hd-notes .hd-p:nth-child(3n) { color: #ff9c6e; text-shadow: 0 0 8px rgb(255 140 90 / 0.7); }
+.hd-white-petals .hd-p { color: #f4fff6; font-size: calc(12px * var(--s)); }
+.hd-notes .hd-p { color: #c9a6ff; font-size: calc(20px * var(--s)); }
+.hd-notes .hd-p:nth-child(3n) { color: #ff9c6e; }
+.hd-notes .hd-p:nth-child(5n) { color: #6ec8ff; }
+.hd-bubbles .hd-p { font-size: calc(14px * var(--s)); }
+/* Un léger halo, seulement sur ordinateur (le téléphone garde ses forces). */
+@media (hover: hover) {
+  .hd-hearts .hd-p > svg, .hd-notes .hd-p > svg { filter: drop-shadow(0 0 5px currentColor); }
+}
 
 /* Lune (Saint-Valentin, 1er mai). */
 .hd-moon { position: absolute; top: 92px; right: max(5vw, 20px); width: clamp(70px, 9vw, 130px); aspect-ratio: 1; border-radius: 50%; opacity: 0.8; }
@@ -148,11 +155,11 @@ html.decor-armistice:not(.troll-abyss) body {
 /* 11 novembre : sobre. */
 .hd-mist { position: absolute; left: -10%; right: -10%; bottom: 0; height: 220px; background: radial-gradient(ellipse 60% 60% at 50% 100%, rgb(220 228 240 / 0.12), transparent 70%); }
 .hd-bleuets { position: absolute; left: 0; right: 0; bottom: 0; height: 70px; }
-.hd-bleuets .hd-bleuet { position: absolute; opacity: 0.8; }
+.hd-bleuets .hd-bleuet-stem { position: absolute; opacity: 0.85; transform-origin: 50% 100%; }
 .hd-field { fill: #2a3326; opacity: 0.45; }
 .hd-wheat { fill: none; stroke: #8a7f55; stroke-width: 1.2; opacity: 0.45; }
 .decor-armistice .sid-wordmark { position: relative; }
-.decor-armistice .sid-wordmark::after { content: "✿"; position: absolute; right: -16px; top: -2px; font-size: 12px; color: #4f7be6; }
+.decor-armistice .sid-wordmark::after { content: ""; position: absolute; right: -17px; top: -1px; width: 13px; height: 13px; background: center / contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-12 -12 24 24'%3E%3Cg fill='%233b69e3'%3E%3Cpath d='M-1.2 -2.6 L-3.8 -8.6 L-2.6 -10 L-1.4 -8.8 L0 -10.6 L1.4 -8.8 L2.6 -10 L3.8 -8.6 L1.2 -2.6 Z'/%3E%3Cpath transform='rotate(45)' d='M-1.2 -2.6 L-3.8 -8.6 L-2.6 -10 L-1.4 -8.8 L0 -10.6 L1.4 -8.8 L2.6 -10 L3.8 -8.6 L1.2 -2.6 Z'/%3E%3Cpath transform='rotate(90)' d='M-1.2 -2.6 L-3.8 -8.6 L-2.6 -10 L-1.4 -8.8 L0 -10.6 L1.4 -8.8 L2.6 -10 L3.8 -8.6 L1.2 -2.6 Z'/%3E%3Cpath transform='rotate(135)' d='M-1.2 -2.6 L-3.8 -8.6 L-2.6 -10 L-1.4 -8.8 L0 -10.6 L1.4 -8.8 L2.6 -10 L3.8 -8.6 L1.2 -2.6 Z'/%3E%3Cpath transform='rotate(180)' d='M-1.2 -2.6 L-3.8 -8.6 L-2.6 -10 L-1.4 -8.8 L0 -10.6 L1.4 -8.8 L2.6 -10 L3.8 -8.6 L1.2 -2.6 Z'/%3E%3Cpath transform='rotate(225)' d='M-1.2 -2.6 L-3.8 -8.6 L-2.6 -10 L-1.4 -8.8 L0 -10.6 L1.4 -8.8 L2.6 -10 L3.8 -8.6 L1.2 -2.6 Z'/%3E%3Cpath transform='rotate(270)' d='M-1.2 -2.6 L-3.8 -8.6 L-2.6 -10 L-1.4 -8.8 L0 -10.6 L1.4 -8.8 L2.6 -10 L3.8 -8.6 L1.2 -2.6 Z'/%3E%3Cpath transform='rotate(315)' d='M-1.2 -2.6 L-3.8 -8.6 L-2.6 -10 L-1.4 -8.8 L0 -10.6 L1.4 -8.8 L2.6 -10 L3.8 -8.6 L1.2 -2.6 Z'/%3E%3C/g%3E%3Ccircle r='2.8' fill='%232b2366'/%3E%3C/svg%3E"); }
 
 .decor-saint_valentin .sid-wordmark { text-shadow: 0 0 10px rgb(255 90 150 / 0.55); }
 .decor-fete_musique .sid-wordmark { text-shadow: 0 0 10px rgb(201 166 255 / 0.6); }
@@ -181,7 +188,7 @@ html.decor-armistice:not(.troll-abyss) body {
 .hd-string { stroke: #fff; stroke-width: 0.6; }
 .hd-arrow { stroke: #d6a14a; stroke-width: 1.4; }
 .hd-arrow-head { fill: #ff3d6e; }
-.hd-trail text { fill: #ff7aa8; font-size: 10px; animation: nl-trail 0.9s ease-out infinite; }
+.hd-trail-h { color: #ff7aa8; animation: nl-trail 0.9s ease-out infinite; }
 @keyframes hd-flap { from { transform: scaleY(1); } to { transform: scaleY(0.4); } }
 .hd-bell path:first-child { fill: #ffd257; }
 .hd-bell { filter: drop-shadow(0 0 4px rgb(255 210 87 / 0.7)); }
@@ -195,8 +202,9 @@ html.decor-armistice:not(.troll-abyss) body {
 .hd-dove .hd-wing { animation-duration: 0.6s; }
 .hd-eye { fill: #1b1b24; }
 .hd-olive { fill: none; stroke: #7da35a; stroke-width: 1.6; stroke-linecap: round; }
-.hd-flying-note { font-size: 26px; fill: #c9a6ff; filter: drop-shadow(0 0 4px rgb(201 166 255 / 0.9)); animation: hd-note-bob 0.8s ease-in-out infinite alternate; }
-.hd-flying-note:nth-child(2n) { fill: #ff9c6e; }
+.hd-flying-note { color: #c9a6ff; filter: drop-shadow(0 0 4px currentColor); animation: hd-note-bob 0.8s ease-in-out infinite alternate; }
+g:nth-child(2n) > .hd-flying-note { color: #ff9c6e; }
+g:nth-child(3n) > .hd-flying-note { color: #6ec8ff; }
 @keyframes hd-note-bob { from { transform: translateY(-4px); } to { transform: translateY(4px); } }
 .hd-jet { fill: #d6dcea; }
 .hd-smoke-b { fill: #2f5bd8; opacity: 0.7; }
@@ -208,12 +216,12 @@ html.decor-armistice:not(.troll-abyss) body {
 .hd-wire { fill: none; stroke: #3a3140; stroke-width: 1.3; }
 .hd-garland-bunting .hd-wire { stroke: #c8ccd8; stroke-width: 1; }
 .hd-garland-muguet .hd-wire { stroke: #3f7a4a; }
-.hd-g-heart.hd-g-c0 { fill: #ff4d7a; } .hd-g-heart.hd-g-c1 { fill: #ffb3c8; } .hd-g-heart.hd-g-c2 { fill: #e2325f; }
+.hd-g-heart.hd-g-c0 { color: #ff4d7a; } .hd-g-heart.hd-g-c1 { color: #ffb3c8; } .hd-g-heart.hd-g-c2 { color: #e2325f; }
 .hd-g-heart { filter: drop-shadow(0 0 3px rgb(255 90 150 / 0.6)); }
 .hd-g-fish.hd-g-c0 { fill: #ff9a76; } .hd-g-fish.hd-g-c1 { fill: #7fd8ff; } .hd-g-fish.hd-g-c2 { fill: #ffd86b; } .hd-g-fish.hd-g-c3 { fill: #8ef0b8; }
 .hd-g-egg.hd-g-c0 { fill: #ffb3c7; } .hd-g-egg.hd-g-c1 { fill: #b8e0ff; } .hd-g-egg.hd-g-c2 { fill: #ffe08a; } .hd-g-egg.hd-g-c3 { fill: #c7f0b8; } .hd-g-egg.hd-g-c4 { fill: #d9c2ff; }
-.hd-g-bell { fill: #fbfff7; filter: drop-shadow(0 0 2px rgb(255 255 255 / 0.6)); }
-.hd-g-note { font-size: 15px; } .hd-g-note.hd-g-c0 { fill: #c9a6ff; } .hd-g-note.hd-g-c1 { fill: #ff9c6e; } .hd-g-note.hd-g-c2 { fill: #6ec8ff; }
+.hd-g-bell { filter: drop-shadow(0 0 2px rgb(255 255 255 / 0.6)); }
+.hd-g-note.hd-g-c0 { color: #c9a6ff; } .hd-g-note.hd-g-c1 { color: #ff9c6e; } .hd-g-note.hd-g-c2 { color: #6ec8ff; }
 .hd-g-flag.hd-g-f0 { fill: #2f5bd8; } .hd-g-flag.hd-g-f1 { fill: #f2f2f2; } .hd-g-flag.hd-g-f2 { fill: #e23a3a; }
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
   .hd-garland-hearts .hd-g-item, .hd-garland-eggs .hd-g-item, .hd-garland-fish .hd-g-item, .hd-garland-muguet .hd-g-item { animation: hd-dangle 3s ease-in-out infinite alternate; }
@@ -253,7 +261,7 @@ html.decor-armistice:not(.troll-abyss) body {
   .hd-eq i { transform: scaleY(0.5); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hd-p, .hd-swim .hd-fish, .hd-spot, .hd-eq i, .hd-fw i, .hd-weed, .hd-eiffel-light, .hd-trail text, .hd-flying-note, .hd-drop-eggs { animation: none !important; }
+  .hd-p, .hd-swim .hd-fish, .hd-spot, .hd-eq i, .hd-fw i, .hd-weed, .hd-eiffel-light, .hd-trail-h, .hd-flying-note, .hd-drop-eggs { animation: none !important; }
   .hd-fly, .hd-particles, .hd-swim, .hd-fireworks { display: none; }
 }
 
@@ -261,9 +269,11 @@ html.decor-armistice:not(.troll-abyss) body {
    Farces des titres de fête
    ========================================================= */
 /* Coup de foudre */
-.troll-heart-rise { position: absolute; bottom: -40px; animation: troll-heart-rise linear forwards; text-shadow: 0 0 10px currentColor; will-change: transform; }
+.troll-heart-rise { position: absolute; bottom: -40px; animation: troll-heart-rise linear forwards; will-change: transform; }
+.troll-heart-rise > svg, .troll-heart-burst > svg, .troll-note-rise > svg, .troll-note-burst > svg { filter: drop-shadow(0 0 6px currentColor); }
+.troll-love-heart { display: inline-block !important; width: 0.9em; height: 0.9em; vertical-align: -0.05em; filter: drop-shadow(0 0 10px currentColor); }
 @keyframes troll-heart-rise { from { transform: translate(0, 0) rotate(-10deg); opacity: 0.9; } to { transform: translate(var(--dx), var(--rise, -110vh)) rotate(12deg); opacity: 0.2; } }
-.troll-heart-burst { position: absolute; transform: translate(-50%, -50%); animation: troll-heart-burst ease-out forwards; text-shadow: 0 0 8px currentColor; }
+.troll-heart-burst { position: absolute; transform: translate(-50%, -50%); animation: troll-heart-burst ease-out forwards; }
 @keyframes troll-heart-burst { from { transform: translate(-50%, -50%) scale(0.4); opacity: 1; } to { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(1.2); opacity: 0; } }
 .troll-love-banner {
   position: absolute; top: 38%; left: 0; white-space: nowrap; font: 700 clamp(28px, 6vw, 64px)/1 var(--font-display); letter-spacing: 0.04em;
@@ -315,8 +325,8 @@ html.decor-armistice:not(.troll-abyss) body {
 html.troll-fanfare .glass-card, html.troll-fanfare .glass-panel { animation: troll-fanfare-bounce var(--beat, 600ms) ease-in-out infinite alternate; }
 html.troll-fanfare .glass-card:nth-child(2n) { animation-delay: calc(var(--beat, 600ms) / -2); }
 @keyframes troll-fanfare-bounce { from { transform: translateY(0) rotate(-0.6deg); } to { transform: translateY(-6px) rotate(0.6deg); } }
-.troll-note-rise { position: absolute; bottom: -30px; font-size: 26px; animation: troll-heart-rise linear forwards; text-shadow: 0 0 8px currentColor; }
-.troll-note-burst { position: absolute; font-size: 22px; transform: translate(-50%, -50%); animation: troll-note-burst ease-out forwards; text-shadow: 0 0 8px currentColor; }
+.troll-note-rise { position: absolute; bottom: -30px; font-size: 30px; animation: troll-heart-rise linear forwards; }
+.troll-note-burst { position: absolute; font-size: 26px; transform: translate(-50%, -50%); animation: troll-note-burst ease-out forwards; }
 @keyframes troll-note-burst { from { transform: translate(-50%, -50%) scale(0.5); opacity: 1; } to { transform: translate(calc(-50% + var(--dx)), -90px) scale(1.3); opacity: 0; } }
 .troll-baton { position: absolute; right: 14px; bottom: 60px; font-size: 34px; transform-origin: 30% 90%; animation: troll-baton var(--beat, 600ms) ease-in-out infinite alternate; }
 @keyframes troll-baton { from { transform: rotate(-18deg); } to { transform: rotate(18deg); } }
@@ -333,7 +343,7 @@ html.troll-fanfare .glass-card:nth-child(2n) { animation-delay: calc(var(--beat,
 
 /* Trêve */
 .troll-truce-field { position: absolute; left: 0; right: 0; bottom: 0; height: 60px; }
-.troll-truce-field .hd-bleuet { position: absolute; animation: troll-grow 1.6s cubic-bezier(.3, 1.4, .5, 1) both; transform-origin: 50% 100%; }
+.troll-truce-field .hd-bleuet-stem { position: absolute; animation: troll-grow 1.6s cubic-bezier(.3, 1.4, .5, 1) both; transform-origin: 50% 100%; }
 @keyframes troll-grow { from { transform: scale(0); } to { transform: scale(1); } }
 .troll-truce-dove { position: absolute; top: 16%; right: 0; width: 140px; animation: hd-fly 20s linear both; }
 .troll-truce-dove svg { transform: scaleX(-1); }

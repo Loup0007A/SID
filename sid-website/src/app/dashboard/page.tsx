@@ -16,6 +16,7 @@ import type { SimulationOverview } from "@/types/simulationRuns";
 import { BirthdaysToday } from "@/components/lazy/Seals";
 import { OnlineNow } from "@/components/presence/OnlineNow";
 import { SeasonalBoard, SeasonalGreeting } from "@/components/seasonal/Seasonal";
+import { SidIcon } from "@/components/icons/SidIcon";
 
 export default function DashboardHome() {
   const supabase = createClient();
@@ -113,27 +114,27 @@ export default function DashboardHome() {
       <section aria-label="À faire" className="flex flex-wrap gap-2">
         {myQuests.length > 0 && (
           <a href="#missions" className="glass-card px-3 py-2 font-mono text-xs hover:border-blue/50">
-            📜 {myQuests.length} mission{myQuests.length > 1 ? "s" : ""} en cours
+            <SidIcon name="scroll" /> {myQuests.length} mission{myQuests.length > 1 ? "s" : ""} en cours
           </a>
         )}
         {todo.notifs > 0 && (
           <Link href="/dashboard/notifications" scroll={false} className="glass-card px-3 py-2 font-mono text-xs hover:border-blue/50">
-            🔔 {todo.notifs} notification{todo.notifs > 1 ? "s" : ""} non lue{todo.notifs > 1 ? "s" : ""}
+            <SidIcon name="bell" /> {todo.notifs} notification{todo.notifs > 1 ? "s" : ""} non lue{todo.notifs > 1 ? "s" : ""}
           </Link>
         )}
         {todo.pending > 0 && (
           <Link href="/dashboard/admin/applications" scroll={false} className="glass-card border-blue/40 px-3 py-2 font-mono text-xs hover:border-blue">
-            📋 {todo.pending} candidature{todo.pending > 1 ? "s" : ""} à examiner
+            <SidIcon name="clipboard" /> {todo.pending} candidature{todo.pending > 1 ? "s" : ""} à examiner
           </Link>
         )}
         {todo.alerts > 0 && (
           <Link href="/dashboard/admin/alerts" scroll={false} className="glass-card border-red/50 px-3 py-2 font-mono text-xs text-red hover:border-red">
-            🚨 {todo.alerts} alerte{todo.alerts > 1 ? "s" : ""} d&apos;activité
+            <SidIcon name="siren" /> {todo.alerts} alerte{todo.alerts > 1 ? "s" : ""} d&apos;activité
           </Link>
         )}
         {todo.deletions > 0 && (
           <Link href="/dashboard/admin/alerts" scroll={false} className="glass-card border-red/50 px-3 py-2 font-mono text-xs text-red hover:border-red">
-            🗑️ {todo.deletions} demande{todo.deletions > 1 ? "s" : ""} de suppression de compte
+            <SidIcon name="trash" /> {todo.deletions} demande{todo.deletions > 1 ? "s" : ""} de suppression de compte
           </Link>
         )}
         {myQuests.length === 0 && todo.notifs === 0 && todo.pending === 0 && todo.alerts === 0 && todo.deletions === 0 && (

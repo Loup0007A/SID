@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { loadCurrentUser, can } from "@/lib/permissions";
 import type { Profile, PermissionKey, ProfileStatus } from "@/types/database";
 import { inputClass } from "@/lib/ui";
+import { SidIcon } from "@/components/icons/SidIcon";
 
 const STATUS_LABELS: Record<ProfileStatus, string> = {
   pending: "En attente",
@@ -190,8 +191,8 @@ export default function AdminUsersPage() {
                 {[p.first_name, p.last_name].filter(Boolean).join(" ")} · {STATUS_LABELS[p.status]}
                 {p.is_muted && <span className="ml-1 text-red">· Mute</span>}
                 {p.is_founder && <span className="ml-1 text-blue-light">· Fondateur</span>}
-                {p.is_invisible && <span className="ml-1 text-paper/80">· 👻 Invisible</span>}
-                {p.sandbox_expires_at && <span className="ml-1 text-yellow-300">· 🧪 Test</span>}
+                {p.is_invisible && <span className="ml-1 text-paper/80">· <SidIcon name="ghost" /> Invisible</span>}
+                {p.sandbox_expires_at && <span className="ml-1 text-yellow-300">· <SidIcon name="brain" /> Test</span>}
                 <span className="ml-1 text-paper/40">· {lastSeen(p)}</span>
               </p>
             </div>

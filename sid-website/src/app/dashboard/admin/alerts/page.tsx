@@ -7,6 +7,7 @@ import { loadCurrentUser, can } from "@/lib/permissions";
 import type { PermissionKey } from "@/types/database";
 import { inputClass, buttonPrimary } from "@/lib/ui";
 import { ALERT_KINDS, ALERT_SETTINGS, SEVERITY, describeAlert, timeAgo, type AlertRow } from "@/lib/alerts";
+import { SidIcon } from "@/components/icons/SidIcon";
 
 const TABS = [
   { key: "open", label: "À traiter" },
@@ -96,7 +97,7 @@ export default function AlertsPage() {
       </div>
 
       <div className="space-y-3">
-        {rows.length === 0 && <p className="font-body text-sm text-paper/60">Rien à signaler. 🎉</p>}
+        {rows.length === 0 && <p className="font-body text-sm text-paper/60">Rien à signaler. <SidIcon name="sparkle" /></p>}
         {rows.map((a) => {
           const sev = SEVERITY[a.severity];
           return (

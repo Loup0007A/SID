@@ -4,6 +4,7 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { LineChart } from "@/components/LineChart";
 import type { AdminStats } from "@/types/stats";
+import { SidIcon, Glyph } from "@/components/icons/SidIcon";
 
 // Lundi en premier ; `dow` renvoyé par la base : 0 = dimanche … 6 = samedi.
 const DOW_ORDER = [1, 2, 3, 4, 5, 6, 0];
@@ -18,7 +19,7 @@ function fmtDay(iso: string) {
 function StatCard({ emoji, label, value }: { emoji: string; label: string; value: string | number }) {
   return (
     <div className="glass-card space-y-1 p-4">
-      <p className="font-mono text-xs uppercase tracking-wide text-paper/60">{emoji} {label}</p>
+      <p className="font-mono text-xs uppercase tracking-wide text-paper/60"><Glyph e={emoji} /> {label}</p>
       <p className="font-display text-2xl text-blue-light">{value}</p>
     </div>
   );
@@ -112,7 +113,7 @@ export default function AdminStatsPage() {
       </div>
 
       <div className="glass-card space-y-3 p-6">
-        <h2 className="font-display text-lg uppercase">📈 Activité des 30 derniers jours</h2>
+        <h2 className="font-display text-lg uppercase"><SidIcon name="chart" /> Activité des 30 derniers jours</h2>
         <LineChart
           labels={stats.daily_activity.map((d) => fmtDay(d.day))}
           series={[
@@ -126,7 +127,7 @@ export default function AdminStatsPage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="glass-card space-y-3 p-6">
-          <h2 className="font-display text-lg uppercase">💬 Messages (8 semaines)</h2>
+          <h2 className="font-display text-lg uppercase"><SidIcon name="chat" /> Messages (8 semaines)</h2>
           <LineChart
             labels={stats.weekly_activity.map((w) => `Sem. ${fmtDay(w.week_start)}`)}
             series={[{ name: "Messages", color: "#8FB3D9", values: stats.weekly_activity.map((w) => w.message_count) }]}
@@ -135,7 +136,7 @@ export default function AdminStatsPage() {
           />
         </div>
         <div className="glass-card space-y-3 p-6">
-          <h2 className="font-display text-lg uppercase">🛒 Achats (8 semaines)</h2>
+          <h2 className="font-display text-lg uppercase"><SidIcon name="cart" /> Achats (8 semaines)</h2>
           <LineChart
             labels={stats.purchases_weekly.map((w) => `Sem. ${fmtDay(w.week_start)}`)}
             series={[{ name: "Achats", color: "#D99A9A", values: stats.purchases_weekly.map((w) => w.purchases_count) }]}
@@ -146,7 +147,7 @@ export default function AdminStatsPage() {
       </div>
 
       <div className="glass-card space-y-3 p-6">
-        <h2 className="font-display text-lg uppercase">🕐 Activité selon l&apos;heure de la journée</h2>
+        <h2 className="font-display text-lg uppercase"><SidIcon name="clock" /> Activité selon l&apos;heure de la journée</h2>
         <LineChart
           labels={hourly.map((_, h) => `${h}h`)}
           series={[{ name: "Messages", color: "#8FB3D9", values: hourly }]}
@@ -156,7 +157,7 @@ export default function AdminStatsPage() {
       </div>
 
       <div className="glass-card space-y-3 p-6">
-        <h2 className="font-display text-lg uppercase">🗺️ Carte thermique — messages par jour / heure</h2>
+        <h2 className="font-display text-lg uppercase"><SidIcon name="map" /> Carte thermique — messages par jour / heure</h2>
         <p className="min-h-[1.25rem] font-mono text-xs text-blue-light">
           {cell
             ? `${DOW_FULL[cell.dow]} de ${cell.hour}h à ${(cell.hour + 1) % 24}h : ${cellCount} message${cellCount > 1 ? "s" : ""}`

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Announcement } from "@/types/admin";
+import { Glyph } from "@/components/icons/SidIcon";
 
 const SEVERITY_STYLE: Record<Announcement["severity"], { border: string; text: string; icon: string }> = {
   info: { border: "border-blue/60", text: "text-blue-light", icon: "ℹ️" },
@@ -43,7 +44,7 @@ export function AnnouncementBanner() {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className={`glass-card w-full max-w-md space-y-3 border p-6 ${style.border}`}>
         <p className={`font-display text-lg uppercase tracking-wide ${style.text}`}>
-          {style.icon} {current.title}
+          <Glyph e={style.icon} /> {current.title}
         </p>
         {current.body && <p className="whitespace-pre-wrap font-body text-sm text-paper/85">{current.body}</p>}
         <div className="flex items-center justify-between pt-1">

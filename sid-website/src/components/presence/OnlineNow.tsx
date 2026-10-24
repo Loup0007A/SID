@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { PRESENCE_PINGED_EVENT, activityOf, sinceLabel, type OnlineMember } from "@/lib/presence";
+import { SidIcon } from "@/components/icons/SidIcon";
 import { useEquippedTitles } from "@/lib/useEquippedTitles";
 import { TitleBadge } from "@/components/titles/TitleVisuals";
 
@@ -109,10 +110,10 @@ export function OnlineNow() {
                 )}
               </span>
               <span className={`col-start-2 row-start-2 min-w-0 truncate font-body text-sm sm:col-start-auto sm:row-start-auto ${act.muted ? "text-paper/45" : "text-paper/85"}`}>
-                <span aria-hidden className="mr-1.5">{act.emoji}</span>
+                <SidIcon name={act.icon} className="mr-1.5" />
                 {act.text}
                 {m.masked && !act.muted && <span className="ml-1.5 font-mono text-[10px] text-paper/40">(masquée aux autres)</span>}
-                {m.hidden && <span className="ml-1.5 font-mono text-[10px] text-paper/40">👻 invisible pour les autres</span>}
+                {m.hidden && <span className="ml-1.5 font-mono text-[10px] text-paper/40"><SidIcon name="ghost" /> invisible pour les autres</span>}
               </span>
               <span className="col-start-3 row-span-2 row-start-1 text-right font-mono text-[11px] text-paper/50 sm:col-start-auto sm:row-span-1 sm:row-start-auto">
                 {m.idle ? "absent" : sinceLabel(m.since, now)}
