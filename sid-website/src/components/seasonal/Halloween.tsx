@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useSiteDecor } from "@/components/seasonal/siteDecor";
+import { HalloweenScene } from "./scenes";
 
 /**
  * Décor d'Halloween (Lot 37). La base décide s'il est affiché
@@ -71,29 +72,6 @@ function Cobweb() {
           <circle cx="0.8" cy="-3" r="0.45" className="hw-eye" />
         </g>
       </g>
-    </svg>
-  );
-}
-
-/** Collines, tombes et arbre nu, en silhouette au bas de l'écran. */
-function Graveyard() {
-  return (
-    <svg viewBox="0 0 1200 130" preserveAspectRatio="xMidYMax slice" className="hw-graveyard" aria-hidden>
-      <path className="hw-hill-far" d="M0 92 C140 70 260 86 380 78 C520 68 610 92 760 84 C900 76 1010 64 1200 82 L1200 130 L0 130 Z" />
-      <path className="hw-hill" d="M0 108 C160 96 300 112 470 104 C640 96 760 116 930 106 C1040 100 1120 98 1200 104 L1200 130 L0 130 Z" />
-      {/* Tombes */}
-      <g className="hw-stones">
-        <path d="M168 104 L168 84 Q178 72 188 84 L188 104 Z" transform="rotate(-6 178 104)" />
-        <path d="M214 106 L214 92 Q221 84 228 92 L228 106 Z" transform="rotate(5 221 106)" />
-        <path d="M884 106 L884 82 Q896 68 908 82 L908 106 Z" transform="rotate(4 896 106)" />
-        <path d="M936 104 L936 94 L944 94 L944 86 L950 86 L950 94 L958 94 L958 100 L950 100 L950 106 L944 106 L944 100 L936 100 Z" />
-        <path d="M1010 104 L1010 90 Q1017 82 1024 90 L1024 104 Z" transform="rotate(-8 1017 104)" />
-      </g>
-      {/* Arbre nu */}
-      <path
-        className="hw-tree"
-        d="M612 104 C616 86 614 70 606 56 C598 44 586 40 574 34 M606 56 C612 46 622 40 636 38 M612 80 C624 70 640 66 654 58 C664 52 670 44 672 34 M640 66 C650 70 660 70 670 66 M610 70 C600 64 590 62 578 64 M620 104 C618 90 622 78 630 70"
-      />
     </svg>
   );
 }
@@ -169,7 +147,7 @@ export function HalloweenDecor() {
     <>
       <div className="hw-back" aria-hidden>
         <Moon />
-        <Graveyard />
+        <HalloweenScene />
         <div className="hw-fog" />
       </div>
       <div className="hw-front" aria-hidden>

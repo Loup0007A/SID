@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { daysUntil, useSiteDecor } from "@/components/seasonal/siteDecor";
 import type { EventKey } from "@/lib/events";
 import { Bells, Bleuet, Dove, Egg, HeartPath, MuguetSprig, PaperFish, Patrouille } from "@/components/seasonal/drawings";
+import { ArmisticeScene, AvrilScene, JuilletScene, MuguetScene, MusiqueScene, PaquesScene, ValentinScene } from "./scenes";
 
 export { Bells, Bleuet, Dove, Egg, HeartPath, MuguetSprig, PaperFish, Patrouille };
 
@@ -80,25 +81,8 @@ function ValentinBack() {
   return (
     <>
       <div className="hd-moon hd-moon-rose" />
-      <Particles spec={{ glyphs: ["♥", "♥", "❤", "♡"], count: 18, mode: "rise", className: "hd-hearts" }} />
-      <svg viewBox="0 0 1200 130" preserveAspectRatio="xMidYMax slice" className="hd-ground" aria-hidden>
-        <path className="hd-water" d="M0 112 C200 106 400 116 600 110 C800 104 1000 116 1200 110 L1200 130 L0 130 Z" />
-        {/* Pont des amoureux */}
-        <path className="hd-bridge" d="M260 106 Q600 18 940 106 L926 106 Q600 34 274 106 Z" />
-        <path className="hd-rail" d="M300 92 Q600 22 900 92" />
-        {Array.from({ length: 26 }, (_, i) => {
-          const t = (i + 1) / 27;
-          const x = 300 + 600 * t;
-          const y = (1 - t) * (1 - t) * 92 + 2 * (1 - t) * t * 22 + t * t * 92;
-          return <line key={i} className="hd-rail" x1={x} y1={y} x2={x} y2={y + 16 - Math.abs(0.5 - t) * 8} />;
-        })}
-        {Array.from({ length: 14 }, (_, i) => {
-          const t = 0.08 + i * 0.065;
-          const x = 300 + 600 * t;
-          const y = (1 - t) * (1 - t) * 92 + 2 * (1 - t) * t * 22 + t * t * 92 + 8;
-          return <path key={`l${i}`} className="hd-lock" d={`M${x - 3} ${y} h6 v5 h-6 Z`} />;
-        })}
-      </svg>
+      <ValentinScene />
+      <Particles spec={{ glyphs: ["♥", "♥", "❤", "♡"], count: 14, mode: "rise", className: "hd-hearts" }} />
     </>
   );
 }
@@ -107,23 +91,13 @@ function AvrilBack() {
   const fish = ["#ff9a76", "#7fd8ff", "#ffd86b", "#c9a6ff", "#8ef0b8"];
   return (
     <>
+      <AvrilScene />
       <Particles spec={{ glyphs: ["◦", "°", "○"], count: 16, mode: "rise", className: "hd-bubbles" }} />
       <div className="hd-swim" aria-hidden>
         {fish.map((c, i) => (
           <PaperFish key={i} color={c} className={i % 2 ? "is-rtl" : ""} style={{ top: `${18 + i * 14}%`, animationDelay: `${-i * 7}s`, animationDuration: `${26 + i * 5}s` }} />
         ))}
       </div>
-      <svg viewBox="0 0 1200 130" preserveAspectRatio="xMidYMax slice" className="hd-ground" aria-hidden>
-        <path className="hd-sand" d="M0 114 C220 106 420 118 640 110 C860 102 1020 116 1200 108 L1200 130 L0 130 Z" />
-        {[80, 150, 380, 720, 1010, 1100].map((x, i) => (
-          <path
-            key={i}
-            className="hd-weed"
-            style={{ animationDelay: `${-i * 0.8}s` }}
-            d={`M${x} 116 C${x - 14} 96 ${x + 12} 80 ${x - 4} 58 C${x + 10} 76 ${x - 6} 94 ${x + 8} 116 Z`}
-          />
-        ))}
-      </svg>
     </>
   );
 }
@@ -131,15 +105,8 @@ function AvrilBack() {
 function PaquesBack() {
   return (
     <>
-      <div className="hd-dawn" />
-      <Particles spec={{ glyphs: ["❀", "✿", "•", "❁"], count: 16, mode: "fall", className: "hd-petals" }} />
-      <svg viewBox="0 0 1200 130" preserveAspectRatio="xMidYMax slice" className="hd-ground" aria-hidden>
-        <path className="hd-meadow-far" d="M0 96 C180 80 340 94 520 86 C700 78 860 96 1020 88 C1100 84 1160 82 1200 86 L1200 130 L0 130 Z" />
-        <path className="hd-meadow" d="M0 110 C190 98 360 114 560 106 C760 98 900 116 1080 106 C1140 103 1180 102 1200 104 L1200 130 L0 130 Z" />
-        {Array.from({ length: 40 }, (_, i) => (
-          <circle key={i} className={`hd-flower hd-flower-${i % 4}`} cx={rnd(i, 1) * 1200} cy={104 + rnd(i, 2) * 20} r={1.6 + rnd(i, 3) * 1.6} />
-        ))}
-      </svg>
+      <PaquesScene />
+      <Particles spec={{ glyphs: ["❀", "✿", "•", "❁"], count: 14, mode: "fall", className: "hd-petals" }} />
       <div className="hd-nest" aria-hidden>
         {[0, 1, 2, 3].map((i) => (
           <Egg key={i} hue={i * 2 + 1} style={{ left: `${[9, 31, 74, 91][i]}%`, transform: `rotate(${[-14, 10, -6, 16][i]}deg)` }} />
@@ -152,7 +119,7 @@ function PaquesBack() {
 function MuguetBack() {
   return (
     <>
-      <div className="hd-moon hd-moon-spring" />
+      <MuguetScene />
       <Particles spec={{ glyphs: ["•", "·", "•"], count: 14, mode: "fall", className: "hd-white-petals" }} />
       <div className="hd-muguet-row" aria-hidden>
         {Array.from({ length: 9 }, (_, i) => (
@@ -171,87 +138,25 @@ function MusiqueBack() {
         <i className="hd-spot hd-spot-b" />
         <i className="hd-spot hd-spot-c" />
       </div>
-      <Particles spec={{ glyphs: ["♪", "♫", "♬", "♩"], count: 16, mode: "rise", className: "hd-notes" }} />
-      <div className="hd-eq" aria-hidden>
-        {Array.from({ length: 28 }, (_, i) => (
-          <i key={i} style={{ animationDelay: `${(-rnd(i, 1) * 1.2).toFixed(2)}s`, animationDuration: `${(0.6 + rnd(i, 2) * 0.7).toFixed(2)}s` }} />
-        ))}
-      </div>
-      <svg viewBox="0 0 1200 130" preserveAspectRatio="xMidYMax slice" className="hd-ground" aria-hidden>
-        <path
-          className="hd-crowd"
-          d={
-            "M0 130 L0 104 " +
-            Array.from({ length: 40 }, (_, i) => {
-              const x = i * 30 + 15;
-              const h = 96 + rnd(i, 4) * 10;
-              const arm = rnd(i, 5) > 0.72;
-              return arm
-                ? `L${x - 9} ${h + 10} L${x - 12} ${h - 14} L${x - 9} ${h - 15} L${x - 6} ${h + 2} Q${x} ${h - 14} ${x + 6} ${h + 2} L${x + 9} ${h + 10}`
-                : `L${x - 9} ${h + 10} Q${x - 8} ${h} ${x} ${h - 4} Q${x + 8} ${h} ${x + 9} ${h + 10}`;
-            }).join(" ") +
-            " L1200 104 L1200 130 Z"
-          }
-        />
-      </svg>
+      <MusiqueScene />
+      <Particles spec={{ glyphs: ["♪", "♫", "♬", "♩"], count: 14, mode: "rise", className: "hd-notes" }} />
     </>
-  );
-}
-
-function Firework({ x, y, delay, color, size }: { x: number; y: number; delay: number; color: string; size: number }) {
-  return (
-    <span className="hd-fw" style={{ left: `${x}%`, top: `${y}%`, animationDelay: `${delay}s`, ["--c" as string]: color, ["--r" as string]: `${size}px` }}>
-      {Array.from({ length: 14 }, (_, i) => (
-        <i key={i} style={{ ["--a" as string]: `${(i * 360) / 14}deg`, animationDelay: `${delay}s` }} />
-      ))}
-    </span>
   );
 }
 
 function JuilletBack() {
-  const fws = [
-    { x: 18, y: 18, d: 0, c: "#6ea8ff", s: 70 },
-    { x: 72, y: 12, d: 2.1, c: "#ff5a5a", s: 90 },
-    { x: 46, y: 26, d: 4.3, c: "#ffffff", s: 60 },
-    { x: 86, y: 30, d: 6.2, c: "#ffd76a", s: 74 },
-    { x: 30, y: 8, d: 7.6, c: "#ff7ad9", s: 64 },
-  ];
-  return (
-    <>
-      <div className="hd-fireworks" aria-hidden>
-        {fws.map((f, i) => (
-          <Firework key={i} x={f.x} y={f.y} delay={f.d} color={f.c} size={f.s} />
-        ))}
-      </div>
-      <svg viewBox="0 0 1200 130" preserveAspectRatio="xMidYMax slice" className="hd-ground" aria-hidden>
-        <path
-          className="hd-city"
-          d="M0 130 L0 108 L40 108 L40 96 L70 96 L70 104 L110 104 L110 90 L130 90 L130 84 L150 84 L150 100 L200 100 L200 92 L240 92 L240 106 L300 106 L300 98 L330 98 L330 88 L360 88 L360 102 L420 102 L420 96 L470 96 L470 108 L760 108 L760 94 L800 94 L800 100 L850 100 L850 86 L880 86 L880 98 L940 98 L940 90 L990 90 L990 104 L1040 104 L1040 94 L1080 94 L1080 100 L1130 100 L1130 92 L1170 92 L1170 106 L1200 106 L1200 130 Z"
-        />
-        {/* Tour Eiffel */}
-        <path className="hd-eiffel" d="M612 22 L616 22 L620 54 L628 54 L630 64 L624 64 L640 108 L628 108 Q614 84 600 108 L588 108 L604 64 L598 64 L600 54 L608 54 Z" />
-        <circle className="hd-eiffel-light" cx="614" cy="20" r="2.4" />
-      </svg>
-    </>
-  );
+  return <JuilletScene />;
 }
 
 function ArmisticeBack() {
   return (
     <>
-      <div className="hd-mist" />
+      <ArmisticeScene />
       <div className="hd-bleuets" aria-hidden>
         {Array.from({ length: 22 }, (_, i) => (
           <Bleuet key={i} style={{ left: `${(i * 4.6 + rnd(i, 1) * 3).toFixed(1)}%`, bottom: `${(rnd(i, 2) * 30).toFixed(0)}px`, width: `${(16 + rnd(i, 3) * 14).toFixed(0)}px` }} />
         ))}
       </div>
-      <svg viewBox="0 0 1200 130" preserveAspectRatio="xMidYMax slice" className="hd-ground" aria-hidden>
-        <path className="hd-field" d="M0 112 C220 104 440 116 660 108 C880 100 1040 114 1200 106 L1200 130 L0 130 Z" />
-        {Array.from({ length: 60 }, (_, i) => {
-          const x = rnd(i, 4) * 1200;
-          return <path key={i} className="hd-wheat" d={`M${x} 120 Q${x + 2} 104 ${x + 1} ${92 + rnd(i, 5) * 8}`} />;
-        })}
-      </svg>
     </>
   );
 }

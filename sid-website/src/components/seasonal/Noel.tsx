@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { daysUntil, useSiteDecor } from "@/components/seasonal/siteDecor";
+import { NoelScene } from "./scenes";
 
 /**
  * Décor de Noël (Lot 41). La base décide s'il est affiché (site_decor :
@@ -115,115 +116,6 @@ function NorthStar() {
   );
 }
 
-const FIRS: [number, number][] = [
-  [90, 0.8],
-  [128, 1.05],
-  [164, 0.7],
-  [1014, 0.75],
-  [1052, 1.1],
-  [1094, 0.85],
-  [1150, 0.65],
-];
-
-function Fir({ x, s, lit = false }: { x: number; s: number; lit?: boolean }) {
-  return (
-    <g transform={`translate(${x} 104) scale(${s})`}>
-      <path
-        className="nl-fir"
-        d="M0 -64 L13 -42 L7 -42 L19 -22 L11 -22 L24 0 L-24 0 L-11 -22 L-19 -22 L-7 -42 L-13 -42 Z"
-      />
-      <path
-        className="nl-fir-snow"
-        d="M0 -64 L6 -54 L2 -55 L0 -52 L-3 -55 L-6 -54 Z M-9 -40 L-5 -41 L-2 -38 L2 -41 L6 -40 L8 -37 L-8 -37 Z M-14 -20 L-9 -21 L-5 -18 L0 -21 L5 -18 L10 -21 L14 -18 L-14 -18 Z"
-      />
-      {lit && (
-        <g className="nl-fir-lights">
-          {[
-            [-6, -46, "r"],
-            [5, -38, "g"],
-            [-10, -30, "b"],
-            [8, -27, "o"],
-            [-3, -24, "r"],
-            [-15, -12, "o"],
-            [-4, -9, "b"],
-            [9, -11, "r"],
-            [16, -5, "g"],
-            [-12, -4, "g"],
-          ].map(([cx, cy, c], i) => (
-            <circle
-              key={i}
-              cx={cx}
-              cy={cy}
-              r="1.7"
-              className={`nl-bulb nl-bulb-${c}`}
-              style={{ animationDelay: `${(i % 5) * 0.45}s` }}
-            />
-          ))}
-          <path
-            className="nl-fir-top"
-            d="M0 -71 L1.8 -66.4 L6.6 -66.2 L2.8 -63.2 L4.1 -58.6 L0 -61.4 L-4.1 -58.6 L-2.8 -63.2 L-6.6 -66.2 L-1.8 -66.4 Z"
-          />
-        </g>
-      )}
-    </g>
-  );
-}
-
-/** Collines enneigées, sapins et chalet éclairé, au bas de l'écran. */
-function SnowyHills() {
-  return (
-    <svg
-      viewBox="0 0 1200 130"
-      preserveAspectRatio="xMidYMax slice"
-      className="nl-hills"
-      aria-hidden
-    >
-      <path
-        className="nl-hill-far"
-        d="M0 90 C150 70 280 86 410 78 C540 70 640 94 790 84 C930 74 1040 64 1200 80 L1200 130 L0 130 Z"
-      />
-      {FIRS.map(([x, s], i) => (
-        <Fir key={i} x={x} s={s} lit={i === 4} />
-      ))}
-      {/* Chalet */}
-      <g className="nl-cabin" transform="translate(860 104)">
-        <path
-          className="nl-smoke"
-          d="M24 -50 C20 -60 30 -64 26 -74 C22 -82 30 -88 28 -96"
-        />
-        <path
-          className="nl-cabin-body"
-          d="M-2 0 L-2 -24 L40 -24 L40 0 Z M20 -30 L22 -30 L22 -46 L28 -46 L28 -34"
-        />
-        <path
-          className="nl-cabin-roof"
-          d="M-10 -22 L19 -44 L48 -22 L44 -20 L19 -38 L-6 -20 Z"
-        />
-        <rect
-          x="6"
-          y="-17"
-          width="10"
-          height="9"
-          rx="1"
-          className="nl-window"
-        />
-        <rect
-          x="24"
-          y="-17"
-          width="10"
-          height="9"
-          rx="1"
-          className="nl-window"
-        />
-      </g>
-      <path
-        className="nl-hill"
-        d="M0 108 C170 94 310 112 480 104 C650 96 770 116 940 106 C1050 100 1130 98 1200 104 L1200 130 L0 130 Z"
-      />
-    </svg>
-  );
-}
-
 /** Flocons qui tombent, en deux ou trois couches (seul le déplacement est animé). */
 function Snowfall() {
   return (
@@ -296,7 +188,7 @@ export function NoelDecor() {
         <div className="nl-aurora" />
         <NorthStar />
         <Snowfall />
-        <SnowyHills />
+        <NoelScene />
       </div>
       <div className="nl-front" aria-hidden>
         {sleigh > 0 && <Sleigh className="nl-fly" />}
