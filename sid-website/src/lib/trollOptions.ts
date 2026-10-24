@@ -219,6 +219,7 @@ export type TrollOptions = {
   artifice: { intensity: number; patrouille: boolean };
   treve: { message: string };
   assaut: { beast: BeastKind; fury: number; repel: boolean; message: string };
+  balance: { rythme: number; penchant: number; constellation: boolean; message: string };
 };
 
 export const LOVE_COLORS = {
@@ -269,6 +270,7 @@ export function defaultOptions<P extends TrollPower>(power: P, level = 1): Troll
     artifice: { intensity: 2, patrouille: true },
     treve: { message: "" },
     assaut: { beast: "braise", fury: 2, repel: true, message: "" },
+    balance: { rythme: 2, penchant: 2, constellation: true, message: "" },
   };
   return all[power];
 }
@@ -377,6 +379,9 @@ export function readOptions<P extends TrollPower>(power: P, params: Record<strin
         repel: bool(p.repel, true),
         message: txt(p.message, 60),
       };
+      break;
+    case "balance":
+      o = { rythme: num(p.rythme, 2, 1, 3), penchant: num(p.penchant, 2, 1, 3), constellation: bool(p.constellation, true), message: txt(p.message, 60) };
       break;
     default:
       o = { ...d, ...p };

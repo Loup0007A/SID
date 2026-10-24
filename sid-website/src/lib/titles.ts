@@ -33,7 +33,8 @@ export type TitleId =
   | "maestro"
   | "artificier"
   | "veilleur"
-  | "veneur";
+  | "veneur"
+  | "equilibre";
 
 export type TrollPower =
   | "defi_dragon"
@@ -57,7 +58,8 @@ export type TrollPower =
   | "fanfare"
   | "artifice"
   | "treve"
-  | "assaut";
+  | "assaut"
+  | "balance";
 
 export interface TitleDef {
   id: TitleId;
@@ -316,6 +318,17 @@ export const TITLES: TitleDef[] = [
     power: "assaut",
     event: "grande_chasse",
   },
+  {
+    id: "equilibre",
+    name: "Enfant de l'Équilibre",
+    emoji: "⚖️",
+    colors: ["#cfd8ff", "#262b6b"],
+    maxLevel: 1,
+    riddle: "Les nuits de la Grande Chasse, une étoile file parfois au-dessus de l'accueil. Ceux qui la suivent trouvent un ciel où rien ne penche.",
+    how: commentObtenu("equilibre"),
+    power: "balance",
+    event: "grande_chasse",
+  },
 ];
 
 /** Titres secrets permanents, et titres d'événement. */
@@ -423,6 +436,11 @@ export const POWERS: Record<TrollPower, PowerDef> = {
     key: "assaut",
     name: "Assaut de Brasombre",
     description: "Tu lâches Brasombre, la wyverne des cendres, sur le site de ta cible : son ombre passe, elle se pose, rugit (la page tremble) et laboure l'écran de ses griffes. Ta cible peut la chasser à coups de clics, si tu le permets. 10 minutes.",
+  },
+  balance: {
+    key: "balance",
+    name: "Balance de Varyexis",
+    description: "Tu poses le site de ta cible sur la balance de Varyexis : des étoiles tombent dans ses plateaux, et dès qu'elle penche, toute la page penche avec. Ta cible doit retirer des étoiles pour la rééquilibrer. 10 minutes.",
   },
   treve: {
     key: "treve",

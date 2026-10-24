@@ -187,3 +187,22 @@ html.gc-rumble main, html.gc-rumble header { animation: gc-rumble 0.7s ease-in-o
   .gc-front, .gc-horn-wave { display: none; }
   html.gc-rumble main, html.gc-rumble header { animation: none; }
 }
+
+/* La nuit (21 h – 6 h, heure de Paris) : clair de lune sur le campement. */
+.gc-stars-night { display: none; }
+html.gc-nuit .gc-stars-night { display: block; }
+html.gc-nuit .gc-stars i { opacity: 0.85; }
+html.gc-nuit.decor-grande_chasse:not(.troll-abyss) body {
+  background-color: #0b0d1f;
+  background-image:
+    radial-gradient(ellipse 80% 40% at 75% 110%, rgb(255 110 40 / 0.16), transparent 64%),
+    radial-gradient(ellipse 60% 40% at 20% -10%, rgb(70 80 180 / 0.25), transparent 62%),
+    linear-gradient(to bottom, #070a1c 0%, #121230 55%, #2a1418 100%);
+}
+html.gc-nuit .gc-sky { background: linear-gradient(to bottom, transparent 50%, rgb(120 40 30 / 0.18) 85%, rgb(200 80 30 / 0.15)); }
+html.gc-nuit .gc-sun {
+  top: 96px; bottom: auto; right: 22%; width: 86px; height: 86px; filter: none;
+  background: radial-gradient(circle at 40% 36%, #fdfdff 0%, #e2e6f6 48%, #b9c0dc 68%, transparent 71%);
+  box-shadow: 0 0 60px 18px rgb(200 210 255 / 0.16);
+}
+@media (max-width: 767px) { html.gc-nuit .gc-sun { top: 76px; right: 10%; width: 56px; height: 56px; } }

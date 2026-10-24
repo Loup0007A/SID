@@ -96,7 +96,8 @@ on conflict (id) do update
   set name = excluded.name, power = excluded.power, max_level = excluded.max_level, sort = excluded.sort, event = excluded.event;
 
 -- ---------------------------------------------------------
--- Options des farces (toutes, avec l'Assaut de Brasombre).
+-- Options des farces (toutes, avec l'Assaut de Brasombre et la Balance de
+-- Varyexis du lot 47).
 -- ---------------------------------------------------------
 do $$
 begin
@@ -137,6 +138,9 @@ begin
     return jsonb_build_object('beast', public._jpick(p0, 'beast', array['braise', 'givre', 'orage'], 'braise'),
       'fury', public._jint(p0, 'fury', 2, 1, 3), 'repel', public._jbool(p0, 'repel', true),
       'message', coalesce(public._jtxt(p0->>'message', 60), ''));
+  when 'balance' then
+    return jsonb_build_object('rythme', public._jint(p0, 'rythme', 2, 1, 3), 'penchant', public._jint(p0, 'penchant', 2, 1, 3),
+      'constellation', public._jbool(p0, 'constellation', true), 'message', coalesce(public._jtxt(p0->>'message', 60), ''));
   else
     return public._troll_params_base(p_power, p_level, p);
   end case;

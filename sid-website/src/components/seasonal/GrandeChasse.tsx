@@ -33,6 +33,26 @@ function useOn() {
   return !!useSiteDecor()?.grande_chasse;
 }
 
+/** La nuit à Paris (21 h – 6 h) : le campement passe au clair de lune. */
+function parisNight() {
+  try {
+    const h = Number(new Intl.DateTimeFormat("fr-FR", { timeZone: "Europe/Paris", hour: "numeric", hourCycle: "h23" }).format(new Date()));
+    return h >= 21 || h < 6;
+  } catch {
+    return false;
+  }
+}
+function useNight(on: boolean) {
+  const [night, setNight] = useState(false);
+  useEffect(() => {
+    if (!on) return setNight(false);
+    setNight(parisNight());
+    const t = setInterval(() => setNight(parisNight()), 5 * 60_000);
+    return () => clearInterval(t);
+  }, [on]);
+  return night;
+}
+
 /* ---------------------------------------------------------------
    Décor de fond + survol
    --------------------------------------------------------------- */
@@ -104,6 +124,11 @@ function ChasseBack() {
           <i key={i} style={{ left: `${(rnd(i, 7) * 100).toFixed(1)}%`, top: `${(rnd(i, 8) * 38).toFixed(1)}%`, animationDelay: `${(-rnd(i, 9) * 4).toFixed(2)}s` }} />
         ))}
       </div>
+      <div className="gc-stars gc-stars-night">
+        {Array.from({ length: 40 }, (_, i) => (
+          <i key={i} style={{ left: `${(rnd(i + 50, 7) * 100).toFixed(1)}%`, top: `${(rnd(i + 50, 8) * 55).toFixed(1)}%`, animationDelay: `${(-rnd(i + 50, 9) * 4).toFixed(2)}s` }} />
+        ))}
+      </div>
       <div className="gc-sun" />
       <svg viewBox="0 0 1200 300" preserveAspectRatio="xMidYMax slice" className="gc-land" aria-hidden>
         <path className="gc-mount-far" d="M0 190 L90 150 L160 172 L260 108 L330 150 L420 128 L520 160 L600 120 L700 150 L780 96 L860 140 L960 118 L1050 150 L1120 126 L1200 146 L1200 300 L0 300 Z" />
@@ -145,8 +170,15 @@ function ChasseBack() {
 
 export function ChasseDecor() {
   const on = useOn();
+  const night = useNight(on);
   const [mounted, setMounted] = useState(false);
   const [fly, setFly] = useState(0);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle("gc-nuit", on && night);
+    return () => root.classList.remove("gc-nuit");
+  }, [on, night]);
 
   useEffect(() => setMounted(true), []);
   useEffect(() => {
@@ -264,6 +296,12 @@ export function ChasseGarland() {
    Phrase d'accueil
    --------------------------------------------------------------- */
 
+const NIGHT_GREETINGS = [
+  "La nuit est tombée sur le campement. Lève les yeux : ce soir, le ciel bouge.",
+  "Le feu baisse, les étoiles montent. Il paraît qu'elles tombent, certaines nuits de chasse.",
+  "Nuit de veille au campement. Garde un œil sur le ciel, chasseur.",
+];
+
 const GREETINGS = [
   "La Grande Chasse est ouverte ! Des traces fraîches griffent les pages du S.I.D.…",
   "Brasombre rôde autour des archives. Affûtez vos lames, chasseurs.",
@@ -282,7 +320,8 @@ export function ChasseGreeting() {
   useEffect(() => {
     if (!on) return setText(null);
     const { month, day } = parisDay();
-    setText(month === 3 && day === 11 ? "Grand jour de chasse : le cor sonne pour l'anniversaire de la Grande Chasse ! 🎉" : GREETINGS[Math.floor(Math.random() * GREETINGS.length)]);
+    const pool = parisNight() ? NIGHT_GREETINGS : GREETINGS;
+    setText(month === 3 && day === 11 && !parisNight() ? "Grand jour de chasse : le cor sonne pour l'anniversaire de la Grande Chasse ! 🎉" : pool[Math.floor(Math.random() * pool.length)]);
   }, [on]);
   if (!on || !text) return null;
   return <p className="gc-greeting mt-1 font-body text-sm italic">{text}</p>;

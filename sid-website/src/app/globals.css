@@ -1421,6 +1421,23 @@ html.decor-noel:not(.troll-abyss) body {
 @keyframes aura-claw-glow { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.75; } }
 @media (prefers-reduced-motion: reduce) { .aura-veneur::after { animation: none; } }
 
+/* Ciel de Varyexis : étoiles qui scintillent, une balance d'étoiles. */
+.aura-equilibre { background: radial-gradient(ellipse at 70% 0%, rgb(120 130 255 / 0.22), transparent 60%), linear-gradient(to bottom, rgb(8 10 34 / 0.55), rgb(20 18 60 / 0.45)); }
+.aura-equilibre .aura-p {
+  color: #e6ebff; font-size: calc(10px * var(--s)); text-shadow: 0 0 6px rgb(190 205 255 / 0.9);
+  animation-name: aura-star; animation-timing-function: ease-in-out; animation-iteration-count: infinite;
+}
+.aura-equilibre::after {
+  content: ""; position: absolute; right: 7%; top: 18%; width: 64px; height: 34px; opacity: 0.6;
+  background:
+    linear-gradient(#e8d6a0, #e8d6a0) 50% 0 / 2px 100% no-repeat,
+    linear-gradient(#e8d6a0, #e8d6a0) 50% 4px / 100% 2px no-repeat,
+    radial-gradient(ellipse 12px 5px at 6px 30px, #e8d6a0 60%, transparent 62%),
+    radial-gradient(ellipse 12px 5px at 58px 30px, #e8d6a0 60%, transparent 62%);
+  filter: drop-shadow(0 0 4px rgb(255 226 160 / 0.8));
+}
+@keyframes aura-star { 0%, 100% { opacity: 0.25; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.15); } }
+
 /* Vitrine : titres d'événement. */
 .event-title-ribbon {
   position: absolute; top: 10px; right: -34px; width: 130px; transform: rotate(35deg); text-align: center;

@@ -3,6 +3,8 @@
 import { BatShape, SnowLayers } from "@/components/trolls/EventEffects";
 import { Bells, Bleuet, Egg, PaperFish, Patrouille } from "@/components/seasonal/drawings";
 import { Brasombre, ClawMarks } from "@/components/seasonal/chasseArt";
+import { VaryexisSign } from "@/components/seasonal/varyexisArt";
+import { BalanceArt } from "@/components/trolls/BalanceEffects";
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { mentalQuestion } from "@/lib/mentalCalc";
 import type { TrollPower } from "@/lib/titles";
@@ -563,6 +565,44 @@ function AssautPanel({ value: o, onChange, ctx }: Props<"assaut">) {
   );
 }
 
+function BalancePanel({ value: o, onChange, ctx }: Props<"balance">) {
+  const set = (p: Partial<TrollOptions["balance"]>) => onChange({ ...o, ...p });
+  const tilt = [1.5, 3, 5][o.penchant - 1];
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <div className="space-y-4">
+        <Field label="Pluie d'étoiles" hint={["Une étoile toutes les 3 à 4 secondes.", "Une étoile toutes les 2 secondes environ.", "Plus d'une étoile par seconde."][o.rythme - 1]}>
+          <Seg value={o.rythme} onChange={(rythme) => set({ rythme })} accent={ctx.accent} options={[{ v: 1, label: "Paisible" }, { v: 2, label: "Soutenue" }, { v: 3, label: "Averse" }]} />
+        </Field>
+        <Field label="Quand elle penche, la page penche">
+          <Seg value={o.penchant} onChange={(penchant) => set({ penchant })} accent={ctx.accent} options={[{ v: 1, label: "Un peu" }, { v: 2, label: "Franchement" }, { v: 3, label: "Vertigineux" }]} />
+        </Field>
+        <Toggle checked={o.constellation} onChange={(constellation) => set({ constellation })} accent={ctx.accent} label="Le signe de Varyexis dans son ciel" />
+        <Field label="Gravé sous la balance (facultatif)">
+          <TextInput value={o.message} onChange={(message) => set({ message })} max={60} placeholder="Tout finit par s'équilibrer." />
+        </Field>
+        <p className="font-body text-xs text-paper/60">
+          {ctx.target} rééquilibre la balance en retirant des étoiles du plateau le plus lourd (un clic par étoile).
+        </p>
+      </div>
+      <Preview who={ctx.target} className="h-48 bg-[#0b0d26]">
+        <div className="absolute inset-0 transition-transform duration-700" style={{ transform: `rotate(${tilt}deg)`, transformOrigin: "50% 40%" }}>
+          <MiniPage />
+        </div>
+        {o.constellation && (
+          <div className="pointer-events-none absolute left-1/2 top-1/2 w-40 -translate-x-1/2 -translate-y-1/2 opacity-30">
+            <VaryexisSign />
+          </div>
+        )}
+        <div className="absolute bottom-1 left-1/2 w-32 -translate-x-1/2">
+          <BalanceArt left={1} right={4} angle={12} />
+          {o.message && <p className="truncate text-center font-body text-[9px] italic text-[#fff4d6]">« {o.message} »</p>}
+        </div>
+      </Preview>
+    </div>
+  );
+}
+
 function AbyssPanel({ value: o, onChange, ctx }: Props<"abysses">) {
   const set = (p: Partial<TrollOptions["abysses"]>) => onChange({ ...o, ...p });
   const dark = [0, 0.35, 0.55, 0.78][o.darkness];
@@ -1070,6 +1110,8 @@ export function TrollOptionsEditor({
       return <TrucePanel {...(p as Props<"treve">)} />;
     case "assaut":
       return <AssautPanel {...(p as Props<"assaut">)} />;
+    case "balance":
+      return <BalancePanel {...(p as Props<"balance">)} />;
     default:
       return null;
   }

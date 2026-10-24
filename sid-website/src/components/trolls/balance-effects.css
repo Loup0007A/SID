@@ -1,0 +1,50 @@
+/* Farce « Balance de Varyexis » (BalanceEffects.tsx). */
+
+.vb-root { position: fixed; inset: 0; z-index: 9050; pointer-events: none; overflow: hidden; }
+.vb-night { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 30%, rgb(30 40 110 / 0.1), rgb(6 8 30 / 0.28) 75%); }
+.vb-sign { position: absolute; left: 50%; top: 46%; width: min(70vw, 560px); transform: translate(-50%, -50%); opacity: 0.16; }
+
+/* La balance, en bas au milieu. */
+.vb-balance { position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 58px); width: min(64vw, 280px); transform: translateX(-50%); text-align: center; }
+.vb-balance.is-creak { animation: vb-creak 0.5s ease-in-out 2; }
+@keyframes vb-creak { 0%, 100% { transform: translateX(-50%); } 30% { transform: translateX(calc(-50% - 2px)) rotate(-1deg); } 60% { transform: translateX(calc(-50% + 2px)) rotate(1deg); } }
+.vb-art { display: block; width: 100%; height: auto; overflow: visible; filter: drop-shadow(0 0 10px rgb(150 170 255 / 0.45)); }
+.vb-pillar { fill: rgb(30 34 80 / 0.9); stroke: #d8c690; stroke-width: 1.6; stroke-linejoin: round; }
+.vb-pivot { fill: #fff4d6; filter: drop-shadow(0 0 4px #ffe2a0); }
+.vb-beam { transform-box: view-box; transform-origin: 130px 34px; transition: transform 0.6s cubic-bezier(.3, .7, .3, 1.3); }
+.vb-beam path { stroke: #e8d6a0; stroke-width: 3; stroke-linecap: round; }
+.vb-beam circle { fill: #e8d6a0; }
+.vb-plate-move { transition: transform 0.6s cubic-bezier(.3, .7, .3, 1.3); }
+.vb-chain { stroke: rgb(232 214 160 / 0.8); stroke-width: 1; fill: none; }
+.vb-dish { fill: rgb(40 46 110 / 0.9); stroke: #e8d6a0; stroke-width: 1.4; }
+.vb-star { fill: #fdfbff; filter: drop-shadow(0 0 3px #bcd0ff); }
+.vb-count { fill: #fff4d6; font: 700 11px/1 var(--font-body); text-anchor: middle; }
+.vb-hit { fill: transparent; }
+.vb-plate.is-clickable { pointer-events: all; cursor: pointer; }
+.vb-plate.is-clickable:hover .vb-dish { fill: rgb(70 80 170 / 0.95); }
+.vb-caption { margin: 2px 0 0; font: 600 11px/1.3 var(--font-body); color: #e9edff; text-shadow: 0 1px 3px rgb(0 0 0 / 0.9); }
+.vb-msg { margin: 2px auto 0; max-width: 92vw; font: italic 12px/1.3 var(--font-body); color: #fff4d6; text-shadow: 0 1px 3px rgb(0 0 0 / 0.9); }
+
+/* Étoiles qui tombent, étoiles qu'on retire. */
+.vb-fall { position: absolute; width: 0; height: 0; animation: vb-fall 1.8s cubic-bezier(.5, 0, .9, .6) forwards; }
+.vb-fall i, .vb-out i {
+  position: absolute; left: -5px; top: -5px; width: 10px; height: 10px; background: #fff;
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  filter: drop-shadow(0 0 4px #c9d6ff);
+}
+.vb-fall::before { /* traînée */
+  content: ""; position: absolute; left: -1px; bottom: 2px; width: 2px; height: 40px; border-radius: 2px;
+  background: linear-gradient(to top, rgb(220 230 255 / 0.8), transparent);
+}
+@keyframes vb-fall { from { transform: translate(0, 0); opacity: 0; } 10% { opacity: 1; } to { transform: translate(var(--dx), var(--dy)); opacity: 1; } }
+.vb-out { position: absolute; width: 0; height: 0; animation: vb-out 1.1s ease-out forwards; }
+@keyframes vb-out { from { transform: translate(0, 0) scale(1); opacity: 1; } to { transform: translate(0, -160px) scale(0.4); opacity: 0; } }
+
+/* La page penche avec la balance (par à-coups). */
+html.troll-balance main, html.troll-balance header { transition: transform 0.9s cubic-bezier(.3, .7, .3, 1.2); transform-origin: 50% 40vh; }
+html.troll-penche main, html.troll-penche header { transform: rotate(var(--vb-tilt, 0deg)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .vb-balance.is-creak { animation: none; }
+  html.troll-penche main, html.troll-penche header { transform: none; }
+}
