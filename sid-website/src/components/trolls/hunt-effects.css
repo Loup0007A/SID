@@ -1,0 +1,85 @@
+/* Farce « Assaut de Brasombre » (HuntEffects.tsx). */
+
+.ha-root { position: fixed; inset: 0; z-index: 9050; pointer-events: none; overflow: hidden; }
+.ha-tint { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 120%, color-mix(in srgb, var(--ha-glow) 22%, transparent), transparent 60%); }
+
+/* Griffures sur la page. */
+.ha-claw { position: absolute; transform-origin: 50% 50%; animation: ha-claw 9s ease-out forwards; }
+.ha-claw .claw-cut { animation: ha-cut 0.32s cubic-bezier(.2, .8, .3, 1) both; }
+@keyframes ha-claw { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes ha-cut { from { clip-path: inset(0 100% 100% 0); } to { clip-path: inset(0 0 0 0); } }
+
+/* Passage : l'ombre au sol et la wyverne haut dans le ciel. */
+.ha-pass-shadow {
+  position: absolute; top: 18vh; left: 0; width: 70vw; height: 60vh; border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgb(0 0 0 / 0.5), rgb(0 0 0 / 0.25) 45%, transparent 70%);
+  animation: ha-shadow 2.3s cubic-bezier(.4, .1, .6, .9) both;
+}
+.ha-pass-beast { position: absolute; top: 2vh; left: 0; width: min(46vw, 420px); animation: ha-pass 2.3s cubic-bezier(.4, .1, .6, .9) both; }
+.ha-pass-beast .brasombre { transform: scaleX(-1); filter: drop-shadow(0 20px 24px rgb(0 0 0 / 0.5)); }
+.ha-pass.is-ltr .ha-pass-shadow { animation-name: ha-shadow-ltr; }
+.ha-pass.is-ltr .ha-pass-beast { animation-name: ha-pass-ltr; }
+.ha-pass.is-ltr .ha-pass-beast .brasombre { transform: none; }
+@keyframes ha-shadow { from { transform: translateX(110vw) scale(0.8); } to { transform: translateX(-80vw) scale(1.1); } }
+@keyframes ha-shadow-ltr { from { transform: translateX(-80vw) scale(0.8); } to { transform: translateX(110vw) scale(1.1); } }
+@keyframes ha-pass { from { transform: translate(105vw, 6vh) scale(0.7); } to { transform: translate(-50vw, -4vh) scale(0.9); } }
+@keyframes ha-pass-ltr { from { transform: translate(-50vw, 6vh) scale(0.7); } to { transform: translate(105vw, -4vh) scale(0.9); } }
+
+/* Brasombre posée en bas de l'écran. */
+.ha-beast { position: absolute; bottom: env(safe-area-inset-bottom); width: min(48vw, 430px); aspect-ratio: 420 / 280; }
+.ha-beast.is-r { right: -3vw; }
+.ha-beast.is-l { left: -3vw; }
+.ha-beast.is-r .ha-msg { left: 28%; }
+.ha-beast.is-repel:not(.is-leave):not(.is-land) { pointer-events: auto; cursor: crosshair; -webkit-tap-highlight-color: transparent; }
+.ha-beast-art { width: 100%; height: 100%; }
+.ha-beast .brasombre { width: 100%; height: 100%; filter: drop-shadow(0 14px 18px rgb(0 0 0 / 0.6)); }
+.ha-beast.is-r .brasombre { transform: scaleX(-1); }
+.ha-beast.is-land .ha-beast-art { animation: ha-land 0.9s cubic-bezier(.5, 0, .7, 1) both; }
+.ha-beast.is-roar .ha-beast-art { animation: ha-roar 0.8s ease-in-out; }
+.ha-beast.is-hit .ha-beast-art { animation: ha-hit 0.26s ease-out; }
+.ha-beast.is-leave .ha-beast-art { animation: ha-leave 1.4s cubic-bezier(.5, 0, .8, .6) forwards; }
+.ha-beast.is-l.is-leave .ha-beast-art { animation-name: ha-leave-l; }
+@keyframes ha-land { 0% { transform: translateY(-110vh) scale(0.8); } 80% { transform: translateY(3%) scale(1.03, 0.95); } 100% { transform: none; } }
+@keyframes ha-roar { 0%, 100% { transform: none; } 20% { transform: rotate(-3deg) scale(1.03); } 40% { transform: rotate(2deg) scale(1.05); } 60% { transform: rotate(-2deg) scale(1.04); } }
+@keyframes ha-hit { 0% { transform: none; filter: brightness(1); } 35% { transform: translateX(3%) rotate(2deg); filter: brightness(1.9); } 100% { transform: none; filter: brightness(1); } }
+@keyframes ha-leave { 0% { transform: none; } 25% { transform: translateY(4%) scale(1.02, 0.96); } 100% { transform: translate(40vw, -110vh) rotate(-12deg); } }
+@keyframes ha-leave-l { 0% { transform: none; } 25% { transform: translateY(4%) scale(1.02, 0.96); } 100% { transform: translate(-40vw, -110vh) rotate(12deg); } }
+
+/* Rugissement, message du lanceur, compteur. */
+.ha-roar, .ha-msg, .ha-count, .ha-pop { position: absolute; left: 50%; transform: translateX(-50%); white-space: nowrap; pointer-events: none; font-family: var(--font-body); }
+.ha-roar { top: -14%; font: 900 clamp(22px, 4vw, 36px)/1 var(--font-display, var(--font-body)); letter-spacing: 0.08em; color: #fff1d6; text-shadow: 0 3px 0 rgb(0 0 0 / 0.6), 0 0 22px var(--ha-glow); animation: ha-roar-txt 0.9s ease-out both; }
+.ha-msg {
+  top: -30%; left: 72%; width: max-content; max-width: min(80vw, 340px); white-space: normal; text-align: center; padding: 8px 14px; border-radius: 14px;
+  background: rgb(20 12 8 / 0.88); border: 1px solid color-mix(in srgb, var(--ha-glow) 60%, transparent); color: #fbeedd;
+  font: 600 14px/1.3 var(--font-body); box-shadow: 0 10px 24px -10px rgb(0 0 0 / 0.8), 0 0 18px -6px var(--ha-glow);
+  animation: ha-msg-in 0.3s ease-out both;
+}
+.ha-msg::after { content: ""; position: absolute; left: 50%; bottom: -7px; width: 12px; height: 12px; transform: translateX(-50%) rotate(45deg); background: inherit; border-right: inherit; border-bottom: inherit; }
+.ha-count {
+  top: -6%; padding: 6px 12px; border-radius: 999px; background: rgb(0 0 0 / 0.72); color: #fff; font: 700 13px/1 var(--font-body);
+  border: 1px solid rgb(255 255 255 / 0.25); animation: ha-count 0.9s ease-in-out infinite alternate;
+}
+.ha-count b { display: inline-block; min-width: 1.3em; margin-left: 4px; padding: 3px 6px; border-radius: 999px; background: var(--ha-glow); color: #1a0e08; text-align: center; }
+.ha-pop { top: 20%; font: 800 20px/1 var(--font-body); color: #fff; text-shadow: 0 2px 0 rgb(0 0 0 / 0.6), 0 0 12px var(--ha-glow); animation: ha-pop 0.8s ease-out forwards; }
+@keyframes ha-roar-txt { 0% { opacity: 0; transform: translateX(-50%) scale(0.5); } 25% { opacity: 1; transform: translateX(-50%) scale(1.15); } 100% { opacity: 0; transform: translateX(-50%) translateY(-20px) scale(1); } }
+@keyframes ha-msg-in { from { opacity: 0; transform: translateX(-50%) translateY(8px); } to { opacity: 1; transform: translateX(-50%); } }
+@keyframes ha-count { from { transform: translateX(-50%) scale(1); } to { transform: translateX(-50%) scale(1.06); } }
+@keyframes ha-pop { from { opacity: 1; transform: translate(-50%, 0) scale(0.8); } to { opacity: 0; transform: translate(-50%, -50px) scale(1.2); } }
+
+/* La page tremble au rugissement. */
+html.troll-quake main, html.troll-quake header { animation: ha-quake 0.85s ease-in-out; }
+@keyframes ha-quake {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-6px, 3px); } 25% { transform: translate(6px, -4px); } 40% { transform: translate(-5px, 2px); }
+  55% { transform: translate(4px, -3px); } 70% { transform: translate(-3px, 2px); } 85% { transform: translate(2px, -1px); }
+}
+
+@media (max-width: 640px) {
+  .ha-beast { width: min(78vw, 380px); }
+  .ha-msg { top: -40%; font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ha-pass, .ha-beast-art, .ha-count { animation: none !important; }
+  .ha-pass { display: none; }
+  html.troll-quake main, html.troll-quake header { animation: none; }
+}

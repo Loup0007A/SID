@@ -76,6 +76,7 @@ const PARTICLES: Partial<Record<TitleId, { count: number; glyphs?: string[] }>> 
   maestro: { count: 14, glyphs: ["♪", "♫", "♬", "♩"] },
   artificier: { count: 24 },
   veilleur: { count: 10, glyphs: ["✿", "❀"] },
+  veneur: { count: 16 },
 };
 
 /**

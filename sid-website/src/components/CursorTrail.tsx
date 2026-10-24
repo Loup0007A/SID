@@ -28,9 +28,10 @@ const PALETTES: Partial<Record<EventKey, Palette>> = {
   fete_musique: { colors: ["#c9a6ff", "#ff9c6e", "#6ec8ff", "#ffe14d"], shape: "note", glow: 8 },
   quatorze_juillet: { colors: ["#5b8bff", "#f4f6ff", "#ff4d5a"], shape: "star", glow: 9 },
   armistice: { colors: ["#6f95ff", "#9db7e8", "#c9d6f2"], shape: "dot", glow: 5 },
+  grande_chasse: { colors: ["#ff8a2a", "#ffd36b", "#ff5a1a", "#ffb35c"], shape: "dot", glow: 9 },
 };
 // Si plusieurs fêtes sont affichées en même temps, la première de cette liste gagne.
-const PRIORITY: EventKey[] = ["armistice", "quatorze_juillet", "fete_musique", "premier_mai", "paques", "poisson_avril", "saint_valentin", "noel", "halloween"];
+const PRIORITY: EventKey[] = ["grande_chasse", "armistice", "quatorze_juillet", "fete_musique", "premier_mai", "paques", "poisson_avril", "saint_valentin", "noel", "halloween"];
 
 type P = { x: number; y: number; vx: number; vy: number; born: number; life: number; size: number; color: string; spin: number };
 type Ring = { x: number; y: number; born: number; color: string };

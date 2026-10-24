@@ -29,13 +29,14 @@ const LISIBLE = join(SITE, ".scelle");
 const COFFRE = join(ICI, "coffre.bin");
 
 // Ce qui est produit à partir de .scelle/ (source → fichier publié).
-const COMPOSANTS = ["s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9"].map((n) => [`composants/${n}.tsx`, `src/components/sceaux/${n}.js`]);
+const COMPOSANTS = ["s1", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10"].map((n) => [`composants/${n}.tsx`, `src/components/sceaux/${n}.js`]);
 const CACHET = ["cachet.json", "src/lib/cachet.js"];
 const SQL = [
   ["sql/0061_titres_trolls.sql", "supabase/migrations/0061_titres_trolls.sql"],
   ["sql/0065_titres_evenement.sql", "supabase/migrations/0065_titres_evenement.sql"],
   ["sql/0066_farces_remise_a_niveau.sql", "supabase/migrations/0066_farces_remise_a_niveau.sql"],
   ["sql/0067_evenements.sql", "supabase/migrations/0067_evenements.sql"],
+  ["sql/0068_grande_chasse.sql", "supabase/migrations/0068_grande_chasse.sql"],
 ];
 
 function cle() {

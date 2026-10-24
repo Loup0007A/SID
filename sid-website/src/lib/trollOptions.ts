@@ -218,6 +218,7 @@ export type TrollOptions = {
   fanfare: { tempo: FanfareTempo; bounce: boolean };
   artifice: { intensity: number; patrouille: boolean };
   treve: { message: string };
+  assaut: { beast: BeastKind; fury: number; repel: boolean; message: string };
 };
 
 export const LOVE_COLORS = {
@@ -232,6 +233,13 @@ export const FANFARE_TEMPOS = {
   rapide: { label: "Galop (rapide)", ms: 380 },
 } as const;
 export type FanfareTempo = keyof typeof FANFARE_TEMPOS;
+/** Brasombre et ses variantes (couleurs de l'Assaut). */
+export const BEASTS = {
+  braise: { label: "Braise", body: "#3a2a26", glow: "#ff8a2a", glow2: "#ffd36b" },
+  givre: { label: "Givre", body: "#2a3440", glow: "#7fd8ff", glow2: "#e6f7ff" },
+  orage: { label: "Orage", body: "#2a2640", glow: "#b48aff", glow2: "#fff27a" },
+} as const;
+export type BeastKind = keyof typeof BEASTS;
 
 /** Bornes qui dépendent du niveau du titre (comme en base). */
 export const hauntMaxChance = (level: number) => Math.min(75, 35 + 10 * (Math.max(level, 1) - 1));
@@ -260,6 +268,7 @@ export function defaultOptions<P extends TrollPower>(power: P, level = 1): Troll
     fanfare: { tempo: "moyen", bounce: true },
     artifice: { intensity: 2, patrouille: true },
     treve: { message: "" },
+    assaut: { beast: "braise", fury: 2, repel: true, message: "" },
   };
   return all[power];
 }
@@ -360,6 +369,14 @@ export function readOptions<P extends TrollPower>(power: P, params: Record<strin
       break;
     case "treve":
       o = { message: txt(p.message, 60) };
+      break;
+    case "assaut":
+      o = {
+        beast: pick(p.beast, Object.keys(BEASTS) as BeastKind[], "braise"),
+        fury: num(p.fury, 2, 1, 3),
+        repel: bool(p.repel, true),
+        message: txt(p.message, 60),
+      };
       break;
     default:
       o = { ...d, ...p };

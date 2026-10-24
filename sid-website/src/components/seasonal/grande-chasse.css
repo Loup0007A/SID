@@ -1,0 +1,189 @@
+/* =========================================================
+   « La Grande Chasse » (Lot 46) — chargé seulement pendant l'événement
+   (src/components/seasonal/GrandeChasse.tsx).
+   ========================================================= */
+
+html.decor-grande_chasse:not(.troll-abyss) body {
+  background-color: #1d1220;
+  background-image:
+    radial-gradient(ellipse 80% 45% at 75% 108%, rgb(255 120 40 / 0.22), transparent 64%),
+    radial-gradient(ellipse 70% 50% at 10% -10%, rgb(120 60 160 / 0.22), transparent 62%),
+    linear-gradient(to bottom, #1a1024 0%, #2a1526 55%, #3a1a18 100%);
+}
+
+.gc-back { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+.gc-front { position: fixed; inset: 0; z-index: 21; pointer-events: none; overflow: hidden; }
+
+/* Ciel du crépuscule */
+.gc-sky {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 120% 60% at 70% 100%, rgb(255 140 60 / 0.28), transparent 60%),
+    linear-gradient(to bottom, transparent 40%, rgb(120 40 30 / 0.25) 80%, rgb(200 80 30 / 0.2));
+}
+.gc-stars i { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: #fff4dc; opacity: 0.5; animation: gc-twinkle 4s ease-in-out infinite; }
+@keyframes gc-twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.8; } }
+.gc-sun {
+  position: absolute; right: 18%; bottom: 120px; width: 220px; height: 220px; border-radius: 50%;
+  background: radial-gradient(circle, rgb(255 190 110 / 0.9) 0%, rgb(255 120 50 / 0.55) 38%, rgb(255 90 40 / 0.12) 62%, transparent 72%);
+  filter: blur(1px);
+}
+
+/* Montagnes, volcan, éperon, herbes */
+.gc-land { position: absolute; left: 0; bottom: 0; width: 100%; height: 300px; }
+.gc-mount-far { fill: #3b2033; }
+.gc-volcano { fill: #2c1520; }
+.gc-crater { fill: #ff7a2a; filter: drop-shadow(0 0 10px #ff6a1a); animation: gc-lava 3.2s ease-in-out infinite; }
+.gc-lava { fill: #ff8a2a; opacity: 0.75; filter: drop-shadow(0 0 6px #ff5a10); animation: gc-lava 3.2s ease-in-out infinite; }
+@keyframes gc-lava { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+.gc-mount-mid { fill: #22121a; }
+.gc-cliff { fill: #170c12; }
+.gc-mount-near { fill: #120a0e; }
+.gc-grass { fill: #0d0709; }
+.gc-perched .brasombre { --br-body: #1a1014; --br-plate: #24161a; --br-dark: #0e080a; --br-horn: #4a3a32; --br-membrane: #1d0f12; }
+
+/* Fumée du volcan */
+.gc-smoke { position: absolute; right: 22%; bottom: 210px; width: 120px; height: 160px; }
+.gc-smoke i { position: absolute; left: 40%; bottom: 0; width: 46px; height: 46px; border-radius: 50%; background: radial-gradient(circle, rgb(90 70 80 / 0.5), transparent 70%); animation: gc-smoke 9s ease-out infinite; }
+.gc-smoke i:nth-child(2) { animation-delay: -3s; }
+.gc-smoke i:nth-child(3) { animation-delay: -6s; }
+@keyframes gc-smoke { from { transform: translate(0, 0) scale(0.6); opacity: 0; } 15% { opacity: 1; } to { transform: translate(60px, -150px) scale(2.4); opacity: 0; } }
+
+/* Campement et feu de camp */
+.gc-camp { position: absolute; left: max(1vw, 8px); bottom: 0; width: min(360px, 60vw); height: auto; }
+.gc-camp-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.gc-tent { fill: #3a2418; stroke: #1a0e08; stroke-width: 1.5; }
+.gc-tent-far { fill: #2a1a14; }
+.gc-tent-light { fill: #ffb35c; opacity: 0.75; filter: drop-shadow(0 0 8px #ff8a2a); animation: gc-flicker 2.2s ease-in-out infinite; }
+.gc-tent-door { fill: #120a06; }
+.gc-tent-pole, .gc-pole { stroke: #6a4a30; stroke-width: 2; }
+.gc-rack { stroke: #4a3020; stroke-width: 3; stroke-linecap: round; }
+.gc-spear { fill: #9a8a7a; stroke: #6a5a4a; stroke-width: 2; }
+.gc-bow { fill: none; stroke: #7a5230; stroke-width: 2.4; }
+.gc-bow + * { stroke: #d8c6a4; }
+.gc-flag { fill: #b4441c; transform-box: fill-box; transform-origin: 0 50%; animation: gc-flag 2.6s ease-in-out infinite; }
+@keyframes gc-flag { 0%, 100% { transform: skewY(0) scaleX(1); } 50% { transform: skewY(5deg) scaleX(0.92); } }
+.gc-log { stroke: #4a2c18; stroke-width: 6; stroke-linecap: round; }
+.gc-pot-stand { fill: none; stroke: #3a2a20; stroke-width: 2.4; }
+.gc-pot { fill: #2a2422; stroke: #141010; stroke-width: 1.5; }
+.gc-fire-glow { fill: rgb(255 140 50 / 0.28); filter: blur(10px); animation: gc-flicker 1.6s ease-in-out infinite; }
+.gc-flame { transform-box: fill-box; transform-origin: 50% 100%; }
+.gc-flame-a { fill: #ff7a1a; animation: gc-flame 0.9s ease-in-out infinite alternate; }
+.gc-flame-b { fill: #ffb33c; animation: gc-flame 0.7s ease-in-out infinite alternate-reverse; }
+.gc-flame-c { fill: #ffe08a; animation: gc-flame 0.6s ease-in-out infinite alternate; }
+@keyframes gc-flame { from { transform: scale(0.9, 0.88) skewX(-4deg); } to { transform: scale(1.06, 1.12) skewX(4deg); } }
+@keyframes gc-flicker { 0%, 100% { opacity: 0.6; } 40% { opacity: 0.95; } 70% { opacity: 0.75; } }
+.gc-sparks { position: absolute; inset: 0; }
+.gc-sparks i { position: absolute; bottom: 14%; width: 3px; height: 3px; border-radius: 50%; background: #ffd36b; box-shadow: 0 0 6px 1px #ff8a2a; animation: gc-spark 3s ease-out infinite; }
+@keyframes gc-spark { 0% { transform: translate(0, 0); opacity: 0; } 10% { opacity: 1; } 100% { transform: translate(var(--dx), -140px); opacity: 0; } }
+
+/* Cendres et braises qui montent dans toute la page */
+.gc-ash i { position: absolute; bottom: -10px; border-radius: 50%; background: rgb(200 180 170 / 0.4); animation: gc-ash linear infinite; }
+.gc-ash i.is-warm { background: #ffb35c; box-shadow: 0 0 6px 1px rgb(255 138 42 / 0.7); }
+@keyframes gc-ash { 0% { transform: translate(0, 0); opacity: 0; } 10% { opacity: 0.9; } 90% { opacity: 0.6; } 100% { transform: translate(var(--dx), -105vh); opacity: 0; } }
+
+/* Survol de Brasombre et son ombre */
+.gc-flyover { position: absolute; top: 12vh; left: 0; width: min(62vw, 560px); animation: gc-fly 7.2s cubic-bezier(.35, .1, .55, .9) both; }
+.gc-flyover .brasombre { transform: scaleX(-1); filter: drop-shadow(0 18px 24px rgb(0 0 0 / 0.55)); }
+@keyframes gc-fly {
+  0% { transform: translate(105vw, 30px) rotate(4deg); }
+  30% { transform: translate(55vw, -8px) rotate(-2deg); }
+  60% { transform: translate(15vw, 18px) rotate(3deg); }
+  100% { transform: translate(-75vw, -40px) rotate(-6deg); }
+}
+.gc-shadow {
+  position: absolute; top: 40vh; left: 0; width: 70vw; height: 46vh; border-radius: 50%;
+  background: radial-gradient(ellipse, rgb(10 4 6 / 0.55), rgb(10 4 6 / 0.25) 45%, transparent 70%);
+  animation: gc-shadow 7.2s cubic-bezier(.35, .1, .55, .9) both;
+}
+@keyframes gc-shadow { 0% { transform: translate(110vw, 0) scale(0.8); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translate(-90vw, -6vh) scale(1.1); opacity: 0; } }
+html.gc-rumble main, html.gc-rumble header { animation: gc-rumble 0.7s ease-in-out; }
+@keyframes gc-rumble {
+  0%, 100% { transform: translate(0, 0); }
+  15% { transform: translate(-3px, 2px); } 30% { transform: translate(3px, -2px); } 45% { transform: translate(-2px, 1px); }
+  60% { transform: translate(2px, -1px); } 80% { transform: translate(-1px, 1px); }
+}
+
+/* Guirlande de fanions */
+.gc-rope { fill: none; stroke: #6a4a30; stroke-width: 1.6; }
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .gc-g-item { animation: hd-dangle 3.2s ease-in-out infinite alternate; }
+}
+
+/* Phrase d'accueil */
+.gc-greeting { color: #ffc178; text-shadow: 0 0 12px rgb(255 120 40 / 0.35); }
+
+/* Cor du pied de page */
+.gc-horn { display: inline-flex; width: 30px; height: 24px; padding: 0; border: 0; background: none; cursor: pointer; border-radius: 6px; }
+.gc-horn svg { width: 100%; height: 100%; transition: transform 0.2s; }
+.gc-horn:hover svg { transform: rotate(-10deg) scale(1.12); }
+.gc-horn:focus-visible { outline: 2px solid #ffb35c; outline-offset: 2px; }
+.gc-horn.is-open svg { animation: gc-blow 0.6s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes gc-blow { 40% { transform: scale(1.25) rotate(-14deg); } }
+.gc-horn-wave { position: absolute; left: 70%; top: 30%; pointer-events: none; }
+.gc-horn-wave i { position: absolute; left: -10px; top: -10px; width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgb(255 200 120 / 0.8); animation: gc-wave 1.1s ease-out both; }
+.gc-horn-wave i:nth-child(2) { animation-delay: 0.15s; }
+.gc-horn-wave i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes gc-wave { from { transform: scale(0.4); opacity: 1; } to { transform: scale(3.2); opacity: 0; } }
+.gc-bubble { border-color: rgb(255 179 92 / 0.6); }
+
+/* Tableau de chasse */
+.gc-board {
+  position: relative; border-radius: 18px; padding: 14px; color: #f4e6cc;
+  background:
+    repeating-linear-gradient(90deg, rgb(0 0 0 / 0.08) 0 2px, transparent 2px 60px),
+    linear-gradient(160deg, #5a3622, #3a2216 60%, #2a170e);
+  border: 1px solid rgb(255 200 140 / 0.25);
+  box-shadow: inset 0 0 0 3px rgb(0 0 0 / 0.25), inset 0 2px 0 rgb(255 220 170 / 0.15), 0 14px 40px -16px rgb(0 0 0 / 0.8);
+  animation: title-unlock-in 0.35s ease-out;
+}
+.gc-board-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px; padding: 2px 4px 10px; }
+.gc-board-title { font: 600 18px/1.2 var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; color: #ffd08a; text-shadow: 0 1px 0 rgb(0 0 0 / 0.5); }
+.gc-board-sub { font: 11px/1.4 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: rgb(255 230 190 / 0.7); }
+.gc-board-grid { display: grid; gap: 10px; grid-template-columns: 1fr; }
+@media (min-width: 768px) { .gc-board-grid { grid-template-columns: 1fr 1fr 1.2fr; } }
+.gc-note {
+  position: relative; padding: 14px 14px 12px; border-radius: 6px; color: #3a2414;
+  background: linear-gradient(170deg, #f3e2bf, #e6cc98);
+  box-shadow: 0 6px 14px -6px rgb(0 0 0 / 0.6), inset 0 0 30px rgb(140 90 40 / 0.18);
+}
+.gc-note:nth-child(1) { transform: rotate(-0.8deg); }
+.gc-note:nth-child(2) { transform: rotate(0.6deg); }
+.gc-note:nth-child(3) { transform: rotate(-0.4deg); }
+.gc-note::before { content: ""; position: absolute; left: 50%; top: -6px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #ff9a6a, #9a2a12); box-shadow: 0 2px 3px rgb(0 0 0 / 0.5); }
+.gc-note-title { font: 600 13px/1.2 var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; color: #6a2a10; margin-bottom: 8px; }
+.gc-note-text { font: italic 13px/1.4 var(--font-body); color: #4a2c18; }
+.gc-trophies { display: flex; gap: 8px; margin-bottom: 8px; }
+.gc-trophy { width: 40px; height: 40px; }
+.gc-trophy svg { width: 100%; height: 100%; }
+.gc-trophy-ring { fill: rgb(90 50 20 / 0.12); stroke: rgb(90 50 20 / 0.4); stroke-width: 2; stroke-dasharray: 4 3; }
+.gc-trophy-mark { fill: none; stroke: rgb(90 50 20 / 0.25); stroke-width: 2.6; stroke-linecap: round; }
+.gc-trophy.is-won .gc-trophy-ring { fill: #b4441c; stroke: #ffd08a; stroke-dasharray: none; filter: drop-shadow(0 0 6px rgb(255 140 50 / 0.7)); }
+.gc-trophy.is-won .gc-trophy-mark { stroke: #ffe8c0; }
+.gc-trophy.is-won { animation: gc-trophy-in 0.6s cubic-bezier(.3, 1.6, .5, 1) both; }
+@keyframes gc-trophy-in { from { transform: scale(0.4) rotate(-30deg); } }
+.gc-stats { font: 13px/1.6 var(--font-body); }
+.gc-stats strong { font: 600 20px/1 var(--font-display); color: #8a2a10; margin-right: 4px; }
+.gc-top { font: 13px/1.5 var(--font-body); }
+.gc-top li { display: flex; align-items: baseline; gap: 6px; }
+.gc-rank { width: 22px; flex: none; text-align: center; }
+.gc-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.gc-score { flex: none; font: 11px/1.4 var(--font-mono); color: #7a4a2a; }
+.gc-board-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 14px; padding: 10px 4px 0; font: 12px/1.4 var(--font-body); color: rgb(255 230 190 / 0.8); }
+.gc-board-link { font: 11px/1.4 var(--font-mono); text-transform: uppercase; letter-spacing: 0.1em; color: #ffd08a; text-decoration: underline; }
+
+/* Écrans tactiles, petits écrans, « réduire les animations » */
+@media (max-width: 640px) {
+  .gc-sun { width: 140px; height: 140px; right: 8%; bottom: 110px; }
+  .gc-smoke { display: none; }
+  .gc-camp { width: min(260px, 70vw); }
+}
+@media (hover: none) {
+  .gc-stars i, .gc-tent-light, .gc-fire-glow { animation: none; }
+  .gc-ash i:nth-child(n + 12) { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gc-back *, .gc-board, .gc-trophy { animation: none !important; }
+  .gc-front, .gc-horn-wave { display: none; }
+  html.gc-rumble main, html.gc-rumble header { animation: none; }
+}

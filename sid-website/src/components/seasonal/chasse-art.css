@@ -1,0 +1,76 @@
+/* Dessins de « La Grande Chasse » (chasseArt.tsx). */
+
+/* Brasombre : couleurs par variables (Braise par défaut). */
+.brasombre {
+  --br-body: #3a2a26;
+  --br-plate: #54403a;
+  --br-dark: #221814;
+  --br-horn: #d8c6a4;
+  --br-membrane: #5b2b1c;
+  --br-glow: #ff8a2a;
+  --br-glow2: #ffd36b;
+  overflow: visible;
+  display: block;
+}
+.brasombre.is-givre { --br-body: #2c3a48; --br-plate: #44586a; --br-dark: #1b2530; --br-horn: #e6f2ff; --br-membrane: #24445e; --br-glow: #7fd8ff; --br-glow2: #ecfbff; }
+.brasombre.is-orage { --br-body: #2d2943; --br-plate: #463f66; --br-dark: #1a1729; --br-horn: #efe6c8; --br-membrane: #3b2c66; --br-glow: #b48aff; --br-glow2: #fff27a; }
+.brasombre .br-body { fill: var(--br-body); }
+.brasombre .br-dark { fill: var(--br-dark); }
+.brasombre .br-belly { opacity: 0.9; }
+.brasombre .br-plate { fill: var(--br-plate); }
+.brasombre .br-spike { fill: var(--br-dark); }
+.brasombre .br-horn { fill: var(--br-horn); }
+.brasombre .br-horn-small { opacity: 0.85; }
+.brasombre .br-claw, .brasombre .br-tooth { fill: var(--br-horn); stroke: var(--br-horn); stroke-width: 0.6; stroke-linejoin: round; }
+.brasombre .br-tooth { fill: none; stroke-width: 1.2; }
+.brasombre .br-tail-fan { fill: var(--br-glow); filter: drop-shadow(0 0 4px var(--br-glow)); }
+.brasombre .br-fissure { fill: none; stroke: var(--br-glow); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 3px var(--br-glow)); opacity: 0.85; animation: br-pulse 2.8s ease-in-out infinite; }
+.brasombre .br-membrane { fill: var(--br-membrane); opacity: 0.92; stroke: var(--br-dark); stroke-width: 1.4; stroke-linejoin: round; }
+.brasombre .br-tatter { fill: none; stroke: var(--br-dark); stroke-width: 1.4; opacity: 0.8; }
+.brasombre .br-bone { fill: none; stroke: var(--br-plate); stroke-width: 3.2; stroke-linecap: round; }
+.brasombre .br-claw-wing { fill: var(--br-horn); }
+.brasombre .br-wing-far { opacity: 0.7; }
+.brasombre .br-wing-far .br-membrane { fill: var(--br-dark); }
+.brasombre .br-eye { fill: var(--br-glow2); }
+.brasombre .br-eye-halo { animation: br-pulse 2.8s ease-in-out infinite; }
+.brasombre .br-smoke circle { fill: rgb(120 110 110 / 0.35); animation: br-smoke 2.6s ease-out infinite; }
+.brasombre .br-smoke circle:nth-child(2) { animation-delay: 0.4s; }
+.brasombre .br-smoke circle:nth-child(3) { animation-delay: 0.8s; }
+.brasombre .br-embers circle { fill: var(--br-glow2); filter: drop-shadow(0 0 2px var(--br-glow)); animation: br-ember 2.4s ease-out infinite; }
+@keyframes br-pulse { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+@keyframes br-smoke { from { transform: translate(0, 0) scale(0.6); opacity: 0.7; } to { transform: translate(10px, -16px) scale(1.4); opacity: 0; } }
+@keyframes br-ember { 0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(-6px, -34px); opacity: 0; } }
+
+/* Ailes : battement autour de l'épaule. */
+.brasombre .br-wing { transform-box: view-box; transform-origin: 236px 122px; }
+.br-perch .br-wing-near { animation: br-fold 5s ease-in-out infinite; }
+.br-perch .br-wing-far { transform: rotate(-12deg); }
+.br-fly .br-wing-near { animation: br-flap 0.9s ease-in-out infinite; }
+.br-fly .br-wing-far { animation: br-flap-far 0.9s ease-in-out infinite; }
+@keyframes br-fold { 0%, 100% { transform: rotate(4deg); } 50% { transform: rotate(-6deg); } }
+@keyframes br-flap { 0%, 100% { transform: rotate(-22deg) scaleY(1); } 50% { transform: rotate(28deg) scaleY(0.82); } }
+@keyframes br-flap-far { 0%, 100% { transform: rotate(-30deg) scaleY(0.95); } 50% { transform: rotate(16deg) scaleY(0.78); } }
+
+/* Griffes, pistes, cor, fanions. */
+.claw-marks { overflow: visible; display: block; }
+.claw-cut { fill: rgb(20 10 8 / 0.9); stroke: var(--claw-glow, #ff8a2a); stroke-width: 1.4; filter: drop-shadow(0 0 6px var(--claw-glow, #ff8a2a)); }
+.hunt-track { overflow: visible; display: block; }
+.hunt-track .track-pad, .hunt-track .track-toe { fill: rgb(40 24 16 / 0.85); stroke: rgb(255 170 90 / 0.65); stroke-width: 1.2; }
+.hunt-track .track-glow { fill: #ffb35c; opacity: 0.6; filter: blur(2px); animation: br-pulse 1.8s ease-in-out infinite; }
+.hunt-horn { overflow: visible; display: block; }
+.hunt-horn .horn-body { fill: #e8d6b0; }
+.hunt-horn .horn-bell { fill: #c79a5a; }
+.hunt-horn .horn-band { fill: none; stroke: #7a4a22; stroke-width: 1.6; stroke-linecap: round; }
+.hunt-horn .horn-mouth { fill: #7a4a22; }
+.hunt-horn .horn-cord { fill: none; stroke: #b3121b; stroke-width: 1.2; stroke-linecap: round; opacity: 0.85; }
+.pennant .pennant-cloth { stroke: rgb(0 0 0 / 0.25); stroke-width: 0.6; }
+.pennant-0 .pennant-cloth { fill: #b4441c; }
+.pennant-1 .pennant-cloth { fill: #e8c88a; }
+.pennant-2 .pennant-cloth { fill: #5a3a24; }
+.pennant .pennant-mark { fill: none; stroke: rgb(255 240 210 / 0.85); stroke-width: 1.1; stroke-linecap: round; }
+.pennant-1 .pennant-mark { stroke: #5a2a14; }
+.pennant-fang { fill: #efe3c8; stroke: rgb(0 0 0 / 0.3); stroke-width: 0.5; }
+
+@media (prefers-reduced-motion: reduce) {
+  .brasombre *, .hunt-track .track-glow { animation: none !important; }
+}

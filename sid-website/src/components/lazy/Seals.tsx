@@ -15,6 +15,7 @@ export const Sceau5 = dynamic(() => import("@/components/sceaux/s5").then((m) =>
 export const Sceau7 = dynamic(() => import("@/components/sceaux/s7").then((m) => m.Sceau7), { ssr: false });
 export const Sceau8 = dynamic(() => import("@/components/sceaux/s8").then((m) => m.Sceau8), { ssr: false });
 export const Sceau9 = dynamic(() => import("@/components/sceaux/s9").then((m) => m.Sceau9), { ssr: false });
+export const Sceau10 = dynamic(() => import("@/components/sceaux/s10").then((m) => m.Sceau10), { ssr: false });
 export const BirthdayGift = dynamic(() => import("@/components/sceaux/s6").then((m) => m.BirthdayGift), { ssr: false });
 export const BirthdaysToday = dynamic(() => import("@/components/sceaux/s6").then((m) => m.BirthdaysToday), { ssr: false });
 export const BirthdaySetting = dynamic(() => import("@/components/sceaux/s6").then((m) => m.BirthdaySetting), { ssr: false });

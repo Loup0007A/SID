@@ -23,7 +23,7 @@ import { TrollLayer } from "@/components/trolls/TrollLayer";
 import { SeasonalGarland, anyHoliday } from "@/components/seasonal/Seasonal";
 import { useSiteDecor } from "@/components/seasonal/siteDecor";
 import { AfterIdle } from "@/components/lazy/AfterIdle";
-import { Sceau1, Sceau2, Sceau7, Sceau8, Sceau9 } from "@/components/lazy/Seals";
+import { Sceau1, Sceau2, Sceau7, Sceau8, Sceau9, Sceau10 } from "@/components/lazy/Seals";
 
 // Pas urgents : téléchargés une fois la page affichée.
 const TitleUnlock = dynamic(() => import("@/components/titles/TitleUnlock").then((m) => m.TitleUnlock), { ssr: false });
@@ -336,6 +336,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {decor?.halloween && <Sceau7 />}
         {decor?.noel && <Sceau8 />}
         {anyHoliday(decor) && <Sceau9 />}
+        {decor?.grande_chasse && <Sceau10 />}
       </AfterIdle>
     )}
     </>

@@ -1403,6 +1403,24 @@ html.decor-noel:not(.troll-abyss) body {
 }
 @keyframes aura-sway { 0%, 100% { transform: rotate(-8deg); opacity: 0.55; } 50% { transform: rotate(8deg); opacity: 0.95; } }
 
+/* Grande Chasse : braises qui montent, trois griffures. */
+.aura-veneur { background: radial-gradient(ellipse at 50% 125%, rgb(255 120 40 / 0.32), transparent 60%), linear-gradient(to bottom, rgb(30 14 20 / 0.35), rgb(60 24 10 / 0.45)); }
+.aura-veneur::after {
+  content: ""; position: absolute; right: 8%; top: 12%; width: 54px; height: 64px; opacity: 0.55; transform: skewX(-18deg);
+  background:
+    linear-gradient(90deg, transparent 0 6px, rgb(255 150 60 / 0.9) 6px 8px, transparent 8px 22px, rgb(255 150 60 / 0.9) 22px 24px, transparent 24px 38px, rgb(255 150 60 / 0.9) 38px 40px, transparent 40px);
+  filter: drop-shadow(0 0 4px rgb(255 120 40 / 0.9)); -webkit-mask: linear-gradient(to bottom, transparent, #000 25%, #000 75%, transparent); mask: linear-gradient(to bottom, transparent, #000 25%, #000 75%, transparent);
+  animation: aura-claw-glow 3.2s ease-in-out infinite;
+}
+.aura-veneur .aura-p {
+  top: auto !important; bottom: -4px; width: calc(3px * var(--s)); height: calc(3px * var(--s)); border-radius: 50%;
+  background: #ffc76b; box-shadow: 0 0 6px 1px #ff8a2a;
+  animation-name: aura-ember; animation-timing-function: ease-out; animation-iteration-count: infinite;
+}
+@keyframes aura-ember { 0% { transform: translate(0, 0); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(var(--dx), -130px); opacity: 0; } }
+@keyframes aura-claw-glow { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.75; } }
+@media (prefers-reduced-motion: reduce) { .aura-veneur::after { animation: none; } }
+
 /* Vitrine : titres d'événement. */
 .event-title-ribbon {
   position: absolute; top: 10px; right: -34px; width: 130px; transform: rotate(35deg); text-align: center;

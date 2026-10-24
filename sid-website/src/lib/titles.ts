@@ -32,7 +32,8 @@ export type TitleId =
   | "meneur"
   | "maestro"
   | "artificier"
-  | "veilleur";
+  | "veilleur"
+  | "veneur";
 
 export type TrollPower =
   | "defi_dragon"
@@ -55,7 +56,8 @@ export type TrollPower =
   | "greve"
   | "fanfare"
   | "artifice"
-  | "treve";
+  | "treve"
+  | "assaut";
 
 export interface TitleDef {
   id: TitleId;
@@ -303,6 +305,17 @@ export const TITLES: TitleDef[] = [
     power: "treve",
     event: "armistice",
   },
+  {
+    id: "veneur",
+    name: "Grand Veneur",
+    emoji: "🏹",
+    colors: ["#ffb35c", "#7a2e12"],
+    maxLevel: 1,
+    riddle: "Quand la Grande Chasse est ouverte, des traces griffent les pages. Suis-les jusqu'au bout, et reviens le lendemain.",
+    how: commentObtenu("veneur"),
+    power: "assaut",
+    event: "grande_chasse",
+  },
 ];
 
 /** Titres secrets permanents, et titres d'événement. */
@@ -405,6 +418,11 @@ export const POWERS: Record<TrollPower, PowerDef> = {
     key: "artifice",
     name: "Feu d'artifice",
     description: "Des feux d'artifice éclatent sur l'écran de ta cible, et la Patrouille de France passe en laissant ses fumées bleu-blanc-rouge par-dessus. 10 minutes.",
+  },
+  assaut: {
+    key: "assaut",
+    name: "Assaut de Brasombre",
+    description: "Tu lâches Brasombre, la wyverne des cendres, sur le site de ta cible : son ombre passe, elle se pose, rugit (la page tremble) et laboure l'écran de ses griffes. Ta cible peut la chasser à coups de clics, si tu le permets. 10 minutes.",
   },
   treve: {
     key: "treve",

@@ -39,7 +39,7 @@ language sql
 immutable
 as $$
   select array['halloween', 'noel', 'saint_valentin', 'poisson_avril', 'paques', 'premier_mai',
-               'fete_musique', 'quatorze_juillet', 'armistice'];
+               'fete_musique', 'quatorze_juillet', 'armistice', 'grande_chasse'];
 $$;
 
 create or replace function public._decor_window(p_key text, p_day date)
@@ -58,6 +58,7 @@ as $$
     when 'fete_musique' then extract(month from p_day) = 6 and extract(day from p_day) = 21
     when 'quatorze_juillet' then extract(month from p_day) = 7 and extract(day from p_day) in (13, 14)
     when 'armistice' then extract(month from p_day) = 11 and extract(day from p_day) = 11
+    when 'grande_chasse' then extract(month from p_day) = 3 and extract(day from p_day) between 9 and 15
     else false
   end;
 $$;

@@ -23,6 +23,11 @@ const HolidayDecor = dynamic(() => import("./Holidays").then((m) => m.HolidayDec
 const HolidayGarland = dynamic(() => import("./Holidays").then((m) => m.HolidayGarland), { ssr: false });
 const HolidayGreeting = dynamic(() => import("./Holidays").then((m) => m.HolidayGreeting), { ssr: false });
 const HolidayFooter = dynamic(() => import("./Holidays").then((m) => m.HolidayFooter), { ssr: false });
+const ChasseDecor = dynamic(() => import("./GrandeChasse").then((m) => m.ChasseDecor), { ssr: false });
+const ChasseGarland = dynamic(() => import("./GrandeChasse").then((m) => m.ChasseGarland), { ssr: false });
+const ChasseGreeting = dynamic(() => import("./GrandeChasse").then((m) => m.ChasseGreeting), { ssr: false });
+const ChasseFooter = dynamic(() => import("./GrandeChasse").then((m) => m.ChasseFooter), { ssr: false });
+const ChasseBoard = dynamic(() => import("./GrandeChasse").then((m) => m.ChasseBoard), { ssr: false });
 
 /** Décor de fond (toutes les pages). */
 export function SeasonalDecor() {
@@ -32,6 +37,7 @@ export function SeasonalDecor() {
       {d?.halloween && <HalloweenDecor />}
       {d?.noel && <NoelDecor />}
       {anyHoliday(d) && <HolidayDecor />}
+      {d?.grande_chasse && <ChasseDecor />}
     </>
   );
 }
@@ -43,6 +49,7 @@ export function SeasonalGarland() {
     <>
       {d?.noel && <NoelGarland />}
       {anyHoliday(d) && <HolidayGarland />}
+      {d?.grande_chasse && <ChasseGarland />}
     </>
   );
 }
@@ -55,6 +62,7 @@ export function SeasonalGreeting() {
       {d?.halloween && <HalloweenGreeting />}
       {d?.noel && <NoelGreeting />}
       {anyHoliday(d) && <HolidayGreeting />}
+      {d?.grande_chasse && <ChasseGreeting />}
     </>
   );
 }
@@ -67,6 +75,13 @@ export function SeasonalFooter() {
       {d?.halloween && <HalloweenLantern />}
       {d?.noel && <NoelGift />}
       {anyHoliday(d) && <HolidayFooter />}
+      {d?.grande_chasse && <ChasseFooter />}
     </>
   );
+}
+
+/** Tableau de l'événement sur l'accueil du tableau de bord (Grande Chasse). */
+export function SeasonalBoard() {
+  const d = useSiteDecor();
+  return d?.grande_chasse ? <ChasseBoard /> : null;
 }

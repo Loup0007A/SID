@@ -2,6 +2,7 @@
 
 import { BatShape, SnowLayers } from "@/components/trolls/EventEffects";
 import { Bells, Bleuet, Egg, PaperFish, Patrouille } from "@/components/seasonal/drawings";
+import { Brasombre, ClawMarks } from "@/components/seasonal/chasseArt";
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { mentalQuestion } from "@/lib/mentalCalc";
 import type { TrollPower } from "@/lib/titles";
@@ -13,6 +14,7 @@ import {
   BAILIFF_DEFAULT_ITEMS,
   BAILIFF_TONES,
   BAILIFF_WORDS,
+  BEASTS,
   DRAGON_FINALES,
   DRAGON_SKINS,
   FANFARE_TEMPOS,
@@ -31,6 +33,7 @@ import {
   type AbyssSpeed,
   type ArenaPrices,
   type BailiffTone,
+  type BeastKind,
   type DragonFinale,
   type DragonSkin,
   type FanfareTempo,
@@ -513,6 +516,48 @@ function TrucePanel({ value: o, onChange, ctx }: Props<"treve">) {
             </span>
           ))}
         </div>
+      </Preview>
+    </div>
+  );
+}
+
+function AssautPanel({ value: o, onChange, ctx }: Props<"assaut">) {
+  const set = (p: Partial<TrollOptions["assaut"]>) => onChange({ ...o, ...p });
+  const beast = BEASTS[o.beast];
+  const hits = o.fury * 2 + 1;
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <div className="space-y-4">
+        <Field label="Brasombre">
+          <Seg value={o.beast} onChange={(b) => set({ beast: b as BeastKind })} accent={ctx.accent} options={(Object.keys(BEASTS) as BeastKind[]).map((k) => ({ v: k, label: BEASTS[k].label }))} />
+        </Field>
+        <Field label="Fureur" hint={["Un assaut toutes les minutes environ.", "Un assaut toutes les 40 secondes environ.", "Un assaut toutes les 20 secondes environ."][o.fury - 1]}>
+          <Seg value={o.fury} onChange={(fury) => set({ fury })} accent={ctx.accent} options={[{ v: 1, label: "Grognon" }, { v: 2, label: "Furieuse" }, { v: 3, label: "Déchaînée" }]} />
+        </Field>
+        <Toggle checked={o.repel} onChange={(repel) => set({ repel })} accent={ctx.accent} label={`${ctx.target} peut la chasser (${hits} clics)`} />
+        <Field label="Son cri (facultatif)" hint="Affiché dans une bulle quand elle se pose.">
+          <TextInput value={o.message} onChange={(message) => set({ message })} max={60} placeholder="Rends-moi mon trophée !" />
+        </Field>
+      </div>
+      <Preview who={ctx.target} className="h-48 bg-ink">
+        <MiniPage />
+        <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at 50% 120%, ${beast.glow}33, transparent 60%)` }} />
+        <ClawMarks className="absolute left-[10%] top-[12%] h-20 w-20 -rotate-12" style={{ "--claw-glow": beast.glow } as CSSProperties} />
+        {o.fury >= 2 && <ClawMarks className="absolute left-[40%] top-[4%] h-16 w-16 rotate-12" style={{ "--claw-glow": beast.glow } as CSSProperties} />}
+        {o.fury >= 3 && <ClawMarks className="absolute left-[18%] top-[48%] h-14 w-14 rotate-45" style={{ "--claw-glow": beast.glow } as CSSProperties} />}
+        <div className="absolute -bottom-2 -right-2 w-[58%]">
+          <Brasombre pose="perch" className={`${o.beast === "braise" ? "" : `is-${o.beast}`} [transform:scaleX(-1)]`} />
+        </div>
+        {o.message && (
+          <div className="absolute bottom-[58%] right-[8%] max-w-[55%] rounded-lg border bg-black/80 px-2 py-1 font-body text-[11px] text-paper" style={{ borderColor: `${beast.glow}99` }}>
+            {o.message}
+          </div>
+        )}
+        {o.repel && (
+          <span className="absolute bottom-2 left-3 rounded-full bg-black/70 px-2 py-0.5 font-body text-[10px] text-paper">
+            Chasse-la ! <b style={{ color: beast.glow }}>{hits}</b>
+          </span>
+        )}
       </Preview>
     </div>
   );
@@ -1023,6 +1068,8 @@ export function TrollOptionsEditor({
       return <FireworksPanel {...(p as Props<"artifice">)} />;
     case "treve":
       return <TrucePanel {...(p as Props<"treve">)} />;
+    case "assaut":
+      return <AssautPanel {...(p as Props<"assaut">)} />;
     default:
       return null;
   }

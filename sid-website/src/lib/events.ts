@@ -12,7 +12,8 @@ export type EventKey =
   | "premier_mai"
   | "fete_musique"
   | "quatorze_juillet"
-  | "armistice";
+  | "armistice"
+  | "grande_chasse";
 
 export type EventInfo = {
   key: EventKey;
@@ -91,6 +92,15 @@ export const EVENT_LIST: EventInfo[] = [
       "Sobre : bleuets, brume du matin, colombe, bleuet du souvenir au pied de page (un court texte). Carte et wiki : bleuets et colombe.",
   },
   {
+    key: "grande_chasse",
+    name: "La Grande Chasse",
+    emoji: "🏹",
+    period: "du 9 au 15 mars",
+    color: "#ffb35c",
+    description:
+      "Semaine des chasseurs : crépuscule sur la vallée, campement et feu de camp, Brasombre (la wyverne des cendres) perchée au loin puis qui survole la page avec son ombre, fanions de chasse, cor au pied de page, tableau de chasse sur l'accueil. Carte et wiki : fanions, survol, braises, « proie du jour » sur le wiki.",
+  },
+  {
     key: "halloween",
     name: "Halloween",
     emoji: "🎃",
@@ -113,6 +123,7 @@ export const EVENT_LIST: EventInfo[] = [
 /** Dans l'ordre de l'année (pour la Modération). */
 export const EVENT_ORDER: EventKey[] = [
   "saint_valentin",
+  "grande_chasse",
   "poisson_avril",
   "paques",
   "premier_mai",

@@ -15,7 +15,7 @@ import { MemberStatBars } from "@/components/MemberStatBars";
 import type { SimulationOverview } from "@/types/simulationRuns";
 import { BirthdaysToday } from "@/components/lazy/Seals";
 import { OnlineNow } from "@/components/presence/OnlineNow";
-import { SeasonalGreeting } from "@/components/seasonal/Seasonal";
+import { SeasonalBoard, SeasonalGreeting } from "@/components/seasonal/Seasonal";
 
 export default function DashboardHome() {
   const supabase = createClient();
@@ -107,6 +107,8 @@ export default function DashboardHome() {
       </div>
 
       {profile && <BirthdaysToday myId={profile.id} />}
+
+      <SeasonalBoard />
 
       <section aria-label="À faire" className="flex flex-wrap gap-2">
         {myQuests.length > 0 && (

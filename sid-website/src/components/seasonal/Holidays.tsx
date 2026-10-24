@@ -16,7 +16,7 @@ export { Bells, Bleuet, Dove, Egg, HeartPath, MuguetSprig, PaperFish, Patrouille
  * animés.
  */
 
-export type HolidayKey = Exclude<EventKey, "halloween" | "noel">;
+export type HolidayKey = Exclude<EventKey, "halloween" | "noel" | "grande_chasse">;
 export const HOLIDAYS: HolidayKey[] = ["saint_valentin", "poisson_avril", "paques", "premier_mai", "fete_musique", "quatorze_juillet", "armistice"];
 
 // Pseudo-hasard stable (même rendu à chaque affichage).
