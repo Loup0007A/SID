@@ -83,7 +83,16 @@ export function TrollPanel({
   const [map, setMap] = useState<Record<string, string>>({});
   const [logic, setLogic] = useState<NetworkLogic>("rotation");
   const [every, setEvery] = useState(30);
-  const [opts, setOpts] = useState<TrollOptions[TrollPower] | null>(() => (status.power ? defaultOptions(status.power, status.level ?? 1) : null));
+  // Réglages de la farce, avec le pouvoir auquel ils appartiennent : quand on
+  // équipe un autre titre, les anciens réglages ne doivent jamais être lus par
+  // le panneau du nouveau pouvoir (ils n'ont pas les mêmes champs).
+  const [optState, setOptState] = useState<{ power: TrollPower | null; value: TrollOptions[TrollPower] | null }>(() => ({
+    power: status.power ?? null,
+    value: status.power ? defaultOptions(status.power, status.level ?? 1) : null,
+  }));
+  const opts: TrollOptions[TrollPower] | null =
+    status.power && optState.power === status.power ? optState.value : status.power ? defaultOptions(status.power, status.level ?? 1) : null;
+  const setOpts = (v: TrollOptions[TrollPower] | null) => setOptState({ power: status.power ?? null, value: v });
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [now, setNow] = useState(Date.now());
@@ -106,7 +115,7 @@ export function TrollPanel({
 
   // Nouveau titre équipé : on repart des réglages par défaut de son pouvoir.
   useEffect(() => {
-    setOpts(status.power ? defaultOptions(status.power, status.level ?? 1) : null);
+    setOptState({ power: status.power ?? null, value: status.power ? defaultOptions(status.power, status.level ?? 1) : null });
   }, [status.power, status.level]);
 
   const power = status.power ? POWERS[status.power] : null;

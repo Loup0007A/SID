@@ -404,15 +404,16 @@ const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 /** Construit la fonction de réécriture d'un thème, avec les mots perso en premier. */
 export function makeRewriter(theme: RewriteTheme, custom: [string, string][] = []) {
   const lex = REWRITE_THEMES[theme] ?? REWRITE_THEMES.potager;
-  const pairs: [string, string][] = [...custom, ...lex.words];
+  // Les mots perso à moitié tapés (un des deux champs vide) sont ignorés.
+  const pairs: [string, string][] = [...custom.filter(([a, b]) => a.trim() && b.trim()), ...lex.words];
   const map = new Map(pairs.map(([a, b]) => [a.toLowerCase(), b] as [string, string]));
   // Les plus longs d'abord, pour que « quêtes » passe avant « quête ».
   const keys = Array.from(map.keys()).sort((a, b) => b.length - a.length);
   const re = new RegExp(`(^|[^\\p{L}])(${keys.map(escapeRe).join("|")})(?=[^\\p{L}]|$)`, "giu");
   return (text: string) =>
     text.replace(/S\.I\.D\.?/g, lex.sid).replace(re, (_m, pre: string, w: string) => {
-      const rep = map.get(w.toLowerCase()) ?? w;
-      const out = w === w.toUpperCase() && w.length > 1 ? rep.toUpperCase() : w[0] === w[0].toUpperCase() ? rep[0].toUpperCase() + rep.slice(1) : rep;
+      const rep = map.get(w.toLowerCase()) || w;
+      const out = w === w.toUpperCase() && w.length > 1 ? rep.toUpperCase() : w[0] === w[0].toUpperCase() ? rep.charAt(0).toUpperCase() + rep.slice(1) : rep;
       return pre + out;
     });
 }

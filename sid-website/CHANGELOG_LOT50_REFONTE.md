@@ -63,3 +63,13 @@ Pas de migration. Rien ne change dans le fonctionnement : seulement l'apparence.
 - Décors des fêtes : le paysage du bas (manoir d'Halloween, montagnes de
   Noël…) n'est plus rogné par le haut sur les grands écrans ; il est posé au
   ras du bas, et sur téléphone on voit la partie droite du dessin (le manoir).
+
+## Correctifs du Dossier Central (titres)
+- **Équiper un autre titre** affichait « Une erreur inattendue est survenue » :
+  le panneau de farce du nouveau titre lisait un instant les réglages de
+  l'ancien (qui n'ont pas les mêmes champs). Les réglages sont maintenant
+  rattachés à leur pouvoir : un autre titre repart toujours de ses propres
+  réglages.
+- **Scribe Infini** : taper un mot perso sans encore avoir rempli « devient »
+  (par exemple juste « s ») faisait planter l'aperçu. Les mots à moitié tapés
+  sont ignorés jusqu'à ce que les deux champs soient remplis.
