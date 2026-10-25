@@ -50,3 +50,16 @@ Pas de migration. Rien ne change dans le fonctionnement : seulement l'apparence.
   lieux, textes de fiche), Alegreya Sans (interface).
 - **Plan de ville** sur vélin quadrillé, quartiers lavés, bâtiments en
   médaillons ; page d'un lieu avec médaillon et titre de fiche.
+
+## Retouches du Wiki (lisibilité, surtout sur téléphone)
+- Contrastes plus nets : fond plus sombre, blocs plus clairs, filets plus
+  visibles.
+- Accueil : chaque catégorie est une vraie carte à toucher (bande de couleur
+  en haut, emblème, « 9 / 12 », réglette avec une encoche par fiche, « 3 à
+  découvrir »), plus une carte Profils. Recherche en haut de l'accueil sur
+  téléphone. « Dernières découvertes », « Meilleurs découvreurs » et « Tu as
+  consulté » sont dans des blocs séparés, avec des lignes bien délimitées.
+- Fiche : la fiche signalétique est dans son propre bloc.
+- Décors des fêtes : le paysage du bas (manoir d'Halloween, montagnes de
+  Noël…) n'est plus rogné par le haut sur les grands écrans ; il est posé au
+  ras du bas, et sur téléphone on voit la partie droite du dessin (le manoir).
