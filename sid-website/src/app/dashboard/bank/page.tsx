@@ -40,8 +40,10 @@ export default function BankPage() {
     tick_minutes: 60,
     default_share_count: 1000,
     min_initial_investment: 500,
-    growth_revenue_threshold_pct: 0.05,
-    growth_share_increase_pct: 0.02,
+    growth_revenue_threshold_pct: 0.03,
+    growth_share_increase_pct: 0.04,
+    issue_float_target_pct: 0.25,
+    issue_interval_hours: 8,
   });
   const [myShares, setMyShares] = useState<MyShareholding[]>([]);
   const [sellable, setSellable] = useState<Record<string, number>>({});
@@ -376,6 +378,9 @@ export default function BankPage() {
 
                   <p className="mt-2 font-mono text-[10px] text-paper/50">
                     {b.shares_in_treasury} action(s) disponible(s) à l&apos;achat sur {b.share_count}
+                    {b.shares_in_treasury < (settings.issue_float_target_pct ?? 0.25) * b.share_count && (
+                      <span className="text-[#7dffb0]"> · stock bas : de nouvelles actions seront émises (toutes les {settings.issue_interval_hours ?? 8} h au plus)</span>
+                    )}
                     {held > 0 && ` · tu en détiens ${held}`}
                     {held > 0 && canSell < held && ` (dont ${canSell} revendable(s) tout de suite)`}
                   </p>

@@ -17,6 +17,9 @@ const FREQUENCY_LABELS: Record<SalaryFrequency, string> = {
   monthly: "Mensuel",
 };
 
+/** 0.25 → « 25 » (pourcentage lisible). */
+const pct = (v: number) => (Math.round(v * 1000) / 10).toLocaleString("fr-FR");
+
 export default function BusinessPage() {
   const supabase = createClient();
   const [myBusinesses, setMyBusinesses] = useState<Business[]>([]);
@@ -295,12 +298,26 @@ export default function BusinessPage() {
                   </div>
                 </div>
 
-                <p className="border-t border-white/10 pt-3 font-mono text-[10px] text-paper/50">
-                  <SidIcon name="chart" /> Le nombre total d&apos;actions peut augmenter tout seul : si le chiffre d&apos;affaires des 7
-                  derniers jours dépasse {((marketSettings?.growth_revenue_threshold_pct ?? 0.05) * 100).toLocaleString("fr-FR")} % de la
-                  capitalisation, l&apos;entreprise émet {((marketSettings?.growth_share_increase_pct ?? 0.02) * 100).toLocaleString("fr-FR")} %
-                  d&apos;actions neuves (ajoutées au stock disponible à l&apos;achat), vérifié une fois par semaine.
-                </p>
+                <div className="space-y-1.5 border-t border-white/10 pt-3 font-mono text-[10px] text-paper/50">
+                  <p>
+                    <SidIcon name="chart" /> Le nombre total d&apos;actions augmente tout seul, de deux façons :
+                  </p>
+                  <p>
+                    · Quand tes actions partent vite : dès qu&apos;il en reste moins de{" "}
+                    {pct(marketSettings?.issue_float_target_pct ?? 0.25)} % à vendre, l&apos;entreprise en émet de nouvelles ({pct(marketSettings?.issue_demand_ratio ?? 0.8)} %
+                    de ce qui a été acheté depuis la dernière émission, entre {pct(marketSettings?.issue_min_pct ?? 0.02)} % et{" "}
+                    {pct(marketSettings?.issue_max_pct ?? 0.2)} % du capital), toutes les {marketSettings?.issue_interval_hours ?? 8} h au plus.
+                    {b.shares_in_treasury < (marketSettings?.issue_float_target_pct ?? 0.25) * b.share_count && (
+                      <span className="text-[#7dffb0]"> Stock bas en ce moment : une émission arrive.</span>
+                    )}
+                  </p>
+                  <p>
+                    · Quand l&apos;activité est forte : si le chiffre d&apos;affaires des 7 derniers jours dépasse{" "}
+                    {pct(marketSettings?.growth_revenue_threshold_pct ?? 0.03)} % de la capitalisation, +{pct(marketSettings?.growth_share_increase_pct ?? 0.04)} %
+                    d&apos;actions, tous les {marketSettings?.growth_min_interval_days ?? 3} jours au plus.
+                  </p>
+                  <p>Les actions neuves arrivent dans le stock à vendre ; leur prix entre dans la trésorerie quand quelqu&apos;un les achète.</p>
+                </div>
 
                 <div className="border-t border-white/10 pt-3">
                   <p className="mb-2 font-mono text-xs uppercase text-paper/60">Fonds propres</p>

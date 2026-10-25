@@ -96,6 +96,16 @@ export interface MarketSettings {
   growth_revenue_threshold_pct: number;
   /** Pourcentage d'actions supplémentaires émises à chaque déclenchement. */
   growth_share_increase_pct: number;
+  /** Délai minimal (jours) entre deux augmentations sur activité. */
+  growth_min_interval_days?: number;
+  /** Émission sur demande (Lot 51) : seuil du stock à vendre (part du capital) sous lequel on émet. */
+  issue_float_target_pct?: number;
+  /** Part des actions achetées depuis la dernière émission qui est réémise. */
+  issue_demand_ratio?: number;
+  issue_min_pct?: number;
+  issue_max_pct?: number;
+  /** Délai minimal (heures) entre deux émissions sur demande. */
+  issue_interval_hours?: number;
 }
 
 /** Résultat de sell_business_shares : la vente peut être partielle si la

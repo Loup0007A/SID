@@ -12,7 +12,8 @@ export type NotificationType =
   | "sanction"
   | "announcement"
   | "title"
-  | "troll";
+  | "troll"
+  | "business";
 
 export interface AppNotification {
   id: string;
