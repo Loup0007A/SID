@@ -48,7 +48,7 @@ export function TutoHelpButton() {
         {unseen && <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-red shadow-[0_0_0_3px_rgba(38,42,56,0.9)]" />}
       </button>
       {open && (
-        <div className="glass-card absolute right-0 top-11 z-40 w-72 p-2" role="menu">
+        <div className="absolute right-0 top-11 z-40 w-72 max-w-[calc(100vw-2rem)] rounded-2xl border border-white/15 bg-[#2a2e3d] p-2 shadow-[0_18px_40px_-12px_rgba(0,0,0,0.75)]" role="menu">
           <p className="px-3 pb-1 pt-2 font-mono text-[10px] uppercase tracking-[0.25em] text-paper/50">Aide</p>
           <button
             role="menuitem"
@@ -167,7 +167,7 @@ export function TutoInvite() {
         <span className="tuto-icon shrink-0">
           <SidIcon name="compass" size={20} />
         </span>
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 basis-[15rem]">
           <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-red-dark">Nouveau</p>
           <p className="font-display text-lg uppercase leading-tight tracking-wide text-paper-text">La visite guidée du S.I.D.</p>
           <p className="font-body text-sm text-paper-text/80">
