@@ -38,6 +38,7 @@ const SQL = [
   ["sql/0067_evenements.sql", "supabase/migrations/0067_evenements.sql"],
   ["sql/0068_grande_chasse.sql", "supabase/migrations/0068_grande_chasse.sql"],
   ["sql/0069_ciel_varyexis.sql", "supabase/migrations/0069_ciel_varyexis.sql"],
+  ["sql/0071_envers.sql", "supabase/migrations/0071_envers.sql"],
 ];
 
 function cle() {
