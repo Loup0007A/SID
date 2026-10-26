@@ -17,6 +17,7 @@ import { BirthdaysToday } from "@/components/lazy/Seals";
 import { OnlineNow } from "@/components/presence/OnlineNow";
 import { SeasonalBoard, SeasonalGreeting } from "@/components/seasonal/Seasonal";
 import { SidIcon } from "@/components/icons/SidIcon";
+import { TutoInvite } from "@/components/tuto/TutoUi";
 
 export default function DashboardHome() {
   const supabase = createClient();
@@ -101,17 +102,19 @@ export default function DashboardHome() {
           </h1>
           <SeasonalGreeting />
         </div>
-        <Link href="/dashboard/bank" scroll={false} className="glass-card px-5 py-3 transition hover:-translate-y-0.5">
+        <Link href="/dashboard/bank" scroll={false} data-tuto="solde" className="glass-card px-5 py-3 transition hover:-translate-y-0.5">
           <p className="font-mono text-[10px] uppercase tracking-wide text-paper/60">Solde</p>
           <p className="font-display text-3xl text-blue">{wallet ? wallet.balance.toLocaleString("fr-FR") : "…"} z</p>
         </Link>
       </div>
 
+      <TutoInvite />
+
       {profile && <BirthdaysToday myId={profile.id} />}
 
       <SeasonalBoard />
 
-      <section aria-label="À faire" className="flex flex-wrap gap-2">
+      <section aria-label="À faire" data-tuto="a-faire" className="flex flex-wrap gap-2">
         {myQuests.length > 0 && (
           <a href="#missions" className="glass-card px-3 py-2 font-mono text-xs hover:border-blue/50">
             <SidIcon name="scroll" /> {myQuests.length} mission{myQuests.length > 1 ? "s" : ""} en cours
@@ -166,7 +169,7 @@ export default function DashboardHome() {
         const items = entries.filter((e) => e.group === group.key);
         if (items.length === 0) return null;
         return (
-          <section key={group.key} className="space-y-3">
+          <section key={group.key} data-tuto={`groupe-${group.key}`} className="space-y-3">
             <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-paper/50">{group.label}</h2>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
               {items.map((e) => (

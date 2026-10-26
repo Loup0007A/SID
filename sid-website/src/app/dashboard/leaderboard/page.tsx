@@ -47,7 +47,7 @@ export default function LeaderboardPage() {
     <div className="space-y-6">
       <h1 className="font-display text-2xl uppercase tracking-wide text-red">Classement du S.I.D.</h1>
 
-      <div className="flex flex-wrap gap-2">
+      <div data-tuto="classement-onglets" className="flex flex-wrap gap-2">
         {TABS.map((t) => (
           <button
             key={t.key}

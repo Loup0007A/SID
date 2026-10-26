@@ -1484,3 +1484,335 @@ html.decor-noel:not(.troll-abyss) body {
 
 /* Traînée du curseur (souris seulement, voir CursorTrail). */
 .cursor-trail { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9800; }
+
+/* =========================================================
+   Tuto du Dossier Central (Lot 53) : visite guidée, dossier
+   d'intégration, astuces de première visite, Guide.
+   Sous les farces (z 9000+), au-dessus de tout le reste.
+   ========================================================= */
+.tuto-root { animation: tuto-fade 0.35s ease-out both; }
+@keyframes tuto-fade { from { opacity: 0; } }
+.tuto-marker { stroke-dasharray: 1; stroke-dashoffset: 1; animation: tuto-draw 0.75s cubic-bezier(0.55, 0.1, 0.3, 1) 0.25s forwards; }
+@keyframes tuto-draw { to { stroke-dashoffset: 0; } }
+.tuto-card-wrap { transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s; will-change: transform; }
+
+/* La fiche : papier kraft clair, trombone, tampon de chapitre. */
+.tuto-card,
+.tuto-tip,
+.tuto-sheet {
+  position: relative;
+  color: #2b2f28;
+  background-color: #efe7d2;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(90, 70, 40, 0.1) 1px, transparent 0),
+    radial-gradient(ellipse at 0% 0%, rgba(255, 252, 238, 0.7), transparent 55%),
+    radial-gradient(ellipse at 100% 100%, rgba(120, 90, 45, 0.18), transparent 60%);
+  background-size: 4px 4px, 100% 100%, 100% 100%;
+  border: 1px solid #cdbf98;
+}
+.tuto-card {
+  border-radius: 6px 14px 8px 12px;
+  padding: 1.15rem 1.2rem 1rem;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset, 0 24px 48px -14px rgba(0, 0, 0, 0.65), 0 4px 10px rgba(0, 0, 0, 0.25);
+  transform: rotate(-0.4deg);
+  animation: tuto-card-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes tuto-card-in { from { opacity: 0; transform: translateY(10px) rotate(-1.6deg); } }
+.tuto-clip {
+  position: absolute;
+  top: -14px;
+  left: 22px;
+  width: 16px;
+  height: 40px;
+  border: 2.5px solid #8f969f;
+  border-radius: 9px;
+  border-bottom-color: transparent;
+  box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.18);
+  transform: rotate(-6deg);
+}
+.tuto-clip::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 6px;
+  width: 6px;
+  height: 22px;
+  border: 2.5px solid #a7aeb6;
+  border-radius: 6px;
+  border-top-color: transparent;
+}
+.tuto-stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: 18px;
+  padding: 0.1rem 0.55rem;
+  border: 2px solid #b8443b;
+  border-radius: 6px;
+  color: #b8443b;
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transform: rotate(-2deg);
+  mix-blend-mode: multiply;
+  opacity: 0.88;
+}
+.tuto-icon {
+  display: inline-flex;
+  height: 2rem;
+  width: 2rem;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #2b2f28;
+  color: #efe7d2;
+  box-shadow: 0 0 0 2px #efe7d2, 0 0 0 3.5px rgba(43, 47, 40, 0.35);
+}
+.tuto-rail { position: relative; height: 4px; flex: 1; overflow: hidden; border-radius: 99px; background: rgba(43, 47, 40, 0.14); }
+.tuto-rail.is-done { background: #b8443b; }
+.tuto-rail-fill { position: absolute; inset: 0 auto 0 0; background: #b8443b; transition: width 0.4s; }
+.tuto-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  background: #2b2f28;
+  color: #efe7d2;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  box-shadow: 0 2px 0 #11130f;
+  transition: transform 0.12s, background 0.12s;
+}
+.tuto-btn:hover { background: #b8443b; }
+.tuto-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 #11130f; }
+.tuto-btn:focus-visible, .tuto-btn-ghost:focus-visible { outline: 2px solid #b8443b; outline-offset: 2px; }
+.tuto-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 8px;
+  padding: 0.45rem 0.85rem;
+  border: 1.5px solid rgba(43, 47, 40, 0.35);
+  color: #2b2f28;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.tuto-btn-ghost:hover { border-color: #b8443b; color: #b8443b; }
+
+/* Astuce de première visite : une fiche scotchée en haut de la page. */
+.tuto-tip {
+  border-radius: 6px 12px 6px 12px;
+  padding: 1rem 1.1rem;
+  box-shadow: 0 14px 30px -12px rgba(0, 0, 0, 0.55);
+  transform: rotate(-0.3deg);
+  animation: tuto-card-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transition: opacity 0.22s, transform 0.22s;
+}
+.tuto-tip.is-leaving { opacity: 0; transform: translateY(-6px) rotate(-1deg); }
+.tuto-tip-tape {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 92px;
+  height: 22px;
+  transform: translateX(-50%) rotate(-3deg);
+  background: rgba(217, 154, 154, 0.55);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  clip-path: polygon(3% 0, 97% 4%, 100% 50%, 96% 100%, 2% 96%, 0 45%);
+}
+.tuto-invite .tuto-tip-tape { background: rgba(143, 179, 217, 0.6); }
+
+/* Guide : premiers pas et prime. */
+.tuto-step {
+  display: flex;
+  gap: 0.75rem;
+  border-radius: 1rem;
+  padding: 0.9rem 1rem;
+  color: #ede6d3;
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.08), rgba(36, 40, 53, 0.4) 40%);
+  border: 1px dashed rgba(255, 255, 255, 0.22);
+  transition: transform 0.15s, border-color 0.15s;
+}
+.tuto-step:hover { transform: translateY(-2px); border-color: rgba(143, 179, 217, 0.6); }
+.tuto-step.is-done { border-style: solid; border-color: rgba(143, 179, 217, 0.45); background: linear-gradient(165deg, rgba(143, 179, 217, 0.18), rgba(36, 40, 53, 0.4) 55%); }
+.tuto-step-check {
+  display: inline-flex;
+  height: 1.9rem;
+  width: 1.9rem;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+}
+.tuto-step.is-done .tuto-step-check { border-color: #8fb3d9; background: #8fb3d9; color: #262a38; }
+.tuto-reward {
+  position: relative;
+  border-radius: 1rem;
+  padding: 0.9rem 1rem;
+  color: #2b2f28;
+  background: repeating-linear-gradient(-45deg, #e6d6ad 0 10px, #efe2bf 10px 20px);
+  border: 1px solid #c5b282;
+  box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.6);
+}
+.tuto-reward.is-ready { animation: tuto-glow 1.8s ease-in-out infinite; }
+@keyframes tuto-glow { 50% { box-shadow: 0 0 0 4px rgba(217, 154, 154, 0.35), 0 10px 24px -12px rgba(0, 0, 0, 0.6); } }
+.tuto-reward.is-claimed { background: #8fb3d9; border-color: #6d93bc; }
+
+/* ---------------------------------------------------------
+   Dossier d'intégration : la chemise s'ouvre sur la fiche.
+   --------------------------------------------------------- */
+.tuto-briefing { background: rgba(9, 11, 17, 0.84); animation: tuto-fade 0.4s ease-out both; }
+.tuto-desk {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 60% 50% at 50% 42%, rgba(255, 226, 170, 0.12), transparent 70%);
+}
+.tuto-folder {
+  position: relative;
+  width: min(720px, 100%);
+  margin: auto;
+  perspective: 2200px;
+  animation: tuto-folder-in 0.85s cubic-bezier(0.2, 0.9, 0.25, 1) 0.15s both;
+}
+@keyframes tuto-folder-in {
+  from { opacity: 0; transform: translateY(55vh) rotate(-9deg); }
+  to { opacity: 1; transform: translateY(0) rotate(-0.8deg); }
+}
+.tuto-folder-back {
+  position: absolute;
+  inset: 10px -10px -10px 10px;
+  border-radius: 6px 16px 10px 16px;
+  background: #b9945b;
+  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.8);
+}
+.tuto-folder-tab {
+  position: absolute;
+  top: -26px;
+  left: 28px;
+  padding: 4px 16px 10px;
+  border-radius: 8px 8px 0 0;
+  background: #c9a86a;
+  color: #3a2f1c;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.tuto-sheet {
+  min-height: 360px;
+  border-radius: 4px 12px 6px 10px;
+  padding: 1.6rem 1.6rem 1.4rem 2.6rem;
+  box-shadow: 0 2px 0 rgba(255, 255, 255, 0.5) inset, 0 6px 14px rgba(0, 0, 0, 0.25);
+}
+@media (max-width: 639px) { .tuto-sheet { padding: 1.3rem 1.1rem 1.2rem 2rem; } }
+.tuto-sheet-holes {
+  position: absolute;
+  left: 12px;
+  top: 18%;
+  bottom: 18%;
+  width: 10px;
+  background: radial-gradient(circle, #1b1d26 4px, transparent 5px) 0 0 / 10px 33.3% repeat-y;
+  opacity: 0.85;
+}
+.tuto-photo {
+  position: relative;
+  height: 9.5rem;
+  width: 8rem;
+  flex: none;
+  overflow: visible;
+  border: 6px solid #fbf8ef;
+  border-bottom-width: 18px;
+  background: #d9cfb5;
+  box-shadow: 0 6px 14px -6px rgba(0, 0, 0, 0.5);
+  transform: rotate(-3deg);
+  animation: tuto-photo-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) 2s both;
+}
+.tuto-photo > img, .tuto-photo > span:not(.tuto-photo-clip) { display: flex; overflow: hidden; }
+@keyframes tuto-photo-in { from { opacity: 0; transform: translateY(-14px) rotate(-10deg); } }
+.tuto-photo-clip {
+  position: absolute;
+  z-index: 2;
+  top: -16px;
+  right: 18px;
+  width: 14px;
+  height: 36px;
+  border: 2.5px solid #8f969f;
+  border-radius: 8px;
+  border-bottom-color: transparent;
+  transform: rotate(8deg);
+}
+.tuto-caret { display: inline-block; width: 0.55em; height: 1.05em; margin-left: 1px; vertical-align: -0.15em; background: #2b2f28; animation: tuto-blink 0.7s steps(1) infinite; }
+@keyframes tuto-blink { 50% { opacity: 0; } }
+.tuto-orders { margin-top: 1.4rem; opacity: 0; transform: translateY(8px); transition: opacity 0.6s, transform 0.6s; pointer-events: none; }
+.tuto-orders.is-shown { opacity: 1; transform: none; pointer-events: auto; }
+.tuto-stamp-big {
+  position: absolute;
+  padding: 0.2rem 0.9rem;
+  border: 4px double currentColor;
+  border-radius: 10px;
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+.tuto-stamp-confidential {
+  right: 8%;
+  top: 30%;
+  color: #a3322b;
+  transform: rotate(-14deg);
+  animation: tuto-slam 0.32s cubic-bezier(0.3, 1.6, 0.5, 1) 0.95s both;
+}
+.tuto-stamp-active {
+  right: 6%;
+  top: 1.2rem;
+  color: #b8443b;
+  opacity: 0;
+  transform: rotate(-9deg) scale(2.2);
+}
+.tuto-stamp-active.is-shown { animation: tuto-slam-active 0.32s cubic-bezier(0.3, 1.6, 0.5, 1) forwards; }
+@keyframes tuto-slam { from { opacity: 0; transform: rotate(-14deg) scale(2.4); } to { opacity: 0.88; transform: rotate(-14deg) scale(1); } }
+@keyframes tuto-slam-active { to { opacity: 0.85; transform: rotate(-9deg) scale(1); } }
+.tuto-folder-cover {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2rem 2.5rem;
+  border-radius: 6px 16px 10px 16px;
+  background:
+    radial-gradient(circle at 1px 1px, rgba(60, 40, 15, 0.12) 1px, transparent 0) 0 0 / 4px 4px,
+    linear-gradient(160deg, #d6b679, #c09a5c);
+  color: #3a2f1c;
+  transform-origin: left center;
+  backface-visibility: hidden;
+  box-shadow: 0 1px 0 rgba(255, 240, 210, 0.5) inset;
+  animation: tuto-cover-open 1s cubic-bezier(0.55, 0.05, 0.3, 1) 1.45s both;
+}
+@keyframes tuto-cover-open {
+  0% { transform: rotateY(0); }
+  99% { transform: rotateY(-172deg); visibility: visible; }
+  100% { transform: rotateY(-172deg); visibility: hidden; }
+}
+.tuto-cover-title { font-family: var(--font-display); font-size: clamp(3rem, 12vw, 5.5rem); line-height: 1; letter-spacing: 0.12em; }
+.tuto-cover-sub { margin-top: 0.4rem; font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase; }
+.tuto-cover-lines { margin-top: 1.6rem; height: 52px; width: min(320px, 70%); background: repeating-linear-gradient(transparent 0 16px, rgba(58, 47, 28, 0.35) 16px 17px); }
+.tuto-briefing.is-fast *, .tuto-briefing.is-fast { animation-duration: 0.01ms !important; animation-delay: 0s !important; transition-duration: 0.01ms !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tuto-root, .tuto-card, .tuto-tip, .tuto-reward.is-ready { animation: none; }
+  .tuto-marker { animation: none; stroke-dashoffset: 0; }
+  .tuto-card-wrap { transition: none; }
+}

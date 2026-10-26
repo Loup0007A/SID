@@ -422,7 +422,7 @@ export default function ShopPage() {
           {myItems.length === 0 && <p className="font-body text-paper/60">Tu n&apos;as encore créé aucun objet.</p>}
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div data-tuto="boutique-vitrine" className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((item) => {
             const price = effectivePrice(item);
             const onPromo = price !== item.price;

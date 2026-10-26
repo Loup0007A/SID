@@ -177,7 +177,7 @@ export default function BankPage() {
 
       {message && <p className="font-mono text-sm text-red">{message}</p>}
 
-      <div className="glass-card space-y-4 p-6">
+      <div data-tuto="banque-epargne" className="glass-card space-y-4 p-6">
         <h2 className="font-display text-lg uppercase">Épargne</h2>
         <p className="font-body text-sm text-paper/70">
           L&apos;argent déposé rapporte des intérêts chaque jour, tant que tu ne redéposes pas (un nouveau dépôt
@@ -223,7 +223,7 @@ export default function BankPage() {
         </div>
       </div>
 
-      <div className="glass-card space-y-4 p-6">
+      <div data-tuto="banque-emprunt" className="glass-card space-y-4 p-6">
         <h2 className="font-display text-lg uppercase">Emprunt</h2>
         <p className="font-body text-sm text-paper/70">
           Emprunter crédite immédiatement ton portefeuille. Des intérêts sont ensuite prélevés chaque jour sur le
@@ -272,7 +272,7 @@ export default function BankPage() {
         )}
       </div>
 
-      <div className="glass-card space-y-4 p-6">
+      <div data-tuto="banque-bourse" className="glass-card space-y-4 p-6">
         <h2 className="font-display text-lg uppercase">Bourse</h2>
         <p className="font-body text-sm text-paper/70">
           Le cours évolue toutes les {settings.tick_minutes} min autour de la <strong>valeur intrinsèque</strong> de

@@ -349,7 +349,7 @@ export default function QuestsPage() {
         </p>
       )}
 
-      <div className="glass-panel flex flex-wrap gap-x-4 gap-y-2 rounded-lg px-4 py-3">
+      <div data-tuto="quetes-types" className="glass-panel flex flex-wrap gap-x-4 gap-y-2 rounded-lg px-4 py-3">
         {CONTRACT_TYPES.map((t) => (
           <span key={t.value} className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wide text-paper/70">
             <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: t.color }} />
@@ -472,8 +472,8 @@ export default function QuestsPage() {
         </form>
       )}
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {quests.map((q) => {
+      <div data-tuto="quetes-liste" className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {quests.map((q, qi) => {
           const count = counts.get(q.id) ?? 0;
           const isFull = q.max_participants != null && count >= q.max_participants;
           const alreadyIn = myQuestIds.has(q.id);
@@ -483,7 +483,7 @@ export default function QuestsPage() {
           const missing = unmetRequirements(q, me);
 
           return (
-            <div key={q.id} className="space-y-2">
+            <div key={q.id} data-tuto={qi === 0 ? "quete" : undefined} className="space-y-2">
               <QuestCard quest={q} participantCount={count} />
               {!q.funded_by_creator && (
                 <p className="text-center font-mono text-[10px] uppercase text-paper/50">Financée par le S.I.D.</p>

@@ -195,7 +195,7 @@ function TitlesInner() {
       {equipped && <TrollPanel status={status} myId={me.id} myName={me.nickname} initialTarget={params.get("target")} onChange={load} />}
 
       {/* Collection */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">{SECRET_TITLES.map(card)}</div>
+      <div data-tuto="titres-collection" className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">{SECRET_TITLES.map(card)}</div>
 
       <div className="space-y-3">
         <div>

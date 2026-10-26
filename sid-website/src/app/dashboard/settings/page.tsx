@@ -159,7 +159,7 @@ export default function SettingsPage() {
     <div className="max-w-3xl space-y-8">
       <h1 className="font-display text-2xl uppercase tracking-wide text-red">Réglages</h1>
 
-      <section className="glass-card space-y-3 p-6">
+      <section data-tuto="reglages-apparence" className="glass-card space-y-3 p-6">
         <h2 className="font-display text-lg uppercase">Apparence personnalisée</h2>
         <p className="font-body text-sm text-paper/70">
           Couleurs, bordure, lueur et animations pour chacune des 4 zones où les autres membres te voient — aucun code

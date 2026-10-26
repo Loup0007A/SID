@@ -47,6 +47,7 @@ export const NAV_ENTRIES: NavEntry[] = [
   { key: "chat", href: "/dashboard/chat", label: "Messagerie", description: "Messages privés et groupes", emoji: "💬", icon: "chat", group: "espace", section: "chat" },
   { key: "notifications", href: "/dashboard/notifications", label: "Notifications", description: "Tout ce qui t'est arrivé récemment", emoji: "🔔", icon: "bell", group: "espace" },
   { key: "titles", href: "/dashboard/titles", label: "Titres", description: "Titres secrets et pouvoirs de farce", emoji: "🏅", icon: "medal", group: "espace" },
+  { key: "guide", href: "/dashboard/guide", label: "Guide", description: "Le manuel du S.I.D. et tes premiers pas", emoji: "📖", icon: "book", group: "espace" },
   { key: "settings", href: "/dashboard/settings", label: "Réglages", description: "Apparence de tes cartes", emoji: "⚙️", icon: "gear", group: "espace" },
   { key: "privacy", href: "/dashboard/privacy", label: "Mes données", description: "Ce que le S.I.D. garde sur toi", emoji: "🔐", icon: "padlock", group: "espace" },
 

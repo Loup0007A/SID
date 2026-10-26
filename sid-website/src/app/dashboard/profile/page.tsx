@@ -223,7 +223,7 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-2xl space-y-8">
-      <div className="flex flex-wrap items-center gap-4">
+      <div data-tuto="profil-rang" className="flex flex-wrap items-center gap-4">
         <RankCard rank={profile.member_rank ?? "E"} />
         <h1 className="font-display text-2xl uppercase tracking-wide text-red">Mon dossier</h1>
       </div>
@@ -243,7 +243,7 @@ export default function ProfilePage() {
         </div>
       </Link>
 
-      <div className="glass-card space-y-4 p-6">
+      <div data-tuto="profil-fiche" className="glass-card space-y-4 p-6">
         <div className="flex items-center gap-4">
           {profile.avatar_url ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -296,7 +296,7 @@ export default function ProfilePage() {
 
       {myId && <BirthdaySetting userId={myId} />}
 
-      <div className="glass-card space-y-3 p-6">
+      <div data-tuto="profil-notifs" className="glass-card space-y-3 p-6">
         <h2 className="font-display text-lg uppercase">Notifications</h2>
         <p className="font-body text-sm text-paper/70">
           Tu reçois déjà les notifications dans la cloche <SidIcon name="bell" /> en haut du site. Active en plus les notifications push

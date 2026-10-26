@@ -360,7 +360,7 @@ function ChatInner() {
 
   return (
     <div className="flex h-[calc(100dvh-9rem)] gap-4 sm:h-[calc(100dvh-10rem)]">
-      <aside className={clsx("w-full flex-col shrink-0 space-y-2 overflow-y-auto md:flex md:w-64", activeChannel ? "hidden md:flex" : "flex")}>
+      <aside data-tuto="chat-liste" className={clsx("w-full flex-col shrink-0 space-y-2 overflow-y-auto md:flex md:w-64", activeChannel ? "hidden md:flex" : "flex")}>
         <button onClick={() => setShowNew((s) => !s)} className="rounded-lg w-full bg-red px-3 py-2 font-display text-sm uppercase text-ink hover:bg-red-light">
           {showNew ? "Annuler" : "Nouvelle discussion"}
         </button>

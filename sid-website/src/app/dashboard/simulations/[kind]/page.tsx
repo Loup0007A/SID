@@ -520,6 +520,7 @@ export default function SimulationPage() {
 
       <div className="grid gap-4 md:grid-cols-[1fr_18rem]">
         <div
+          data-tuto="sim-jeu"
           className={clsx(
             "glass-card space-y-4 p-5",
             // backdrop-filter rendrait le repli « fixed » relatif à la carte au lieu de l'écran
@@ -616,7 +617,7 @@ export default function SimulationPage() {
           )}
         </div>
 
-        <aside className="glass-card space-y-4 p-5">
+        <aside data-tuto="sim-facteurs" className="glass-card space-y-4 p-5">
           {overview ? (
             <>
               <MemberStatBars

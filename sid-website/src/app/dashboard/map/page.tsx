@@ -221,7 +221,7 @@ export default function MapPage() {
       {message && <p className="font-mono text-sm text-red">{message}</p>}
 
       {!myPosition?.spawned ? (
-        <div className="glass-card space-y-4 p-6">
+        <div data-tuto="carte-position" className="glass-card space-y-4 p-6">
           <h2 className="font-display text-lg uppercase">Choisis ton point de départ</h2>
           <p className="font-body text-sm text-paper/70">
             À poser une seule fois — ensuite, tout changement de lieu se fera en lançant un trajet chronométré.
@@ -286,7 +286,7 @@ export default function MapPage() {
               </p>
             </div>
           ) : (
-            <div className="glass-card space-y-1 p-4">
+            <div data-tuto="carte-position" className="glass-card space-y-1 p-4">
               <p className="font-display uppercase text-blue-light"><SidIcon name="pin" /> {placeName(myPosition.place_id)}</p>
               {myPosition.building_id && (
                 <p className="font-mono text-xs text-paper/60">
@@ -298,7 +298,7 @@ export default function MapPage() {
           )}
 
           {!isTraveling && (
-            <div className="glass-card space-y-4 p-6">
+            <div data-tuto="carte-trajet" className="glass-card space-y-4 p-6">
               <h2 className="font-display text-lg uppercase">Se déplacer</h2>
               <div className="space-y-1">
                 <label className={labelClass}>Destination</label>

@@ -25,6 +25,8 @@ import { useSiteDecor } from "@/components/seasonal/siteDecor";
 import { AfterIdle } from "@/components/lazy/AfterIdle";
 import { Sceau1, Sceau2, Sceau7, Sceau8, Sceau9, Sceau10, Sceau11 } from "@/components/lazy/Seals";
 import { SidIcon } from "@/components/icons/SidIcon";
+import { TutoProvider } from "@/components/tuto/TutoProvider";
+import { TutoHelpButton, TutoPageTip } from "@/components/tuto/TutoUi";
 
 // Pas urgents : téléchargés une fois la page affichée.
 const TitleUnlock = dynamic(() => import("@/components/titles/TitleUnlock").then((m) => m.TitleUnlock), { ssr: false });
@@ -245,8 +247,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const isHome = pathname === "/dashboard";
   const title = pageTitle(pathname);
 
+  const tutoMe = { nickname: profile?.nickname ?? "agent", rank: profile?.member_rank ?? "E", avatarUrl: profile?.avatar_url ?? null };
+
   return (
-    <>
+    <TutoProvider me={tutoMe} enabled={!!profile && fresh && !profile.sandbox_expires_at}>
     <div id="sid-app" className="min-h-screen text-paper">
       <ScrollMemory />
       {profile?.sandbox_expires_at && <SandboxBanner nickname={profile.nickname} expiresAt={profile.sandbox_expires_at} permissions={perms} />}
@@ -293,6 +297,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </Link>
             )}
             {profile && <NotificationBell userId={profile.id} />}
+            <TutoHelpButton />
             <SettingsButton />
             <button
               onClick={handleLogout}
@@ -316,6 +321,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </p>
         )}
         <div style={booting ? { visibility: "hidden" } : undefined} aria-busy={booting || undefined}>
+          <TutoPageTip />
           <SectionGate section={entryForPath(pathname)?.section} bypass={isStaff}>
             {children}
           </SectionGate>
@@ -341,6 +347,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {decor?.grande_chasse && <Sceau11 />}
       </AfterIdle>
     )}
-    </>
+    </TutoProvider>
   );
 }
