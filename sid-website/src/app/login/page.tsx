@@ -1,5 +1,6 @@
 "use client";
 
+import { LoginIntro } from "@/components/LoginIntro";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -16,6 +17,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [needsConfirmation, setNeedsConfirmation] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [intro, setIntro] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -40,12 +42,21 @@ export default function LoginPage() {
       }
       return;
     }
-    router.push("/dashboard");
-    router.refresh();
+    // Petite animation, puis le tableau de bord (préchargé pendant ce temps).
+    router.prefetch("/dashboard");
+    setIntro(true);
   }
 
   return (
     <main className="flex min-h-screen items-center justify-center px-4">
+      {intro && (
+        <LoginIntro
+          onDone={() => {
+            router.push("/dashboard");
+            router.refresh();
+          }}
+        />
+      )}
       <form onSubmit={handleSubmit} className="glass-card w-full max-w-sm space-y-4 p-8">
         <div className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -98,8 +109,8 @@ export default function LoginPage() {
           <ResendConfirmation
             email={email}
             onVerified={() => {
-              router.push("/dashboard");
-              router.refresh();
+              router.prefetch("/dashboard");
+              setIntro(true);
             }}
           />
         )}
