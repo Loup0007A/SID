@@ -297,7 +297,7 @@ export function CommandPalette({ perms, onLogout }: { perms: Set<PermissionKey>;
             autoComplete="off"
             spellCheck={false}
           />
-          <kbd className="palette-kbd">Échap</kbd>
+          <kbd className="palette-kbd kbd-only">Échap</kbd>
         </div>
 
         <div ref={listRef} id="palette-list" role="listbox" aria-label="Résultats" className="palette-list">
@@ -346,7 +346,7 @@ export function CommandPalette({ perms, onLogout }: { perms: Set<PermissionKey>;
           )}
         </div>
 
-        <div className="palette-foot" aria-hidden>
+        <div className="palette-foot kbd-only" aria-hidden>
           <span>
             <kbd className="palette-kbd">↑</kbd>
             <kbd className="palette-kbd">↓</kbd> naviguer
@@ -367,18 +367,23 @@ export function CommandPalette({ perms, onLogout }: { perms: Set<PermissionKey>;
 /** Bouton de l'en-tête : une barre de recherche sur ordinateur, une loupe sur téléphone. */
 export function PaletteButton() {
   const [mac, setMac] = useState(false);
-  useEffect(() => setMac(/Mac|iPhone|iPad/.test(navigator.platform)), []);
+  // Écran tactile : pas de clavier, donc pas de raccourci à proposer.
+  const [touch, setTouch] = useState(false);
+  useEffect(() => {
+    setMac(/Mac/.test(navigator.platform));
+    setTouch(window.matchMedia("(hover: none), (pointer: coarse)").matches);
+  }, []);
   return (
     <button
       type="button"
       onClick={openPalette}
-      aria-label="Rechercher (Ctrl+K)"
+      aria-label={touch ? "Rechercher" : `Rechercher (${mac ? "⌘" : "Ctrl"}+K)`}
       aria-keyshortcuts="Control+K Meta+K"
       className="palette-trigger flex h-9 shrink-0 items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-2.5 font-mono text-xs text-paper/70 hover:border-blue/50 hover:text-paper"
     >
       <SidIcon name="magnifier" />
       <span className="hidden lg:inline">Rechercher</span>
-      <kbd className="palette-kbd hidden lg:inline">{mac ? "⌘" : "Ctrl"} K</kbd>
+      <kbd className="palette-kbd kbd-only hidden lg:inline">{mac ? "⌘" : "Ctrl"} K</kbd>
     </button>
   );
 }

@@ -2134,3 +2134,34 @@ input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus-visib
 /* Courbe de renommée (Lot 59) */
 .rep-curve { position: relative; display: grid; gap: 6px; padding: 10px 12px 8px; border-radius: 12px; background: rgb(0 0 0 / .14); border: 1px solid rgb(255 255 255 / .08); }
 .rep-curve-dot { position: absolute; width: 9px; height: 9px; border-radius: 50%; background: #ede6d3; box-shadow: 0 0 0 3px rgb(143 179 217 / .45); transform: translate(-50%, -50%); pointer-events: none; }
+
+/* Raccourcis clavier : rien à proposer sur un écran tactile (Lot 60). */
+@media (hover: none), (pointer: coarse) { .kbd-only { display: none !important; } }
+
+/* Mes raccourcis (Lot 60) */
+.pins { margin-top: -1.25rem; }
+.pins-chip {
+  display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px 7px 9px; border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / .14); background: rgb(255 255 255 / .06);
+  font: 500 13px/1 var(--font-display); text-transform: uppercase; letter-spacing: .04em; color: #ede6d3;
+  transition: transform .15s, border-color .15s, background .15s;
+}
+.pins-chip:hover { transform: translateY(-2px); border-color: rgb(143 179 217 / .55); background: rgb(143 179 217 / .12); }
+.pins-edit, .pins-empty {
+  display: inline-flex; align-items: center; gap: 6px; padding: 7px 11px; border-radius: 999px;
+  border: 1px dashed rgb(255 255 255 / .22); font: 400 12px/1 var(--font-mono); color: rgb(237 230 211 / .7);
+}
+.pins-edit:hover, .pins-empty:hover { border-color: rgb(143 179 217 / .6); color: #ede6d3; }
+.pins-pick {
+  display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 10px; border-radius: 10px; text-align: left;
+  border: 1px solid rgb(255 255 255 / .12); background: rgb(255 255 255 / .04);
+  font: 500 13px/1.1 var(--font-display); text-transform: uppercase; letter-spacing: .03em;
+}
+.pins-pick:hover:not(:disabled) { border-color: rgb(143 179 217 / .5); }
+.pins-pick.is-on { border-color: #8fb3d9; background: rgb(143 179 217 / .16); }
+.pins-pick:disabled { opacity: .4; }
+.pins-order { display: inline-flex; align-items: center; gap: 4px; padding: 3px 4px; border-radius: 999px; background: rgb(143 179 217 / .14); border: 1px solid rgb(143 179 217 / .4); font: 500 12px/1 var(--font-mono); }
+.pins-order button { width: 22px; height: 22px; border-radius: 50%; font-size: 15px; line-height: 1; }
+.pins-order button:hover:not(:disabled) { background: rgb(255 255 255 / .12); }
+.pins-order button:disabled { opacity: .3; }
+.agent-card-img { box-shadow: 0 20px 50px rgb(0 0 0 / .5); }

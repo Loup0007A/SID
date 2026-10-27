@@ -141,7 +141,7 @@ const LEXIQUE: [string, string][] = [
 
 const FAQ: [string, string][] = [
   ["Je ne peux pas prendre une mission.", "Elle est complète, elle demande un niveau que tu n'as pas encore (la fiche l'indique), ou elle se prend sur place : rends-toi à son lieu. Sur la Cartographie, le parchemin doré d'un lieu montre ses quêtes et permet de les prendre une fois arrivé."],
-  ["Comment trouver vite une page, un membre, une quête ?", "La loupe en haut de chaque page, ou Ctrl+K (⌘K sur Mac), ou la touche /. Tape quelques lettres, même sans accents : Entrée ouvre le premier résultat."],
+  ["Comment trouver vite une page, un membre, une quête ?", "La loupe en haut de chaque page. Tape quelques lettres, même sans accents, puis touche le résultat voulu (Entrée ouvre le premier)."],
   ["C'est quoi le « Rapport de situation » de l'accueil ?", "Le résumé de ce qui a changé depuis ta dernière visite sur cet appareil : argent gagné et dépensé, renommée, titres, nouvelles quêtes, nouveaux agents, nouveautés du Comptoir. « Classer le rapport » le range jusqu'à la prochaine visite."],
   ["Je ne peux plus rien acheter.", "Ton solde est négatif (intérêts d'emprunt). Rembourse à la Banque, ou attends tes prochains revenus."],
   ["Mon trajet ne finit pas.", "Il continue même page fermée ; le compte à rebours est sur la page Carte. Une notification t'attend à l'arrivée."],

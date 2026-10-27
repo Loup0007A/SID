@@ -10,9 +10,11 @@ import Link from "next/link";
 import { BirthdaySetting } from "@/components/lazy/Seals";
 import { TitleAuraLayer, TitleBadge } from "@/components/titles/TitleVisuals";
 import { useEquippedTitles } from "@/lib/useEquippedTitles";
+import type { TitleId } from "@/lib/titles";
 import { isPushSupported, getPushPermission, hasActivePushSubscription, subscribeToPush, unsubscribeFromPush, needsIosInstallFirst } from "@/lib/push";
 import { SidIcon } from "@/components/icons/SidIcon";
 import { ReputationCard } from "@/components/ReputationCard";
+import { AgentCardButton } from "@/components/AgentCard";
 
 const HIDEABLE_FIELDS: { key: keyof Profile; label: string }[] = [
   { key: "first_name", label: "Prénom IRL" },
@@ -227,6 +229,11 @@ export default function ProfilePage() {
       <div data-tuto="profil-rang" className="flex flex-wrap items-center gap-4">
         <RankCard rank={profile.member_rank ?? "E"} />
         <h1 className="font-display text-2xl uppercase tracking-wide text-red">Mon dossier</h1>
+        <AgentCardButton
+          profile={profile}
+          title={myTitle ? { id: myTitle.title_id as TitleId, level: myTitle.level } : null}
+          reputation={Number(profile.reputation ?? 0)}
+        />
       </div>
 
       <Link href="/dashboard/titles" className="glass-card relative block overflow-hidden p-5 transition hover:-translate-y-0.5">

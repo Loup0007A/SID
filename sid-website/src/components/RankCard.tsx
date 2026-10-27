@@ -1,6 +1,6 @@
 import type { MemberRank } from "@/types/database";
 
-const RANK_INFO: Record<MemberRank, { title: string; className: string; letter?: string }> = {
+export const RANK_INFO: Record<MemberRank, { title: string; className: string; letter?: string }> = {
   E: { title: "Novice", className: "rank-card rank-e" },
   D: { title: "Éclaireur", className: "rank-card rank-d" },
   C: { title: "Agent confirmé", className: "rank-card rank-c" },

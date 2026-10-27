@@ -19,6 +19,7 @@ import { SeasonalBoard, SeasonalGreeting } from "@/components/seasonal/Seasonal"
 import { SidIcon } from "@/components/icons/SidIcon";
 import { TutoInvite } from "@/components/tuto/TutoUi";
 import { SinceLastVisit } from "@/components/SinceLastVisit";
+import { PinnedShortcuts } from "@/components/PinnedShortcuts";
 
 export default function DashboardHome() {
   const supabase = createClient();
@@ -108,6 +109,8 @@ export default function DashboardHome() {
           <p className="font-display text-3xl text-blue">{wallet ? wallet.balance.toLocaleString("fr-FR") : "…"} z</p>
         </Link>
       </div>
+
+      {profile && <PinnedShortcuts entries={entries} />}
 
       <TutoInvite />
 

@@ -6,6 +6,7 @@ import { currentUser } from "@/lib/session";
 import type { Wallet, BankAccount } from "@/types/database";
 import type { BusinessSharePricePoint, MarketEntry, MarketSettings, MyShareholding, SellResult } from "@/types/business";
 import { LineChart } from "@/components/LineChart";
+import { WalletHistory } from "@/components/bank/WalletHistory";
 import { inputClass, labelClass } from "@/lib/ui";
 import { SidIcon } from "@/components/icons/SidIcon";
 
@@ -176,6 +177,8 @@ export default function BankPage() {
       )}
 
       {message && <p className="font-mono text-sm text-red">{message}</p>}
+
+      {wallet && <WalletHistory userId={wallet.user_id} balance={Number(wallet.balance)} />}
 
       <div data-tuto="banque-epargne" className="glass-card space-y-4 p-6">
         <h2 className="font-display text-lg uppercase">Épargne</h2>
