@@ -43,7 +43,7 @@ const CHAPTERS: Chapter[] = [
     href: "/dashboard/quests",
     tour: "types",
     body: () =>
-      "Chaque quête a un **rang** (E à S), un **type de contrat** (sa couleur), une récompense en zénis, de la **renommée**, une échéance et parfois un nombre de places limité. Certaines demandent un niveau minimum d'Intelligence, de Puissance, de Technique ou de puissance globale.\n\n**Prendre la mission** t'y inscrit ; tu peux choisir pour qui tu la prends (qui touchera l'argent). La renommée, elle, reste toujours à toi.\n\n**À l'échéance** : assez de participants, et la quête est validée et payée toute seule. Il en manque un seul, ou la quête n'a pas de limite de places ? Son créateur tranche. Sinon, c'est l'échec, et la renommée en jeu est perdue.\n\n**Chaque fiche de quête affiche ce que tu risques** : « +16 si réussie · −8 si échouée ». Ta renommée, ta place au classement et l'historique de chaque gain ou perte sont dans **Mon dossier**.\n\n**La renommée** se calcule comme un classement d'échecs : réussir une quête au-dessus de ton niveau rapporte beaucoup, échouer une quête facile pour toi coûte cher. Le créateur peut aussi fixer un montant.\n\n**Quêtes avec un lieu** : rends-toi sur place (la fiche lance le trajet), puis restes-y une heure : ta présence est confirmée automatiquement.",
+      "Chaque quête a un **rang** (E à S), un **type de contrat** (sa couleur), une récompense en zénis, de la **renommée**, une échéance et parfois un nombre de places limité. Certaines demandent un niveau minimum d'Intelligence, de Puissance, de Technique ou de puissance globale.\n\n**Prendre la mission** t'y inscrit ; tu peux choisir pour qui tu la prends (qui touchera l'argent). La renommée, elle, reste toujours à toi.\n\n**À l'échéance** : assez de participants, et la quête est validée et payée toute seule. Il en manque un seul, ou la quête n'a pas de limite de places ? Son créateur tranche. Sinon, c'est l'échec, et la renommée en jeu est perdue.\n\n**Chaque fiche de quête affiche ce que tu risques** : « +16 si réussie · −8 si échouée ». Ta renommée, ta place au classement et l'historique de chaque gain ou perte sont dans **Mon dossier**.\n\n**La renommée** se calcule comme un classement d'échecs : réussir une quête au-dessus de ton niveau rapporte beaucoup, échouer une quête facile pour toi coûte cher. Le créateur peut aussi fixer un montant.\n\n**Quêtes avec un lieu** : elles ne se prennent **que sur place** (la fiche lance le trajet). Une fois inscrit, reste une heure sur place : la quête est validée toute seule, récompense et renommée comprises.",
   },
   {
     id: "carte",
@@ -133,7 +133,7 @@ const LEXIQUE: [string, string][] = [
   ["Facteurs", "Intelligence, Puissance, Technique : de 0 à 100, gagnés en simulation."],
   ["Puissance globale", "La moyenne des trois facteurs."],
   ["Bénéficiaire", "Celui qui touche l'argent d'une quête (pas forcément celui qui la fait)."],
-  ["Quête localisée", "Une quête liée à un lieu de la carte : il faut y être, une heure."],
+  ["Quête localisée", "Une quête liée à un lieu de la carte : elle se prend sur place, et une heure là-bas la valide."],
   ["Raid", "Un appel à l'aide aux Donjons, que les autres agents rejoignent."],
   ["Farce", "Le pouvoir d'un titre équipé, utilisé sur un autre agent."],
   ["Caisse commune", "Ce que rapportent l'impôt et la TVA, redistribué chaque semaine."],

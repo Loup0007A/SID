@@ -168,6 +168,11 @@ export default function QuestsPage() {
       setMessage("Cette mission est déjà complète.");
       return;
     }
+    if (quest.place_id && (myPosition?.place_id !== quest.place_id || myPosition?.travel_started_at)) {
+      const name = places.find((p) => p.id === quest.place_id)?.name;
+      setMessage(`Cette quête se prend sur place : rends-toi d'abord à ${name ?? "son lieu"}.`);
+      return;
+    }
     const missing = unmetRequirements(quest, me);
     if (missing.length > 0) {
       setMessage(`Prérequis non atteints : ${missing.map((r) => `${r.label} ${formatStat(r.min)}`).join(", ")}.`);
@@ -487,6 +492,8 @@ export default function QuestsPage() {
           const eta = q.place_id ? etaFor(q) : null;
           const isTravelingToThisQuest = isTraveling && !!q.place_id && q.place_id === travelDestinationPlaceId;
           const missing = unmetRequirements(q, me);
+          // Une quête liée à un lieu ne se prend qu'une fois arrivé sur place.
+          const notHere = !!q.place_id && (myPosition?.place_id !== q.place_id || !!myPosition?.travel_started_at);
 
           return (
             <div key={q.id} data-tuto={qi === 0 ? "quete" : undefined} className="space-y-2">
@@ -565,6 +572,12 @@ export default function QuestsPage() {
                       <option key={m.id} value={m.id}>{m.nickname}</option>
                     ))}
                   </select>
+                  {notHere && (
+                    <p className="font-mono text-[10px] text-blue-light">
+                      <SidIcon name="pin" /> Elle se prend sur place, à {questPlace?.name ?? "son lieu"}
+                      {isTravelingToThisQuest ? " : tu es en route." : " : lance le trajet ci-dessus."}
+                    </p>
+                  )}
                   {missing.length > 0 && (
                     <p className="font-mono text-[10px] text-red-light">
                       Il te manque :{" "}
@@ -573,10 +586,10 @@ export default function QuestsPage() {
                   )}
                   <button
                     onClick={() => joinQuest(q)}
-                    disabled={isFull || missing.length > 0}
+                    disabled={isFull || missing.length > 0 || notHere}
                     className="rounded-lg w-full border border-red py-1 font-mono text-xs uppercase text-red hover:bg-red hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    {isFull ? "Complète" : missing.length > 0 ? "Prérequis non atteints" : "Prendre la mission"}
+                    {isFull ? "Complète" : notHere ? "À prendre sur place" : missing.length > 0 ? "Prérequis non atteints" : "Prendre la mission"}
                   </button>
                 </div>
               )}

@@ -196,8 +196,8 @@ export const TOUR: TutoStep[] = [
     target: "carte-trajet",
     icon: "road",
     title: "Voyager, et les quêtes sur place",
-    body: "Choisis une destination : le plus court chemin est calculé, étape par étape. Une notification te prévient à l'arrivée.\n\nCertaines quêtes ont **un lieu** : va sur place (la fiche de la quête lance le trajet), puis reste-y **une heure** pour que ta présence soit confirmée.\n\nLa **Cartographie** (son propre site, même compte) ajoute montures, vols, plans des villes…",
-    missing: "Une fois ta position posée, c'est ici que tu choisiras ta destination : le plus court chemin est calculé, étape par étape, et une notification te prévient à l'arrivée.\n\nCertaines quêtes ont **un lieu** : va sur place, puis reste-y **une heure** pour que ta présence soit confirmée.",
+    body: "Choisis une destination : le plus court chemin est calculé, étape par étape. Une notification te prévient à l'arrivée.\n\nCertaines quêtes ont **un lieu** : elles ne se prennent **qu'une fois sur place** (la fiche de la quête lance le trajet). Restes-y ensuite **une heure** et la quête est validée.\n\nLa **Cartographie** (son propre site, même compte) ajoute montures, vols, plans des villes…",
+    missing: "Une fois ta position posée, c'est ici que tu choisiras ta destination : le plus court chemin est calculé, étape par étape, et une notification te prévient à l'arrivée.\n\nCertaines quêtes ont **un lieu** : elles ne se prennent **qu'une fois sur place**. Restes-y ensuite **une heure** et la quête est validée.",
   },
 
   // ------------------------------------------------------------ 5. Entraînement
@@ -377,7 +377,7 @@ export const PAGE_TIPS: Record<string, PageTip> = {
     key: "quests",
     title: "Quêtes",
     icon: "scroll",
-    points: ["Le rang (E à S) dit la difficulté ; la couleur, le type de contrat.", "Réussir au-dessus de ton niveau rapporte beaucoup de renommée.", "Une quête avec un lieu : va sur place et restes-y une heure."],
+    points: ["Le rang (E à S) dit la difficulté ; la couleur, le type de contrat.", "Réussir au-dessus de ton niveau rapporte beaucoup de renommée.", "Une quête avec un lieu ne se prend que sur place ; une heure là-bas la valide."],
     tourFrom: "types",
   },
   "/dashboard/tech": {
