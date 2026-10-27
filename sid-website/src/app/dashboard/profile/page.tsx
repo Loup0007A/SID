@@ -12,6 +12,7 @@ import { TitleAuraLayer, TitleBadge } from "@/components/titles/TitleVisuals";
 import { useEquippedTitles } from "@/lib/useEquippedTitles";
 import { isPushSupported, getPushPermission, hasActivePushSubscription, subscribeToPush, unsubscribeFromPush, needsIosInstallFirst } from "@/lib/push";
 import { SidIcon } from "@/components/icons/SidIcon";
+import { ReputationCard } from "@/components/ReputationCard";
 
 const HIDEABLE_FIELDS: { key: keyof Profile; label: string }[] = [
   { key: "first_name", label: "Prénom IRL" },
@@ -242,6 +243,8 @@ export default function ProfilePage() {
           <span className="font-mono text-xs uppercase text-blue-light">Mes titres →</span>
         </div>
       </Link>
+
+      <ReputationCard />
 
       <div data-tuto="profil-fiche" className="glass-card space-y-4 p-6">
         <div className="flex items-center gap-4">

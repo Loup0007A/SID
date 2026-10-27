@@ -13,6 +13,8 @@ import { findShortestPath } from "@/lib/pathfinding";
 import { formatStat, unmetRequirements, type MemberCharacteristics } from "@/lib/questRequirements";
 import { SidIcon } from "@/components/icons/SidIcon";
 
+type RepPreview = { gain?: number; loss?: number; status?: "validated" | "rejected"; delta?: number };
+
 export default function QuestsPage() {
   const supabase = createClient();
   const [quests, setQuests] = useState<Quest[]>([]);
@@ -59,6 +61,8 @@ export default function QuestsPage() {
   const [routes, setRoutes] = useState<MapRoute[]>([]);
   const [myPosition, setMyPosition] = useState<CharacterPosition | null>(null);
   const [launchingId, setLaunchingId] = useState<string | null>(null);
+  // Renommée en jeu pour moi sur chaque quête : gain si réussie, perte si échouée.
+  const [repPreview, setRepPreview] = useState<Record<string, RepPreview>>({});
 
   async function refresh(uid?: string | null) {
     const activeUserId = uid !== undefined ? uid : userId;
@@ -66,7 +70,7 @@ export default function QuestsPage() {
     // Tout part en même temps : un seul aller-retour pour toute la page.
     // Les quêtes accomplies ou échouées ne restent pas affichées sur le
     // panneau principal (uniquement celles encore "ouvertes"/"en cours").
-    const [questsRes, countsRes, mineRes, statsRes, powerRes, posRes, pendingRes] = await Promise.all([
+    const [questsRes, countsRes, mineRes, statsRes, powerRes, posRes, pendingRes, repRes] = await Promise.all([
       supabase.from("quests").select("*").in("status", ["open", "in_progress"]).order("created_at", { ascending: false }),
       supabase.rpc("quest_participant_counts"),
       activeUserId ? supabase.from("quest_participants").select("quest_id").eq("user_id", activeUserId) : null,
@@ -74,6 +78,7 @@ export default function QuestsPage() {
       activeUserId ? supabase.from("profiles").select("power_score").eq("id", activeUserId).maybeSingle() : null,
       activeUserId ? supabase.from("character_positions").select("*").eq("user_id", activeUserId).maybeSingle() : null,
       supabase.rpc("list_pending_expiry_quests"),
+      activeUserId ? supabase.rpc("quest_reputation_preview") : null,
     ]);
 
     if (questsRes.error) {
@@ -97,6 +102,7 @@ export default function QuestsPage() {
     }
 
     setPendingQuests((pendingRes.data ?? []) as Quest[]);
+    if (repRes && !repRes.error && repRes.data) setRepPreview(repRes.data as Record<string, RepPreview>);
   }
 
   useEffect(() => {
@@ -488,8 +494,31 @@ export default function QuestsPage() {
               {!q.funded_by_creator && (
                 <p className="text-center font-mono text-[10px] uppercase text-paper/50">Financée par le S.I.D.</p>
               )}
-              <p className="text-center font-mono text-[10px] uppercase text-blue-light">
-                <SidIcon name="medal" /> {q.reputation_reward != null ? `+${q.reputation_reward} de renommée` : "Renommée : calcul automatique selon ton niveau"}
+              <p
+                className="text-center font-mono text-[10px] uppercase text-blue-light"
+                title="Renommée calculée selon le rang de la quête et ta renommée actuelle : réussir au-dessus de ton niveau rapporte plus, échouer une quête facile coûte plus."
+              >
+                <SidIcon name="medal" />{" "}
+                {repPreview[q.id]?.status ? (
+                  repPreview[q.id].status === "validated" ? (
+                    <>
+                      Réussie pour toi · <span className="text-blue-light">{(repPreview[q.id].delta ?? 0) >= 0 ? "+" : ""}{repPreview[q.id].delta} de renommée</span>
+                    </>
+                  ) : (
+                    <>
+                      Échouée pour toi · <span className="text-red">{repPreview[q.id].delta} de renommée</span>
+                    </>
+                  )
+                ) : repPreview[q.id] ? (
+                  <>
+                    Renommée : <span className="text-blue-light">+{repPreview[q.id].gain}</span> si réussie ·{" "}
+                    <span className="text-red">{repPreview[q.id].loss}</span> si échouée
+                  </>
+                ) : q.reputation_reward != null ? (
+                  `±${q.reputation_reward} de renommée`
+                ) : (
+                  "Renommée selon ton niveau"
+                )}
               </p>
 
               {questPlace && (
