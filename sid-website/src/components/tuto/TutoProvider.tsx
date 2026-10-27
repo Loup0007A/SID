@@ -17,6 +17,7 @@ export type Onboarding = {
   tour_done: boolean;
   tour_skipped: boolean;
   tips_seen: string[];
+  tips_disabled?: boolean;
   reward_claimed: boolean;
   is_new: boolean;
   steps: Record<string, boolean>;
@@ -47,6 +48,7 @@ type Ctx = {
   markTip: (key: string) => void;
   showTip: (key: string | null) => void;
   resetTips: () => void;
+  setTipsDisabled: (off: boolean) => void;
   dismissInvite: () => void;
 };
 
@@ -76,7 +78,9 @@ export function TutoProvider({ me, enabled, children }: { me: Me; enabled: boole
   }, [enabled, refresh]);
 
   const event = useCallback(
-    (name: string, value?: string | number) => supabase.rpc("onboarding_event", { p_event: name, p_value: value == null ? null : String(value) }),
+    // .then() : un rpc Supabase n'est envoyé que lorsqu'on l'attend.
+    (name: string, value?: string | number) =>
+      Promise.resolve(supabase.rpc("onboarding_event", { p_event: name, p_value: value == null ? null : String(value) }).then((r) => r)),
     [] // eslint-disable-line react-hooks/exhaustive-deps
   );
 
@@ -163,9 +167,18 @@ export function TutoProvider({ me, enabled, children }: { me: Me; enabled: boole
   );
 
   const resetTips = useCallback(() => {
-    setData((d) => (d ? { ...d, tips_seen: [] } : d));
+    setData((d) => (d ? { ...d, tips_seen: [], tips_disabled: false } : d));
     event("tips_reset");
   }, [event]);
+
+  const setTipsDisabled = useCallback(
+    (off: boolean) => {
+      setForcedTip(null);
+      setData((d) => (d ? { ...d, tips_disabled: off } : d));
+      event(off ? "tips_off" : "tips_on");
+    },
+    [event]
+  );
 
   const dismissInvite = useCallback(() => {
     setData((d) => (d ? { ...d, briefing_seen: true } : d));
@@ -189,9 +202,10 @@ export function TutoProvider({ me, enabled, children }: { me: Me; enabled: boole
       markTip,
       showTip: setForcedTip,
       resetTips,
+      setTipsDisabled,
       dismissInvite,
     }),
-    [enabled, data, me, tour, briefingOpen, forcedTip, refresh, startTour, stopTour, goTo, openBriefing, closeBriefing, markTip, resetTips, dismissInvite]
+    [enabled, data, me, tour, briefingOpen, forcedTip, refresh, startTour, stopTour, goTo, openBriefing, closeBriefing, markTip, resetTips, setTipsDisabled, dismissInvite]
   );
 
   return (

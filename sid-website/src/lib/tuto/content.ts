@@ -269,9 +269,9 @@ export const TOUR: TutoStep[] = [
     icon: "cart",
     title: "Le Comptoir",
     body: (n) =>
-      `On y achète, et on y vend : chaque agent peut proposer ses objets. Le vendeur reverse **${pct(n.vat)} de TVA** à la caisse commune (l'acheteur paie le prix affiché).\n\nCertains objets ont un vrai effet, comme effacer d'un coup les délais d'attente des simulations.`,
+      `On y achète ce que l'état-major et ses marchands mettent en vente ; touche un objet pour le voir en entier et choisir la quantité. Le vendeur reverse **${pct(n.vat)} de TVA** à la caisse commune (l'acheteur paie le prix affiché).\n\nCertains objets ont un vrai effet, comme effacer d'un coup les délais d'attente des simulations.`,
     missing: (n) =>
-      `La vitrine est vide pour l'instant. On y achète, et on y vend : chaque agent peut proposer ses objets. Le vendeur reverse **${pct(n.vat)} de TVA** à la caisse commune.`,
+      `La vitrine est vide pour l'instant. On y achète ce que l'état-major et ses marchands mettent en vente ; touche un objet pour le voir en entier et choisir la quantité. Le vendeur reverse **${pct(n.vat)} de TVA** à la caisse commune.`,
   },
 
   // ------------------------------------------------------------ 7. Agents
@@ -442,7 +442,7 @@ export const PAGE_TIPS: Record<string, PageTip> = {
     key: "shop",
     title: "Comptoir",
     icon: "cart",
-    points: ["Achète, ou mets tes objets en vente.", (n) => `Le vendeur reverse ${pct(n.vat)} de TVA.`, "Solde négatif = achats bloqués jusqu'à ce qu'il remonte."],
+    points: ["Touche un objet : grande image, quantité, total et ta bourse après achat.", (n) => `Le vendeur reverse ${pct(n.vat)} de TVA.`, "Solde négatif = achats bloqués jusqu'à ce qu'il remonte."],
     tourFrom: "boutique",
   },
   "/dashboard/bank": {

@@ -88,7 +88,7 @@ const CHAPTERS: Chapter[] = [
     href: "/dashboard/shop",
     tour: "boutique",
     body: (n) =>
-      `On y achète ce que l'état-major et les autres agents mettent en vente, et on peut y vendre ses propres objets (éventuellement au profit de son entreprise). Le vendeur reverse **${pct(n.vat)}** de TVA.\n\nCertains objets ont un vrai effet, comme effacer d'un coup les délais d'attente des trois simulations. Tes achats sont listés dans ton dossier.`,
+      `On y achète ce que l'état-major et ses marchands mettent en vente : recherche, filtres (promos, objets à effet, dernières pièces), et une fiche pour chaque objet avec la quantité, le total et ta bourse après achat. Les marchands (membres qui en ont le droit) y vendent leurs propres objets, éventuellement au profit de leur entreprise. L'onglet « Mes achats » garde tout ce que tu as acheté. Le vendeur reverse **${pct(n.vat)}** de TVA.\n\nCertains objets ont un vrai effet, comme effacer d'un coup les délais d'attente des trois simulations. Tes achats sont listés dans ton dossier.`,
   },
   {
     id: "agents",

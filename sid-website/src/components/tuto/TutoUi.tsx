@@ -84,9 +84,23 @@ export function TutoHelpButton() {
             <SidIcon name="idcard" /> <span className="flex-1">Revoir mon dossier d&apos;intégration</span>
           </button>
           <div className="my-1 border-t border-white/10" />
-          <button role="menuitem" className={`${item} text-paper/60`} onClick={() => (setOpen(false), tuto.resetTips())}>
-            <SidIcon name="bulb" /> <span className="flex-1 text-xs">Réafficher les astuces de chaque page</span>
+          <button
+            role="menuitemcheckbox"
+            aria-checked={!data?.tips_disabled}
+            className={item}
+            onClick={() => tuto.setTipsDisabled(!data?.tips_disabled)}
+          >
+            <SidIcon name="bulb" />
+            <span className="flex-1 text-sm">Astuces en haut des pages</span>
+            <span className={`tuto-switch ${data?.tips_disabled ? "" : "is-on"}`} aria-hidden>
+              <span />
+            </span>
           </button>
+          {!data?.tips_disabled && (
+            <button role="menuitem" className={`${item} text-paper/60`} onClick={() => (setOpen(false), tuto.resetTips())}>
+              <span className="w-[1.15em]" /> <span className="flex-1 text-xs">Revoir les astuces déjà lues</span>
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -104,7 +118,7 @@ export function TutoPageTip() {
 
   if (!tuto || !tip || !tuto.data || tuto.tour || tuto.briefingOpen) return null;
   const forced = tuto.forcedTip === tip.key;
-  if (!forced && tuto.data.tips_seen.includes(tip.key)) return null;
+  if (!forced && (tuto.data.tips_disabled || tuto.data.tips_seen.includes(tip.key))) return null;
   // Les tout nouveaux agents ont d'abord droit à la visite : pas d'astuce par-dessus.
   if (!forced && tuto.data.is_new && !tuto.data.briefing_seen) return null;
 
@@ -131,7 +145,7 @@ export function TutoPageTip() {
               </li>
             ))}
           </ul>
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             <button onClick={close} className="tuto-btn !py-1.5 !text-xs">
               Compris
             </button>
@@ -144,6 +158,18 @@ export function TutoPageTip() {
                 className="tuto-btn-ghost !py-1.5 !text-xs"
               >
                 Me montrer
+              </button>
+            )}
+            {!tuto.data.tips_disabled && (
+              <button
+                onClick={() => {
+                  setLeaving(true);
+                  setTimeout(() => tuto.setTipsDisabled(true), 220);
+                }}
+                className="ml-auto self-center font-mono text-[10px] uppercase tracking-wide text-paper-text/55 underline-offset-2 hover:text-red-dark hover:underline"
+                title="Tu pourras les rallumer depuis le bouton ? en haut"
+              >
+                Ne plus afficher les astuces
               </button>
             )}
           </div>
