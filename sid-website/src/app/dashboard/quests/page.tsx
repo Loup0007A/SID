@@ -499,7 +499,7 @@ export default function QuestsPage() {
             <div key={q.id} data-tuto={qi === 0 ? "quete" : undefined} className="space-y-2">
               <QuestCard quest={q} participantCount={count} />
               {!q.funded_by_creator && (
-                <p className="text-center font-mono text-[10px] uppercase text-paper/50">Financée par le S.I.D.</p>
+                <p className="text-center font-mono text-[10px] uppercase text-paper/65">Financée par le S.I.D.</p>
               )}
               <p
                 className="text-center font-mono text-[10px] uppercase text-blue-light"
@@ -552,7 +552,7 @@ export default function QuestsPage() {
                       )}
                     </>
                   ) : (
-                    <p className="font-mono text-[10px] text-paper/50">
+                    <p className="font-mono text-[10px] text-paper/65">
                       {myPosition?.place_id ? "Aucun itinéraire connu" : "Renseigne ta position sur la page Carte pour voir le trajet"}
                     </p>
                   )}

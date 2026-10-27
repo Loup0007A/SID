@@ -106,7 +106,7 @@ export default function AuditPage() {
       <div className="glass-card divide-y divide-white/10">
         {visible.map((r) => (
           <div key={r.id} className="flex flex-wrap items-baseline gap-x-3 gap-y-1 px-4 py-3">
-            <span className="w-36 shrink-0 font-mono text-[11px] text-paper/50">
+            <span className="w-36 shrink-0 font-mono text-[11px] text-paper/65">
               {new Date(r.created_at).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "medium" })}
             </span>
             <span className="rounded-full border border-blue/40 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wide text-blue-light">

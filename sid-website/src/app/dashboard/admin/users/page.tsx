@@ -193,7 +193,7 @@ export default function AdminUsersPage() {
                 {p.is_founder && <span className="ml-1 text-blue-light">· Fondateur</span>}
                 {p.is_invisible && <span className="ml-1 text-paper/80">· <SidIcon name="ghost" /> Invisible</span>}
                 {p.sandbox_expires_at && <span className="ml-1 text-yellow-300">· <SidIcon name="brain" /> Test</span>}
-                <span className="ml-1 text-paper/40">· {lastSeen(p)}</span>
+                <span className="ml-1 text-paper/65">· {lastSeen(p)}</span>
               </p>
             </div>
 

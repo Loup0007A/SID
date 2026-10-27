@@ -76,12 +76,12 @@ export function OnlineNow() {
             <span className="online-dot" aria-hidden />
             En ligne maintenant
           </h2>
-          <span className="font-mono text-xs text-paper/50">
+          <span className="font-mono text-xs text-paper/65">
             {rows.length} {rows.length > 1 ? "membres" : "membre"}
             {active < rows.length ? `, dont ${rows.length - active} absent${rows.length - active > 1 ? "s" : ""}` : ""}
           </span>
         </div>
-        <Link href="/dashboard/profile#presence" scroll={false} className="font-mono text-[11px] text-paper/50 underline-offset-2 hover:text-paper hover:underline">
+        <Link href="/dashboard/profile#presence" scroll={false} className="font-mono text-[11px] text-paper/65 underline-offset-2 hover:text-paper hover:underline">
           Ce que les autres voient de toi
         </Link>
       </div>
@@ -102,20 +102,20 @@ export function OnlineNow() {
                 <Link href={m.me ? "/dashboard/profile" : `/dashboard/profile/${m.id}`} scroll={false} className="max-w-[10rem] shrink-0 truncate font-display uppercase tracking-wide hover:text-blue">
                   {m.nickname}
                 </Link>
-                {m.me && <span className="shrink-0 font-mono text-[10px] text-paper/45">toi</span>}
+                {m.me && <span className="shrink-0 font-mono text-[10px] text-paper/65">toi</span>}
                 {t && (
                   <span className="hidden min-w-0 overflow-hidden md:inline-flex">
                     <TitleBadge titleId={t.title_id} level={t.level} dragon={t.dragon} size="xs" />
                   </span>
                 )}
               </span>
-              <span className={`col-start-2 row-start-2 min-w-0 truncate font-body text-sm sm:col-start-auto sm:row-start-auto ${act.muted ? "text-paper/45" : "text-paper/85"}`}>
+              <span className={`col-start-2 row-start-2 min-w-0 truncate font-body text-sm sm:col-start-auto sm:row-start-auto ${act.muted ? "text-paper/65" : "text-paper/85"}`}>
                 <SidIcon name={act.icon} className="mr-1.5" />
                 {act.text}
-                {m.masked && !act.muted && <span className="ml-1.5 font-mono text-[10px] text-paper/40">(masquée aux autres)</span>}
-                {m.hidden && <span className="ml-1.5 font-mono text-[10px] text-paper/40"><SidIcon name="ghost" /> invisible pour les autres</span>}
+                {m.masked && !act.muted && <span className="ml-1.5 font-mono text-[10px] text-paper/65">(masquée aux autres)</span>}
+                {m.hidden && <span className="ml-1.5 font-mono text-[10px] text-paper/65"><SidIcon name="ghost" /> invisible pour les autres</span>}
               </span>
-              <span className="col-start-3 row-span-2 row-start-1 text-right font-mono text-[11px] text-paper/50 sm:col-start-auto sm:row-span-1 sm:row-start-auto">
+              <span className="col-start-3 row-span-2 row-start-1 text-right font-mono text-[11px] text-paper/65 sm:col-start-auto sm:row-span-1 sm:row-start-auto">
                 {m.idle ? "absent" : sinceLabel(m.since, now)}
               </span>
             </li>

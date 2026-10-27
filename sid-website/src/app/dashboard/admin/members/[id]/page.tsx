@@ -271,7 +271,7 @@ export default function MemberAdminPage() {
           ["Alertes ouvertes", String(summary.alertes_ouvertes)],
         ].map(([k, v]) => (
           <div key={k} className="glass-card space-y-1 p-3">
-            <p className="font-mono text-[10px] uppercase tracking-wide text-paper/50">{k}</p>
+            <p className="font-mono text-[10px] uppercase tracking-wide text-paper/65">{k}</p>
             <p className="font-display text-lg">{v}</p>
           </div>
         ))}
@@ -316,7 +316,7 @@ export default function MemberAdminPage() {
               <span className={`rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase ${SEVERITY[a.severity].className}`}>{SEVERITY[a.severity].label}</span>
               <div className="min-w-[12rem] flex-1">
                 <p className="font-body text-sm">{a.title}</p>
-                <p className="font-mono text-[11px] text-paper/50">{timeAgo(a.created_at)} · {describeAlert(a.details)}</p>
+                <p className="font-mono text-[11px] text-paper/65">{timeAgo(a.created_at)} · {describeAlert(a.details)}</p>
               </div>
               <button onClick={() => setAlert(a, "resolved")} className={`${btn} border-blue text-blue hover:bg-blue hover:text-ink`}>✓ Traitée</button>
               <button onClick={() => setAlert(a, "ignored")} className={`${btn} border-white/20 text-paper/70 hover:bg-white/10`}>Ignorer</button>
@@ -353,7 +353,7 @@ export default function MemberAdminPage() {
             </button>
           ))}
         </div>
-        <p className="font-mono text-[11px] text-paper/40">
+        <p className="font-mono text-[11px] text-paper/65">
           Les messages ne sont comptés que par jour : leur contenu n&apos;apparaît jamais ici.
         </p>
         {shown.length === 0 ? (
@@ -362,11 +362,11 @@ export default function MemberAdminPage() {
           <ol className="glass-card divide-y divide-white/5">
             {shown.map((r, i) => (
               <li key={i} className="flex flex-wrap items-baseline gap-x-3 gap-y-1 px-4 py-2">
-                <span className="w-28 shrink-0 font-mono text-[11px] text-paper/50">{dateTime(r.at)}</span>
+                <span className="w-28 shrink-0 font-mono text-[11px] text-paper/65">{dateTime(r.at)}</span>
                 <span className="w-5 shrink-0 text-center" aria-hidden>{ICON[r.source] ? <Glyph e={ICON[r.source]} /> : "•"}</span>
                 <span className="min-w-[12rem] flex-1 font-body text-sm text-paper/90">
                   {describeRow(r)}
-                  {r.actor && r.source !== "alerte" && r.source !== "troll" && <span className="font-mono text-[11px] text-paper/50"> · par {r.actor}</span>}
+                  {r.actor && r.source !== "alerte" && r.source !== "troll" && <span className="font-mono text-[11px] text-paper/65"> · par {r.actor}</span>}
                 </span>
                 {r.amount != null && Number(r.amount) !== 0 && (
                   <span className={`font-mono text-xs ${Number(r.amount) > 0 ? "text-blue-light" : "text-red"}`}>{signed(Number(r.amount))}</span>

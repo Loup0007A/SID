@@ -202,7 +202,7 @@ export default function SandboxPage() {
               {copied ? "Copié !" : "Copier les identifiants"}
             </button>
           </div>
-          <p className="font-mono text-[11px] text-paper/50">
+          <p className="font-mono text-[11px] text-paper/65">
             « Entrer » ouvre le compte de test dans ce navigateur ; un bandeau permet ensuite de revenir à ton compte.
             Pour garder ta session d&apos;admin ouverte à côté, colle plutôt ces identifiants dans une fenêtre de
             navigation privée ou un autre appareil.
@@ -253,7 +253,7 @@ export default function SandboxPage() {
               ))}
             </div>
           )}
-          <p className="font-mono text-[11px] text-paper/50">
+          <p className="font-mono text-[11px] text-paper/65">
             Sans permission cochée, c&apos;est un simple membre. Tu ne peux donner que les permissions que tu as toi-même.
             {form.perms.has("manage_users") && (
               <span className="block text-red">
@@ -281,7 +281,7 @@ export default function SandboxPage() {
                 {r.expired ? <span className="text-red">Expiré</span> : <>Expire dans {timeLeft(r.expires_at)}</>}
                 {r.created_by_nickname && <> · créé par {r.created_by_nickname}</>}
               </p>
-              <p className="font-mono text-[11px] text-paper/50">
+              <p className="font-mono text-[11px] text-paper/65">
                 {r.permissions.length ? r.permissions.map((p) => PERMISSION_LABELS[p] ?? p).join(" · ") : "Simple membre"}
               </p>
             </div>

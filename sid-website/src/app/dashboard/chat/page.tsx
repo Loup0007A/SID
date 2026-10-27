@@ -360,6 +360,7 @@ function ChatInner() {
 
   return (
     <div className="flex h-[calc(100dvh-9rem)] gap-4 sm:h-[calc(100dvh-10rem)]">
+      <h1 className="sr-only">Messagerie</h1>
       <aside data-tuto="chat-liste" className={clsx("w-full flex-col shrink-0 space-y-2 overflow-y-auto md:flex md:w-64", activeChannel ? "hidden md:flex" : "flex")}>
         <button onClick={() => setShowNew((s) => !s)} className="rounded-lg w-full bg-red px-3 py-2 font-display text-sm uppercase text-ink hover:bg-red-light">
           {showNew ? "Annuler" : "Nouvelle discussion"}
@@ -415,7 +416,7 @@ function ChatInner() {
             {channelLabel(c)}
           </button>
         ))}
-        {channels.length === 0 && <p className="px-2 font-body text-sm text-paper/50">Aucune discussion pour l&apos;instant.</p>}
+        {channels.length === 0 && <p className="px-2 font-body text-sm text-paper/65">Aucune discussion pour l&apos;instant.</p>}
       </aside>
 
       <section className={clsx("glass-card flex-1 flex-col p-4 md:flex", activeChannel ? "flex" : "hidden md:flex")}>
@@ -460,7 +461,7 @@ function ChatInner() {
                     </label>
                   ))}
                   {members.filter((m) => !channelParticipantIds.has(m.id)).length === 0 && (
-                    <p className="font-body text-xs text-paper/50">Tous les membres actifs sont déjà dans ce groupe.</p>
+                    <p className="font-body text-xs text-paper/65">Tous les membres actifs sont déjà dans ce groupe.</p>
                   )}
                 </div>
                 <button
@@ -494,7 +495,7 @@ function ChatInner() {
                     )}
 
                     {m.is_deleted ? (
-                      <p className="font-body text-sm italic text-ink/50">Message supprimé</p>
+                      <p className="font-body text-sm italic text-ink/75">Message supprimé</p>
                     ) : isEditing ? (
                       <div className="space-y-2">
                         <input
@@ -515,7 +516,7 @@ function ChatInner() {
                             />
                           ))}
                           <button onClick={saveEdit} className="ml-auto rounded bg-ink/80 px-2 py-0.5 font-mono text-[10px] uppercase text-paper">Enregistrer</button>
-                          <button onClick={() => setEditingId(null)} className="font-mono text-[10px] uppercase text-ink/60 underline">Annuler</button>
+                          <button onClick={() => setEditingId(null)} className="font-mono text-[10px] uppercase text-ink/75 underline">Annuler</button>
                         </div>
                       </div>
                     ) : (

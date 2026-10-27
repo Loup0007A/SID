@@ -182,7 +182,7 @@ export function TrollPanel({
     <div className="glass-card relative space-y-4 overflow-hidden p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="space-y-1">
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-paper/50">Pouvoir de {title.name}</p>
+          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-paper/65">Pouvoir de {title.name}</p>
           <h2 className="font-display text-2xl uppercase tracking-wide" style={{ color: title.colors[0] }}>
             <SidIcon name={title.icon} /> {power.name}
           </h2>
@@ -214,8 +214,8 @@ export function TrollPanel({
 
       {!everyone && (
         <div className="grid gap-2 sm:grid-cols-[1fr_1.4fr]">
-          <input className={inputClass} placeholder="Chercher un membre…" value={search} onChange={(e) => setSearch(e.target.value)} />
-          <select className={inputClass} value={target} onChange={(e) => setTarget(e.target.value)}>
+          <input aria-label="Chercher un membre" className={inputClass} placeholder="Chercher un membre…" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <select aria-label="Cible de la farce" className={inputClass} value={target} onChange={(e) => setTarget(e.target.value)}>
             <option value="">— Choisir la cible —</option>
             {filtered.map((m) => (
               <option key={m.id} value={m.id}>
@@ -258,23 +258,23 @@ export function TrollPanel({
         {message && <p className={`font-mono text-xs ${message.ok ? "text-[#7dffb0]" : "text-red"}`}><GlyphText text={message.text} /></p>}
       </div>
 
-      <p className="font-mono text-[10px] text-paper/40">
+      <p className="font-mono text-[10px] text-paper/65">
         Une seule farce à la fois par membre, puis 30 minutes de répit pour lui. Ta cible voit qui l&apos;a trollée.
       </p>
 
       {status.recent.length > 0 && (
         <div className="space-y-1 border-t border-white/10 pt-3">
-          <p className="font-mono text-xs uppercase tracking-wide text-paper/50">Tes farces récentes</p>
+          <p className="font-mono text-xs uppercase tracking-wide text-paper/65">Tes farces récentes</p>
           {status.recent.map((r) => {
             const active = !r.cancelled && new Date(r.ends_at).getTime() > now;
             return (
               <div key={r.id} className="flex flex-wrap items-center gap-2 font-mono text-xs text-paper/70">
                 <span>{POWERS[r.power]?.name ?? r.power}</span>
-                <span className="text-paper/40">→</span>
+                <span className="text-paper/65">→</span>
                 <span className="text-paper">{r.target}</span>
-                <span className="text-paper/40">{new Date(r.created_at).toLocaleString("fr-FR", { weekday: "short", hour: "2-digit", minute: "2-digit" })}</span>
+                <span className="text-paper/65">{new Date(r.created_at).toLocaleString("fr-FR", { weekday: "short", hour: "2-digit", minute: "2-digit" })}</span>
                 {active && <span className="rounded-full bg-[#7dffb0]/15 px-2 text-[#7dffb0]">en cours</span>}
-                {r.cancelled && <span className="text-paper/40">annulée</span>}
+                {r.cancelled && <span className="text-paper/65">annulée</span>}
                 {r.result?.winner && (
                   <span className="text-paper/60">
                     <GlyphText text={ARENA_RESULT[r.result.winner] ?? r.result.winner} />

@@ -91,7 +91,7 @@ export default function TechTreePage() {
         <div data-tuto="tech-points" className="glass-card px-5 py-3 text-right">
           <p className="font-mono text-[10px] uppercase tracking-wide text-paper/60">Points disponibles</p>
           <p className="font-display text-3xl text-blue">{points ?? "…"}</p>
-          {rank && <p className="font-mono text-[10px] uppercase text-paper/50">Rang actuel : {rank}</p>}
+          {rank && <p className="font-mono text-[10px] uppercase text-paper/65">Rang actuel : {rank}</p>}
         </div>
       </div>
 
@@ -109,7 +109,7 @@ export default function TechTreePage() {
       <div data-tuto="tech-arbre" className="grid gap-5 md:grid-cols-3">
         {branches.map((branch) => (
           <section key={branch} className="space-y-0">
-            <h2 className="mb-3 text-center font-mono text-xs uppercase tracking-[0.25em] text-paper/50">{branch}</h2>
+            <h2 className="mb-3 text-center font-mono text-xs uppercase tracking-[0.25em] text-paper/65">{branch}</h2>
             {nodes
               .filter((n) => n.branch === branch)
               .map((n, i) => {
@@ -139,7 +139,7 @@ export default function TechTreePage() {
                           <p className="font-body text-xs text-paper/70">{n.description}</p>
                         </div>
                       </div>
-                      <div className="flex gap-1" aria-label={`Niveau ${level} sur ${n.max_level}`}>
+                      <div className="flex gap-1" role="img" aria-label={`Niveau ${level} sur ${n.max_level}`}>
                         {Array.from({ length: n.max_level }, (_, k) => (
                           <span key={k} className={clsx("h-2 flex-1 rounded-full", k < level ? "bg-blue" : "bg-white/10")} />
                         ))}

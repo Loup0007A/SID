@@ -327,25 +327,25 @@ export default function BankPage() {
                       <p className={`font-mono text-xs ${up ? "text-blue-light" : "text-red"}`}>
                         {up ? "▲" : "▼"} {Math.abs(b.change_24h_pct).toLocaleString("fr-FR")} % (24 h)
                       </p>
-                      <p className="font-mono text-[10px] text-paper/50">Capitalisation : {cr(marketCap, 0)}</p>
+                      <p className="font-mono text-[10px] text-paper/65">Capitalisation : {cr(marketCap, 0)}</p>
                     </div>
                   </div>
 
                   <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 border-t border-white/10 pt-3 font-mono text-[11px] sm:grid-cols-4">
                     <div>
-                      <p className="uppercase text-paper/50">Valeur intrinsèque</p>
+                      <p className="uppercase text-paper/65">Valeur intrinsèque</p>
                       <p className="text-paper">{cr(b.fair_value)}</p>
                     </div>
                     <div>
-                      <p className="uppercase text-paper/50">Bénéfice (7 j)</p>
+                      <p className="uppercase text-paper/65">Bénéfice (7 j)</p>
                       <p className={b.profit_7d >= 0 ? "text-blue-light" : "text-red"}>{cr(b.profit_7d, 0)}</p>
                     </div>
                     <div>
-                      <p className="uppercase text-paper/50">Dividendes (30 j)</p>
+                      <p className="uppercase text-paper/65">Dividendes (30 j)</p>
                       <p className="text-paper">{cr(b.dividends_30d, 0)}</p>
                     </div>
                     <div>
-                      <p className="uppercase text-paper/50">Fonds propres</p>
+                      <p className="uppercase text-paper/65">Fonds propres</p>
                       <p className={b.equity >= 0 ? "text-paper" : "text-red"}>{cr(b.equity, 0)}</p>
                     </div>
                   </div>
@@ -360,7 +360,7 @@ export default function BankPage() {
                   {openChartId === b.id && (
                     <div className="mt-2">
                       {priceHistory.length < 2 ? (
-                        <p className="font-body text-xs text-paper/50">Pas encore assez d&apos;historique.</p>
+                        <p className="font-body text-xs text-paper/65">Pas encore assez d&apos;historique.</p>
                       ) : (
                         <LineChart
                           labels={priceHistory.map((p) =>
@@ -376,7 +376,7 @@ export default function BankPage() {
                     </div>
                   )}
 
-                  <p className="mt-2 font-mono text-[10px] text-paper/50">
+                  <p className="mt-2 font-mono text-[10px] text-paper/65">
                     {b.shares_in_treasury} action(s) disponible(s) à l&apos;achat sur {b.share_count}
                     {b.shares_in_treasury < (settings.issue_float_target_pct ?? 0.25) * b.share_count && (
                       <span className="text-[#7dffb0]"> · stock bas : de nouvelles actions seront émises (toutes les {settings.issue_interval_hours ?? 8} h au plus)</span>

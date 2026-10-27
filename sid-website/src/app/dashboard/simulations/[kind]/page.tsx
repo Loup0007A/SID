@@ -589,10 +589,10 @@ export default function SimulationPage() {
                   Fermer la simulation
                 </button>
                 {session.raid ? (
-                  <span className="self-center font-mono text-[11px] text-paper/50">Raid : tu aides un autre membre (sans point à gagner).</span>
+                  <span className="self-center font-mono text-[11px] text-paper/65">Raid : tu aides un autre membre (sans point à gagner).</span>
                 ) : (
                   !session.token && (
-                    <span className="self-center font-mono text-[11px] text-paper/50">Les parties ne comptent plus pour aujourd&apos;hui.</span>
+                    <span className="self-center font-mono text-[11px] text-paper/65">Les parties ne comptent plus pour aujourd&apos;hui.</span>
                   )
                 )}
               </div>
@@ -669,7 +669,7 @@ export default function SimulationPage() {
 
       {site.kind === "donjons" && (
         <section className="space-y-2">
-          <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-paper/50"><SidIcon name="swords" /> Raids en cours</h2>
+          <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-paper/65"><SidIcon name="swords" /> Raids en cours</h2>
           {raids.length === 0 ? (
             <p className="glass-card px-4 py-3 font-body text-sm text-paper/60">
               Aucun appel à l&apos;aide pour le moment. Si tu tombes face à un gardien, le jeu te proposera de demander de
@@ -691,7 +691,7 @@ export default function SimulationPage() {
                     <div className="font-mono text-xs">
                       <p className="text-paper">
                         <SidIcon name={r.dragon ? "dragon" : "crown"} /> <strong>{r.host_nickname ?? "Un membre"}</strong> appelle à l&apos;aide
-                        {mine && <span className="text-paper/50"> (ton raid)</span>}
+                        {mine && <span className="text-paper/65"> (ton raid)</span>}
                       </p>
                       <p className="text-paper/60">
                         {r.dragon ? "Dragon" : r.boss_name} · histoire {r.story}, île {r.chapter} · {r.members} combattant
@@ -717,7 +717,7 @@ export default function SimulationPage() {
 
       {recentRuns.length > 0 && (
         <section className="space-y-2">
-          <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-paper/50">Mes dernières parties</h2>
+          <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-paper/65">Mes dernières parties</h2>
           <div className="glass-card divide-y divide-white/10">
             {recentRuns.map((r) => (
               <div key={r.started_at} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 font-mono text-xs">
@@ -726,7 +726,7 @@ export default function SimulationPage() {
                   className={clsx(
                     r.status === "success" && "text-blue-light",
                     r.status === "failure" && "text-red-light",
-                    (r.status === "abandoned" || r.status === "expired") && "text-paper/50"
+                    (r.status === "abandoned" || r.status === "expired") && "text-paper/65"
                   )}
                 >
                   {r.skill && siteSkills.length > 1 && `${SKILL_LABELS[r.skill] ?? r.skill} · `}

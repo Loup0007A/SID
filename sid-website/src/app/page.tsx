@@ -76,7 +76,7 @@ export default async function HomePage() {
         )}
       </section>
 
-      <footer className="glass-panel border-t-0 px-4 py-8 pb-[calc(2rem+env(safe-area-inset-bottom))] text-center font-mono text-xs text-paper/50 sm:px-6">
+      <footer className="glass-panel border-t-0 px-4 py-8 pb-[calc(2rem+env(safe-area-inset-bottom))] text-center font-mono text-xs text-paper/65 sm:px-6">
         S.I.D. — Accès restreint au-delà de cette page.
       </footer>
     </main>

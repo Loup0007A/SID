@@ -179,7 +179,7 @@ export default function SettingsPage() {
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <h3 className="font-display text-base uppercase text-blue-light">{label}</h3>
-                <p className="font-mono text-xs text-paper/50">{hint}</p>
+                <p className="font-mono text-xs text-paper/65">{hint}</p>
               </div>
               <div className="flex overflow-hidden rounded-lg border border-white/15">
                 <button
@@ -214,7 +214,7 @@ export default function SettingsPage() {
               </>
             ) : (
               <>
-                <p className="font-mono text-[10px] text-paper/50">
+                <p className="font-mono text-[10px] text-paper/65">
                   Pour celles et ceux qui préfèrent écrire le CSS eux-mêmes. Les propriétés tapées sans sélecteur
                   s&apos;appliquent à la carte elle-même ; ajoute <code>{accentSelectorFor(key)} {"{"} ... {"}"}</code>{" "}
                   pour cibler {ACCENT_LABEL[key]}. 8000 caractères max, <code>url()</code>/<code>@import</code>/
@@ -249,7 +249,7 @@ export default function SettingsPage() {
             )}
 
             <div>
-              <p className="mb-1 font-mono text-[10px] uppercase text-paper/40">Aperçu</p>
+              <p className="mb-1 font-mono text-[10px] uppercase text-paper/65">Aperçu</p>
               <SectionPreview section={key} userId={userId} nickname={nickname} css={previewCss} />
             </div>
           </section>
@@ -296,7 +296,7 @@ function CursorSettings() {
           </button>
         ))}
       </div>
-      {mode && <p className="font-mono text-[10px] text-paper/50">{CURSOR_CHOICES.find((c) => c.v === mode)?.hint}</p>}
+      {mode && <p className="font-mono text-[10px] text-paper/65">{CURSOR_CHOICES.find((c) => c.v === mode)?.hint}</p>}
     </section>
   );
 }

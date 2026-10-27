@@ -29,7 +29,7 @@ export function ReputationCard() {
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-paper/60">Renommée</p>
           <p className="font-display text-4xl leading-none text-blue">
             {rep.reputation.toLocaleString("fr-FR")}
-            <span className="ml-1 text-base text-paper/50">pts</span>
+            <span className="ml-1 text-base text-paper/65">pts</span>
           </p>
         </div>
         <Link href="/dashboard/leaderboard" scroll={false} className="text-right font-mono text-xs uppercase text-blue-light hover:underline">
@@ -42,7 +42,7 @@ export function ReputationCard() {
         quête facile pour toi coûte plus. Chaque quête affiche ce que tu risques.
       </p>
       {rep.events.length === 0 ? (
-        <p className="font-mono text-xs text-paper/50">Aucun mouvement pour l&apos;instant : prends une mission pour commencer.</p>
+        <p className="font-mono text-xs text-paper/65">Aucun mouvement pour l&apos;instant : prends une mission pour commencer.</p>
       ) : (
         <ul className="divide-y divide-white/10">
           {events.map((e, i) => (
@@ -57,7 +57,7 @@ export function ReputationCard() {
               <span className="min-w-0 flex-1 truncate font-body text-sm text-paper/85">
                 <SidIcon name={e.delta > 0 ? "medal" : "warning"} size={13} /> {e.reason}
               </span>
-              <span className="shrink-0 font-mono text-[10px] text-paper/45">
+              <span className="shrink-0 font-mono text-[10px] text-paper/65">
                 {new Date(e.at).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" })}
               </span>
             </li>

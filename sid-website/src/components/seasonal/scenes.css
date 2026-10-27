@@ -1,6 +1,9 @@
 /* Paysages des fêtes (scenes.tsx, Lot 48). */
 
-.sc-land { position: absolute; left: 0; bottom: 0; width: 100%; height: clamp(210px, 40vh, 400px); }
+/* Le dessin fait 4 de large pour 1 de haut. Sur un écran large et peu haut,
+   une hauteur fixe le rognait par le haut (toits et clochers coupés) : la
+   hauteur suit aussi la largeur (25vw), plafonnée pour garder le contenu lisible. */
+.sc-land { position: absolute; left: 0; bottom: 0; width: 100%; height: max(clamp(210px, 40vh, 400px), min(25vw, 64vh)); }
 .sc-stars {
   position: absolute; inset: 0 0 35% 0; opacity: 0.7; pointer-events: none;
   background-image:
@@ -26,6 +29,9 @@
 .hs-hill-manor { fill: #21162f; }
 .hs-manor { fill: #130b1c; }
 .hs-manor-line { fill: none; stroke: #130b1c; stroke-width: 2; }
+.hs-manor-rim { fill: none; stroke: #6d5a96; stroke-width: 1.6; stroke-linejoin: round; opacity: 0.55; }
+.hs-manor-vane { fill: #130b1c; }
+.hs-win-bars { fill: none; stroke: #130b1c; stroke-width: 1.4; opacity: 0.8; }
 .hs-win { fill: #ffb347; filter: drop-shadow(0 0 5px rgb(255 150 50 / 0.9)); }
 .hs-win.is-flicker { animation: hs-flicker 4.4s steps(1) infinite; }
 @keyframes hs-flicker { 0%, 100% { opacity: 1; } 31% { opacity: 0.35; } 33% { opacity: 0.9; } 58% { opacity: 0.5; } 60% { opacity: 1; } 84% { opacity: 0.2; } 87% { opacity: 1; } }

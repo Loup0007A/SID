@@ -135,7 +135,7 @@ export default function NotificationsPage() {
                 {!n.is_read && <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-red" />}
               </div>
               {n.body && <p className="mt-1 font-body text-sm text-paper/70">{n.body}</p>}
-              <p className="mt-1 font-mono text-xs text-paper/40">{new Date(n.created_at).toLocaleString("fr-FR")}</p>
+              <p className="mt-1 font-mono text-xs text-paper/65">{new Date(n.created_at).toLocaleString("fr-FR")}</p>
             </button>
           ))}
         </div>

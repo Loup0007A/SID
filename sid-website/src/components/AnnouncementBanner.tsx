@@ -41,21 +41,22 @@ export function AnnouncementBanner() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" role="alertdialog" aria-modal="true" aria-labelledby="annonce-titre">
       <div className={`glass-card w-full max-w-md space-y-3 border p-6 ${style.border}`}>
-        <p className={`font-display text-lg uppercase tracking-wide ${style.text}`}>
+        <p id="annonce-titre" className={`font-display text-lg uppercase tracking-wide ${style.text}`}>
           <Glyph e={style.icon} /> {current.title}
         </p>
         {current.body && <p className="whitespace-pre-wrap font-body text-sm text-paper/85">{current.body}</p>}
         <div className="flex items-center justify-between pt-1">
           {queue.length > 1 && (
-            <span className="font-mono text-[10px] uppercase text-paper/40">
+            <span className="font-mono text-[10px] uppercase text-paper/65">
               {queue.length - 1} autre{queue.length - 1 > 1 ? "s" : ""} annonce{queue.length - 1 > 1 ? "s" : ""}
             </span>
           )}
           <button
             onClick={dismiss}
             disabled={dismissing}
+            autoFocus
             className="ml-auto rounded-lg bg-blue px-4 py-2 font-mono text-xs uppercase text-ink hover:bg-blue-light disabled:opacity-40"
           >
             {dismissing ? "…" : "J'ai compris"}

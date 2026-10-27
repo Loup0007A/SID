@@ -281,7 +281,7 @@ export default function MapPage() {
                   ? "Arrivée en cours…"
                   : `Arrivée dans ${formatCountdown(trip!.totalSecondsLeft)}`}
               </p>
-              <p className="font-body text-xs text-paper/50">
+              <p className="font-body text-xs text-paper/65">
                 Le trajet continue même si tu fermes la page ou passes sur la Cartographie : tu arriveras à l&apos;heure prévue.
               </p>
             </div>

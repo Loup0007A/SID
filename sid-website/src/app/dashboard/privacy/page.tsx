@@ -134,7 +134,7 @@ export default function PrivacyPage() {
         <button onClick={download} disabled={busy !== null} className={buttonPrimary}>
           {busy === "export" ? "Préparation…" : "Télécharger toutes mes données"}
         </button>
-        <p className="font-mono text-[11px] text-paper/50">Fichier JSON lisible, à garder pour toi ou à emporter ailleurs.</p>
+        <p className="font-mono text-[11px] text-paper/65">Fichier JSON lisible, à garder pour toi ou à emporter ailleurs.</p>
       </section>
 
       <section className="glass-card space-y-3 p-6">
@@ -221,7 +221,7 @@ export default function PrivacyPage() {
           </>
         )}
         {requests.filter((r) => r.status !== "pending").slice(0, 3).map((r) => (
-          <p key={r.id} className="font-mono text-[11px] text-paper/50">
+          <p key={r.id} className="font-mono text-[11px] text-paper/65">
             Demande du {fmtDate(r.created_at)} : {r.status === "cancelled" ? "annulée" : r.status === "refused" ? `refusée${r.note ? ` (« ${r.note} »)` : ""}` : "traitée"}
           </p>
         ))}

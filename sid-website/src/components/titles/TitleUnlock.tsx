@@ -48,7 +48,7 @@ export function TitleUnlock({ userId, equipped }: { userId: string; equipped: st
   }
 
   return (
-    <div className="title-unlock fixed inset-0 z-[9500] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm" role="dialog" aria-modal="true">
+    <div className="title-unlock fixed inset-0 z-[9500] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={upgraded ? "Titre amélioré" : "Nouveau titre"} onKeyDown={(e) => e.key === "Escape" && close(false)}>
       <div className="title-unlock-card glass-card relative w-full max-w-md overflow-hidden p-8 text-center">
         <TitleAuraLayer titleId={t.id} />
         <div className="relative z-[1] space-y-3">
@@ -65,6 +65,7 @@ export function TitleUnlock({ userId, equipped }: { userId: string; equipped: st
           <div className="flex flex-wrap justify-center gap-2 pt-2">
             {current !== t.id && (
               <button
+                autoFocus
                 onClick={() => close(true)}
                 className="rounded-lg px-4 py-2 font-display text-sm uppercase tracking-wide text-ink"
                 style={{ background: `linear-gradient(110deg, ${t.colors[0]}, ${t.colors[1]})` }}

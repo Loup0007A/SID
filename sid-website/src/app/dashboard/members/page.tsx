@@ -64,7 +64,7 @@ export default function MembersPage() {
                 <Link href={`/dashboard/profile/${m.id}`} className="font-display text-lg uppercase hover:text-blue-light hover:underline">
                   {m.nickname}
                   {m.is_invisible && (
-                    <span className="ml-2 align-middle font-mono text-[10px] normal-case text-paper/50" title="Compte invisible : seuls le membre et l'administration le voient ici">
+                    <span className="ml-2 align-middle font-mono text-[10px] normal-case text-paper/65" title="Compte invisible : seuls le membre et l'administration le voient ici">
                       <SidIcon name="ghost" /> invisible
                     </span>
                   )}

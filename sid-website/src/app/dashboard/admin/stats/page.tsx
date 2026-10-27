@@ -167,11 +167,11 @@ export default function AdminStatsPage() {
           <div className="inline-grid grid-cols-[auto_repeat(24,minmax(14px,1fr))] gap-[2px]">
             <div />
             {Array.from({ length: 24 }).map((_, h) => (
-              <div key={h} className="text-center font-mono text-[8px] text-paper/40">{h % 3 === 0 ? h : ""}</div>
+              <div key={h} className="text-center font-mono text-[8px] text-paper/65">{h % 3 === 0 ? h : ""}</div>
             ))}
             {DOW_ORDER.map((dow) => (
               <Fragment key={dow}>
-                <div className="pr-2 font-mono text-[9px] text-paper/50">{DOW_SHORT[dow]}</div>
+                <div className="pr-2 font-mono text-[9px] text-paper/65">{DOW_SHORT[dow]}</div>
                 {Array.from({ length: 24 }).map((_, hour) => {
                   const count = heatmapMap.get(`${dow}-${hour}`) ?? 0;
                   const intensity = count / maxHeat;

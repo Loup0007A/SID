@@ -82,7 +82,7 @@ export default function LeaderboardPage() {
                 {titles.get(e.user_id) && <TitleBadge titleId={titles.get(e.user_id)!.title_id} level={titles.get(e.user_id)!.level} dragon={titles.get(e.user_id)!.dragon} size="xs" />}
               </span>
               {sortKey === "power_score" && e.intelligence !== undefined && (
-                <span className="block font-mono text-[10px] uppercase tracking-wide text-paper/50">
+                <span className="block font-mono text-[10px] uppercase tracking-wide text-paper/65">
                   Int. {formatPower(Number(e.intelligence))} · Pui. {formatPower(Number(e.strength ?? 0))} · Tech. {formatPower(Number(e.technique ?? 0))}
                 </span>
               )}

@@ -306,7 +306,7 @@ export default function ProfilePage() {
           pour être alerté même quand l&apos;onglet est fermé (nouveau message, quête validée, décision requise…).
         </p>
         {!pushSupported ? (
-          <p className="font-mono text-xs text-paper/50">Ce navigateur ne prend pas en charge les notifications push.</p>
+          <p className="font-mono text-xs text-paper/65">Ce navigateur ne prend pas en charge les notifications push.</p>
         ) : needsIosInstall ? (
           <div className="space-y-2 rounded-lg border border-blue/40 bg-blue/10 p-3">
             <p className="font-mono text-xs uppercase text-blue-light"><SidIcon name="phone" /> Sur iPhone/iPad</p>
@@ -333,7 +333,7 @@ export default function ProfilePage() {
             >
               {pushLoading ? "…" : pushSubscribed ? "Désactiver sur cet appareil" : "Activer sur cet appareil"}
             </button>
-            <p className="font-mono text-[10px] text-paper/40">
+            <p className="font-mono text-[10px] text-paper/65">
               L&apos;activation se fait par appareil/navigateur : à refaire si tu changes de téléphone ou de navigateur.
             </p>
           </>

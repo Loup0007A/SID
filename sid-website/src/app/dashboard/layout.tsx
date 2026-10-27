@@ -1,5 +1,6 @@
 "use client";
 
+import { SkipLink } from "@/components/a11y/LabelLinker";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -257,6 +258,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {fresh && profile && !profile.sandbox_expires_at && <TermsBanner acceptedVersion={profile.terms_version} />}
       {profile && <AnnouncementBanner />}
 
+      <SkipLink />
       <header className="glass-panel sticky top-0 z-20 border-x-0 border-t-0 pt-[env(safe-area-inset-top)]">
         <SeasonalGarland />
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 sm:px-6">
@@ -314,7 +316,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </header>
 
-      <main className="relative mx-auto max-w-6xl p-4 sm:p-6">
+      <main id="contenu" tabIndex={-1} className="relative mx-auto max-w-6xl p-4 outline-none sm:p-6">
         {booting && (
           <p className="pointer-events-none absolute inset-x-0 top-24 text-center text-paper" role="status">
             Ouverture du dossier…

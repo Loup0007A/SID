@@ -141,7 +141,7 @@ export function Haunt404({ troll }: { troll: ActiveTroll }) {
           <p className="troll-glitch-text font-mono text-xs uppercase tracking-[0.3em] text-red">Erreur 404</p>
           <h1 className="font-display text-3xl uppercase tracking-wide">Dossier introuvable</h1>
           <p className="font-body text-paper/70">{o.message || `Cette page n'existe pas, ou a été dévorée par un${o.creature === "chauvesouris" || o.creature === "citrouille" ? "e" : ""} ${creature.label.toLowerCase()}.`}</p>
-          <p className="font-mono text-xs text-paper/50">
+          <p className="font-mono text-xs text-paper/65">
             Attrape <Glyph e={creature.emoji} /> de {troll.actor} pour la récupérer : {caught} / {need}
           </p>
         </div>

@@ -181,7 +181,7 @@ export default function SimulationPage() {
           <div className="glass-card overflow-x-auto p-2">
             <table className="w-full min-w-[720px] border-collapse font-mono text-xs">
               <thead>
-                <tr className="border-b border-white/10 text-left text-paper/50">
+                <tr className="border-b border-white/10 text-left text-paper/65">
                   <th className="p-2 font-normal uppercase">Nom</th>
                   <th className="p-2 font-normal uppercase">Âge</th>
                   <th className="p-2 font-normal uppercase">Sexe</th>
@@ -200,7 +200,7 @@ export default function SimulationPage() {
                   <tr key={a.id} className="border-b border-white/5">
                     <td className="p-2">
                       {a.first_name} {a.last_name}
-                      {a.is_child_of_sim && <span className="ml-1 text-paper/40"><SidIcon name="baby" /></span>}
+                      {a.is_child_of_sim && <span className="ml-1 text-paper/65"><SidIcon name="baby" /></span>}
                     </td>
                     <td className="p-2">{a.age}</td>
                     <td className="p-2">{a.sex}</td>
@@ -218,7 +218,7 @@ export default function SimulationPage() {
                 ))}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={11} className="p-4 text-center text-paper/50">
+                    <td colSpan={11} className="p-4 text-center text-paper/65">
                       Aucun habitant ne correspond à ce filtre.
                     </td>
                   </tr>

@@ -210,7 +210,7 @@ export default function BusinessPage() {
               value={form.investment}
               onChange={(e) => setForm({ ...form, investment: e.target.value })}
             />
-            <p className="font-mono text-[10px] text-paper/50">
+            <p className="font-mono text-[10px] text-paper/65">
               Minimum {minInvestment.toLocaleString("fr-FR")} z, prélevée sur ton portefeuille — elle devient les
               fonds propres de départ de l&apos;entreprise. Le nombre d&apos;actions (
               {estimatedShareCount.toLocaleString("fr-FR")}) est fixe : le prix de départ en découle automatiquement
@@ -275,30 +275,30 @@ export default function BusinessPage() {
 
                 <div className="grid grid-cols-2 gap-4 border-t border-white/10 pt-3 sm:grid-cols-3">
                   <div>
-                    <p className="font-mono text-[10px] uppercase text-paper/50">Trésorerie</p>
+                    <p className="font-mono text-[10px] uppercase text-paper/65">Trésorerie</p>
                     <p className="font-display text-xl text-blue">{b.treasury_balance.toLocaleString("fr-FR")} z</p>
                   </div>
                   <div>
-                    <p className="font-mono text-[10px] uppercase text-paper/50">Cours de l&apos;action</p>
+                    <p className="font-mono text-[10px] uppercase text-paper/65">Cours de l&apos;action</p>
                     <p className="font-display text-xl text-blue-light">{b.share_price.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} z</p>
                   </div>
                   <div>
-                    <p className="font-mono text-[10px] uppercase text-paper/50">Valeur estimée</p>
+                    <p className="font-mono text-[10px] uppercase text-paper/65">Valeur estimée</p>
                     <p className="font-display text-xl text-paper">{(b.share_price * b.share_count).toLocaleString("fr-FR", { maximumFractionDigits: 0 })} z</p>
                   </div>
                   {b.debt_principal > 0 && (
                     <div>
-                      <p className="font-mono text-[10px] uppercase text-paper/50">Dette</p>
+                      <p className="font-mono text-[10px] uppercase text-paper/65">Dette</p>
                       <p className="font-display text-xl text-red">{b.debt_principal.toLocaleString("fr-FR")} z</p>
                     </div>
                   )}
                   <div>
-                    <p className="font-mono text-[10px] uppercase text-paper/50">Actions détenues par le public</p>
+                    <p className="font-mono text-[10px] uppercase text-paper/65">Actions détenues par le public</p>
                     <p className="font-display text-xl text-paper">{b.share_count - b.shares_in_treasury} / {b.share_count}</p>
                   </div>
                 </div>
 
-                <div className="space-y-1.5 border-t border-white/10 pt-3 font-mono text-[10px] text-paper/50">
+                <div className="space-y-1.5 border-t border-white/10 pt-3 font-mono text-[10px] text-paper/65">
                   <p>
                     <SidIcon name="chart" /> Le nombre total d&apos;actions augmente tout seul, de deux façons :
                   </p>
@@ -414,10 +414,10 @@ export default function BusinessPage() {
                         </button>
                       </div>
                     ))}
-                    {(employees[b.id] ?? []).length === 0 && <p className="font-body text-xs text-paper/50">Aucun employé.</p>}
+                    {(employees[b.id] ?? []).length === 0 && <p className="font-body text-xs text-paper/65">Aucun employé.</p>}
 
                     <div className="space-y-2 border-t border-white/10 pt-2">
-                      <p className="font-mono text-[10px] uppercase text-paper/50">Embaucher</p>
+                      <p className="font-mono text-[10px] uppercase text-paper/65">Embaucher</p>
                       <div className="flex flex-wrap gap-2">
                         <select
                           className={`${inputClass} flex-1`}
@@ -472,7 +472,7 @@ export default function BusinessPage() {
                         </span>
                       </div>
                     ))}
-                    {(ledger[b.id] ?? []).length === 0 && <p className="font-body text-xs text-paper/50">Aucun mouvement pour le moment.</p>}
+                    {(ledger[b.id] ?? []).length === 0 && <p className="font-body text-xs text-paper/65">Aucun mouvement pour le moment.</p>}
                   </div>
                 )}
               </div>

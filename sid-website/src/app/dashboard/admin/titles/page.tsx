@@ -89,12 +89,12 @@ export default function AdminTitlesPage() {
         <div className="divide-y divide-white/10">
           {data.trolls.slice(0, 40).map((t) => (
             <div key={t.id} className="flex flex-wrap items-center gap-2 py-2 font-mono text-xs">
-              <span className={t.active ? "text-[#7dffb0]" : "text-paper/40"}>{t.active ? "●" : "○"}</span>
+              <span className={t.active ? "text-[#7dffb0]" : "text-paper/65"}>{t.active ? "●" : "○"}</span>
               <span className="text-paper">{t.actor}</span>
-              <span className="text-paper/50">→ {POWERS[t.power]?.name ?? t.power} →</span>
+              <span className="text-paper/65">→ {POWERS[t.power]?.name ?? t.power} →</span>
               <span className="text-paper">{t.target}</span>
-              <span className="text-paper/40">{new Date(t.created_at).toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
-              {t.cancelled && <span className="text-paper/40">annulée</span>}
+              <span className="text-paper/65">{new Date(t.created_at).toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
+              {t.cancelled && <span className="text-paper/65">annulée</span>}
               {t.active && (
                 <button onClick={() => run(() => supabase.rpc("cancel_troll", { p_id: t.id }), "Farce arrêtée.")} className="ml-auto text-red underline">
                   Arrêter
@@ -127,7 +127,7 @@ export default function AdminTitlesPage() {
         {data.shields.map((s) => (
           <div key={s.user_id} className="flex flex-wrap items-center gap-2 font-mono text-xs">
             <span><SidIcon name="shieldUser" /> {s.nickname}</span>
-            {s.reason && <span className="text-paper/50">« {s.reason} »</span>}
+            {s.reason && <span className="text-paper/65">« {s.reason} »</span>}
             <button onClick={() => run(() => supabase.rpc("set_troll_shield", { p_user: s.user_id, p_on: false }), "Bouclier retiré.")} className="ml-auto text-red underline">
               Retirer
             </button>
@@ -168,16 +168,16 @@ export default function AdminTitlesPage() {
             return (
               <div key={t.id} className="glass-card space-y-2 p-4">
                 <p className="font-display uppercase" style={{ color: t.colors[0] }}>
-                  <SidIcon name={t.icon} /> {t.name} <span className="font-mono text-xs text-paper/50">({list.length})</span>
+                  <SidIcon name={t.icon} /> {t.name} <span className="font-mono text-xs text-paper/65">({list.length})</span>
                 </p>
-                <p className="font-mono text-[10px] text-paper/45">{t.how}</p>
-                {list.length === 0 && <p className="font-body text-xs text-paper/40">Personne.</p>}
+                <p className="font-mono text-[10px] text-paper/65">{t.how}</p>
+                {list.length === 0 && <p className="font-body text-xs text-paper/65">Personne.</p>}
                 {list.map((h) => (
                   <div key={h.user_id} className="flex flex-wrap items-center gap-2 font-mono text-[11px]">
                     <Link href={`/dashboard/admin/members/${h.user_id}`} className="text-paper hover:underline">{h.nickname}</Link>
                     {isTitleId(h.title_id) && TITLE_BY_ID[h.title_id].maxLevel > 1 && <span className="text-paper/60">niv. {roman(h.level)}</span>}
                     {h.equipped && <span className="text-[#7dffb0]">équipé</span>}
-                    <span className="text-paper/40">{sourceObtention(h.source)}</span>
+                    <span className="text-paper/65">{sourceObtention(h.source)}</span>
                     <button
                       onClick={() => confirm(`Retirer « ${t.name} » à ${h.nickname} ?`) && run(() => supabase.rpc("admin_revoke_title", { p_user: h.user_id, p_title: t.id }), "Titre retiré.")}
                       className="ml-auto text-red underline"

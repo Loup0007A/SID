@@ -173,7 +173,7 @@ export function CssBuilderPanel({
           </div>
         )}
         {options.animation === "neon-flicker" && (
-          <p className="font-mono text-[10px] text-paper/50">
+          <p className="font-mono text-[10px] text-paper/65">
             S&apos;applique à la couleur d&apos;accent ci-dessus, pas au reste de la carte.
           </p>
         )}

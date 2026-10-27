@@ -208,7 +208,7 @@ export default function GuidePage() {
             <p className="font-mono text-[10px] uppercase tracking-wide text-paper/60">Premiers pas</p>
             <p className="font-display text-3xl text-paper">
               {done}
-              <span className="text-lg text-paper/50"> / {STEPS.length}</span>
+              <span className="text-lg text-paper/65"> / {STEPS.length}</span>
             </p>
           </div>
         </div>
@@ -245,7 +245,7 @@ export default function GuidePage() {
             <p className="font-mono text-[10px] uppercase tracking-[0.25em]">Prime d&apos;intégration</p>
             <p className="font-display text-2xl">{zenis(d?.reward ?? 1000)}</p>
             {d?.reward_claimed ? (
-              <p className="font-body text-xs opacity-80">Versée. Bienvenue au S.I.D.</p>
+              <p className="font-body text-xs">Versée. Bienvenue au S.I.D.</p>
             ) : (
               <>
                 <ul className="mt-1 space-y-0.5 font-body text-xs">
@@ -268,7 +268,7 @@ export default function GuidePage() {
       <nav aria-label="Sommaire du guide" className="flex flex-wrap gap-2">
         {CHAPTERS.map((c, i) => (
           <a key={c.id} href={`#${c.id}`} className="glass-card flex items-center gap-1.5 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wide text-paper/80 hover:border-blue/60 hover:text-blue">
-            <span className="text-paper/40">{String(i + 1).padStart(2, "0")}</span> {c.title}
+            <span className="text-paper/65">{String(i + 1).padStart(2, "0")}</span> {c.title}
           </a>
         ))}
         <a href="#lexique" className="glass-card px-3 py-1.5 font-mono text-[11px] uppercase tracking-wide text-paper/80 hover:border-blue/60 hover:text-blue">Lexique</a>
@@ -284,7 +284,7 @@ export default function GuidePage() {
                 <SidIcon name={c.icon} size={24} />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-paper/45">Chapitre {String(i + 1).padStart(2, "0")}</p>
+                <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-paper/65">Chapitre {String(i + 1).padStart(2, "0")}</p>
                 <h2 className="font-display text-xl uppercase tracking-wide">{c.title}</h2>
               </div>
             </div>
@@ -327,7 +327,7 @@ export default function GuidePage() {
               <details key={q} className="group py-2">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-body text-[15px] text-paper">
                   {q}
-                  <span className="font-mono text-paper/50 transition group-open:rotate-45">+</span>
+                  <span className="font-mono text-paper/65 transition group-open:rotate-45">+</span>
                 </summary>
                 <p className="mt-1.5 font-body text-sm text-paper/75">{a}</p>
               </details>

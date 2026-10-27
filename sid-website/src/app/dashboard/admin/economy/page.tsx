@@ -264,26 +264,26 @@ export default function EconomyAdminPage() {
         {taxStatus ? (
           <div className="glass-card grid grid-cols-2 gap-4 p-4 sm:grid-cols-4">
             <div>
-              <p className="font-mono text-[10px] uppercase text-paper/50">Caisse actuelle</p>
+              <p className="font-mono text-[10px] uppercase text-paper/65">Caisse actuelle</p>
               <p className="font-display text-xl text-blue-light">{taxStatus.balance.toLocaleString("fr-FR")} z</p>
             </div>
             <div>
-              <p className="font-mono text-[10px] uppercase text-paper/50">TVA</p>
+              <p className="font-mono text-[10px] uppercase text-paper/65">TVA</p>
               <p className="font-display text-xl text-paper">{(taxStatus.vat_rate * 100).toFixed(0)}%</p>
             </div>
             <div>
-              <p className="font-mono text-[10px] uppercase text-paper/50">Impôt hebdo.</p>
+              <p className="font-mono text-[10px] uppercase text-paper/65">Impôt hebdo.</p>
               <p className="font-display text-xl text-paper">{(taxStatus.weekly_wealth_tax_rate * 100).toFixed(0)}%/sem.</p>
             </div>
             <div>
-              <p className="font-mono text-[10px] uppercase text-paper/50">Prochaine redistribution</p>
+              <p className="font-mono text-[10px] uppercase text-paper/65">Prochaine redistribution</p>
               <p className="font-mono text-xs text-paper/70">{new Date(taxStatus.next_distribution_at).toLocaleString("fr-FR")}</p>
             </div>
           </div>
         ) : (
           <p className="font-body text-sm text-paper/60">Chargement…</p>
         )}
-        <p className="font-mono text-[10px] text-paper/50">
+        <p className="font-mono text-[10px] text-paper/65">
           Répartie automatiquement chaque semaine (à la connexion d&apos;un membre, sans job planifié) : 80% aux
           admins à parts égales, 20% aux entreprises à parts égales. Réglages ajustables dans la table
           <code> app_config</code> (clés <code>vat_rate</code>, <code>weekly_wealth_tax_rate</code>,

@@ -71,7 +71,7 @@ function Field({ label, hint, children }: { label: string; hint?: ReactNode; chi
     <div className="space-y-1.5">
       <p className="font-mono text-[11px] uppercase tracking-wide text-paper/60">{label}</p>
       {children}
-      {hint && <p className="font-body text-[11px] text-paper/50">{hint}</p>}
+      {hint && <p className="font-body text-[11px] text-paper/65">{hint}</p>}
     </div>
   );
 }
@@ -130,9 +130,9 @@ function TextInput({ value, onChange, max, placeholder }: { value: string; onCha
         maxLength={max}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-white/15 bg-black/30 px-3 py-2 pr-12 font-body text-sm text-paper outline-none placeholder:text-paper/30 focus:border-white/40"
+        className="w-full rounded-lg border border-white/15 bg-black/30 px-3 py-2 pr-12 font-body text-sm text-paper outline-none placeholder:text-paper/50 focus:border-white/40"
       />
-      <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 font-mono text-[10px] text-paper/40">{max - value.length}</span>
+      <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 font-mono text-[10px] text-paper/65">{max - value.length}</span>
     </div>
   );
 }
@@ -141,7 +141,7 @@ function TextInput({ value, onChange, max, placeholder }: { value: string; onCha
 function Preview({ who, children, className = "" }: { who: string; children: ReactNode; className?: string }) {
   return (
     <div className="space-y-1.5">
-      <p className="font-mono text-[11px] uppercase tracking-wide text-paper/50"><SidIcon name="eye" /> Aperçu — ce que verra {who}</p>
+      <p className="font-mono text-[11px] uppercase tracking-wide text-paper/65"><SidIcon name="eye" /> Aperçu — ce que verra {who}</p>
       <div className={`troll-preview relative overflow-hidden rounded-xl border border-white/10 ${className}`}>{children}</div>
     </div>
   );
@@ -155,7 +155,7 @@ function MiniPage({ title = "Accueil", lines = ["Bienvenue au S.I.D.", "Tes quê
         <span className="h-2 w-2 rounded-full bg-[#ff5d6c]" />
         <span className="h-2 w-2 rounded-full bg-[#ffd34d]" />
         <span className="h-2 w-2 rounded-full bg-[#7dffb0]" />
-        <span className="ml-2 font-mono text-[10px] uppercase tracking-wide text-paper/50">{title}</span>
+        <span className="ml-2 font-mono text-[10px] uppercase tracking-wide text-paper/65">{title}</span>
       </div>
       <div className="grid grid-cols-3 gap-2">
         {lines.map((l, i) => (
@@ -203,7 +203,7 @@ function CalcPanel({ value: o, onChange, ctx }: Props<"calcul">) {
           <div className="h-1 w-full overflow-hidden rounded-full bg-white/10">
             <div className="troll-preview-timer h-full bg-gradient-to-r from-[#ffe95c] to-[#ff8a00]" style={{ animationDuration: `${q.seconds}s` }} key={q.q} />
           </div>
-          <button type="button" onClick={() => setQ(mentalQuestion(o.level))} className="font-mono text-[10px] uppercase text-paper/50 underline">
+          <button type="button" onClick={() => setQ(mentalQuestion(o.level))} className="font-mono text-[10px] uppercase text-paper/65 underline">
             Autre exemple (réponse : {q.r})
           </button>
         </div>
@@ -239,7 +239,7 @@ function HauntPanel({ value: o, onChange, ctx }: Props<"hantise">) {
             <p className="troll-glitch-text font-mono text-[10px] uppercase tracking-[0.3em] text-red">Erreur 404</p>
             <p className="font-display text-lg uppercase">Dossier introuvable</p>
             <p className="font-body text-[11px] text-paper/70">{o.message || "Cette page n'existe pas…"}</p>
-            <p className="font-mono text-[10px] text-paper/50">Attrape <Glyph e={c.emoji} /> de {ctx.me} : 0 / {Math.min(o.catches, maxK)}</p>
+            <p className="font-mono text-[10px] text-paper/65">Attrape <Glyph e={c.emoji} /> de {ctx.me} : 0 / {Math.min(o.catches, maxK)}</p>
           </div>
           <span className="troll-preview-haunt absolute text-4xl"><Glyph e={c.emoji} size="1em" /></span>
         </div>
@@ -699,7 +699,7 @@ function FlatteryPanel({ value: o, onChange, ctx }: Props<"flatterie">) {
       <Preview who="tout le monde, dans la messagerie" className="space-y-2 bg-ink p-3">
         {msgs.map((m, i) => (
           <div key={i} className="max-w-[90%] rounded-xl rounded-bl-sm border border-white/10 bg-white/5 px-3 py-2">
-            <p className="font-mono text-[10px] text-paper/50">{ctx.target}</p>
+            <p className="font-mono text-[10px] text-paper/65">{ctx.target}</p>
             <p className="font-body text-sm text-paper">
               {m}
               {(o.every === 1 || i % o.every === 0) && (
@@ -771,18 +771,18 @@ function RewritePanel({ value: o, onChange, ctx }: Props<"reecriture">) {
           <div className="space-y-1.5">
             {rows.map(([a, b], i) => (
               <div key={i} className="flex items-center gap-2">
-                <input value={a} onChange={(e) => setRow(i, 0, e.target.value)} placeholder="mot du site" className="w-full min-w-0 rounded-lg border border-white/15 bg-black/30 px-2 py-1.5 font-body text-sm text-paper outline-none placeholder:text-paper/30" />
-                <span className="text-paper/40">→</span>
-                <input value={b} onChange={(e) => setRow(i, 1, e.target.value)} placeholder="devient" className="w-full min-w-0 rounded-lg border border-white/15 bg-black/30 px-2 py-1.5 font-body text-sm text-paper outline-none placeholder:text-paper/30" />
+                <input value={a} onChange={(e) => setRow(i, 0, e.target.value)} placeholder="mot du site" className="w-full min-w-0 rounded-lg border border-white/15 bg-black/30 px-2 py-1.5 font-body text-sm text-paper outline-none placeholder:text-paper/50" />
+                <span className="text-paper/65">→</span>
+                <input value={b} onChange={(e) => setRow(i, 1, e.target.value)} placeholder="devient" className="w-full min-w-0 rounded-lg border border-white/15 bg-black/30 px-2 py-1.5 font-body text-sm text-paper outline-none placeholder:text-paper/50" />
               </div>
             ))}
           </div>
         </Field>
       </div>
       <Preview who={ctx.target} className="space-y-2 bg-ink p-4">
-        <p className="font-mono text-[10px] uppercase tracking-wide text-paper/40">Avant</p>
-        <p className="font-body text-sm text-paper/50 line-through decoration-white/20">{REWRITE_SAMPLE}</p>
-        <p className="font-mono text-[10px] uppercase tracking-wide text-paper/40">Après</p>
+        <p className="font-mono text-[10px] uppercase tracking-wide text-paper/65">Avant</p>
+        <p className="font-body text-sm text-paper/65 line-through decoration-white/20">{REWRITE_SAMPLE}</p>
+        <p className="font-mono text-[10px] uppercase tracking-wide text-paper/65">Après</p>
         <p className="font-body text-sm text-paper">{rewrite(REWRITE_SAMPLE)}</p>
       </Preview>
     </div>
@@ -851,7 +851,7 @@ function ContractPanel({ value: o, onChange, ctx }: Props<"avenant">) {
                 maxLength={140}
                 onChange={(e) => setRow(i, e.target.value)}
                 placeholder={i === 0 ? `Le soussigné offre un croissant à ${ctx.me} chaque matin.` : "Clause suivante…"}
-                className="w-full resize-none rounded-lg border border-white/15 bg-black/30 px-3 py-2 font-body text-sm text-paper outline-none placeholder:text-paper/30"
+                className="w-full resize-none rounded-lg border border-white/15 bg-black/30 px-3 py-2 font-body text-sm text-paper outline-none placeholder:text-paper/50"
               />
             ))}
           </div>
@@ -931,7 +931,7 @@ function DragonPanel({ value: o, onChange, ctx }: Props<"defi_dragon">) {
                 >
                   <span className="block text-2xl"><Glyph e={DRAGON_SKINS[k].emoji} size="1em" className="mx-auto" /></span>
                   <span className="block font-display text-xs uppercase tracking-wide">{DRAGON_SKINS[k].label}</span>
-                  <span className="block font-body text-[10px] leading-tight text-paper/50">{DRAGON_SKINS[k].hint}</span>
+                  <span className="block font-body text-[10px] leading-tight text-paper/65">{DRAGON_SKINS[k].hint}</span>
                 </button>
               ))}
             </div>
@@ -944,11 +944,11 @@ function DragonPanel({ value: o, onChange, ctx }: Props<"defi_dragon">) {
                   {name(id)} ✕
                 </button>
               ))}
-              {o.players.length === 0 && <span className="font-body text-xs text-paper/40">Personne d&apos;autre pour l&apos;instant.</span>}
+              {o.players.length === 0 && <span className="font-body text-xs text-paper/65">Personne d&apos;autre pour l&apos;instant.</span>}
             </div>
             {o.players.length < prices.maxExtra && (
               <div className="space-y-1.5">
-                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Ajouter un joueur…" className="w-full rounded-lg border border-white/15 bg-black/30 px-3 py-1.5 font-body text-sm text-paper outline-none placeholder:text-paper/30" />
+                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Ajouter un joueur…" className="w-full rounded-lg border border-white/15 bg-black/30 px-3 py-1.5 font-body text-sm text-paper outline-none placeholder:text-paper/50" />
                 {search && (
                   <div className="flex flex-wrap gap-1.5">
                     {shown.map((m) => (
@@ -964,7 +964,7 @@ function DragonPanel({ value: o, onChange, ctx }: Props<"defi_dragon">) {
                         + {m.nickname}
                       </button>
                     ))}
-                    {!shown.length && <span className="font-body text-xs text-paper/40">Aucun membre trouvé.</span>}
+                    {!shown.length && <span className="font-body text-xs text-paper/65">Aucun membre trouvé.</span>}
                   </div>
                 )}
               </div>
@@ -1038,11 +1038,11 @@ function DragonPanel({ value: o, onChange, ctx }: Props<"defi_dragon">) {
               <span>Total</span>
               <span>{cost ? zenis(cost) : "0 z"}</span>
             </div>
-            <p className={short ? "text-red" : "text-paper/40"}>
+            <p className={short ? "text-red" : "text-paper/65"}>
               Ton solde : {zenis(ctx.balance)}
               {short ? " — pas assez pour ces options." : ""}
             </p>
-            <p className="text-[10px] text-paper/40">Remboursé si personne n&apos;entre dans l&apos;arène.</p>
+            <p className="text-[10px] text-paper/65">Remboursé si personne n&apos;entre dans l&apos;arène.</p>
           </div>
         </div>
       </div>

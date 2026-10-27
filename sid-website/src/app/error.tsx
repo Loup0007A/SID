@@ -15,7 +15,7 @@ export default function GlobalRouteError({ error, reset }: { error: Error & { di
         <p className="font-body text-paper/70">
           Une erreur inattendue est survenue. Tu peux réessayer ; si ça persiste, préviens un administrateur.
         </p>
-        {error.digest && <p className="font-mono text-[10px] text-paper/40">Référence : {error.digest}</p>}
+        {error.digest && <p className="font-mono text-[10px] text-paper/65">Référence : {error.digest}</p>}
         <button onClick={reset} className="rounded-lg bg-blue px-5 py-2 font-display uppercase text-ink hover:bg-blue-light">
           Réessayer
         </button>

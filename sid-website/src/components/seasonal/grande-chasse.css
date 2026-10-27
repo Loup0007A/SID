@@ -30,7 +30,7 @@ html.decor-grande_chasse:not(.troll-abyss) body {
 }
 
 /* Montagnes, volcan, éperon, herbes */
-.gc-land { position: absolute; left: 0; bottom: 0; width: 100%; height: 300px; }
+.gc-land { position: absolute; left: 0; bottom: 0; width: 100%; height: max(300px, min(25vw, 64vh)); } /* jamais rogné par le haut */
 .gc-mount-far { fill: #3b2033; }
 .gc-volcano { fill: #2c1520; }
 .gc-crater { fill: #ff7a2a; filter: drop-shadow(0 0 10px #ff6a1a); animation: gc-lava 3.2s ease-in-out infinite; }

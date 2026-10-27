@@ -161,7 +161,7 @@ export function NodeEditor({
         </svg>
       </div>
 
-      <p className="text-center font-mono text-[11px] text-paper/50">
+      <p className="text-center font-mono text-[11px] text-paper/65">
         Glisse d&apos;une page vers une autre. Quand ta cible cliquera sur un lien vers la première, elle arrivera sur la
         seconde. Touche un lien pour l&apos;effacer.
       </p>
@@ -173,7 +173,7 @@ export function NodeEditor({
         <button type="button" onClick={() => onChange({})} className="rounded-lg border border-white/20 px-3 py-1 font-mono text-xs uppercase text-paper/70 hover:bg-white/10">
           Effacer
         </button>
-        <span className="self-center font-mono text-[11px] text-paper/50">{links.length} lien{links.length > 1 ? "s" : ""} rebranché{links.length > 1 ? "s" : ""}</span>
+        <span className="self-center font-mono text-[11px] text-paper/65">{links.length} lien{links.length > 1 ? "s" : ""} rebranché{links.length > 1 ? "s" : ""}</span>
       </div>
 
       <div className="space-y-2 rounded-lg border border-white/10 bg-black/20 p-3">

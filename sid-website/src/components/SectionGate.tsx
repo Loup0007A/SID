@@ -29,7 +29,7 @@ export function SectionGate({
       <ConstructionTape variant="banner" label="Service temporairement suspendu" />
       <p className="glass-card px-4 py-3 text-center font-body text-sm text-paper/80">
         {state.message || "L'administration a mis ce service en pause. Reviens un peu plus tard !"}
-        {bypass && <span className="block font-mono text-[11px] text-paper/50">Tu le vois quand même grâce à tes droits d&apos;administration.</span>}
+        {bypass && <span className="block font-mono text-[11px] text-paper/65">Tu le vois quand même grâce à tes droits d&apos;administration.</span>}
       </p>
       <div
         aria-hidden={!bypass}

@@ -170,7 +170,7 @@ export default function DashboardHome() {
         if (items.length === 0) return null;
         return (
           <section key={group.key} data-tuto={`groupe-${group.key}`} className="space-y-3">
-            <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-paper/50">{group.label}</h2>
+            <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-paper/65">{group.label}</h2>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
               {items.map((e) => (
                 <Link

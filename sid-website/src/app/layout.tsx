@@ -13,6 +13,7 @@ import "./globals.css";
 import "./holidays.css";
 import { SeasonalDecor } from "@/components/seasonal/Seasonal";
 import { LazyCursorTrail } from "@/components/lazy/LazyCursorTrail";
+import { LabelLinker } from "@/components/a11y/LabelLinker";
 
 export const metadata: Metadata = {
   title: "S.I.D. — Dossier Central",
@@ -53,6 +54,7 @@ export default function RootLayout({
         {children}
         <SeasonalDecor />
         <LazyCursorTrail />
+        <LabelLinker />
       </body>
     </html>
   );

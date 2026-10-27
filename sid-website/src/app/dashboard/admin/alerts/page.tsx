@@ -90,7 +90,7 @@ export default function AlertsPage() {
             {t.label}
           </button>
         ))}
-        <span className="ml-auto font-mono text-xs text-paper/50">
+        <span className="ml-auto font-mono text-xs text-paper/65">
           {rows.length} alerte{rows.length > 1 ? "s" : ""}
           {counts.critical ? ` · ${counts.critical} critique${counts.critical > 1 ? "s" : ""}` : ""}
         </span>
@@ -117,7 +117,7 @@ export default function AlertsPage() {
                   · {timeAgo(a.created_at)}
                   {a.status !== "open" && a.handled_by_nickname && ` · ${a.status === "resolved" ? "traitée" : "ignorée"} par ${a.handled_by_nickname}`}
                 </p>
-                {describeAlert(a.details) && <p className="font-mono text-[11px] text-paper/50">{describeAlert(a.details)}</p>}
+                {describeAlert(a.details) && <p className="font-mono text-[11px] text-paper/65">{describeAlert(a.details)}</p>}
               </div>
               <div className="flex flex-wrap gap-2">
                 {a.status === "open" ? (
@@ -142,7 +142,7 @@ export default function AlertsPage() {
 
       <div className="glass-card space-y-3 p-5">
         <button onClick={() => setShowSettings((s) => !s)} className="flex w-full items-center justify-between font-display text-lg uppercase">
-          Seuils de détection <span className="font-mono text-xs text-paper/50">{showSettings ? "▲" : "▼"}</span>
+          Seuils de détection <span className="font-mono text-xs text-paper/65">{showSettings ? "▲" : "▼"}</span>
         </button>
         {showSettings && (
           <>
@@ -159,7 +159,7 @@ export default function AlertsPage() {
                       value={settings[s.key] ?? ""}
                       onChange={(e) => setSettings((x) => ({ ...x, [s.key]: e.target.value }))}
                     />
-                    <span className="shrink-0 font-mono text-xs text-paper/50">{s.unit}</span>
+                    <span className="shrink-0 font-mono text-xs text-paper/65">{s.unit}</span>
                   </div>
                 </label>
               ))}

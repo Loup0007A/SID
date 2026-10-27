@@ -2036,3 +2036,25 @@ html.decor-noel:not(.troll-abyss) body {
 @media (prefers-reduced-motion: reduce) {
   .login-intro *, .login-intro { animation-duration: 0.01ms !important; animation-delay: 0s !important; }
 }
+
+/* =====================================================================
+   Accessibilité (Lot 58)
+   ===================================================================== */
+/* Contour net quand on navigue au clavier (rien à la souris). */
+a:focus-visible, button:focus-visible, summary:focus-visible, [role="button"]:focus-visible,
+[role="tab"]:focus-visible, [role="switch"]:focus-visible, [tabindex]:not([tabindex="-1"]):focus-visible,
+input[type="checkbox"]:focus-visible, input[type="radio"]:focus-visible, input[type="range"]:focus-visible,
+input[type="color"]:focus-visible, input[type="file"]:focus-visible {
+  outline: 2px solid #f2b54a; outline-offset: 2px;
+}
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus-visible, select:focus-visible, textarea:focus-visible {
+  box-shadow: 0 0 0 2px #f2b54a;
+}
+/* Lien « Aller au contenu » : invisible jusqu'à ce qu'on appuie sur Tab. */
+.skip-link {
+  position: fixed; left: 12px; top: -60px; z-index: 10000;
+  padding: 10px 16px; border-radius: 10px; background: #f2b54a; color: #1b1e27;
+  font: 600 13px/1 "JetBrains Mono", ui-monospace, monospace; text-transform: uppercase; letter-spacing: .08em;
+  box-shadow: 0 6px 20px rgb(0 0 0 / .4); transition: top .15s;
+}
+.skip-link:focus { top: calc(env(safe-area-inset-top) + 12px); outline: 2px solid #1b1e27; outline-offset: 2px; }

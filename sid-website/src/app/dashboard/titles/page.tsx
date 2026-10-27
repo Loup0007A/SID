@@ -78,17 +78,17 @@ function TitlesInner() {
         <div key={t.id} className="glass-card title-locked relative space-y-2 overflow-hidden p-5">
           <EventRibbon t={t} />
           <div className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-black/40 font-display text-xl text-paper/30">?</span>
+            <span className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-black/40 font-display text-xl text-paper/65">?</span>
             <div>
-              <p className="font-display text-lg uppercase tracking-wide text-paper/40">{t.event ? `Titre de ${EVENTS[t.event].name}` : "Titre secret"}</p>
-              <p className="font-mono text-[10px] uppercase tracking-wide text-paper/35">
+              <p className="font-display text-lg uppercase tracking-wide text-paper/65">{t.event ? `Titre de ${EVENTS[t.event].name}` : "Titre secret"}</p>
+              <p className="font-mono text-[10px] uppercase tracking-wide text-paper/65">
                 {n === 0 ? "Personne ne l'a encore trouvé" : `${n} porteur${n > 1 ? "s" : ""}`}
               </p>
             </div>
           </div>
           <p className="font-body text-sm italic text-paper/60">« {t.riddle} »</p>
             {t.event && (
-              <p className={`font-mono text-[10px] uppercase tracking-wide ${decor?.[t.event] ? "text-[#9fe3cf]" : "text-paper/40"}`}>
+              <p className={`font-mono text-[10px] uppercase tracking-wide ${decor?.[t.event] ? "text-[#9fe3cf]" : "text-paper/65"}`}>
                 {decor?.[t.event] ? (
                   <>
                     <SidIcon name={EVENTS[t.event].icon} /> À chercher maintenant, pendant {EVENTS[t.event].name}
@@ -122,7 +122,7 @@ function TitlesInner() {
           <p className="font-body text-xs text-paper/75">
             <strong>{POWERS[t.power].name}.</strong> {POWERS[t.power].description}
           </p>
-          <p className="font-mono text-[10px] text-paper/50">
+          <p className="font-mono text-[10px] text-paper/65">
             {t.how} · le {new Date(o.obtained_at).toLocaleDateString("fr-FR")}
           </p>
           <div className="mt-auto pt-1">
@@ -189,7 +189,7 @@ function TitlesInner() {
       </div>
 
       {equipped && status.shielded && (
-        <p className="font-mono text-xs text-paper/50"><SidIcon name="shield" /> L&apos;administration t&apos;a mis à l&apos;abri des farces des autres.</p>
+        <p className="font-mono text-xs text-paper/65"><SidIcon name="shield" /> L&apos;administration t&apos;a mis à l&apos;abri des farces des autres.</p>
       )}
 
       {equipped && <TrollPanel status={status} myId={me.id} myName={me.nickname} initialTarget={params.get("target")} onChange={load} />}

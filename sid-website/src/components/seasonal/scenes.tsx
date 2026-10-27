@@ -161,10 +161,14 @@ function Manor() {
   return (
     <g transform="translate(1420 236)">
       <path className="hs-manor" d={body} />
-      <path className="hs-manor-line" d="M-20 -212 L-20 -228 M168 -176 L168 -190" />
+      {/* Liseré de lune sur les toits, girouettes au sommet des tours */}
+      <path className="hs-manor-rim" d="M-46 -150 L-20 -212 L6 -150 M8 -96 L74 -142 L140 -96 M144 -122 L168 -176 L192 -122" />
+      <path className="hs-manor-line" d="M-20 -212 L-20 -230 M168 -176 L168 -192" />
+      <path className="hs-manor-vane" d="M-20 -230 L-9 -226 L-20 -222 Z M168 -192 L179 -188 L168 -184 Z" />
       {lit.map(([x, y, b], i) => (
         <rect key={i} x={x} y={y} width="12" height="18" rx="6" className={`hs-win ${b ? "is-flicker" : ""}`} style={{ animationDelay: `${i * 0.9}s` }} />
       ))}
+      <path className="hs-win-bars" d={lit.map(([x, y]) => `M${x + 6} ${y + 2} L${x + 6} ${y + 18} M${x} ${y + 10} L${x + 12} ${y + 10}`).join(" ")} />
       <path className="hs-door" d="M60 0 L60 -26 Q69 -38 78 -26 L78 0 Z" />
       <circle cx="69" cy="-118" r="9" className="hs-win is-flicker" style={{ animationDelay: "2.2s" }} />
     </g>

@@ -49,7 +49,7 @@ export function TutoHelpButton() {
       </button>
       {open && (
         <div className="absolute right-0 top-11 z-40 w-72 max-w-[calc(100vw-2rem)] rounded-2xl border border-white/15 bg-[#2a2e3d] p-2 shadow-[0_18px_40px_-12px_rgba(0,0,0,0.75)]" role="menu">
-          <p className="px-3 pb-1 pt-2 font-mono text-[10px] uppercase tracking-[0.25em] text-paper/50">Aide</p>
+          <p className="px-3 pb-1 pt-2 font-mono text-[10px] uppercase tracking-[0.25em] text-paper/65">Aide</p>
           <button
             role="menuitem"
             className={item}
@@ -75,7 +75,7 @@ export function TutoHelpButton() {
             <SidIcon name="book" />
             <span className="flex-1">Guide du S.I.D.</span>
             {data && (
-              <span className="font-mono text-[10px] text-paper/50">
+              <span className="font-mono text-[10px] text-paper/65">
                 {data.steps_done}/{STEPS.length}
               </span>
             )}

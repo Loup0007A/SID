@@ -96,7 +96,7 @@ export default function MemberProfilePage() {
             </Link>
           )}
           {profile.is_invisible && (
-            <p className="font-mono text-xs text-paper/50"><SidIcon name="ghost" /> Compte invisible : les autres membres ne voient pas ce dossier.</p>
+            <p className="font-mono text-xs text-paper/65"><SidIcon name="ghost" /> Compte invisible : les autres membres ne voient pas ce dossier.</p>
           )}
           {(profile.first_name || profile.last_name) && (
             <p className="font-mono text-xs text-paper/60">{[profile.first_name, profile.last_name].filter(Boolean).join(" ")}</p>

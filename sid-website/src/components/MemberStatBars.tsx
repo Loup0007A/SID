@@ -32,7 +32,7 @@ export function MemberStatBars({
         <p className="font-mono text-[10px] uppercase tracking-wide text-paper/60">Puissance globale</p>
         <p className="font-display text-2xl text-blue">
           {formatPower(power)}
-          <span className="font-mono text-xs text-paper/50"> / 100</span>
+          <span className="font-mono text-xs text-paper/65"> / 100</span>
         </p>
       </div>
       {STAT_ORDER.map((key) => {

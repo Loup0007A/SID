@@ -311,14 +311,14 @@ export default function ShopPage() {
                     <ShopFrame src={p.shop_items?.image_url} alt="" className="h-14 w-14 shrink-0 rounded-xl" pad="p-1" zoom={false} />
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-display uppercase tracking-wide">{p.shop_items?.name ?? "Objet retiré"}</p>
-                      <p className="font-mono text-[11px] text-paper/55">
+                      <p className="font-mono text-[11px] text-paper/65">
                         {new Date(p.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}
                         {p.shop_items?.effect && " · s'utilise depuis une simulation"}
                       </p>
                     </div>
                     <div className="shrink-0 text-right">
                       <p className="font-display text-lg text-blue">{z(Number(p.total_price))}</p>
-                      {p.quantity > 1 && <p className="font-mono text-[10px] text-paper/50">× {p.quantity}</p>}
+                      {p.quantity > 1 && <p className="font-mono text-[10px] text-paper/65">× {p.quantity}</p>}
                     </div>
                   </li>
                 ))}
@@ -407,7 +407,7 @@ function PriceTag({ item, big = false }: { item: ShopItem; big?: boolean }) {
     <div className="leading-none">
       <span className={`font-display ${big ? "text-4xl" : "text-2xl"} ${promo ? "text-red" : "text-blue"}`}>{z(promo?.price ?? item.price)}</span>
       {promo && (
-        <span className="ml-2 font-mono text-xs text-paper/45 line-through" aria-label={`au lieu de ${z(item.price)}`}>
+        <span className="ml-2 font-mono text-xs text-paper/65 line-through" aria-label={`au lieu de ${z(item.price)}`}>
           {z(item.price)}
         </span>
       )}
@@ -430,8 +430,8 @@ function ShopCard({ item, seller, onOpen }: { item: ShopItem; seller: string; on
       </button>
       <div className="flex flex-1 flex-col gap-2 p-4">
         <div>
-          <h3 className="font-display text-lg uppercase leading-tight tracking-wide">{item.name}</h3>
-          <p className="font-mono text-[10px] uppercase tracking-wider text-paper/45">par {seller}</p>
+          <h2 className="font-display text-lg uppercase leading-tight tracking-wide">{item.name}</h2>
+          <p className="font-mono text-[10px] uppercase tracking-wider text-paper/65">par {seller}</p>
         </div>
         {item.description && <p className="line-clamp-2 font-body text-sm text-paper/75">{item.description}</p>}
         <div className="mt-auto flex items-end justify-between gap-3 pt-2">
@@ -497,7 +497,7 @@ function ItemSheet({
         </div>
         <div className="flex max-h-[70vh] flex-col gap-4 overflow-y-auto p-6 md:max-h-[85vh]">
           <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-paper/50">par {seller}</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-paper/65">par {seller}</p>
             <h2 className="font-display text-3xl uppercase leading-tight tracking-wide">{item.name}</h2>
           </div>
           {item.effect && (
@@ -510,7 +510,7 @@ function ItemSheet({
           <div className="mt-auto space-y-4 border-t border-white/10 pt-4">
             <div className="flex items-end justify-between gap-3">
               <PriceTag item={item} big />
-              <span className="font-mono text-xs text-paper/55">{item.stock === null ? "Stock illimité" : `${item.stock} en stock`}</span>
+              <span className="font-mono text-xs text-paper/65">{item.stock === null ? "Stock illimité" : `${item.stock} en stock`}</span>
             </div>
 
             <div className="flex items-center gap-3">
@@ -658,7 +658,7 @@ function MyListings({
               <ShopFrame src={item.image_url} alt={item.name} className="aspect-[4/3] w-full shrink-0 rounded-xl md:w-40" pad="p-2" zoom={false} />
               <div className="min-w-0 flex-1 space-y-3">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="font-display text-lg uppercase tracking-wide">{item.name}</h3>
+                  <h2 className="font-display text-lg uppercase tracking-wide">{item.name}</h2>
                   <span className={`shop-badge !static ${item.is_active ? "" : "is-off"}`}>{item.is_active ? "En vente" : "Retiré"}</span>
                   {promo && <span className="shop-badge is-promo !static">−{promo.pct} %</span>}
                   {item.stock === 0 && <span className="shop-badge is-rare !static">Épuisé</span>}
@@ -730,12 +730,12 @@ function MyListings({
                       ].map(([v, l]) => (
                         <div key={String(l)}>
                           <p className="font-display text-2xl text-blue-light">{v}</p>
-                          <p className="font-mono text-[10px] uppercase text-paper/50">{l}</p>
+                          <p className="font-mono text-[10px] uppercase text-paper/65">{l}</p>
                         </div>
                       ))}
                     </div>
                     {stats.weekly_sales.length === 0 ? (
-                      <p className="self-center font-body text-sm text-paper/50">Pas encore de ventes.</p>
+                      <p className="self-center font-body text-sm text-paper/65">Pas encore de ventes.</p>
                     ) : (
                       <LineChart
                         labels={stats.weekly_sales.map((w) => `${w.week_start.slice(8, 10)}/${w.week_start.slice(5, 7)}`)}
@@ -906,7 +906,7 @@ function NewItemForm({
             <input type="file" accept="image/*" className="sr-only" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
             <SidIcon name="camera" size={22} />
             <span className="font-body text-sm">{file ? file.name : "Glisse une image ici, ou touche pour en choisir une"}</span>
-            <span className="font-mono text-[10px] uppercase text-paper/45">N&apos;importe quel format : l&apos;objet sera montré en entier</span>
+            <span className="font-mono text-[10px] uppercase text-paper/65">N&apos;importe quel format : l&apos;objet sera montré en entier</span>
           </label>
         </div>
         <button type="submit" disabled={busy} className="rounded-lg bg-red py-2.5 font-display uppercase tracking-wide text-ink hover:bg-red-light disabled:opacity-50 sm:col-span-2">
@@ -914,7 +914,7 @@ function NewItemForm({
         </button>
       </div>
       <div className="space-y-2 self-start lg:sticky lg:top-24">
-        <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-paper/50">Aperçu en vitrine</p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-paper/65">Aperçu en vitrine</p>
         <div className="pointer-events-none">
           <ShopCard item={sample} seller={businesses.find((b) => b.id === form.businessId)?.name ?? sellerName} onOpen={() => undefined} />
         </div>

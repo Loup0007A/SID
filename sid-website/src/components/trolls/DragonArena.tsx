@@ -253,7 +253,7 @@ export function DragonArena({
               <SidIcon name="runner" /> Fuir
             </button>
           </div>
-          <p className="font-mono text-[11px] text-paper/50">Entrée automatique dans {Math.max(0, left)} s…</p>
+          <p className="font-mono text-[11px] text-paper/65">Entrée automatique dans {Math.max(0, left)} s…</p>
         </div>
       </div>
     );

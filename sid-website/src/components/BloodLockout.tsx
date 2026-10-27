@@ -65,7 +65,7 @@ export function BloodLockout({ until, onHealed }: { until: string; onHealed?: ()
         <p className="font-mono text-3xl text-paper">
           {m}:{String(s).padStart(2, "0")}
         </p>
-        <p className="font-mono text-[11px] uppercase text-paper/50">
+        <p className="font-mono text-[11px] uppercase text-paper/65">
           Retour possible à {new Date(end).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
         </p>
       </div>

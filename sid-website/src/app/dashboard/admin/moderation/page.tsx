@@ -217,9 +217,9 @@ export default function ModerationPage() {
             <div key={a.id} className="glass-card flex flex-wrap items-center justify-between gap-3 p-3">
               <div>
                 <p className="font-display uppercase">
-                  {a.title} {!a.is_active && <span className="text-paper/40">(désactivée)</span>}
+                  {a.title} {!a.is_active && <span className="text-paper/65">(désactivée)</span>}
                 </p>
-                <p className="font-mono text-xs text-paper/50">{SEVERITY_LABELS[a.severity]} · {new Date(a.created_at).toLocaleString("fr-FR")}</p>
+                <p className="font-mono text-xs text-paper/65">{SEVERITY_LABELS[a.severity]} · {new Date(a.created_at).toLocaleString("fr-FR")}</p>
               </div>
               {a.is_active && (
                 <button onClick={() => deactivateAnnouncement(a.id)} className="rounded-lg border border-red px-3 py-1 font-mono text-xs uppercase text-red hover:bg-red hover:text-ink">
@@ -286,7 +286,7 @@ export default function ModerationPage() {
                 </p>
                 <p className="font-body text-xs text-paper/60">{ev.description}</p>
                 {decor && !missing && (
-                  <span className={clsx("font-mono text-xs uppercase", !shown && "text-paper/50")} style={shown ? { color: ev.color } : undefined}>
+                  <span className={clsx("font-mono text-xs uppercase", !shown && "text-paper/65")} style={shown ? { color: ev.color } : undefined}>
                     {shown ? "Affiché en ce moment" : "Pas affiché en ce moment"}
                   </span>
                 )}
@@ -311,7 +311,7 @@ export default function ModerationPage() {
                 ))}
               </div>
               {mode && (
-                <p className="basis-full font-mono text-[11px] text-paper/45">
+                <p className="basis-full font-mono text-[11px] text-paper/65">
                   {mode === "auto" ? `Automatique : ${ev.period} (heure de Paris).` : DECOR_MODES.find((m) => m.v === mode)?.hint}
                 </p>
               )}
@@ -377,9 +377,9 @@ export default function ModerationPage() {
             <div key={s.id} className="glass-card flex flex-wrap items-center justify-between gap-3 p-3">
               <div>
                 <p className="font-display uppercase">
-                  {SANCTION_LABELS[s.type]} — {s.nickname} {!s.is_active && <span className="text-paper/40">(terminée)</span>}
+                  {SANCTION_LABELS[s.type]} — {s.nickname} {!s.is_active && <span className="text-paper/65">(terminée)</span>}
                 </p>
-                <p className="font-mono text-xs text-paper/50">
+                <p className="font-mono text-xs text-paper/65">
                   {s.reason || "Aucune raison précisée"}
                   {s.amount != null && ` · ${s.amount.toLocaleString("fr-FR")} z`}
                   {s.expires_at && ` · jusqu'au ${new Date(s.expires_at).toLocaleString("fr-FR")}`}
