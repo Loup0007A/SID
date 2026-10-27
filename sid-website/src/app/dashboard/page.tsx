@@ -18,6 +18,7 @@ import { OnlineNow } from "@/components/presence/OnlineNow";
 import { SeasonalBoard, SeasonalGreeting } from "@/components/seasonal/Seasonal";
 import { SidIcon } from "@/components/icons/SidIcon";
 import { TutoInvite } from "@/components/tuto/TutoUi";
+import { SinceLastVisit } from "@/components/SinceLastVisit";
 
 export default function DashboardHome() {
   const supabase = createClient();
@@ -109,6 +110,8 @@ export default function DashboardHome() {
       </div>
 
       <TutoInvite />
+
+      {profile && !profile.sandbox_expires_at && <SinceLastVisit userId={profile.id} />}
 
       {profile && <BirthdaysToday myId={profile.id} />}
 

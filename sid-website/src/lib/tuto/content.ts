@@ -109,7 +109,7 @@ export const TOUR: TutoStep[] = [
     target: "groupe-espace",
     icon: "menu",
     title: "Toutes les pages",
-    body: "L'accueil range chaque page en tuile, par rubrique : **Mon espace**, **Le S.I.D.**, **Entraînement**, **Économie** (et **Administration** si tu en as les droits).\n\nUne tuile rayée jaune et noir est en travaux ou suspendue. Où que tu sois, « ← Accueil » en haut te ramène ici.",
+    body: "L'accueil range chaque page en tuile, par rubrique : **Mon espace**, **Le S.I.D.**, **Entraînement**, **Économie** (et **Administration** si tu en as les droits).\n\nUne tuile rayée jaune et noir est en travaux ou suspendue. Où que tu sois, « ← Accueil » en haut te ramène ici.\n\nPlus rapide : la **loupe** en haut (ou **Ctrl+K**, ou la touche **/**) cherche une page, un membre, une quête ou un objet du Comptoir, où que tu sois.",
   },
   {
     id: "aide",

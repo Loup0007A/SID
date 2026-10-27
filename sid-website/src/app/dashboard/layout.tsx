@@ -1,6 +1,7 @@
 "use client";
 
 import { SkipLink } from "@/components/a11y/LabelLinker";
+import { CommandPalette, PaletteButton } from "@/components/palette/CommandPalette";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -298,6 +299,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <SidIcon name="warning" /> {openAlerts}
               </Link>
             )}
+            {profile && <PaletteButton />}
             {profile && <NotificationBell userId={profile.id} />}
             <TutoHelpButton />
             <SettingsButton />
@@ -316,6 +318,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </header>
 
+      {profile && <CommandPalette perms={perms} onLogout={handleLogout} />}
       <main id="contenu" tabIndex={-1} className="relative mx-auto max-w-6xl p-4 outline-none sm:p-6">
         {booting && (
           <p className="pointer-events-none absolute inset-x-0 top-24 text-center text-paper" role="status">

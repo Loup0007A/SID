@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useDeepLink } from "@/lib/deeplink";
 import { createClient } from "@/lib/supabase/client";
 import { loadCurrentUser, can } from "@/lib/permissions";
 import { visibleMembers } from "@/lib/visibility";
@@ -63,6 +64,14 @@ export default function QuestsPage() {
   const [launchingId, setLaunchingId] = useState<string | null>(null);
   // Renommée en jeu pour moi sur chaque quête : gain si réussie, perte si échouée.
   const [repPreview, setRepPreview] = useState<Record<string, RepPreview>>({});
+
+  // Lien direct vers une quête (palette de recherche) : on la montre et on la fait briller.
+  const [focusQuest, setFocusQuest] = useState<string | null>(null);
+  useDeepLink("quete", quests.length > 0, (id) => {
+    setFocusQuest(id);
+    requestAnimationFrame(() => document.getElementById(`quete-${id}`)?.scrollIntoView({ behavior: "smooth", block: "center" }));
+    setTimeout(() => setFocusQuest((f) => (f === id ? null : f)), 4000);
+  });
 
   async function refresh(uid?: string | null) {
     const activeUserId = uid !== undefined ? uid : userId;
@@ -496,7 +505,7 @@ export default function QuestsPage() {
           const notHere = !!q.place_id && (myPosition?.place_id !== q.place_id || !!myPosition?.travel_started_at);
 
           return (
-            <div key={q.id} data-tuto={qi === 0 ? "quete" : undefined} className="space-y-2">
+            <div key={q.id} id={`quete-${q.id}`} data-tuto={qi === 0 ? "quete" : undefined} className={`scroll-mt-24 space-y-2 ${focusQuest === q.id ? "quest-focus" : ""}`}>
               <QuestCard quest={q} participantCount={count} />
               {!q.funded_by_creator && (
                 <p className="text-center font-mono text-[10px] uppercase text-paper/65">Financée par le S.I.D.</p>

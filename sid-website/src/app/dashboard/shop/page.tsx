@@ -12,6 +12,7 @@ import { inputClass, labelClass } from "@/lib/ui";
 import { LineChart } from "@/components/LineChart";
 import { SidIcon } from "@/components/icons/SidIcon";
 import { ShopFrame } from "@/components/shop/ShopFrame";
+import { useDeepLink } from "@/lib/deeplink";
 
 /**
  * Le Comptoir du S.I.D. (refonte du Lot 56) : vitrine avec recherche,
@@ -117,6 +118,15 @@ export default function ShopPage() {
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Lien direct vers un objet (palette de recherche, partage) : sa fiche s'ouvre.
+  useDeepLink("objet", !!items, (id) => {
+    const it = items?.find((x) => x.id === id);
+    if (it) {
+      setTab("vitrine");
+      setOpen(it);
+    }
+  });
 
   useEffect(() => {
     if (tab === "achats" && purchases === null) refreshPurchases();
