@@ -14,6 +14,7 @@ import type { RealtimeChannel } from "@supabase/supabase-js";
 import { useEquippedTitles } from "@/lib/useEquippedTitles";
 import { TitleBadge } from "@/components/titles/TitleVisuals";
 import { SidIcon, GlyphText } from "@/components/icons/SidIcon";
+import { RpBar, RpMessage, RP_MODES, ROLL_ERRORS, parseRp, type RpMode } from "@/components/chat/RpChat";
 
 const COLOR_PRESETS = ["#D99A9A", "#8FB3D9", "#E8C547", "#3F8F5F", "#B23B2E", ""] as const;
 
@@ -41,6 +42,9 @@ function ChatInner() {
   const realtimeChannelRef = useRef<RealtimeChannel | null>(null);
   const [showCommands, setShowCommands] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  // Messagerie RP (Lot 62) : façon de parler, et droit de narrer (maîtres du jeu).
+  const [rpMode, setRpMode] = useState<RpMode>("say");
+  const [canNarrate, setCanNarrate] = useState(false);
 
   // Édition d'un message existant
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -87,6 +91,7 @@ function ChatInner() {
       // utiliser les commandes de troll — pas seulement les non-mutes.
       const admin = can(permissions, "manage_users");
       setIsAdmin(admin);
+      setCanNarrate(can(permissions, "manage_quests", "manage_users"));
       // Les comptes invisibles n'apparaissent pas dans les listes de choix
       // (leurs messages restent signés de leur nom).
       setMembers(visibleMembers(m ?? [], user.id, admin));
@@ -176,19 +181,40 @@ function ChatInner() {
       return;
     }
 
+    const rp = parseRp(trimmed, rpMode, canNarrate);
+    if ("error" in rp) {
+      setMessage(rp.error);
+      return;
+    }
+    if ("roll" in rp) {
+      await rollDice(rp.roll);
+      setDraft("");
+      return;
+    }
+
     const { error } = await supabase.from("chat_messages").insert({
       channel_id: activeChannel,
       sender_id: userId,
-      content: trimmed,
-      is_bold: draftBold,
-      is_italic: draftItalic,
-      color: draftColor || null,
+      content: rp.content,
+      kind: rp.kind,
+      is_bold: rp.kind === "say" && draftBold,
+      is_italic: rp.kind === "say" && draftItalic,
+      color: rp.kind === "say" ? draftColor || null : null,
     });
     if (error) {
       setMessage(`Message non envoyé : ${error.message}`);
       return;
     }
     setDraft("");
+  }
+
+  // Lancer de dés : tiré par le serveur (rp_roll), qui publie le résultat.
+  async function rollDice(expr: string) {
+    if (!activeChannel) return;
+    const { data, error } = await supabase.rpc("rp_roll", { p_channel_id: activeChannel, p_expr: expr });
+    const err = (data as { error?: string } | null)?.error;
+    if (error || err) setMessage(err ? ROLL_ERRORS[err] ?? "Lancer impossible." : `Lancer impossible : ${error?.message}`);
+    else setMessage(null);
   }
 
   function startEdit(m: ChatMessage) {
@@ -478,6 +504,17 @@ function ChatInner() {
               {messages.map((m) => {
                 const isMine = m.sender_id === userId;
                 const isEditing = editingId === m.id;
+                if (m.kind && m.kind !== "say" && !m.is_deleted && !isEditing) {
+                  return (
+                    <RpMessage
+                      key={m.id}
+                      m={m}
+                      name={profiles.get(m.sender_id)?.nickname ?? "Agent"}
+                      mine={isMine}
+                      onDelete={isMine ? () => deleteMessage(m.id) : undefined}
+                    />
+                  );
+                }
                 return (
                   <div key={m.id} className={`group max-w-[85%] sm:max-w-md rounded-lg px-3 py-2 ${isMine ? "ml-auto bg-blue text-ink" : "bg-paper-dark text-ink"}`}>
                     {!isMine && (
@@ -592,12 +629,14 @@ function ChatInner() {
                   </button>
                 </div>
               )}
+              <RpBar mode={rpMode} onMode={setRpMode} canNarrate={canNarrate} onRoll={rollDice} />
               <div className="flex gap-2">
                 <input
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
-                  placeholder="Écrire un message…"
-                  className="rounded-lg flex-1 border border-paper-dark bg-paper px-3 py-2 font-body text-ink outline-none focus:border-blue"
+                  placeholder={RP_MODES.find((x) => x.key === rpMode)?.placeholder ?? "Écrire un message…"}
+                  aria-label="Message"
+                  className={clsx("rounded-lg flex-1 border border-paper-dark bg-paper px-3 py-2 font-body text-ink outline-none focus:border-blue", `rp-input-${rpMode}`)}
                 />
                 <button type="submit" className="rounded-lg bg-red px-4 font-display text-sm uppercase text-ink hover:bg-red-light">
                   Envoyer

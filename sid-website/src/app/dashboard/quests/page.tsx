@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useDeepLink } from "@/lib/deeplink";
+import { Chronicles, QuestReports, ReportButton } from "@/components/quests/QuestRp";
 import { createClient } from "@/lib/supabase/client";
 import { loadCurrentUser, can } from "@/lib/permissions";
 import { visibleMembers } from "@/lib/visibility";
@@ -21,6 +22,8 @@ export default function QuestsPage() {
   const [quests, setQuests] = useState<Quest[]>([]);
   const [counts, setCounts] = useState<Map<string, number>>(new Map());
   const [myQuestIds, setMyQuestIds] = useState<Set<string>>(new Set());
+  // Mes rapports de mission (Lot 62), et ma participation rejetée ou non.
+  const [myReports, setMyReports] = useState<Map<string, { report: string | null; status: string }>>(new Map());
   const [permissions, setPermissions] = useState<Set<PermissionKey>>(new Set());
   const [userId, setUserId] = useState<string | null>(null);
   const [members, setMembers] = useState<Profile[]>([]);
@@ -29,6 +32,8 @@ export default function QuestsPage() {
   const [form, setForm] = useState({
     title: "",
     description: "",
+    giver: "",
+    objectives: "",
     reward: "0",
     difficulty: "D" as QuestDifficulty,
     contractType: "autres" as ContractType,
@@ -82,7 +87,7 @@ export default function QuestsPage() {
     const [questsRes, countsRes, mineRes, statsRes, powerRes, posRes, pendingRes, repRes] = await Promise.all([
       supabase.from("quests").select("*").in("status", ["open", "in_progress"]).order("created_at", { ascending: false }),
       supabase.rpc("quest_participant_counts"),
-      activeUserId ? supabase.from("quest_participants").select("quest_id").eq("user_id", activeUserId) : null,
+      activeUserId ? supabase.from("quest_participants").select("quest_id, report, status").eq("user_id", activeUserId) : null,
       activeUserId ? supabase.from("member_stats").select("intelligence, strength, technique").eq("user_id", activeUserId).maybeSingle() : null,
       activeUserId ? supabase.from("profiles").select("power_score").eq("id", activeUserId).maybeSingle() : null,
       activeUserId ? supabase.from("character_positions").select("*").eq("user_id", activeUserId).maybeSingle() : null,
@@ -99,6 +104,7 @@ export default function QuestsPage() {
 
     if (activeUserId) {
       setMyQuestIds(new Set((mineRes?.data ?? []).map((m) => m.quest_id)));
+      setMyReports(new Map(((mineRes?.data ?? []) as { quest_id: string; report: string | null; status: string }[]).map((m) => [m.quest_id, { report: m.report, status: m.status }])));
       const st = statsRes?.data;
       const prof = powerRes?.data;
       setMe({
@@ -146,6 +152,12 @@ export default function QuestsPage() {
     const { error } = await supabase.from("quests").insert({
       title: form.title,
       description: form.description,
+      giver: form.giver.trim() || null,
+      objectives: form.objectives
+        .split("\n")
+        .map((o) => o.trim().slice(0, 140))
+        .filter(Boolean)
+        .slice(0, 8),
       reward: Number(form.reward) || 0,
       difficulty: form.difficulty,
       contract_type: form.contractType,
@@ -166,7 +178,7 @@ export default function QuestsPage() {
       return;
     }
     setShowForm(false);
-    setForm({ title: "", description: "", reward: "0", difficulty: "D", contractType: "autres", deadline: "", visibility: "members", maxParticipants: "", fundedByCreator: true, placeId: "", reputationReward: "", minIntelligence: "", minStrength: "", minTechnique: "", minPower: "" });
+    setForm({ title: "", description: "", giver: "", objectives: "", reward: "0", difficulty: "D", contractType: "autres", deadline: "", visibility: "members", maxParticipants: "", fundedByCreator: true, placeId: "", reputationReward: "", minIntelligence: "", minStrength: "", minTechnique: "", minPower: "" });
     await refresh();
   }
 
@@ -391,6 +403,26 @@ export default function QuestsPage() {
             <textarea rows={3} className={inputClass} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
           </div>
           <div className="space-y-1">
+            <label className={labelClass}>Commanditaire (facultatif)</label>
+            <input
+              className={inputClass}
+              maxLength={80}
+              placeholder="Le Conseil des Marchands, un vieil ermite…"
+              value={form.giver}
+              onChange={(e) => setForm({ ...form, giver: e.target.value })}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className={labelClass}>Objectifs (un par ligne, 8 au plus)</label>
+            <textarea
+              rows={3}
+              className={inputClass}
+              placeholder={"Retrouver le convoi\nRamener le coffre intact"}
+              value={form.objectives}
+              onChange={(e) => setForm({ ...form, objectives: e.target.value })}
+            />
+          </div>
+          <div className="space-y-1">
             <label className={labelClass}>Récompense</label>
             <input type="number" min={0} className={inputClass} value={form.reward} onChange={(e) => setForm({ ...form, reward: e.target.value })} />
           </div>
@@ -609,6 +641,10 @@ export default function QuestsPage() {
                 </p>
               )}
 
+              {alreadyIn && myReports.get(q.id)?.status !== "rejected" && (
+                <ReportButton quest={q} report={myReports.get(q.id)?.report ?? null} onSaved={() => refresh()} />
+              )}
+
               {canManage && (
                 <div className="space-y-2">
                   <div className="flex flex-wrap gap-2">
@@ -660,6 +696,7 @@ export default function QuestsPage() {
                               )}
                             </div>
                           ))}
+                          <QuestReports questId={q.id} version={participants.length} />
                           <button
                             onClick={() => validateAll(q.id)}
                             className="rounded-lg w-full bg-blue py-1 font-mono text-xs uppercase text-ink hover:bg-blue-light"
@@ -676,6 +713,8 @@ export default function QuestsPage() {
           );
         })}
       </div>
+
+      <Chronicles />
     </div>
   );
 }

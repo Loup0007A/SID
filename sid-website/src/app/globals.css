@@ -2165,3 +2165,113 @@ input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus-visib
 .pins-order button:hover:not(:disabled) { background: rgb(255 255 255 / .12); }
 .pins-order button:disabled { opacity: .3; }
 .agent-card-img { box-shadow: 0 20px 50px rgb(0 0 0 / .5); }
+
+/* =====================================================================
+   Messagerie RP (Lot 62)
+   ===================================================================== */
+.rp-mode {
+  display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / .18); font: 500 11px/1.4 var(--font-mono); color: rgb(237 230 211 / .75);
+  transition: background .15s, border-color .15s, color .15s;
+}
+.rp-mode:hover { border-color: rgb(143 179 217 / .6); color: #ede6d3; }
+.rp-mode.is-on { background: rgb(143 179 217 / .2); border-color: #8fb3d9; color: #ede6d3; }
+.rp-mode-action.is-on { background: rgb(232 197 71 / .18); border-color: #e8c547; }
+.rp-mode-hrp.is-on { background: rgb(255 255 255 / .1); border-color: rgb(255 255 255 / .5); }
+.rp-mode-narration.is-on { background: rgb(217 154 154 / .2); border-color: #d99a9a; }
+.rp-dice-menu {
+  position: absolute; bottom: calc(100% + 6px); left: 0; z-index: 30; width: 230px; padding: 8px; border-radius: 12px;
+  background: #2b3040; border: 1px solid rgb(255 255 255 / .15); box-shadow: 0 12px 30px rgb(0 0 0 / .45);
+}
+.rp-die { padding: 6px 0; border-radius: 8px; border: 1px solid rgb(255 255 255 / .14); font: 600 12px/1 var(--font-mono); color: #ede6d3; background: rgb(255 255 255 / .05); }
+.rp-die:hover { background: rgb(143 179 217 / .25); border-color: #8fb3d9; }
+.rp-input-action { font-style: italic; }
+.rp-input-hrp { font-family: var(--font-mono); font-size: .85rem; }
+.rp-input-narration { font-style: italic; background: #f4ead2 !important; }
+
+.rp-del { margin-left: 8px; opacity: 0; font-size: 11px; color: currentColor; transition: opacity .15s; }
+.group:hover .rp-del, .rp-del:focus-visible { opacity: .6; }
+
+/* Action : une ligne de récit, centrée, sans bulle. */
+.rp-action { max-width: 92%; margin: 2px auto; text-align: center; font: italic 400 .92rem/1.45 var(--font-body); color: #e8d9a8; }
+.rp-action strong { font-style: normal; font-weight: 600; color: #f2e3b0; }
+/* Hors-RP : discret, gris, en petites capitales. */
+.rp-hrp { width: fit-content; max-width: 85%; padding: 4px 10px; border-radius: 8px; border: 1px dashed rgb(255 255 255 / .2); font: 400 .78rem/1.4 var(--font-mono); color: rgb(237 230 211 / .7); }
+.rp-hrp-tag { font-size: .62rem; letter-spacing: .12em; padding: 1px 4px; border-radius: 4px; background: rgb(255 255 255 / .1); margin-right: 4px; }
+/* Narration : un encadré de parchemin, pleine largeur. */
+.rp-narration {
+  position: relative; margin: 8px 0; padding: 12px 16px 12px 18px; border-radius: 6px; color: #3a2c1a;
+  background: linear-gradient(175deg, #f4e7c4, #e8d4a2); box-shadow: inset 0 0 0 1px rgb(120 90 40 / .25), 0 6px 16px rgb(0 0 0 / .3);
+}
+.rp-narration::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; border-radius: 2px; background: #8f2d1c; }
+.rp-narration figcaption { font: 500 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .18em; color: #8f2d1c; margin-bottom: 6px; }
+.rp-narration p { font: italic 400 1rem/1.55 var(--font-body); white-space: pre-wrap; }
+/* Dés : une carte avec chaque dé et le total. */
+.rp-roll {
+  width: min(320px, 92%); padding: 8px 12px 10px; border-radius: 12px; color: #ede6d3;
+  background: linear-gradient(160deg, #39304f, #262a38); border: 1px solid rgb(201 166 255 / .35); box-shadow: 0 6px 18px rgb(0 0 0 / .3);
+}
+.rp-roll-head { display: flex; align-items: center; gap: 6px; font: 400 .82rem/1.3 var(--font-body); }
+.rp-roll-head code { font: 600 .78rem var(--font-mono); padding: 1px 5px; border-radius: 4px; background: rgb(255 255 255 / .1); }
+.rp-roll-body { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; }
+.rp-roll-die {
+  display: grid; place-items: center; min-width: 30px; height: 30px; padding: 0 4px; border-radius: 7px;
+  background: #ede6d3; color: #262a38; font: 700 .9rem/1 var(--font-mono); box-shadow: inset 0 -3px 0 rgb(0 0 0 / .18);
+  animation: rp-die-in .5s cubic-bezier(.2,.9,.3,1.4) both;
+}
+.rp-roll-die.is-max { background: #f2c94c; } .rp-roll-die.is-min { background: #e8a5a5; }
+.rp-roll-mod { align-self: center; font: 600 .85rem var(--font-mono); color: rgb(237 230 211 / .75); }
+.rp-roll-total { font: 700 1.9rem/1 var(--font-display); color: #c9a6ff; }
+.rp-roll.is-success { border-color: #f2c94c; box-shadow: 0 0 0 1px #f2c94c, 0 0 24px rgb(242 201 76 / .35); }
+.rp-roll.is-success .rp-roll-total { color: #f2c94c; }
+.rp-roll.is-fail { border-color: #d96a6a; }
+.rp-roll.is-fail .rp-roll-total { color: #e8a5a5; }
+.rp-roll-crit { margin-top: 6px; font: 700 .72rem/1 var(--font-mono); text-transform: uppercase; letter-spacing: .14em; }
+.rp-roll.is-success .rp-roll-crit { color: #f2c94c; } .rp-roll.is-fail .rp-roll-crit { color: #e8a5a5; }
+@keyframes rp-die-in { from { opacity: 0; transform: rotate(-200deg) scale(.4); } }
+@media (prefers-reduced-motion: reduce) { .rp-roll-die { animation: none; } }
+
+/* Quêtes RP (Lot 62) : objectifs, rapport de mission, Chroniques */
+.quest-objectives { display: grid; gap: 2px; margin-top: 2px; font: 400 .8rem/1.35 var(--font-body); color: rgb(43 47 40 / .85); }
+.quest-objectives li { position: relative; padding-left: 18px; }
+.quest-objectives li::before { content: ""; position: absolute; left: 2px; top: .3em; width: 10px; height: 10px; border: 1.5px solid rgb(43 47 40 / .55); border-radius: 2px; }
+.quest-objectives li.is-more { padding-left: 18px; font-style: italic; opacity: .75; }
+.quest-objectives li.is-more::before { display: none; }
+
+.quest-report-btn {
+  width: 100%; padding: 6px 10px; border-radius: 10px; border: 1px dashed rgb(217 154 154 / .6);
+  font: 500 11px/1.3 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: #e8c0c0;
+  transition: background .15s, border-color .15s;
+}
+.quest-report-btn:hover { background: rgb(217 154 154 / .12); border-style: solid; }
+.quest-report-btn.is-done { border-style: solid; border-color: rgb(185 227 198 / .5); color: #b9e3c6; }
+
+.quest-report-sheet {
+  position: relative; max-height: 92vh; overflow-y: auto; padding: 22px 24px; border-radius: 6px; color: #2b2f28;
+  background: linear-gradient(175deg, #f4e7c4, #e6d1a0); box-shadow: 0 30px 70px rgb(0 0 0 / .55), inset 0 0 0 1px rgb(120 90 40 / .25);
+}
+.quest-report-sheet::after {
+  content: "CONFIDENTIEL"; position: absolute; top: 18px; right: 18px; transform: rotate(8deg);
+  padding: 3px 8px; border: 2px solid rgb(143 45 28 / .55); color: rgb(143 45 28 / .6); font: 700 12px/1 var(--font-display); letter-spacing: .12em;
+}
+.quest-report-text {
+  min-height: 180px; padding: 10px 12px; border-radius: 4px; border: 1px solid rgb(120 90 40 / .35); outline: none; resize: vertical;
+  font: 400 1rem/1.6 var(--font-body); color: #2b2f28;
+  background: repeating-linear-gradient(transparent 0 1.55rem, rgb(120 90 40 / .18) 1.55rem 1.6rem), rgb(255 250 235 / .6);
+}
+.quest-report-text:focus { border-color: #8f2d1c; box-shadow: 0 0 0 2px rgb(143 45 28 / .2) !important; }
+
+.quest-report-read { border-radius: 8px; background: rgb(255 255 255 / .05); border: 1px solid rgb(255 255 255 / .1); }
+.quest-report-read summary { display: flex; align-items: center; gap: 6px; padding: 6px 9px; cursor: pointer; list-style: none; font: 500 12px/1.2 var(--font-mono); }
+.quest-report-read p { padding: 0 10px 9px; white-space: pre-wrap; font: italic 400 .9rem/1.5 var(--font-body); color: rgb(237 230 211 / .9); }
+
+.chronicles { position: relative; display: grid; gap: 18px; padding-left: 22px; }
+.chronicles::before { content: ""; position: absolute; left: 6px; top: 6px; bottom: 6px; width: 2px; background: linear-gradient(rgb(217 154 154 / .7), rgb(217 154 154 / .1)); }
+.chronicle { position: relative; display: grid; gap: 6px; padding: 14px 16px; border-radius: 14px; background: rgb(255 255 255 / .04); border: 1px solid rgb(255 255 255 / .1); }
+.chronicle::before { content: ""; position: absolute; left: -21px; top: 20px; width: 12px; height: 12px; border-radius: 50%; background: #d99a9a; box-shadow: 0 0 0 4px rgb(217 154 154 / .2); }
+.chronicle-date { font: 500 10px/1 var(--font-mono); text-transform: uppercase; letter-spacing: .18em; color: #d99a9a; }
+.chronicle-quote { margin: 4px 0 0; padding: 8px 12px; border-left: 3px solid rgb(232 197 71 / .6); background: rgb(232 197 71 / .06); border-radius: 0 8px 8px 0; }
+.chronicle-quote p { white-space: pre-wrap; font: italic 400 .95rem/1.55 var(--font-body); color: rgb(237 230 211 / .92); }
+.chronicle-quote footer { margin-top: 4px; font: 500 11px/1 var(--font-mono); color: rgb(237 230 211 / .7); }
+.rp-roll, .rp-narration { position: relative; }
+.rp-roll .rp-del, .rp-narration .rp-del { position: absolute; right: 8px; bottom: 6px; margin: 0; }

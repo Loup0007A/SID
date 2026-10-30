@@ -53,8 +53,23 @@ export function QuestCard({ quest, participantCount }: { quest: Quest; participa
         <DifficultyBadge difficulty={quest.difficulty} />
       </div>
 
+      {quest.giver && (
+        <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-paper-text/70">
+          Commanditaire : <span className="font-body text-xs normal-case tracking-normal italic text-paper-text">{quest.giver}</span>
+        </p>
+      )}
+
       {quest.description && (
         <p className="line-clamp-3 font-body text-sm text-paper-text/80">{quest.description}</p>
+      )}
+
+      {!!quest.objectives?.length && (
+        <ul className="quest-objectives" aria-label="Objectifs">
+          {quest.objectives.slice(0, 4).map((o, i) => (
+            <li key={i}>{o}</li>
+          ))}
+          {quest.objectives.length > 4 && <li className="is-more">… et {quest.objectives.length - 4} autre{quest.objectives.length > 5 ? "s" : ""}</li>}
+        </ul>
       )}
 
       <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-paper-dark/70 pt-2 font-mono text-xs">

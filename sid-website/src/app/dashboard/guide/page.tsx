@@ -141,6 +141,8 @@ const LEXIQUE: [string, string][] = [
 
 const FAQ: [string, string][] = [
   ["Je ne peux pas prendre une mission.", "Elle est complète, elle demande un niveau que tu n'as pas encore (la fiche l'indique), ou elle se prend sur place : rends-toi à son lieu. Sur la Cartographie, le parchemin doré d'un lieu montre ses quêtes et permet de les prendre une fois arrivé."],
+  ["Comment jouer mon personnage dans la messagerie ?", "Choisis au-dessus du champ : « Parler » (ce que dit ton personnage), « Action » (ce qu'il fait, ton nom est ajouté devant), « Hors-RP » (toi, pas ton personnage) et « Dés ». Raccourcis : /me …, ((…)) ou /hrp …, /des 2d6+1. Les dés sont tirés par le serveur : personne ne peut tricher. La narration (/narr) est réservée aux maîtres du jeu."],
+  ["À quoi sert le rapport de mission ?", "Une fois une mission prise, raconte ce que ton personnage a fait (« Rédiger mon rapport de mission » sous la quête). Le commanditaire le lit avant de valider, et les rapports des missions validées entrent dans les Chroniques du S.I.D., en bas de la page des quêtes."],
   ["Comment trouver vite une page, un membre, une quête ?", "La loupe en haut de chaque page. Tape quelques lettres, même sans accents, puis touche le résultat voulu (Entrée ouvre le premier)."],
   ["C'est quoi le « Rapport de situation » de l'accueil ?", "Le résumé de ce qui a changé depuis ta dernière visite sur cet appareil : argent gagné et dépensé, renommée, titres, nouvelles quêtes, nouveaux agents, nouveautés du Comptoir. « Classer le rapport » le range jusqu'à la prochaine visite."],
   ["Je ne peux plus rien acheter.", "Ton solde est négatif (intérêts d'emprunt). Rembourse à la Banque, ou attends tes prochains revenus."],

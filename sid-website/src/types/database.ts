@@ -108,6 +108,9 @@ export interface Quest {
   min_strength: number;
   min_technique: number;
   min_power: number;
+  /** Ordre de mission (Lot 62) : qui la confie, et ce qu'il faut accomplir. */
+  giver?: string | null;
+  objectives?: string[];
   created_by: string | null;
   created_at: string;
 }
@@ -118,6 +121,9 @@ export interface QuestParticipant {
   status: "assigned" | "submitted" | "validated" | "rejected";
   reward_recipient_id: string | null;
   joined_at: string;
+  /** Rapport de mission (Lot 62). */
+  report?: string | null;
+  report_at?: string | null;
 }
 
 export interface QuestParticipantView {
@@ -188,8 +194,14 @@ export interface ChatMessage {
   is_italic: boolean;
   color: string | null;
   troll_tag?: { kind: string; by: string; phrase?: string; color?: string } | null;
+  /** Lot 62 : parole, action (/me), hors-RP, narration (maîtres du jeu), lancer de dés. */
+  kind?: ChatKind;
+  /** Lancer de dés : détail tiré par le serveur. */
+  meta?: { expr: string; rolls: number[]; mod: number; faces: number; total: number } | null;
   created_at: string;
 }
+
+export type ChatKind = "say" | "action" | "hrp" | "narration" | "roll";
 
 export interface DmPartner {
   channel_id: string;
