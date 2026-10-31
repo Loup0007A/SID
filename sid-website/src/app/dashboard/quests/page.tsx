@@ -72,6 +72,10 @@ export default function QuestsPage() {
 
   // Lien direct vers une quête (palette de recherche) : on la montre et on la fait briller.
   const [focusQuest, setFocusQuest] = useState<string | null>(null);
+  // Filtres du tableau (Lot 63).
+  const [view, setView] = useState<"toutes" | "dispo" | "miennes">("toutes");
+  const [typeFilter, setTypeFilter] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
   useDeepLink("quete", quests.length > 0, (id) => {
     setFocusQuest(id);
     requestAnimationFrame(() => document.getElementById(`quete-${id}`)?.scrollIntoView({ behavior: "smooth", block: "center" }));
@@ -330,19 +334,48 @@ export default function QuestsPage() {
       ? myPosition.planned_path[myPosition.planned_path.length - 1].to_place_id
       : myPosition?.flight_target_place_id ?? null;
 
+  const norm = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const shownQuests = quests.filter((q) => {
+    if (view === "miennes" && !myQuestIds.has(q.id)) return false;
+    if (view === "dispo" && (myQuestIds.has(q.id) || q.status !== "open")) return false;
+    if (typeFilter && q.contract_type !== typeFilter) return false;
+    if (search.trim()) {
+      const hay = norm(`${q.title} ${q.description ?? ""} ${q.giver ?? ""} ${(q.objectives ?? []).join(" ")}`);
+      if (!norm(search.trim()).split(/\s+/).every((w) => hay.includes(w))) return false;
+    }
+    return true;
+  });
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="font-display text-2xl uppercase tracking-wide text-red">Panneau des quêtes</h1>
+      <header className="quest-hero">
+        <div className="min-w-0">
+          <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-red">Bureau des missions</p>
+          <h1 className="font-display text-3xl uppercase tracking-wide">Tableau des missions</h1>
+          <p className="mt-1 max-w-xl font-body text-sm text-paper/75">
+            Les ordres de mission du S.I.D. Prends-en une, rends-toi sur place, puis raconte ce que ton personnage a accompli.
+          </p>
+        </div>
+        <dl className="quest-stats">
+          <div>
+            <dt>Ouvertes</dt>
+            <dd>{quests.filter((q) => q.status === "open").length}</dd>
+          </div>
+          <div>
+            <dt>Mes missions</dt>
+            <dd>{quests.filter((q) => myQuestIds.has(q.id)).length}</dd>
+          </div>
+          <div>
+            <dt>Rapports à écrire</dt>
+            <dd>{quests.filter((q) => myQuestIds.has(q.id) && !myReports.get(q.id)?.report && myReports.get(q.id)?.status !== "rejected").length}</dd>
+          </div>
+        </dl>
         {canManage && (
-          <button
-            onClick={() => setShowForm((s) => !s)}
-            className="rounded-lg bg-red px-4 py-2 font-display text-sm uppercase text-ink hover:bg-red-light"
-          >
-            {showForm ? "Annuler" : "Nouvelle quête"}
+          <button onClick={() => setShowForm((s) => !s)} className="quest-new-btn">
+            {showForm ? "Annuler" : "+ Nouvelle quête"}
           </button>
         )}
-      </div>
+      </header>
 
       {pendingQuests.length > 0 && (
         <div className="glass-card space-y-3 border border-red/50 p-4">
@@ -381,13 +414,38 @@ export default function QuestsPage() {
         </p>
       )}
 
-      <div data-tuto="quetes-types" className="glass-panel flex flex-wrap gap-x-4 gap-y-2 rounded-lg px-4 py-3">
-        {CONTRACT_TYPES.map((t) => (
-          <span key={t.value} className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wide text-paper/70">
-            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: t.color }} />
-            {t.label}
-          </span>
-        ))}
+      <div className="quest-filters">
+        <div className="quest-seg" role="group" aria-label="Quelles missions">
+          {([
+            ["toutes", "Toutes"],
+            ["dispo", "Disponibles"],
+            ["miennes", "Mes missions"],
+          ] as const).map(([k, label]) => (
+            <button key={k} type="button" aria-pressed={view === k} onClick={() => setView(k)} className={view === k ? "is-on" : ""}>
+              {label}
+            </button>
+          ))}
+        </div>
+        <label className="quest-search">
+          <SidIcon name="magnifier" />
+          <span className="sr-only">Chercher une mission</span>
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Chercher une mission, un commanditaire…" />
+        </label>
+        <div data-tuto="quetes-types" className="quest-types" role="group" aria-label="Type de contrat">
+          {CONTRACT_TYPES.map((t) => (
+            <button
+              key={t.value}
+              type="button"
+              aria-pressed={typeFilter === t.value}
+              onClick={() => setTypeFilter((f) => (f === t.value ? null : t.value))}
+              className={typeFilter === t.value ? "is-on" : ""}
+              style={{ ["--type" as string]: t.color }}
+            >
+              <span className="dot" />
+              {t.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {message && <p className="font-mono text-sm text-red">{message}</p>}
@@ -524,8 +582,13 @@ export default function QuestsPage() {
         </form>
       )}
 
-      <div data-tuto="quetes-liste" className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {quests.map((q, qi) => {
+      <div data-tuto="quetes-liste" className="grid grid-cols-1 items-start gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+        {shownQuests.length === 0 && (
+          <p className="col-span-full rounded-2xl border border-dashed border-white/15 p-8 text-center font-body text-paper/70">
+            Aucune mission ne correspond. {view !== "toutes" || typeFilter || search ? "Essaie d'autres filtres." : "Le tableau est vide pour l'instant."}
+          </p>
+        )}
+        {shownQuests.map((q, qi) => {
           const count = counts.get(q.id) ?? 0;
           const isFull = q.max_participants != null && count >= q.max_participants;
           const alreadyIn = myQuestIds.has(q.id);
@@ -539,11 +602,11 @@ export default function QuestsPage() {
           return (
             <div key={q.id} id={`quete-${q.id}`} data-tuto={qi === 0 ? "quete" : undefined} className={`scroll-mt-24 space-y-2 ${focusQuest === q.id ? "quest-focus" : ""}`}>
               <QuestCard quest={q} participantCount={count} />
-              {!q.funded_by_creator && (
-                <p className="text-center font-mono text-[10px] uppercase text-paper/65">Financée par le S.I.D.</p>
-              )}
-              <p
-                className="text-center font-mono text-[10px] uppercase text-blue-light"
+              <div className="quest-dock">
+              <div className="quest-dock-meta">
+              {!q.funded_by_creator && <span className="quest-chip">Financée par le S.I.D.</span>}
+              <span
+                className="quest-chip is-rep"
                 title="Renommée calculée selon le rang de la quête et ta renommée actuelle : réussir au-dessus de ton niveau rapporte plus, échouer une quête facile coûte plus."
               >
                 <SidIcon name="medal" />{" "}
@@ -567,10 +630,11 @@ export default function QuestsPage() {
                 ) : (
                   "Renommée selon ton niveau"
                 )}
-              </p>
+              </span>
+              </div>
 
               {questPlace && (
-                <div className="glass-card space-y-1 p-3 text-center">
+                <div className="quest-dock-place">
                   <p className="font-mono text-xs uppercase text-blue-light"><SidIcon name="map" /> {questPlace.name}</p>
                   {isTravelingToThisQuest ? (
                     <p className="rounded border border-blue bg-blue/10 py-1 font-mono text-[10px] uppercase text-blue-light">
@@ -601,10 +665,11 @@ export default function QuestsPage() {
               )}
 
               {q.status === "open" && !alreadyIn && (
-                <div className="glass-card space-y-2 p-3">
-                  <label className={labelClass}>Récompense pour…</label>
+                <div className="quest-dock-take">
+                  <label className="quest-dock-label" htmlFor={`benef-${q.id}`}>Récompense pour</label>
                   <select
-                    className={inputClass}
+                    id={`benef-${q.id}`}
+                    className="quest-dock-select"
                     value={beneficiary[q.id] ?? "self"}
                     onChange={(e) => setBeneficiary((b) => ({ ...b, [q.id]: e.target.value }))}
                   >
@@ -628,7 +693,7 @@ export default function QuestsPage() {
                   <button
                     onClick={() => joinQuest(q)}
                     disabled={isFull || missing.length > 0 || notHere}
-                    className="rounded-lg w-full border border-red py-1 font-mono text-xs uppercase text-red hover:bg-red hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
+                    className="quest-take-btn"
                   >
                     {isFull ? "Complète" : notHere ? "À prendre sur place" : missing.length > 0 ? "Prérequis non atteints" : "Prendre la mission"}
                   </button>
@@ -636,8 +701,8 @@ export default function QuestsPage() {
               )}
 
               {alreadyIn && (
-                <p className="rounded-lg w-full border border-blue/60 py-1 text-center font-mono text-xs uppercase text-blue-light">
-                  {isTravelingToThisQuest ? <><SidIcon name="compass" /> En trajet — Déjà prise</> : "Déjà prise"}
+                <p className="quest-chip is-taken">
+                  {isTravelingToThisQuest ? <><SidIcon name="compass" /> En route vers la mission</> : <><SidIcon name="check" /> Mission en cours</>}
                 </p>
               )}
 
@@ -709,6 +774,7 @@ export default function QuestsPage() {
                   )}
                 </div>
               )}
+              </div>
             </div>
           );
         })}

@@ -345,7 +345,7 @@ export const PAGE_TIPS: Record<string, PageTip> = {
     key: "chat",
     title: "Messagerie",
     icon: "chat",
-    points: ["« Nouvelle discussion » : un agent, ou plusieurs pour un groupe.", "Survole (ou touche) un de tes messages pour le modifier ou le supprimer.", "Gras, italique, couleur : la barre est juste au-dessus du champ."],
+    points: ["« + Nouvelle » : un agent, ou plusieurs pour un groupe ou une scène RP.", "Survole (ou touche) un de tes messages pour le modifier ou le supprimer.", "Au-dessus du champ : parler, action, hors-RP, dés ; « Aa » pour le gras, l'italique et la couleur."],
     tourFrom: "messagerie",
   },
   "/dashboard/notifications": {

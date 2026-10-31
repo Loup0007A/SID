@@ -16,6 +16,19 @@ import { TitleBadge } from "@/components/titles/TitleVisuals";
 import { SidIcon, GlyphText } from "@/components/icons/SidIcon";
 import { RpBar, RpMessage, RP_MODES, ROLL_ERRORS, parseRp, type RpMode } from "@/components/chat/RpChat";
 
+/** Avatar : la photo, sinon l'initiale sur une couleur tirée du pseudo. */
+function Avatar({ name, url, size = 32 }: { name: string; url: string | null | undefined; size?: number }) {
+  const hue = Array.from(name).reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 360, 7);
+  return url ? (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={url} alt="" width={size} height={size} loading="lazy" className="chat-avatar" style={{ width: size, height: size }} />
+  ) : (
+    <span className="chat-avatar is-initial" aria-hidden style={{ width: size, height: size, fontSize: size * 0.42, background: `hsl(${hue} 38% 42%)` }}>
+      {name.charAt(0).toUpperCase()}
+    </span>
+  );
+}
+
 const COLOR_PRESETS = ["#D99A9A", "#8FB3D9", "#E8C547", "#3F8F5F", "#B23B2E", ""] as const;
 
 function ChatInner() {
@@ -44,6 +57,8 @@ function ChatInner() {
   const [isAdmin, setIsAdmin] = useState(false);
   // Messagerie RP (Lot 62) : façon de parler, et droit de narrer (maîtres du jeu).
   const [rpMode, setRpMode] = useState<RpMode>("say");
+  const [showFormat, setShowFormat] = useState(false);
+  const shellRef = useRef<HTMLDivElement>(null);
   const [canNarrate, setCanNarrate] = useState(false);
 
   // Édition d'un message existant
@@ -106,7 +121,7 @@ function ChatInner() {
     async function loadMessages() {
       const { data } = await supabase.from("chat_messages").select("*").eq("channel_id", activeChannel).order("created_at", { ascending: true });
       setMessages(data ?? []);
-      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+      setTimeout(() => scrollToBottom(), 50);
     }
     loadMessages();
     setShowAddMembers(false);
@@ -120,7 +135,7 @@ function ChatInner() {
         { event: "INSERT", schema: "public", table: "chat_messages", filter: `channel_id=eq.${activeChannel}` },
         (payload) => {
           setMessages((prev) => [...prev, payload.new as ChatMessage]);
-          setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
+          setTimeout(() => scrollToBottom(), 50);
         }
       )
       .on(
@@ -216,6 +231,20 @@ function ChatInner() {
     if (error || err) setMessage(err ? ROLL_ERRORS[err] ?? "Lancer impossible." : `Lancer impossible : ${error?.message}`);
     else setMessage(null);
   }
+
+  // Seule la liste des messages défile (pas toute la page).
+  function scrollToBottom() {
+    const el = bottomRef.current?.parentElement;
+    el?.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+  }
+
+  // À l'ouverture d'une discussion : la page se cale pour montrer toute la
+  // conversation, zone de saisie comprise (même sous une astuce de page).
+  useEffect(() => {
+    if (!activeChannel) return;
+    const t = setTimeout(() => shellRef.current?.scrollIntoView({ block: "end", behavior: "smooth" }), 350);
+    return () => clearTimeout(t);
+  }, [activeChannel]);
 
   function startEdit(m: ChatMessage) {
     setEditingId(m.id);
@@ -384,34 +413,48 @@ function ChatInner() {
   const activeChannelObj = channels.find((c) => c.id === activeChannel);
   const isGroup = activeChannelObj?.type === "group";
 
+  const activeLabel = activeChannelObj ? channelLabel(activeChannelObj) : "";
+  const dayLabel = (d: Date) => {
+    const today = new Date();
+    const y = new Date(today.getTime() - 86_400_000);
+    if (d.toDateString() === today.toDateString()) return "Aujourd'hui";
+    if (d.toDateString() === y.toDateString()) return "Hier";
+    return d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+  };
+
   return (
-    <div className="flex h-[calc(100dvh-9rem)] gap-4 sm:h-[calc(100dvh-10rem)]">
+    <div ref={shellRef} className="chat-shell">
       <h1 className="sr-only">Messagerie</h1>
-      <aside data-tuto="chat-liste" className={clsx("w-full flex-col shrink-0 space-y-2 overflow-y-auto md:flex md:w-64", activeChannel ? "hidden md:flex" : "flex")}>
-        <button onClick={() => setShowNew((s) => !s)} className="rounded-lg w-full bg-red px-3 py-2 font-display text-sm uppercase text-ink hover:bg-red-light">
-          {showNew ? "Annuler" : "Nouvelle discussion"}
-        </button>
+      <aside data-tuto="chat-liste" className={clsx("chat-side", activeChannel ? "hidden md:flex" : "flex")}>
+        <div className="flex items-center justify-between gap-2 px-1">
+          <h2 className="chat-side-title">Discussions</h2>
+          <button onClick={() => setShowNew((s) => !s)} aria-expanded={showNew} className={clsx("chat-new-btn", showNew && "is-open")}>
+            {showNew ? "Fermer" : "+ Nouvelle"}
+          </button>
+        </div>
 
         {message && <p className="rounded-lg bg-red/10 px-2 py-1 font-mono text-xs text-red"><GlyphText text={message} /></p>}
 
         {showNew && (
-          <div className="glass-card space-y-3 p-3">
-            <p className="font-mono text-xs uppercase text-paper/60">Message privé</p>
-            <div className="max-h-32 space-y-1 overflow-y-auto">
+          <div className="chat-new space-y-3">
+            <p className="chat-new-label">Message privé</p>
+            <div className="max-h-36 space-y-0.5 overflow-y-auto">
               {members.filter((m) => m.id !== userId).map((m) => (
-                <button key={m.id} onClick={() => startDirectMessage(m.id)} className="block w-full rounded px-2 py-1 text-left font-body text-sm hover:bg-paper-dark">
-                  {m.nickname}
+                <button key={m.id} onClick={() => startDirectMessage(m.id)} className="chat-new-member">
+                  <Avatar name={m.nickname} url={m.avatar_url} size={26} />
+                  <span className="truncate">{m.nickname}</span>
                 </button>
               ))}
             </div>
-            <p className="border-t border-white/10 pt-2 font-mono text-xs uppercase text-paper/60">Groupe</p>
+            <p className="chat-new-label border-t border-white/10 pt-3">Groupe ou scène RP</p>
             <input
-              placeholder="Nom du groupe"
+              placeholder="Nom (ex. La taverne du Pendu)"
+              aria-label="Nom du groupe"
               value={groupName}
               onChange={(e) => setGroupName(e.target.value)}
-              className="rounded-lg w-full border border-paper-dark bg-paper px-2 py-1 font-body text-sm text-ink"
+              className="w-full rounded-lg border border-white/15 bg-black/20 px-3 py-1.5 font-body text-sm text-paper outline-none focus:border-blue"
             />
-            <div className="max-h-24 space-y-1 overflow-y-auto">
+            <div className="max-h-28 space-y-1 overflow-y-auto">
               {members.filter((m) => m.id !== userId).map((m) => (
                 <label key={m.id} className="flex items-center gap-2 font-body text-sm">
                   <input
@@ -425,54 +468,83 @@ function ChatInner() {
                 </label>
               ))}
             </div>
-            <button onClick={createGroup} className="rounded-lg w-full bg-blue px-3 py-1 font-mono text-xs uppercase text-ink hover:bg-blue-light">
+            <button onClick={createGroup} className="w-full rounded-lg bg-blue px-3 py-1.5 font-mono text-xs uppercase text-ink hover:bg-blue-light">
               Créer le groupe
             </button>
           </div>
         )}
 
-        {channels.map((c) => (
-          <button
-            key={c.id}
-            onClick={() => selectChannel(c.id)}
-            className={`block w-full rounded px-3 py-2 text-left font-mono text-sm ${
-              activeChannel === c.id ? "bg-ink-border text-red" : "hover:bg-ink-border"
-            }`}
-          >
-            {channelLabel(c)}
-          </button>
-        ))}
+        <nav aria-label="Mes discussions" className="flex flex-col gap-1 overflow-y-auto">
+          {channels.map((c) => {
+            const partner = c.type === "dm" ? dmPartners.get(c.id) : null;
+            const partnerProfile = partner ? Array.from(profiles.values()).find((p) => p.nickname === partner) : null;
+            const label = partner ?? channelLabel(c);
+            return (
+              <button
+                key={c.id}
+                onClick={() => selectChannel(c.id)}
+                aria-current={activeChannel === c.id ? "true" : undefined}
+                className={clsx("chat-chan", activeChannel === c.id && "is-active")}
+              >
+                {c.type === "dm" ? (
+                  <Avatar name={label} url={partnerProfile?.avatar_url ?? null} size={36} />
+                ) : (
+                  <span className="chat-chan-group" aria-hidden>
+                    <SidIcon name={c.type === "application" ? "clipboard" : "people"} />
+                  </span>
+                )}
+                <span className="min-w-0 flex-1">
+                  <span className="chat-chan-name">{label}</span>
+                  <span className="chat-chan-sub">{c.type === "dm" ? "Message privé" : c.type === "application" ? "Candidature" : "Groupe"}</span>
+                </span>
+              </button>
+            );
+          })}
+        </nav>
         {channels.length === 0 && <p className="px-2 font-body text-sm text-paper/65">Aucune discussion pour l&apos;instant.</p>}
       </aside>
 
-      <section className={clsx("glass-card flex-1 flex-col p-4 md:flex", activeChannel ? "flex" : "hidden md:flex")}>
+      <section className={clsx("chat-main", activeChannel ? "flex" : "hidden md:flex")}>
         {!activeChannel ? (
-          <p className="m-auto font-body text-paper/60">Sélectionne une discussion.</p>
+          <div className="m-auto flex flex-col items-center gap-3 p-6 text-center">
+            <span className="chat-empty-icon" aria-hidden><SidIcon name="chat" size={44} /></span>
+            <p className="font-display text-xl uppercase tracking-wide">Aucune discussion ouverte</p>
+            <p className="max-w-xs font-body text-sm text-paper/70">Choisis une discussion à gauche, ou commence-en une avec « + Nouvelle ».</p>
+          </div>
         ) : (
           <>
-            <div className="mb-2 flex items-center justify-between gap-2">
+            <header className="chat-head">
               <button
                 onClick={() => {
                   setActiveChannel(null);
                   router.replace("/dashboard/chat");
                 }}
-                className="flex items-center gap-1 font-mono text-xs uppercase text-paper/60 hover:text-blue-light md:hidden"
+                aria-label="Retour aux discussions"
+                className="chat-head-back md:hidden"
               >
-                ← Retour aux discussions
+                ←
               </button>
+              {activeChannelObj?.type === "dm" ? (
+                <Avatar name={dmPartners.get(activeChannel) ?? "?"} url={Array.from(profiles.values()).find((p) => p.nickname === dmPartners.get(activeChannel))?.avatar_url ?? null} size={40} />
+              ) : (
+                <span className="chat-chan-group is-lg" aria-hidden><SidIcon name="people" /></span>
+              )}
+              <div className="min-w-0 flex-1">
+                <h2 className="truncate font-display text-lg uppercase tracking-wide">{activeChannelObj?.type === "dm" ? dmPartners.get(activeChannel) ?? activeLabel : activeLabel}</h2>
+                <p className="font-mono text-[11px] text-paper/65">
+                  {isGroup ? (channelParticipantIds.size ? `${channelParticipantIds.size} participants` : "Groupe") : "Message privé"}
+                </p>
+              </div>
               {isGroup && (
-                <button
-                  onClick={() => setShowAddMembers((s) => !s)}
-                  className="ml-auto rounded-lg border border-blue px-3 py-1 font-mono text-xs uppercase text-blue hover:bg-blue hover:text-ink"
-                >
-                  {showAddMembers ? "Annuler" : "Ajouter des membres"}
+                <button onClick={() => setShowAddMembers((s) => !s)} aria-expanded={showAddMembers} className="chat-head-btn">
+                  {showAddMembers ? "Fermer" : "+ Membres"}
                 </button>
               )}
-            </div>
+            </header>
 
             {isGroup && showAddMembers && (
-              <div className="glass-card mb-3 space-y-2 p-3">
-                <p className="font-mono text-xs uppercase text-paper/60">Ajouter au groupe</p>
+              <div className="chat-new mx-3 mt-3 space-y-2">
+                <p className="chat-new-label">Ajouter au groupe</p>
                 <div className="max-h-32 space-y-1 overflow-y-auto">
                   {members.filter((m) => !channelParticipantIds.has(m.id)).map((m) => (
                     <label key={m.id} className="flex items-center gap-2 font-body text-sm">
@@ -493,121 +565,164 @@ function ChatInner() {
                 <button
                   onClick={addMembersToChannel}
                   disabled={membersToAdd.length === 0}
-                  className="rounded-lg w-full bg-blue px-3 py-1 font-mono text-xs uppercase text-ink hover:bg-blue-light disabled:opacity-40"
+                  className="w-full rounded-lg bg-blue px-3 py-1 font-mono text-xs uppercase text-ink hover:bg-blue-light disabled:opacity-40"
                 >
                   Ajouter
                 </button>
               </div>
             )}
 
-            <div className="flex-1 space-y-2 overflow-y-auto pr-2">
-              {messages.map((m) => {
+            <div className="chat-scroll" role="log" aria-label={`Messages : ${activeLabel}`}>
+              {messages.length === 0 && (
+                <p className="m-auto py-10 text-center font-body text-sm text-paper/65">Aucun message. Lance la conversation, ou la scène !</p>
+              )}
+              {messages.map((m, i) => {
                 const isMine = m.sender_id === userId;
                 const isEditing = editingId === m.id;
+                const d = new Date(m.created_at);
+                const prev = messages[i - 1];
+                const newDay = !prev || new Date(prev.created_at).toDateString() !== d.toDateString();
+                const day = newDay ? (
+                  <div className="chat-day" key={`d-${m.id}`}>
+                    <span>{dayLabel(d)}</span>
+                  </div>
+                ) : null;
+                const time = d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+                const name = profiles.get(m.sender_id)?.nickname ?? "Agent";
+
                 if (m.kind && m.kind !== "say" && !m.is_deleted && !isEditing) {
-                  return (
-                    <RpMessage
-                      key={m.id}
-                      m={m}
-                      name={profiles.get(m.sender_id)?.nickname ?? "Agent"}
-                      mine={isMine}
-                      onDelete={isMine ? () => deleteMessage(m.id) : undefined}
-                    />
-                  );
+                  return [
+                    day,
+                    <RpMessage key={m.id} m={m} name={name} mine={isMine} onDelete={isMine ? () => deleteMessage(m.id) : undefined} />,
+                  ];
                 }
-                return (
-                  <div key={m.id} className={`group max-w-[85%] sm:max-w-md rounded-lg px-3 py-2 ${isMine ? "ml-auto bg-blue text-ink" : "bg-paper-dark text-ink"}`}>
+                if (m.is_deleted) {
+                  return [
+                    day,
+                    <p key={m.id} className={clsx("chat-deleted", isMine && "ml-auto")}>
+                      {name} a supprimé un message · {time}
+                    </p>,
+                  ];
+                }
+                // Messages d'affilée du même agent (moins de 5 min) : regroupés sous un seul nom.
+                const grouped =
+                  !newDay && !!prev && prev.sender_id === m.sender_id && (prev.kind ?? "say") === "say" && !prev.is_deleted &&
+                  d.getTime() - new Date(prev.created_at).getTime() < 5 * 60_000;
+                const title = senderTitles.get(m.sender_id);
+                return [
+                  day,
+                  <div key={m.id} className={clsx("chat-row group", isMine ? "is-mine" : "is-other", grouped && "is-grouped")}>
                     {!isMine && (
-                      <span className="flex flex-wrap items-center gap-1.5">
-                        <Link
-                          href={`/dashboard/profile/${m.sender_id}`}
-                          className="font-mono text-[10px] uppercase text-paper/60 hover:text-blue-light hover:underline"
-                        >
-                          {profiles.get(m.sender_id)?.nickname ?? "Agent"}
-                        </Link>
-                        {senderTitles.get(m.sender_id) && (
-                          <TitleBadge titleId={senderTitles.get(m.sender_id)!.title_id} level={senderTitles.get(m.sender_id)!.level} dragon={senderTitles.get(m.sender_id)!.dragon} size="xs" />
+                      <span className="chat-row-avatar">
+                        {!grouped && (
+                          <Link href={`/dashboard/profile/${m.sender_id}`} aria-label={`Dossier de ${name}`}>
+                            <Avatar name={name} url={profiles.get(m.sender_id)?.avatar_url ?? null} size={34} />
+                          </Link>
                         )}
                       </span>
                     )}
-
-                    {m.is_deleted ? (
-                      <p className="font-body text-sm italic text-ink/75">Message supprimé</p>
-                    ) : isEditing ? (
-                      <div className="space-y-2">
-                        <input
-                          value={editContent}
-                          onChange={(e) => setEditContent(e.target.value)}
-                          className="w-full rounded border border-ink/20 bg-paper px-2 py-1 font-body text-sm text-ink outline-none"
-                        />
-                        <div className="flex flex-wrap items-center gap-2">
-                          <button onClick={() => setEditBold((b) => !b)} className={clsx("rounded border px-1.5 font-bold text-xs", editBold ? "border-ink bg-ink/10" : "border-ink/30")}>G</button>
-                          <button onClick={() => setEditItalic((i) => !i)} className={clsx("rounded border px-1.5 text-xs italic", editItalic ? "border-ink bg-ink/10" : "border-ink/30")}>I</button>
-                          {COLOR_PRESETS.map((c) => (
-                            <button
-                              key={c || "none"}
-                              onClick={() => setEditColor(c)}
-                              title={c || "Aucune couleur"}
-                              className={clsx("h-4 w-4 rounded-full border", editColor === c ? "border-ink" : "border-ink/20")}
-                              style={{ backgroundColor: c || "transparent" }}
+                    <div className="chat-bubble-wrap">
+                      {!isMine && !grouped && (
+                        <span className="chat-author">
+                          <Link href={`/dashboard/profile/${m.sender_id}`} className="hover:underline">{name}</Link>
+                          {title && <TitleBadge titleId={title.title_id} level={title.level} dragon={title.dragon} size="xs" />}
+                        </span>
+                      )}
+                      <div className={clsx("chat-bubble", isMine ? "is-mine" : "is-other")}>
+                        {isEditing ? (
+                          <div className="space-y-2">
+                            <input
+                              value={editContent}
+                              onChange={(e) => setEditContent(e.target.value)}
+                              aria-label="Modifier le message"
+                              className="w-full rounded border border-ink/20 bg-paper px-2 py-1 font-body text-sm text-ink outline-none"
                             />
-                          ))}
-                          <button onClick={saveEdit} className="ml-auto rounded bg-ink/80 px-2 py-0.5 font-mono text-[10px] uppercase text-paper">Enregistrer</button>
-                          <button onClick={() => setEditingId(null)} className="font-mono text-[10px] uppercase text-ink/75 underline">Annuler</button>
-                        </div>
-                      </div>
-                    ) : (
-                      <p
-                        className={clsx("font-body text-sm", m.is_bold && "font-bold", m.is_italic && "italic")}
-                        style={m.color ? { color: m.color } : undefined}
-                      >
-                        {m.content}
-                        {m.troll_tag?.kind === "flatterie" && (
-                          <span className="ml-1 font-bold not-italic" style={{ color: m.troll_tag.color || "#B23B2E" }} title={`Flatterie obligatoire : une farce de ${m.troll_tag.by}`}>
-                            … et {m.troll_tag.by} {m.troll_tag.phrase || "est le meilleur !"} <SidIcon name="masks" />
+                            <div className="flex flex-wrap items-center gap-2">
+                              <button onClick={() => setEditBold((b) => !b)} className={clsx("rounded border px-1.5 font-bold text-xs", editBold ? "border-ink bg-ink/10" : "border-ink/30")}>G</button>
+                              <button onClick={() => setEditItalic((it) => !it)} className={clsx("rounded border px-1.5 text-xs italic", editItalic ? "border-ink bg-ink/10" : "border-ink/30")}>I</button>
+                              {COLOR_PRESETS.map((c) => (
+                                <button
+                                  key={c || "none"}
+                                  onClick={() => setEditColor(c)}
+                                  title={c || "Aucune couleur"}
+                                  aria-label={c ? `Couleur ${c}` : "Aucune couleur"}
+                                  className={clsx("h-4 w-4 rounded-full border", editColor === c ? "border-ink" : "border-ink/20")}
+                                  style={{ backgroundColor: c || "transparent" }}
+                                />
+                              ))}
+                              <button onClick={saveEdit} className="ml-auto rounded bg-ink/80 px-2 py-0.5 font-mono text-[10px] uppercase text-paper">Enregistrer</button>
+                              <button onClick={() => setEditingId(null)} className="font-mono text-[10px] uppercase text-ink/75 underline">Annuler</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <p
+                            className={clsx("whitespace-pre-wrap break-words font-body text-[0.95rem] leading-snug", m.is_bold && "font-bold", m.is_italic && "italic")}
+                            style={m.color ? { color: m.color } : undefined}
+                          >
+                            {m.content}
+                            {m.troll_tag?.kind === "flatterie" && (
+                              <span className="ml-1 font-bold not-italic" style={{ color: m.troll_tag.color || "#B23B2E" }} title={`Flatterie obligatoire : une farce de ${m.troll_tag.by}`}>
+                                … et {m.troll_tag.by} {m.troll_tag.phrase || "est le meilleur !"} <SidIcon name="masks" />
+                              </span>
+                            )}
+                          </p>
+                        )}
+                        {!isEditing && (
+                          <span className="chat-time">
+                            {m.edited_at && "modifié · "}
+                            {time}
                           </span>
                         )}
-                        {m.edited_at && <span className="ml-1 font-mono text-[10px] opacity-60">(modifié)</span>}
-                      </p>
-                    )}
-
-                    {isMine && !m.is_deleted && !isEditing && (
-                      <div className="mt-1 hidden gap-2 group-hover:flex">
-                        <button onClick={() => startEdit(m)} className="font-mono text-[10px] uppercase text-ink/70 underline">Modifier</button>
-                        <button onClick={() => deleteMessage(m.id)} className="font-mono text-[10px] uppercase text-ink/70 underline">Supprimer</button>
                       </div>
-                    )}
-                  </div>
-                );
+                      {isMine && !isEditing && (
+                        <div className="chat-tools">
+                          <button onClick={() => startEdit(m)}>Modifier</button>
+                          <button onClick={() => deleteMessage(m.id)}>Supprimer</button>
+                        </div>
+                      )}
+                    </div>
+                  </div>,
+                ];
               })}
               <div ref={bottomRef} />
             </div>
 
-            <form onSubmit={sendMessage} className="mt-3 space-y-2 border-t border-white/10 pt-3">
-              <div className="flex flex-wrap items-center gap-2">
-                <button type="button" onClick={() => setDraftBold((b) => !b)} className={clsx("rounded border px-2 py-0.5 font-mono text-xs font-bold", draftBold ? "border-blue bg-blue/20 text-blue-light" : "border-white/20 text-paper/70")}>G</button>
-                <button type="button" onClick={() => setDraftItalic((i) => !i)} className={clsx("rounded border px-2 py-0.5 font-mono text-xs italic", draftItalic ? "border-blue bg-blue/20 text-blue-light" : "border-white/20 text-paper/70")}>I</button>
-                {COLOR_PRESETS.map((c) => (
-                  <button
-                    type="button"
-                    key={c || "none"}
-                    onClick={() => setDraftColor(c)}
-                    title={c || "Aucune couleur"}
-                    className={clsx("h-5 w-5 rounded-full border", draftColor === c ? "border-paper" : "border-white/20")}
-                    style={{ backgroundColor: c || "transparent" }}
-                  />
-                ))}
+            <form onSubmit={sendMessage} className="chat-composer">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <RpBar mode={rpMode} onMode={setRpMode} canNarrate={canNarrate} onRoll={rollDice} />
+                <button
+                  type="button"
+                  onClick={() => setShowFormat((v) => !v)}
+                  aria-pressed={showFormat}
+                  title="Gras, italique, couleur"
+                  className={clsx("rp-mode ml-auto", showFormat && "is-on")}
+                >
+                  <span className="font-bold">A</span><span className="italic">a</span>
+                </button>
                 {isAdmin && (
-                  <button
-                    type="button"
-                    onClick={() => setShowCommands((s) => !s)}
-                    className="ml-auto rounded border border-white/20 px-2 py-0.5 font-mono text-xs text-paper/70 hover:border-blue hover:text-blue-light"
-                    title="Commandes disponibles"
-                  >
-                    <SidIcon name="demon" /> /commandes
+                  <button type="button" onClick={() => setShowCommands((s) => !s)} aria-pressed={showCommands} className={clsx("rp-mode", showCommands && "is-on")} title="Commandes de farce (admins)">
+                    <SidIcon name="demon" />
                   </button>
                 )}
               </div>
+              {showFormat && (
+                <div className="flex flex-wrap items-center gap-2">
+                  <button type="button" onClick={() => setDraftBold((b) => !b)} aria-pressed={draftBold} className={clsx("rounded border px-2 py-0.5 font-mono text-xs font-bold", draftBold ? "border-blue bg-blue/20 text-blue-light" : "border-white/20 text-paper/70")}>G</button>
+                  <button type="button" onClick={() => setDraftItalic((it) => !it)} aria-pressed={draftItalic} className={clsx("rounded border px-2 py-0.5 font-mono text-xs italic", draftItalic ? "border-blue bg-blue/20 text-blue-light" : "border-white/20 text-paper/70")}>I</button>
+                  {COLOR_PRESETS.map((c) => (
+                    <button
+                      type="button"
+                      key={c || "none"}
+                      onClick={() => setDraftColor(c)}
+                      title={c || "Aucune couleur"}
+                      aria-label={c ? `Couleur ${c}` : "Aucune couleur"}
+                      aria-pressed={draftColor === c}
+                      className={clsx("h-5 w-5 rounded-full border", draftColor === c ? "border-paper" : "border-white/20")}
+                      style={{ backgroundColor: c || "transparent" }}
+                    />
+                  ))}
+                </div>
+              )}
               {showCommands && isAdmin && (
                 <div className="flex flex-wrap gap-1.5 rounded-lg border border-white/10 bg-white/5 p-2">
                   {TROLL_COMMANDS.filter((c) => c !== "troll").map((c) => (
@@ -629,17 +744,18 @@ function ChatInner() {
                   </button>
                 </div>
               )}
-              <RpBar mode={rpMode} onMode={setRpMode} canNarrate={canNarrate} onRoll={rollDice} />
-              <div className="flex gap-2">
+              <div className="chat-input-row">
                 <input
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                   placeholder={RP_MODES.find((x) => x.key === rpMode)?.placeholder ?? "Écrire un message…"}
                   aria-label="Message"
-                  className={clsx("rounded-lg flex-1 border border-paper-dark bg-paper px-3 py-2 font-body text-ink outline-none focus:border-blue", `rp-input-${rpMode}`)}
+                  className={clsx("chat-input", `rp-input-${rpMode}`)}
                 />
-                <button type="submit" className="rounded-lg bg-red px-4 font-display text-sm uppercase text-ink hover:bg-red-light">
-                  Envoyer
+                <button type="submit" className="chat-send" aria-label="Envoyer" disabled={!draft.trim()}>
+                  <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden>
+                    <path d="M3.4 20.4 21 12 3.4 3.6l.02 6.53L15 12 3.42 13.87z" fill="currentColor" />
+                  </svg>
                 </button>
               </div>
             </form>
