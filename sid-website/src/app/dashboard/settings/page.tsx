@@ -162,9 +162,7 @@ export default function SettingsPage() {
       <section data-tuto="reglages-apparence" className="glass-card space-y-3 p-6">
         <h2 className="font-display text-lg uppercase">Apparence personnalisée</h2>
         <p className="font-body text-sm text-paper/70">
-          Couleurs, bordure, lueur et animations pour chacune des 4 zones où les autres membres te voient — aucun code
-          à écrire. Le résultat ne peut s&apos;appliquer qu&apos;à ta propre carte/ligne/fiche, jamais au reste de la
-          page.
+          Couleurs, bordure, lueur et animations de ta carte, ta ligne et ta fiche, telles que les autres les voient.
         </p>
         {message && <p className="font-mono text-sm text-red">{message}</p>}
       </section>
@@ -274,7 +272,7 @@ function CursorSettings() {
       <div>
         <h2 className="font-display text-lg uppercase">Curseur</h2>
         <p className="font-body text-sm text-paper/70">
-          Seulement avec une souris, sur ordinateur. Les couleurs suivent la fête du moment. Réglage propre à ce navigateur.
+          Sur ordinateur, avec une souris. Les couleurs suivent la fête du moment.
         </p>
       </div>
       <div className="flex flex-wrap gap-2">

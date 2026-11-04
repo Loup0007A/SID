@@ -113,8 +113,7 @@ export default function PrivacyPage() {
       <div className="space-y-2">
         <h1 className="font-display text-2xl uppercase tracking-wide text-red">Mes données</h1>
         <p className="font-body text-sm text-paper/70">
-          Ce que le S.I.D. garde sur toi, qui peut le voir, et ce que tu peux en faire. Valable pour le Dossier Central,
-          la Cartographie et le Wiki (un seul compte). Tout est détaillé dans la{" "}
+          Valable pour les trois sites. Détails dans la{" "}
           <Link href="/confidentialite" className="text-blue-light underline">politique de confidentialité</Link>.
         </p>
       </div>

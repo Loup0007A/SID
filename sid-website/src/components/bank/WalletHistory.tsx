@@ -104,7 +104,7 @@ export function WalletHistory({ userId, balance }: { userId: string; balance: nu
       {!view ? (
         <p className="font-mono text-xs text-paper/65">Chargement du relevé…</p>
       ) : view.count === 0 ? (
-        <p className="font-body text-sm text-paper/70">Aucun mouvement sur cette période : ton solde n&apos;a pas bougé.</p>
+        <p className="font-body text-sm text-paper/70">Aucun mouvement sur cette période.</p>
       ) : (
         <>
           <p className="font-body text-sm text-paper/75">

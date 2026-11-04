@@ -172,8 +172,7 @@ function TitlesInner() {
                   {equipped.maxLevel > 1 && <span className="ml-2 text-xl">{roman(owned.get(equipped.id)?.level ?? 1)}</span>}
                 </h2>
                 <p className="font-body text-sm text-paper/80">
-                  {me.nickname} — c&apos;est ce que les autres voient sur ton dossier, au trombinoscope, au classement et dans la
-                  messagerie.
+                  {me.nickname}
                 </p>
               </>
             ) : (
@@ -201,7 +200,7 @@ function TitlesInner() {
         <div>
           <h2 className="font-display text-lg uppercase tracking-wide text-paper">Titres d&apos;événement</h2>
           <p className="max-w-2xl font-body text-sm text-paper/60">
-            Un par événement. Il ne s&apos;obtient que pendant l&apos;événement… mais se garde pour toujours.
+            Un par événement, à gagner pendant celui-ci.
           </p>
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">{EVENT_TITLES.map(card)}</div>

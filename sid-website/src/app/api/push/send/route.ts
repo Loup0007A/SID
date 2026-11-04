@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  let body: { user_id?: string; title?: string; body?: string; link?: string };
+  let body: { user_id?: string; title?: string; body?: string; link?: string; tag?: string };
   try {
     body = await request.json();
   } catch {
@@ -50,11 +50,13 @@ export async function POST(request: NextRequest) {
     title: body.title || "S.I.D.",
     body: body.body || "",
     link: body.link || "/dashboard",
+    // Même conversation : la notification remplace la précédente au lieu de s'empiler.
+    tag: body.tag || undefined,
   });
 
   const results = await Promise.allSettled(
     subs.map((s) =>
-      webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, payload)
+      webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, payload, { TTL: 86400, urgency: "high" })
     )
   );
 

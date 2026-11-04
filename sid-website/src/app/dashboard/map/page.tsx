@@ -224,7 +224,7 @@ export default function MapPage() {
         <div data-tuto="carte-position" className="glass-card space-y-4 p-6">
           <h2 className="font-display text-lg uppercase">Choisis ton point de départ</h2>
           <p className="font-body text-sm text-paper/70">
-            À poser une seule fois — ensuite, tout changement de lieu se fera en lançant un trajet chronométré.
+            Une seule fois : ensuite, on se déplace par trajets.
           </p>
           <div className="space-y-1">
             <label className={labelClass}>Lieu</label>
@@ -282,7 +282,7 @@ export default function MapPage() {
                   : `Arrivée dans ${formatCountdown(trip!.totalSecondsLeft)}`}
               </p>
               <p className="font-body text-xs text-paper/65">
-                Le trajet continue même si tu fermes la page ou passes sur la Cartographie : tu arriveras à l&apos;heure prévue.
+                Le trajet continue même page fermée.
               </p>
             </div>
           ) : (
@@ -328,9 +328,6 @@ export default function MapPage() {
 
           <div className="glass-card space-y-4 p-6">
             <h2 className="font-display text-lg uppercase">Préférences</h2>
-            <p className="font-body text-sm text-paper/70">
-              Ne changent pas ton lieu — juste un détail de mise en scène, modifiable à tout moment.
-            </p>
             <div className="space-y-1">
               <label className={labelClass}>Bâtiment (précision optionnelle)</label>
               <select className={inputClass} value={prefBuildingId} onChange={(e) => setPrefBuildingId(e.target.value)}>

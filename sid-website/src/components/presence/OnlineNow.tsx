@@ -86,7 +86,7 @@ export function OnlineNow() {
         </Link>
       </div>
 
-      {others.length === 0 && <p className="font-body text-sm text-paper/60">Personne d&apos;autre pour l&apos;instant. Tu as le S.I.D. pour toi.</p>}
+      {others.length === 0 && <p className="font-body text-sm text-paper/60">Personne d&apos;autre en ligne.</p>}
 
       <ul className="divide-y divide-white/[0.07]">
         {shown.map((m) => {

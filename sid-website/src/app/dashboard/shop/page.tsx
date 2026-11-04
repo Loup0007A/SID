@@ -214,7 +214,6 @@ export default function ShopPage() {
         <div>
           <p className="font-mono text-xs uppercase tracking-[0.3em] text-red">Économie</p>
           <h1 className="font-display text-3xl uppercase tracking-wide">Comptoir du S.I.D.</h1>
-          <p className="mt-1 max-w-xl font-body text-sm text-paper/70">Ce que l&apos;état-major et ses marchands mettent en vente. Touche un objet pour le voir en grand.</p>
         </div>
         <Link href="/dashboard/bank" scroll={false} className="glass-card px-5 py-3 text-right transition hover:-translate-y-0.5">
           <p className="font-mono text-[10px] uppercase tracking-wide text-paper/60">Ta bourse</p>
@@ -285,7 +284,7 @@ export default function ShopPage() {
               <SidIcon name="store" size={40} />
               <p className="font-display text-lg uppercase">{items.length === 0 ? "Le comptoir est vide" : "Rien ne correspond"}</p>
               <p className="max-w-sm font-body text-sm text-paper/60">
-                {items.length === 0 ? "Aucun objet en vente pour le moment. Repasse bientôt." : "Essaie un autre mot, ou retire le filtre."}
+                {items.length === 0 ? "Aucun objet en vente pour le moment." : "Essaie un autre mot ou un autre filtre."}
               </p>
             </div>
           ) : (

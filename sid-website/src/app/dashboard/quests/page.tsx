@@ -352,9 +352,6 @@ export default function QuestsPage() {
         <div className="min-w-0">
           <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-red">Bureau des missions</p>
           <h1 className="font-display text-3xl uppercase tracking-wide">Tableau des missions</h1>
-          <p className="mt-1 max-w-xl font-body text-sm text-paper/75">
-            Les ordres de mission du S.I.D. Prends-en une, rends-toi sur place, puis raconte ce que ton personnage a accompli.
-          </p>
         </div>
         <dl className="quest-stats">
           <div>

@@ -84,8 +84,7 @@ export default function TechTreePage() {
         <div>
           <h1 className="font-display text-3xl uppercase tracking-wide text-red">Arbre technologique</h1>
           <p className="max-w-2xl font-body text-sm text-paper/70">
-            Chaque simulation réussie te donne un point. Dépense-les ici pour des améliorations permanentes. Tes
-            facteurs de puissance ne baissent pas quand tu dépenses.
+            Un point par simulation réussie, à dépenser en améliorations permanentes.
           </p>
         </div>
         <div data-tuto="tech-points" className="glass-card px-5 py-3 text-right">

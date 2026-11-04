@@ -16,7 +16,7 @@ import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import { ScrollMemory } from "@/components/ScrollMemory";
 import { entryForPath } from "@/lib/navigation";
 import { SectionGate } from "@/components/SectionGate";
-import { registerServiceWorker } from "@/lib/push";
+import { registerServiceWorker, syncPushSubscription } from "@/lib/push";
 import { SandboxBanner } from "@/components/SandboxBanner";
 import { leaveSandbox } from "@/lib/sandbox";
 import { TermsBanner } from "@/components/TermsBanner";
@@ -101,7 +101,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     // Enregistre le service worker dès l'arrivée sur le dashboard (pas
     // besoin d'attendre que le membre active le push) : c'est aussi une
     // condition pour qu'iOS propose "Ajouter à l'écran d'accueil".
-    registerServiceWorker();
+    // Puis, une fois par jour, renvoie l'abonnement push de cet appareil au serveur.
+    registerServiceWorker().then(syncPushSubscription);
 
     let alive = true;
     (async () => {
@@ -262,8 +263,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <SkipLink />
       <header className="glass-panel sticky top-0 z-20 border-x-0 border-t-0 pt-[env(safe-area-inset-top)]">
         <SeasonalGarland />
-        <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3 sm:px-6">
-          <Link href="/dashboard" scroll={false} className="flex shrink-0 items-center gap-2" aria-label="Accueil du S.I.D.">
+        <div className="mx-auto flex max-w-6xl items-center gap-2 px-3 py-3 sm:gap-3 sm:px-6">
+          <Link href="/dashboard" scroll={false} className={`shrink-0 items-center gap-2 ${isHome ? "flex" : "hidden sm:flex"}`} aria-label="Accueil du S.I.D.">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.webp" width={36} height={36} decoding="async" alt="" className="h-9 w-9 rounded-full" />
             <span className="sid-wordmark hidden font-display text-xl uppercase tracking-wide text-red sm:inline">S.I.D.</span>
@@ -271,18 +272,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           {!isHome && (
             <div className="flex min-w-0 items-center gap-2">
+              {/* Téléphone : la flèche seule (le titre est déjà sur la page). */}
               <Link
                 href="/dashboard"
                 scroll={false}
-                className="shrink-0 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 font-mono text-xs uppercase tracking-wide hover:bg-white/10"
+                aria-label="Accueil"
+                className="flex h-9 shrink-0 items-center justify-center rounded-lg border border-white/15 bg-white/5 px-2.5 font-mono text-xs uppercase tracking-wide hover:bg-white/10 sm:px-3"
               >
-                ← Accueil
+                ←<span className="ml-1 hidden sm:inline">Accueil</span>
               </Link>
-              {title && <span className="truncate font-display uppercase tracking-wide text-paper/80">{title}</span>}
+              {title && <span className="hidden truncate font-display uppercase tracking-wide text-paper/80 sm:inline">{title}</span>}
             </div>
           )}
 
-          <div className="ml-auto flex shrink-0 items-center gap-2">
+          <div className="ml-auto flex min-w-0 items-center gap-1.5 sm:gap-2">
             {profile && (
               <span className="hidden items-center gap-2 md:flex">
                 <span className="max-w-[10rem] truncate font-mono text-xs text-paper/60">{profile.nickname}</span>
@@ -294,7 +297,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 href="/dashboard/admin/alerts"
                 scroll={false}
                 title={`${openAlerts} alerte${openAlerts > 1 ? "s" : ""} d'activité à traiter`}
-                className="flex h-9 shrink-0 items-center gap-1 rounded-lg border border-red/60 bg-red/15 px-2.5 font-mono text-xs text-red hover:bg-red hover:text-ink"
+                className="hidden h-9 shrink-0 items-center gap-1 rounded-lg border border-red/60 bg-red/15 px-2.5 font-mono text-xs text-red hover:bg-red hover:text-ink sm:flex"
               >
                 <SidIcon name="warning" /> {openAlerts}
               </Link>

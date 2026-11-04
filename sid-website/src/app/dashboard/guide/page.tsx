@@ -191,9 +191,6 @@ export default function GuidePage() {
         <div className="max-w-2xl">
           <p className="font-mono text-xs uppercase tracking-[0.3em] text-red">Manuel de l&apos;agent</p>
           <h1 className="font-display text-3xl uppercase tracking-wide sm:text-4xl">Guide du S.I.D.</h1>
-          <p className="mt-2 font-body text-paper/75">
-            Tout ce qu&apos;un agent doit savoir, chapitre par chapitre. Les chiffres viennent du jeu lui-même : ils sont toujours à jour.
-          </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <button onClick={() => tuto?.startTour(d && !d.tour_done && d.tour_step > 0 ? TOUR[d.tour_step]?.id : undefined)} className="rounded-lg bg-red px-4 py-2 font-display text-sm uppercase tracking-wide text-ink hover:bg-red-light">
               <SidIcon name="compass" /> {d && !d.tour_done && d.tour_step > 0 ? "Reprendre la visite" : d?.tour_done ? "Refaire la visite" : "Visite guidée"}

@@ -92,9 +92,6 @@ function ReportDialog({ quest, initial, onClose, onSaved }: { quest: Quest; init
           <span>{len < MIN ? `Encore ${MIN - len} caractères au moins` : `${len} / ${MAX}`}</span>
           {err && <span className="text-[#8f2d1c]">{err}</span>}
         </div>
-        <p className="mt-2 font-body text-xs text-[#6b5a3e]">
-          Le commanditaire le lit avant de valider. Une fois la mission validée, il rejoint les Chroniques du S.I.D.
-        </p>
         <div className="mt-4 flex justify-end gap-2">
           <button type="button" onClick={onClose} className="rounded-lg border border-[#6b5a3e]/40 px-4 py-2 font-mono text-xs uppercase text-[#4a3b26]">
             Annuler
@@ -167,7 +164,6 @@ export function Chronicles() {
         <h2 id="chroniques" className="font-display text-2xl uppercase tracking-wide text-red">
           <SidIcon name="book" /> Chroniques du S.I.D.
         </h2>
-        <p className="font-body text-sm text-paper/70">Les missions accomplies, racontées par ceux qui les ont menées.</p>
       </div>
       <ol className="chronicles">
         {list.map((c) => (

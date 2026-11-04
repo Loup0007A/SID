@@ -104,7 +104,7 @@ function PinEditor({ entries, pins, onClose, onSave }: { entries: NavEntry[]; pi
             Mes raccourcis
           </h2>
           <p className="font-body text-sm text-paper/70">
-            Touche une page pour l&apos;épingler en haut de l&apos;accueil ({sel.length}/{MAX}).
+            {sel.length}/{MAX} épinglées.
           </p>
         </div>
 

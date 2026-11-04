@@ -55,14 +55,11 @@ export function ReputationCard() {
         <RepCurve reputation={rep.reputation} events={rep.events} />
       )}
       <p className="font-body text-sm text-paper/70">
-        Elle se gagne en réussissant des quêtes et se perd en les échouant.
-        Réussir au-dessus de ton niveau rapporte plus ; échouer une quête facile
-        pour toi coûte plus. Chaque quête affiche ce que tu risques.
+        Plus une quête est difficile pour toi, plus elle rapporte.
       </p>
       {rep.events.length === 0 ? (
         <p className="font-mono text-xs text-paper/65">
-          Aucun mouvement pour l&apos;instant : prends une mission pour
-          commencer.
+          Aucun mouvement pour l&apos;instant.
         </p>
       ) : (
         <ul className="divide-y divide-white/10">

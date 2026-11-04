@@ -64,8 +64,7 @@ export default function LeaderboardPage() {
 
       {sortKey === "power_score" && (
         <p className="font-body text-sm text-paper/60">
-          La puissance globale est la moyenne de l&apos;intelligence, de la puissance et de la technique de chaque membre
-          (100 maximum). Elles se gagnent dans les simulations de la rubrique Entraînement.
+          Moyenne de l&apos;intelligence, de la puissance et de la technique (sur 100).
         </p>
       )}
 

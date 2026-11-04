@@ -509,7 +509,6 @@ function ChatInner() {
           <div className="m-auto flex flex-col items-center gap-3 p-6 text-center">
             <span className="chat-empty-icon" aria-hidden><SidIcon name="chat" size={44} /></span>
             <p className="font-display text-xl uppercase tracking-wide">Aucune discussion ouverte</p>
-            <p className="max-w-xs font-body text-sm text-paper/70">Choisis une discussion à gauche, ou commence-en une avec « + Nouvelle ».</p>
           </div>
         ) : (
           <>
@@ -574,7 +573,7 @@ function ChatInner() {
 
             <div className="chat-scroll" role="log" aria-label={`Messages : ${activeLabel}`}>
               {messages.length === 0 && (
-                <p className="m-auto py-10 text-center font-body text-sm text-paper/65">Aucun message. Lance la conversation, ou la scène !</p>
+                <p className="m-auto py-10 text-center font-body text-sm text-paper/65">Aucun message.</p>
               )}
               {messages.map((m, i) => {
                 const isMine = m.sender_id === userId;

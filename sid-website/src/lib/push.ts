@@ -69,51 +69,96 @@ export async function hasActivePushSubscription(): Promise<boolean> {
   return !!subscription;
 }
 
-export async function subscribeToPush(userId: string): Promise<void> {
-  if (!isPushSupported()) {
-    throw new Error("Les notifications push ne sont pas prises en charge par ce navigateur.");
-  }
+/** La clé publique de l'abonnement existant est-elle la clé actuelle du site ? */
+function sameKey(sub: PushSubscription, key: Uint8Array) {
+  const cur = sub.options?.applicationServerKey;
+  if (!cur) return true; // navigateur qui ne la donne pas : on garde l'abonnement
+  const a = new Uint8Array(cur);
+  return a.length === key.length && a.every((v, i) => v === key[i]);
+}
 
-  if (needsIosInstallFirst()) {
-    throw new Error(
-      "Sur iPhone/iPad, ajoute d'abord le site à l'écran d'accueil (Partager → Sur l'écran d'accueil dans Safari), puis ouvre-le depuis cette icône avant d'activer les notifications."
-    );
-  }
-
-  const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-  if (!vapidPublicKey) {
-    throw new Error("Notifications push non configurées côté serveur (clé VAPID manquante).");
-  }
-
-  const registration = await navigator.serviceWorker.register("/sw.js");
-  await navigator.serviceWorker.ready;
-
-  const permission = await Notification.requestPermission();
-  if (permission !== "granted") {
-    throw new Error("Permission refusée par le navigateur.");
-  }
-
-  const subscription = await registration.pushManager.subscribe({
-    userVisibleOnly: true,
-    // Cast explicite : selon la version des types DOM utilisée au build,
-    // `Uint8Array` est générique sur son buffer et TS ne peut pas garantir
-    // qu'il s'agit d'un `ArrayBuffer` plutôt que d'un `SharedArrayBuffer` —
-    // à l'exécution c'est toujours un ArrayBuffer classique ici, donc le
-    // cast est sûr.
-    applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as BufferSource,
-  });
-
+/** Enregistre l'abonnement de cet appareil pour le membre connecté. */
+async function saveSubscription(subscription: PushSubscription) {
   const json = subscription.toJSON();
   if (!json.endpoint || !json.keys?.p256dh || !json.keys?.auth) {
     throw new Error("Abonnement push incomplet.");
   }
-
   const supabase = createClient();
-  const { error } = await supabase.from("push_subscriptions").upsert(
-    { user_id: userId, endpoint: json.endpoint, p256dh: json.keys.p256dh, auth: json.keys.auth },
-    { onConflict: "endpoint" }
-  );
-  if (error) throw error;
+  // push_subscribe (migration 0079) reprend l'appareil s'il était à un autre compte.
+  const { data, error } = await supabase.rpc("push_subscribe", { p_endpoint: json.endpoint, p_p256dh: json.keys.p256dh, p_auth: json.keys.auth });
+  if (!error && !(data as { error?: string } | null)?.error) return;
+  // Repli (migration pas encore lancée).
+  const { data: auth } = await supabase.auth.getUser();
+  const { error: e2 } = await supabase
+    .from("push_subscriptions")
+    .upsert({ user_id: auth.user?.id, endpoint: json.endpoint, p256dh: json.keys.p256dh, auth: json.keys.auth }, { onConflict: "endpoint" });
+  if (e2) throw e2;
+}
+
+/**
+ * Active les notifications sur cet appareil. À appeler DIRECTEMENT dans le
+ * clic du bouton : Safari (iPhone) n'affiche la demande d'autorisation que
+ * si elle part tout de suite après le geste, avant toute autre attente.
+ */
+export async function subscribeToPush(_userId?: string): Promise<void> {
+  if (!isPushSupported()) {
+    throw new Error("Ce navigateur ne gère pas les notifications push.");
+  }
+  if (needsIosInstallFirst()) {
+    throw new Error("Sur iPhone : ajoute d'abord le site à l'écran d'accueil, puis ouvre-le depuis cette icône.");
+  }
+  const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+  if (!vapidPublicKey) {
+    throw new Error("Notifications push non configurées sur le serveur (clé VAPID publique absente sur Vercel).");
+  }
+
+  // 1. L'autorisation d'abord, dans le geste de l'utilisateur.
+  const permission = Notification.permission === "granted" ? "granted" : await Notification.requestPermission();
+  if (permission !== "granted") {
+    throw new Error(
+      permission === "denied"
+        ? "Les notifications sont bloquées pour ce site : autorise-les dans les réglages du navigateur (ou de l'iPhone : Réglages → Notifications → S.I.D.)."
+        : "Autorisation non accordée."
+    );
+  }
+
+  // 2. Le service worker, puis l'abonnement.
+  await navigator.serviceWorker.register("/sw.js");
+  const registration = await navigator.serviceWorker.ready;
+  const key = urlBase64ToUint8Array(vapidPublicKey);
+  let subscription = await registration.pushManager.getSubscription();
+  if (subscription && !sameKey(subscription, key)) {
+    // Clés du site changées : l'ancien abonnement ne recevrait plus rien.
+    await subscription.unsubscribe();
+    subscription = null;
+  }
+  subscription ??= await registration.pushManager.subscribe({
+    userVisibleOnly: true,
+    // Cast : à l'exécution c'est toujours un ArrayBuffer classique.
+    applicationServerKey: key as BufferSource,
+  });
+
+  await saveSubscription(subscription);
+}
+
+/**
+ * Au chargement du site (une fois par jour au plus) : si cet appareil a un
+ * abonnement, on le renvoie au serveur. Il revient ainsi s'il avait été
+ * effacé, ou s'il appartenait à un autre compte sur le même appareil.
+ */
+export async function syncPushSubscription(): Promise<void> {
+  if (!isPushSupported() || Notification.permission !== "granted") return;
+  try {
+    const last = Number(localStorage.getItem("sid-push-sync") || 0);
+    if (Date.now() - last < 24 * 3600_000) return;
+    const registration = await navigator.serviceWorker.getRegistration();
+    const subscription = await registration?.pushManager.getSubscription();
+    if (!subscription) return;
+    await saveSubscription(subscription);
+    localStorage.setItem("sid-push-sync", String(Date.now()));
+  } catch {
+    /* silencieux : sans conséquence pour la page */
+  }
 }
 
 export async function unsubscribeFromPush(): Promise<void> {

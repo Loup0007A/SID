@@ -11,7 +11,7 @@ import { BirthdaySetting } from "@/components/lazy/Seals";
 import { TitleAuraLayer, TitleBadge } from "@/components/titles/TitleVisuals";
 import { useEquippedTitles } from "@/lib/useEquippedTitles";
 import type { TitleId } from "@/lib/titles";
-import { isPushSupported, getPushPermission, hasActivePushSubscription, subscribeToPush, unsubscribeFromPush, needsIosInstallFirst } from "@/lib/push";
+import { PushPanel } from "@/components/PushPanel";
 import { SidIcon } from "@/components/icons/SidIcon";
 import { ReputationCard } from "@/components/ReputationCard";
 import { AgentCardButton } from "@/components/AgentCard";
@@ -46,11 +46,6 @@ export default function ProfilePage() {
   const [passwordSaving, setPasswordSaving] = useState(false);
 
   // Notifications push
-  const [pushSupported, setPushSupported] = useState(false);
-  const [pushSubscribed, setPushSubscribed] = useState(false);
-  const [pushMessage, setPushMessage] = useState<string | null>(null);
-  const [pushLoading, setPushLoading] = useState(false);
-  const [needsIosInstall, setNeedsIosInstall] = useState(false);
   const [myId, setMyId] = useState<string>("");
   const myTitle = useEquippedTitles(myId ? [myId] : []).get(myId);
 
@@ -69,11 +64,6 @@ export default function ProfilePage() {
       setProfile(data);
       setPurchases(purchasesData ?? []);
 
-      setPushSupported(isPushSupported());
-      setNeedsIosInstall(needsIosInstallFirst());
-      if (isPushSupported()) {
-        setPushSubscribed(await hasActivePushSubscription());
-      }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -203,27 +193,6 @@ export default function ProfilePage() {
     setPasswordMessage("Mot de passe modifié.");
   }
 
-  async function togglePush() {
-    if (!profile) return;
-    setPushLoading(true);
-    setPushMessage(null);
-    try {
-      if (pushSubscribed) {
-        await unsubscribeFromPush();
-        setPushSubscribed(false);
-        setPushMessage("Notifications push désactivées sur cet appareil.");
-      } else {
-        await subscribeToPush(profile.id);
-        setPushSubscribed(true);
-        setPushMessage("Notifications push activées sur cet appareil !");
-      }
-    } catch (e) {
-      setPushMessage(e instanceof Error ? e.message : "Échec de l'opération.");
-    } finally {
-      setPushLoading(false);
-    }
-  }
-
   return (
     <div className="max-w-2xl space-y-8">
       <div data-tuto="profil-rang" className="flex flex-wrap items-center gap-4">
@@ -306,52 +275,12 @@ export default function ProfilePage() {
 
       {myId && <BirthdaySetting userId={myId} />}
 
-      <div data-tuto="profil-notifs" className="glass-card space-y-3 p-6">
-        <h2 className="font-display text-lg uppercase">Notifications</h2>
-        <p className="font-body text-sm text-paper/70">
-          Tu reçois déjà les notifications dans la cloche <SidIcon name="bell" /> en haut du site. Active en plus les notifications push
-          pour être alerté même quand l&apos;onglet est fermé (nouveau message, quête validée, décision requise…).
-        </p>
-        {!pushSupported ? (
-          <p className="font-mono text-xs text-paper/65">Ce navigateur ne prend pas en charge les notifications push.</p>
-        ) : needsIosInstall ? (
-          <div className="space-y-2 rounded-lg border border-blue/40 bg-blue/10 p-3">
-            <p className="font-mono text-xs uppercase text-blue-light"><SidIcon name="phone" /> Sur iPhone/iPad</p>
-            <p className="font-body text-sm text-paper/80">
-              Apple n&apos;autorise les notifications que pour un site ajouté à l&apos;écran d&apos;accueil — pas pour
-              un onglet Safari classique. Pour les activer :
-            </p>
-            <ol className="list-decimal space-y-1 pl-5 font-body text-sm text-paper/80">
-              <li>Ouvre ce site dans Safari (pas Chrome, qui ne le permet pas sur iOS).</li>
-              <li>Appuie sur l&apos;icône Partager, puis &quot;Sur l&apos;écran d&apos;accueil&quot;.</li>
-              <li>Ouvre S.I.D. depuis cette nouvelle icône (pas depuis Safari).</li>
-              <li>Reviens sur cette page pour activer les notifications.</li>
-            </ol>
-          </div>
-        ) : (
-          <>
-            {pushMessage && <p className="font-mono text-xs text-red">{pushMessage}</p>}
-            <button
-              onClick={togglePush}
-              disabled={pushLoading}
-              className={`rounded-lg px-4 py-2 font-display text-sm uppercase text-ink disabled:opacity-40 ${
-                pushSubscribed ? "border border-red text-red bg-transparent hover:bg-red hover:text-ink" : "bg-blue hover:bg-blue-light"
-              }`}
-            >
-              {pushLoading ? "…" : pushSubscribed ? "Désactiver sur cet appareil" : "Activer sur cet appareil"}
-            </button>
-            <p className="font-mono text-[10px] text-paper/65">
-              L&apos;activation se fait par appareil/navigateur : à refaire si tu changes de téléphone ou de navigateur.
-            </p>
-          </>
-        )}
-      </div>
+      <PushPanel />
 
       <div className="glass-card space-y-3 p-6">
         <h2 className="font-display text-lg uppercase">Confidentialité</h2>
         <p className="font-body text-sm text-paper/70">
-          Coche les informations que tu veux masquer aux autres membres. Le staff avec la permission
-          &quot;gestion des comptes&quot; pourra toujours les voir.
+          Les informations cochées sont masquées aux autres membres (pas à l&apos;administration).
         </p>
         <div className="grid grid-cols-2 gap-2">
           {HIDEABLE_FIELDS.map((f) => (

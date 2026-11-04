@@ -602,8 +602,7 @@ export default function SimulationPage() {
           ) : (
             <div className="space-y-3">
               <p className="font-body text-paper/80">
-                La simulation s&apos;ouvre ici même. Réussis-la pour gagner un point de {factorLabel.toLowerCase()} ; un échec
-                ne fait rien perdre.
+                Réussite : +1 point de {factorLabel.toLowerCase()}. Échec : rien de perdu.
               </p>
               <button
                 onClick={() => start()}
@@ -672,8 +671,7 @@ export default function SimulationPage() {
           <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-paper/65"><SidIcon name="swords" /> Raids en cours</h2>
           {raids.length === 0 ? (
             <p className="glass-card px-4 py-3 font-body text-sm text-paper/60">
-              Aucun appel à l&apos;aide pour le moment. Si tu tombes face à un gardien, le jeu te proposera de demander de
-              l&apos;aide aux autres membres.
+              Aucun appel à l&apos;aide pour le moment.
             </p>
           ) : (
             <div className="glass-card divide-y divide-white/10">

@@ -45,7 +45,7 @@ export default function RootLayout({
             traite le site comme une app installée (condition posée par
             Apple pour autoriser les notifications push sur iPhone/iPad —
             voir CHANGELOG_LOT6 pour le détail). */}
-        <link rel="apple-touch-icon" href="/logo.png" />
+        <link rel="apple-touch-icon" href="/icons/apple-touch-180.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="S.I.D." />

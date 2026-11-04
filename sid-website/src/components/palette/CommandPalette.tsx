@@ -379,7 +379,7 @@ export function PaletteButton() {
       onClick={openPalette}
       aria-label={touch ? "Rechercher" : `Rechercher (${mac ? "⌘" : "Ctrl"}+K)`}
       aria-keyshortcuts="Control+K Meta+K"
-      className="palette-trigger flex h-9 shrink-0 items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-2.5 font-mono text-xs text-paper/70 hover:border-blue/50 hover:text-paper"
+      className="palette-trigger flex h-9 min-w-9 shrink-0 items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/5 px-2.5 font-mono text-xs text-paper/70 hover:border-blue/50 hover:text-paper"
     >
       <SidIcon name="magnifier" />
       <span className="hidden lg:inline">Rechercher</span>
