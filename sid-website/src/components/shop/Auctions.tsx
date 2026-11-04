@@ -417,19 +417,19 @@ function AuctionSheet({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-6" onClick={onClose} role="dialog" aria-modal="true" aria-label={`Vente : ${a.item_name}`}>
-      <div className="shop-sheet relative grid w-full max-w-4xl overflow-hidden md:grid-cols-[1fr_1.1fr]" onClick={(e) => e.stopPropagation()}>
+      <div className="shop-sheet relative grid max-h-[92dvh] w-full max-w-4xl overflow-y-auto overscroll-contain md:max-h-[88vh] md:grid-cols-[1fr_1.1fr] md:overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <button onClick={onClose} className="absolute right-3 top-3 z-[3] flex h-9 w-9 items-center justify-center rounded-full bg-black/40 text-paper hover:bg-black/60" aria-label="Fermer">
           ✕
         </button>
         <div className="relative">
-          <ShopFrame src={a.item_image} alt={a.item_name} className="aspect-[4/3] w-full sm:aspect-square md:h-full md:aspect-auto md:min-h-[26rem]" pad="p-8" zoom={false} />
+          <ShopFrame src={a.item_image} alt={a.item_name} className="aspect-[4/3] max-h-[38dvh] w-full md:h-full md:max-h-none md:aspect-auto md:min-h-[26rem]" pad="p-8" zoom={false} />
           <div className="pointer-events-none absolute left-3 top-3 z-[2] flex flex-col items-start gap-1.5">
             <StatusBadge a={a} userId={userId} />
             {a.source === "resale" && <span className="shop-badge is-dark">Revente</span>}
           </div>
         </div>
 
-        <div className="flex max-h-[75vh] flex-col gap-4 overflow-y-auto p-6 md:max-h-[85vh]">
+        <div className="flex flex-col gap-4 p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] md:max-h-[88vh] md:overflow-y-auto">
           <div>
             <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-paper/65">par {sellerOf(a)}</p>
             <h2 className="font-display text-3xl uppercase leading-tight tracking-wide">
@@ -443,7 +443,7 @@ function AuctionSheet({
               <SidIcon name="quill" size={14} /> {a.note}
             </blockquote>
           )}
-          {a.item_description && <p className="line-clamp-4 whitespace-pre-line font-body text-sm leading-relaxed text-paper/80">{a.item_description}</p>}
+          {a.item_description && <p className="whitespace-pre-line font-body text-sm leading-relaxed text-paper/80">{a.item_description}</p>}
 
           <div className="auction-board">
             <div>

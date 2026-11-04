@@ -554,15 +554,15 @@ function ItemSheet({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-6" onClick={onClose} role="dialog" aria-modal="true" aria-label={item.name}>
-      <div className="shop-sheet relative grid w-full max-w-4xl overflow-hidden md:grid-cols-[1.1fr_1fr]" onClick={(e) => e.stopPropagation()}>
+      <div className="shop-sheet relative grid max-h-[92dvh] w-full max-w-4xl overflow-y-auto overscroll-contain md:max-h-[88vh] md:grid-cols-[1.1fr_1fr] md:overflow-hidden" onClick={(e) => e.stopPropagation()}>
         <button onClick={onClose} className="absolute right-3 top-3 z-[3] flex h-9 w-9 items-center justify-center rounded-full bg-black/40 text-paper hover:bg-black/60" aria-label="Fermer">
           ✕
         </button>
         <div className="relative">
-          <ShopFrame src={item.image_url} alt={item.name} className="aspect-[4/3] w-full sm:aspect-square md:h-full md:aspect-auto md:min-h-[26rem]" pad="p-8" zoom={false} />
+          <ShopFrame src={item.image_url} alt={item.name} className="aspect-[4/3] max-h-[38dvh] w-full md:h-full md:max-h-none md:aspect-auto md:min-h-[26rem]" pad="p-8" zoom={false} />
           <Badges item={item} />
         </div>
-        <div className="flex max-h-[70vh] flex-col gap-4 overflow-y-auto p-6 md:max-h-[85vh]">
+        <div className="flex flex-col gap-4 p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] md:max-h-[88vh] md:overflow-y-auto">
           <div>
             <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-paper/65">par {seller}</p>
             <h2 className="font-display text-3xl uppercase leading-tight tracking-wide">{item.name}</h2>
