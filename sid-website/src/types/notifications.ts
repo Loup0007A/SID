@@ -13,7 +13,9 @@ export type NotificationType =
   | "announcement"
   | "title"
   | "troll"
-  | "business";
+  | "business"
+  | "auction"
+  | "poll";
 
 export interface AppNotification {
   id: string;

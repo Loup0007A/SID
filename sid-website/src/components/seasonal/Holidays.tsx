@@ -1,5 +1,7 @@
 "use client";
 
+import "./seasonal-decor.css";
+import "./holidays.css";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { daysUntil, useSiteDecor } from "@/components/seasonal/siteDecor";

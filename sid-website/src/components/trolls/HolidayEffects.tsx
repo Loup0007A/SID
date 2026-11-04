@@ -1,5 +1,6 @@
 "use client";
 
+import "@/components/seasonal/holidays.css";
 import { useEffect, useRef, useState } from "react";
 import { readOptions, FANFARE_TEMPOS, LOVE_COLORS } from "@/lib/trollOptions";
 import type { ActiveTroll } from "@/lib/titles";

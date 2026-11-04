@@ -1,3 +1,4 @@
+import "./holidays.css";
 /**
  * Petits dessins des fêtes, partagés par les décors, les farces et leurs
  * aperçus. À part du module des décors pour que les farces et la page des

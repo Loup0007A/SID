@@ -38,15 +38,20 @@ export default async function HomePage() {
               </p>
             </div>
           </div>
+          {/* Pas de préchargement (Lot 65, PageSpeed) : ces deux pages
+              embarquent le client Supabase (~50 Kio), chargé sinon dès
+              l'accueil pour rien. Elles s'ouvrent au clic. */}
           <div className="flex flex-wrap gap-3">
             <Link
               href="/login"
+              prefetch={false}
               className="rounded-lg border border-white/20 bg-white/5 px-5 py-2.5 text-center font-display uppercase tracking-wide text-paper backdrop-blur-sm hover:bg-white/15"
             >
               Connexion
             </Link>
             <Link
               href="/register"
+              prefetch={false}
               className="rounded-lg bg-red px-5 py-2.5 text-center font-display uppercase tracking-wide text-ink shadow-lg shadow-red/20 hover:bg-red-light"
             >
               Candidater

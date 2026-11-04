@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import type { EventKey } from "@/lib/events";
+import { getSupabaseEnv } from "@/lib/supabase/env";
 
 /**
  * Affichage événementiel : la base décide ce qui est affiché (site_decor),
@@ -41,8 +41,23 @@ async function fetchDecor(force = false): Promise<SiteDecor> {
   if (!force && cache && Date.now() - cache.at < FRESH_MS) return cache.value;
   if (!force && inflight) return inflight;
   inflight = (async () => {
-    const { data, error } = await createClient().rpc("site_decor");
-    const value: SiteDecor = !error && data ? { ...NONE, ...(data as SiteDecor) } : NONE;
+    // Simple requête HTTP plutôt que le client Supabase : ce décor est chargé
+    // sur toutes les pages (y compris l'accueil public), et le client pèse
+    // à lui seul ~50 Kio de JavaScript compressé (PageSpeed, Lot 65).
+    let data: SiteDecor | null = null;
+    try {
+      const { url, anonKey: key } = getSupabaseEnv();
+      // Mêmes en-têtes que le client Supabase sans session (rôle anonyme).
+      const res = await fetch(`${url}/rest/v1/rpc/site_decor`, {
+        method: "POST",
+        headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+        body: "{}",
+      });
+      if (res.ok) data = (await res.json()) as SiteDecor | null;
+    } catch {
+      /* réseau indisponible : pas de décor */
+    }
+    const value: SiteDecor = data ? { ...NONE, ...data } : NONE;
     cache = { at: Date.now(), value };
     try {
       sessionStorage.setItem(STORE_KEY, JSON.stringify(cache));

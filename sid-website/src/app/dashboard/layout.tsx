@@ -1,5 +1,6 @@
 "use client";
 
+import "./dashboard.css";
 import { SkipLink } from "@/components/a11y/LabelLinker";
 import { CommandPalette, PaletteButton } from "@/components/palette/CommandPalette";
 import { useEffect, useState } from "react";

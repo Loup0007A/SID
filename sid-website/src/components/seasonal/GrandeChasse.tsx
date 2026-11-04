@@ -1,5 +1,7 @@
 "use client";
 
+import "./seasonal-decor.css";
+import "./holidays.css";
 import "./grande-chasse.css";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";

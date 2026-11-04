@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/client";
 import { currentUserId } from "@/lib/session";
 import { loadCurrentUser, can } from "@/lib/permissions";
@@ -13,17 +14,24 @@ import { LineChart } from "@/components/LineChart";
 import { SidIcon } from "@/components/icons/SidIcon";
 import { ShopFrame } from "@/components/shop/ShopFrame";
 import { useDeepLink } from "@/lib/deeplink";
+import type { AuctionPreset } from "@/components/shop/Auctions";
+
+// La salle des ventes n'est chargée qu'à l'ouverture de son onglet.
+const AuctionsTab = dynamic(() => import("@/components/shop/Auctions").then((m) => m.AuctionsTab), {
+  loading: () => <p className="font-mono text-xs text-paper/60">Ouverture de la salle des ventes…</p>,
+});
 
 /**
  * Le Comptoir du S.I.D. (refonte du Lot 56) : vitrine avec recherche,
  * filtres et tri, fiche détaillée (quantité, total, bourse après achat),
  * mes achats, mes objets en vente, et création avec aperçu en direct.
+ * Lot 65 : onglet Enchères (components/shop/Auctions.tsx).
  */
 
-type Tab = "vitrine" | "achats" | "ventes" | "nouveau";
+type Tab = "vitrine" | "encheres" | "achats" | "ventes" | "nouveau";
 type Filter = "tout" | "promo" | "effet" | "rares";
 type Sort = "recent" | "prix-asc" | "prix-desc" | "nom";
-type Purchase = { id: string; quantity: number; total_price: number; created_at: string; shop_items: { name: string; image_url: string | null; effect: ShopItemEffect | null } | null };
+type Purchase = { id: string; status: string; quantity: number; total_price: number; created_at: string; shop_items: { name: string; image_url: string | null; effect: ShopItemEffect | null } | null };
 
 const z = (n: number) => `${Number(n).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} z`;
 
@@ -51,6 +59,13 @@ export default function ShopPage() {
   const [filter, setFilter] = useState<Filter>("tout");
   const [sort, setSort] = useState<Sort>("recent");
   const [open, setOpen] = useState<ShopItem | null>(null);
+  const [openAuctions, setOpenAuctions] = useState(0);
+  const [auctionPreset, setAuctionPreset] = useState<AuctionPreset>(null);
+  const [auctionOpen, setAuctionOpen] = useState<string | null>(null);
+  const consumeAuctionLink = useCallback(() => {
+    setAuctionPreset(null);
+    setAuctionOpen(null);
+  }, []);
 
   const canManage = can(permissions, "manage_shop");
 
@@ -70,6 +85,12 @@ export default function ShopPage() {
       .order("created_at", { ascending: false });
     const list = (data ?? []) as ShopItem[];
     setItems(list);
+    supabase
+      .from("auctions")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "open")
+      .gt("ends_at", new Date().toISOString())
+      .then(({ count }) => setOpenAuctions(count ?? 0));
     const sellerIds = Array.from(new Set(list.map((i) => i.created_by).filter(Boolean))) as string[];
     const bizIds = Array.from(new Set(list.map((i) => i.business_id).filter(Boolean))) as string[];
     const [p, b] = await Promise.all([
@@ -89,7 +110,7 @@ export default function ShopPage() {
     if (!uid) return;
     const { data } = await supabase
       .from("purchases")
-      .select("id, quantity, total_price, created_at, shop_items(name, image_url, effect)")
+      .select("id, status, quantity, total_price, created_at, shop_items(name, image_url, effect)")
       .eq("user_id", uid)
       .order("created_at", { ascending: false })
       .limit(60);
@@ -126,6 +147,12 @@ export default function ShopPage() {
       setTab("vitrine");
       setOpen(it);
     }
+  });
+
+  // Lien direct vers une vente aux enchères (notifications).
+  useDeepLink("enchere", true, (id) => {
+    setTab("encheres");
+    setAuctionOpen(id);
   });
 
   useEffect(() => {
@@ -200,8 +227,9 @@ export default function ShopPage() {
     refreshMine();
   }
 
-  const tabs: { key: Tab; label: string; icon: "store" | "receipt" | "tag" | "pen"; count?: number; show: boolean }[] = [
+  const tabs: { key: Tab; label: string; icon: "store" | "gavel" | "receipt" | "tag" | "pen"; count?: number; show: boolean }[] = [
     { key: "vitrine", label: "Vitrine", icon: "store", count: items?.length, show: true },
+    { key: "encheres", label: "Enchères", icon: "gavel", count: openAuctions, show: true },
     { key: "achats", label: "Mes achats", icon: "receipt", show: true },
     { key: "ventes", label: "Mes objets en vente", icon: "tag", count: myItems.length, show: myItems.length > 0 || canManage },
     { key: "nouveau", label: "Nouvel objet", icon: "pen", show: canManage },
@@ -297,6 +325,25 @@ export default function ShopPage() {
         </section>
       )}
 
+      {/* ------------------------------------------------------------ Enchères */}
+      {tab === "encheres" && (
+        <AuctionsTab
+          userId={userId}
+          balance={wallet?.balance ?? null}
+          staff={canManage || can(permissions, "manage_users")}
+          myItems={myItems}
+          say={say}
+          onWallet={() => {
+            refreshWallet();
+            setPurchases(null);
+            refresh();
+          }}
+          preset={auctionPreset}
+          openId={auctionOpen}
+          onConsumed={consumeAuctionLink}
+        />
+      )}
+
       {/* ------------------------------------------------------------ Mes achats */}
       {tab === "achats" && (
         <section className="space-y-3">
@@ -328,6 +375,17 @@ export default function ShopPage() {
                     <div className="shrink-0 text-right">
                       <p className="font-display text-lg text-blue">{z(Number(p.total_price))}</p>
                       {p.quantity > 1 && <p className="font-mono text-[10px] text-paper/65">× {p.quantity}</p>}
+                      {!p.shop_items?.effect && p.status !== "cancelled" && (
+                        <button
+                          onClick={() => {
+                            setAuctionPreset({ source: "resale", ref: p.id });
+                            setTab("encheres");
+                          }}
+                          className="mt-1 font-mono text-[10px] uppercase text-paper/60 hover:text-blue"
+                        >
+                          <SidIcon name="gavel" size={12} /> Revendre
+                        </button>
+                      )}
                     </div>
                   </li>
                 ))}

@@ -1,19 +1,11 @@
 import type { Metadata, Viewport } from "next";
-// Polices servies par le site lui-même (pas d'appel à Google Fonts : rien
-// n'est envoyé à Google quand on ouvre une page).
-import "@fontsource/oswald/400.css";
-import "@fontsource/oswald/600.css";
-import "@fontsource/oswald/700.css";
-import "@fontsource/source-serif-4/400.css";
-import "@fontsource/source-serif-4/600.css";
-import "@fontsource/source-serif-4/400-italic.css";
-import "@fontsource/jetbrains-mono/400.css";
-import "@fontsource/jetbrains-mono/500.css";
+// Polices servies par le site lui-même (public/fonts, déclarées dans
+// globals.css) : rien n'est envoyé à Google quand on ouvre une page.
 import "./globals.css";
-import "./holidays.css";
 import { SeasonalDecor } from "@/components/seasonal/Seasonal";
 import { LazyCursorTrail } from "@/components/lazy/LazyCursorTrail";
 import { LabelLinker } from "@/components/a11y/LabelLinker";
+import { getSupabaseEnv } from "@/lib/supabase/env";
 
 export const metadata: Metadata = {
   title: "S.I.D. — Dossier Central",
@@ -41,6 +33,13 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <head>
+        {/* PageSpeed (Lot 65) : les polices du premier affichage arrivent en
+            même temps que la feuille de style au lieu d'après elle, et la
+            connexion à Supabase est ouverte d'avance. */}
+        <link rel="preload" href="/fonts/source-serif-4-latin-400-normal.woff2" as="font" type="font/woff2" crossOrigin="" />
+        <link rel="preload" href="/fonts/oswald-latin-400-normal.woff2" as="font" type="font/woff2" crossOrigin="" />
+        <link rel="preload" href="/fonts/jetbrains-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossOrigin="" />
+        <link rel="preconnect" href={getSupabaseEnv().url} crossOrigin="" />
         {/* Nécessaires pour qu'iOS propose "Sur l'écran d'accueil" et
             traite le site comme une app installée (condition posée par
             Apple pour autoriser les notifications push sur iPhone/iPad —

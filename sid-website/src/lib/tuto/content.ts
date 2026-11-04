@@ -442,8 +442,18 @@ export const PAGE_TIPS: Record<string, PageTip> = {
     key: "shop",
     title: "Comptoir",
     icon: "cart",
-    points: ["Touche un objet : grande image, quantité, total et ta bourse après achat.", (n) => `Le vendeur reverse ${pct(n.vat)} de TVA.`, "Solde négatif = achats bloqués jusqu'à ce qu'il remonte."],
+    points: [
+      (n) => `Le vendeur reverse ${pct(n.vat)} de TVA.`,
+      "Enchères : ton offre est bloquée sur ta bourse et rendue si quelqu'un te dépasse.",
+      "Solde négatif = achats bloqués jusqu'à ce qu'il remonte.",
+    ],
     tourFrom: "boutique",
+  },
+  "/dashboard/polls": {
+    key: "polls",
+    title: "Sondages",
+    icon: "ballot",
+    points: ["Ton vote se change tant que le sondage est ouvert."],
   },
   "/dashboard/bank": {
     key: "bank",

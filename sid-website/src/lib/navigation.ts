@@ -56,6 +56,7 @@ export const NAV_ENTRIES: NavEntry[] = [
   { key: "map", href: "/dashboard/map", label: "Carte", description: "Ta position et tes trajets", emoji: "🗺️", icon: "map", group: "jeu" },
   { key: "leaderboard", href: "/dashboard/leaderboard", label: "Classement", description: "Puissance, argent, renommée", emoji: "🏆", icon: "trophy", group: "jeu" },
   { key: "org-chart", href: "/dashboard/org-chart", label: "Organigramme", description: "La hiérarchie du S.I.D.", emoji: "🏛️", icon: "orgchart", group: "jeu" },
+  { key: "polls", href: "/dashboard/polls", label: "Sondages", description: "Les votes ouverts par l'administration", emoji: "🗳️", icon: "ballot", group: "jeu" },
   { key: "members", href: "/dashboard/members", label: "Trombinoscope", description: "Tous les membres", emoji: "👥", icon: "people", group: "jeu" },
 
   ...(["donjons", "intelligence", "techniques"] as SimulationKind[]).map((kind): NavEntry => {

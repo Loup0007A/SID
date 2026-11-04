@@ -20,6 +20,7 @@ import { SidIcon } from "@/components/icons/SidIcon";
 import { TutoInvite } from "@/components/tuto/TutoUi";
 import { SinceLastVisit } from "@/components/SinceLastVisit";
 import { PinnedShortcuts } from "@/components/PinnedShortcuts";
+import { PollSpotlight } from "@/components/polls/PollSpotlight";
 
 export default function DashboardHome() {
   const supabase = createClient();
@@ -152,6 +153,8 @@ export default function DashboardHome() {
           </Link>
         )}
       </section>
+
+      {profile && <PollSpotlight />}
 
       {profile && <OnlineNow />}
 

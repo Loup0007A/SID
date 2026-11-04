@@ -9,9 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@fontsource/jetbrains-mono": "^5.3.0",
-    "@fontsource/oswald": "^5.3.0",
-    "@fontsource/source-serif-4": "^5.3.1",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.45.4",
     "clsx": "^2.1.1",
@@ -31,5 +28,14 @@
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.4",
     "typescript": "^5.5.2"
-  }
+  },
+  "browserslist": [
+    "chrome >= 100",
+    "edge >= 100",
+    "firefox >= 100",
+    "safari >= 15.4",
+    "ios_saf >= 15.4",
+    "and_chr >= 100",
+    "samsung >= 19"
+  ]
 }

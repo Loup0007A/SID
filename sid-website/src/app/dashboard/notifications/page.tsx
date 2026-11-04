@@ -24,6 +24,8 @@ const TYPE_ICON: Record<string, IconName> = {
   title: "medal",
   troll: "masks",
   business: "chart",
+  auction: "gavel",
+  poll: "ballot",
 };
 
 /** Icône d'une notification : celle de son type, sinon celle de l'émoji de son titre (anciens textes). */

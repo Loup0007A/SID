@@ -1,0 +1,82 @@
+/* Sondages (Lot 65). */
+.poll-card {
+  display: grid;
+  gap: 0.9rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(160deg, rgba(143, 179, 217, 0.07), rgba(0, 0, 0, 0.18));
+  padding: 1.1rem 1.2rem;
+  scroll-margin-top: 6rem;
+  transition: box-shadow 0.4s, border-color 0.4s;
+}
+.poll-card.is-closed { background: rgba(0, 0, 0, 0.18); }
+.poll-card.is-highlight { border-color: #8fb3d9; box-shadow: 0 0 0 3px rgba(143, 179, 217, 0.25); }
+
+.poll-tag {
+  border-radius: 99px;
+  padding: 0.1rem 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(237, 230, 211, 0.75);
+  background: rgba(255, 255, 255, 0.07);
+}
+.poll-tag.is-open { color: #262a38; background: #b9e3c6; }
+
+.poll-choice {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.7rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.6rem 0.8rem;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: #ede6d3;
+  transition: border-color 0.15s, background 0.15s;
+}
+.poll-choice:hover { border-color: rgba(143, 179, 217, 0.55); }
+.poll-choice.is-on { border-color: #8fb3d9; background: rgba(143, 179, 217, 0.14); }
+.poll-mark {
+  display: inline-flex;
+  height: 1.15rem;
+  width: 1.15rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 99px;
+  border: 2px solid rgba(237, 230, 211, 0.45);
+}
+.poll-mark.is-square { border-radius: 0.3rem; }
+.poll-choice.is-on .poll-mark { border-color: #8fb3d9; background: #8fb3d9; }
+
+.poll-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  overflow: hidden;
+  border-radius: 0.65rem;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  color: rgba(237, 230, 211, 0.85);
+}
+.poll-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  background: rgba(143, 179, 217, 0.22);
+  transition: width 0.6s ease;
+}
+.poll-bar.is-mine { color: #ede6d3; }
+.poll-bar.is-mine .poll-fill { background: rgba(143, 179, 217, 0.38); }
+.poll-bar.is-top { font-weight: 600; }
+.poll-bar.is-top .poll-fill { background: rgba(240, 194, 122, 0.35); }
+@media (prefers-reduced-motion: reduce) {
+  .poll-fill { transition: none; }
+}
