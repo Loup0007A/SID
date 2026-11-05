@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useDeepLink } from "@/lib/deeplink";
-import { Chronicles, QuestReports, ReportButton } from "@/components/quests/QuestRp";
+import { Chronicles, QuestReports, ReportButton, type MyReport } from "@/components/quests/QuestRp";
 import { createClient } from "@/lib/supabase/client";
 import { loadCurrentUser, can } from "@/lib/permissions";
 import { visibleMembers } from "@/lib/visibility";
@@ -23,7 +23,9 @@ export default function QuestsPage() {
   const [counts, setCounts] = useState<Map<string, number>>(new Map());
   const [myQuestIds, setMyQuestIds] = useState<Set<string>>(new Set());
   // Mes rapports de mission (Lot 62), et ma participation rejetée ou non.
-  const [myReports, setMyReports] = useState<Map<string, { report: string | null; status: string }>>(new Map());
+  // Lot 68 : missions cochées et parties du rapport.
+  const [myReports, setMyReports] = useState<Map<string, MyReport>>(new Map());
+  const [ticking, setTicking] = useState<{ quest: string; index: number } | null>(null);
   const [permissions, setPermissions] = useState<Set<PermissionKey>>(new Set());
   const [userId, setUserId] = useState<string | null>(null);
   const [members, setMembers] = useState<Profile[]>([]);
@@ -82,6 +84,35 @@ export default function QuestsPage() {
     setTimeout(() => setFocusQuest((f) => (f === id ? null : f)), 4000);
   });
 
+  // Sans la migration 0083, les colonnes des missions n'existent pas encore.
+  async function loadMine(uid: string) {
+    const full = await supabase.from("quest_participants").select("quest_id, report, status, objectives_done, report_parts, report_summary").eq("user_id", uid);
+    return full.error ? supabase.from("quest_participants").select("quest_id, report, status").eq("user_id", uid) : full;
+  }
+
+  async function tickObjective(q: Quest, index: number, done: boolean) {
+    const setDone = (list: boolean[]) =>
+      setMyReports((m) => {
+        const next = new Map(m);
+        const cur = next.get(q.id);
+        if (cur) next.set(q.id, { ...cur, objectives_done: list });
+        return next;
+      });
+    // La case change tout de suite ; elle revient en arrière si la base refuse.
+    const before = myReports.get(q.id)?.objectives_done ?? [];
+    const optimistic = (q.objectives ?? []).map((_, i) => (i === index ? done : !!before[i]));
+    setDone(optimistic);
+    setTicking({ quest: q.id, index });
+    const { data, error } = await supabase.rpc("quest_objective_set", { p_quest_id: q.id, p_index: index, p_done: done });
+    setTicking(null);
+    if (error) {
+      setDone(before);
+      setMessage(error.message.includes("quest_objective_set") ? "Les missions à cocher arrivent avec la migration 0083." : error.message);
+      return;
+    }
+    setDone(data as boolean[]);
+  }
+
   async function refresh(uid?: string | null) {
     const activeUserId = uid !== undefined ? uid : userId;
 
@@ -91,7 +122,7 @@ export default function QuestsPage() {
     const [questsRes, countsRes, mineRes, statsRes, powerRes, posRes, pendingRes, repRes] = await Promise.all([
       supabase.from("quests").select("*").in("status", ["open", "in_progress"]).order("created_at", { ascending: false }),
       supabase.rpc("quest_participant_counts"),
-      activeUserId ? supabase.from("quest_participants").select("quest_id, report, status").eq("user_id", activeUserId) : null,
+      activeUserId ? loadMine(activeUserId) : null,
       activeUserId ? supabase.from("member_stats").select("intelligence, strength, technique").eq("user_id", activeUserId).maybeSingle() : null,
       activeUserId ? supabase.from("profiles").select("power_score").eq("id", activeUserId).maybeSingle() : null,
       activeUserId ? supabase.from("character_positions").select("*").eq("user_id", activeUserId).maybeSingle() : null,
@@ -108,7 +139,7 @@ export default function QuestsPage() {
 
     if (activeUserId) {
       setMyQuestIds(new Set((mineRes?.data ?? []).map((m) => m.quest_id)));
-      setMyReports(new Map(((mineRes?.data ?? []) as { quest_id: string; report: string | null; status: string }[]).map((m) => [m.quest_id, { report: m.report, status: m.status }])));
+      setMyReports(new Map(((mineRes?.data ?? []) as (MyReport & { quest_id: string })[]).map((m) => [m.quest_id, m])));
       const st = statsRes?.data;
       const prof = powerRes?.data;
       setMe({
@@ -598,7 +629,19 @@ export default function QuestsPage() {
 
           return (
             <div key={q.id} id={`quete-${q.id}`} data-tuto={qi === 0 ? "quete" : undefined} className={`scroll-mt-24 space-y-2 ${focusQuest === q.id ? "quest-focus" : ""}`}>
-              <QuestCard quest={q} participantCount={count} />
+              <QuestCard
+                quest={q}
+                participantCount={count}
+                progress={
+                  alreadyIn && myReports.get(q.id)?.status !== "rejected"
+                    ? {
+                        done: myReports.get(q.id)?.objectives_done ?? [],
+                        onToggle: (i, v) => tickObjective(q, i, v),
+                        busy: ticking?.quest === q.id ? ticking.index : null,
+                      }
+                    : undefined
+                }
+              />
               <div className="quest-dock">
               <div className="quest-dock-meta">
               {!q.funded_by_creator && <span className="quest-chip">Financée par le S.I.D.</span>}
@@ -704,7 +747,7 @@ export default function QuestsPage() {
               )}
 
               {alreadyIn && myReports.get(q.id)?.status !== "rejected" && (
-                <ReportButton quest={q} report={myReports.get(q.id)?.report ?? null} onSaved={() => refresh()} />
+                <ReportButton quest={q} mine={myReports.get(q.id) ?? null} onSaved={() => refresh()} />
               )}
 
               {canManage && (
@@ -758,7 +801,7 @@ export default function QuestsPage() {
                               )}
                             </div>
                           ))}
-                          <QuestReports questId={q.id} version={participants.length} />
+                          <QuestReports questId={q.id} objectives={q.objectives} version={participants.length} />
                           <button
                             onClick={() => validateAll(q.id)}
                             className="rounded-lg w-full bg-blue py-1 font-mono text-xs uppercase text-ink hover:bg-blue-light"

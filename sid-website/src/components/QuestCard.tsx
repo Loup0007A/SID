@@ -28,7 +28,10 @@ function readableTextColor(hex: string) {
   return luminance > 0.55 ? "#2B2F28" : "#F4EFE0";
 }
 
-export function QuestCard({ quest, participantCount }: { quest: Quest; participantCount?: number }) {
+/** Missions cochées par le participant (Lot 68) : une case par objectif. */
+export type QuestProgress = { done: boolean[]; onToggle: (index: number, done: boolean) => void; busy?: number | null };
+
+export function QuestCard({ quest, participantCount, progress }: { quest: Quest; participantCount?: number; progress?: QuestProgress }) {
   const deadline = formatDeadline(quest.deadline);
   const isUrgent =
     quest.deadline && new Date(quest.deadline).getTime() - Date.now() < 3 * 24 * 3600 * 1000;
@@ -63,7 +66,29 @@ export function QuestCard({ quest, participantCount }: { quest: Quest; participa
         <p className="line-clamp-3 font-body text-sm text-paper-text/80">{quest.description}</p>
       )}
 
-      {!!quest.objectives?.length && (
+      {!!quest.objectives?.length && progress && (
+        <div className="space-y-1">
+          <p className="font-mono text-[10px] uppercase tracking-[0.15em] text-paper-text/70">
+            Missions · {quest.objectives.filter((_, i) => progress.done[i]).length}/{quest.objectives.length}
+          </p>
+          <ul className="quest-objectives is-check" aria-label="Missions à cocher">
+            {quest.objectives.map((o, i) => (
+              <li key={i} className={progress.done[i] ? "is-done" : ""}>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={!!progress.done[i]}
+                    onChange={(e) => progress.onToggle(i, e.target.checked)}
+                  />
+                  <span>{o}</span>
+                </label>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {!!quest.objectives?.length && !progress && (
         <ul className="quest-objectives" aria-label="Objectifs">
           {quest.objectives.slice(0, 4).map((o, i) => (
             <li key={i}>{o}</li>

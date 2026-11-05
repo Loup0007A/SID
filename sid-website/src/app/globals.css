@@ -310,6 +310,12 @@ input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus-visib
 .quest-objectives li::before { content: ""; position: absolute; left: 2px; top: .3em; width: 10px; height: 10px; border: 1.5px solid rgb(43 47 40 / .55); border-radius: 2px; }
 .quest-objectives li.is-more { padding-left: 18px; font-style: italic; opacity: .75; }
 .quest-objectives li.is-more::before { display: none; }
+/* Missions à cocher par le participant (Lot 68) */
+.quest-objectives.is-check li { padding-left: 0; }
+.quest-objectives.is-check li::before { display: none; }
+.quest-objectives.is-check label { display: flex; align-items: flex-start; gap: 7px; cursor: pointer; padding: 1px 0; }
+.quest-objectives.is-check input { flex: none; width: 15px; height: 15px; margin-top: 1px; accent-color: #3c6e47; cursor: pointer; }
+.quest-objectives.is-check li.is-done span { text-decoration: line-through; text-decoration-color: rgb(60 110 71 / .8); opacity: .65; }
 
 /* La fiche, punaisée sur le tableau */
 .quest-card { box-shadow: 0 2px 0 rgb(0 0 0 / .15), 0 14px 28px rgb(0 0 0 / .35) !important; }

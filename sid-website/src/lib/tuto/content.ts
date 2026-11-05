@@ -381,7 +381,7 @@ export const PAGE_TIPS: Record<string, PageTip> = {
     key: "quests",
     title: "Quêtes",
     icon: "scroll",
-    points: ["Le rang (E à S) dit la difficulté ; la couleur, le type de contrat.", "Réussir au-dessus de ton niveau rapporte beaucoup de renommée.", "Une quête avec un lieu ne se prend que sur place ; une heure là-bas la valide."],
+    points: ["Le rang (E à S) dit la difficulté ; la couleur, le type de contrat.", "Réussir au-dessus de ton niveau rapporte beaucoup de renommée.", "Une quête avec un lieu ne se prend que sur place ; une heure là-bas la valide.", "Coche ses missions sur la fiche au fur et à mesure ; le rapport a une partie par mission."],
     tourFrom: "types",
   },
   "/dashboard/tech": {
