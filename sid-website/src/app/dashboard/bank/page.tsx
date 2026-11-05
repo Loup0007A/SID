@@ -7,6 +7,7 @@ import type { Wallet, BankAccount } from "@/types/database";
 import type { BusinessSharePricePoint, MarketEntry, MarketSettings, MyShareholding, SellResult } from "@/types/business";
 import { LineChart } from "@/components/LineChart";
 import { WalletHistory } from "@/components/bank/WalletHistory";
+import { MyWithdrawals } from "@/components/bank/Withdrawals";
 import { inputClass, labelClass } from "@/lib/ui";
 import { SidIcon } from "@/components/icons/SidIcon";
 
@@ -30,6 +31,7 @@ export default function BankPage() {
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [borrowAmount, setBorrowAmount] = useState("");
   const [repayAmount, setRepayAmount] = useState("");
+  const [withdrawVersion, setWithdrawVersion] = useState(0);
 
   // Bourse
   const [market, setMarket] = useState<MarketEntry[]>([]);
@@ -184,7 +186,7 @@ export default function BankPage() {
         <h2 className="font-display text-lg uppercase">Épargne</h2>
         <p className="font-body text-sm text-paper/70">
           L&apos;argent déposé rapporte des intérêts chaque jour, tant que tu ne redéposes pas (un nouveau dépôt
-          relance le décompte).
+          relance le décompte). Un retrait doit être validé par un admin : la somme est mise de côté en attendant.
         </p>
         <div className="flex flex-wrap gap-3">
           <div className="flex-1 space-y-1">
@@ -207,23 +209,27 @@ export default function BankPage() {
         </div>
         <div className="flex flex-wrap gap-3">
           <div className="flex-1 space-y-1">
-            <label className={labelClass}>Retirer</label>
+            <label className={labelClass}>Demander un retrait</label>
             <input type="number" min={0} className={inputClass} value={withdrawAmount} onChange={(e) => setWithdrawAmount(e.target.value)} />
           </div>
           <button
             onClick={() =>
               run(
                 () => supabase.rpc("withdraw_from_bank", { p_amount: Number(withdrawAmount) || 0 }),
-                "Retrait effectué.",
-                () => setWithdrawAmount("")
+                "Demande envoyée : l'argent arrivera dans ton portefeuille quand un admin l'aura validée.",
+                () => {
+                  setWithdrawAmount("");
+                  setWithdrawVersion((v) => v + 1);
+                }
               )
             }
             disabled={busy || !withdrawAmount}
             className="self-end rounded-lg border border-blue px-4 py-2 font-mono text-xs uppercase text-blue hover:bg-blue hover:text-ink disabled:opacity-40"
           >
-            Retirer
+            Demander
           </button>
         </div>
+        <MyWithdrawals kind="bank" version={withdrawVersion} onChanged={refresh} />
       </div>
 
       <div data-tuto="banque-emprunt" className="glass-card space-y-4 p-6">

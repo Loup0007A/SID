@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { WithdrawalQueue } from "@/components/bank/Withdrawals";
+import { WeekRevenue, type BusinessWeek } from "@/components/business/WeekRevenue";
 import { createClient } from "@/lib/supabase/client";
 import type { Profile, Wallet, SalaryView, SalaryFrequency } from "@/types/database";
 import type { TaxPoolStatus } from "@/types/business";
@@ -128,6 +130,10 @@ export default function EconomyAdminPage() {
   return (
     <div className="space-y-10">
       <h1 className="font-display text-2xl uppercase tracking-wide text-red">Économie du S.I.D.</h1>
+
+      <WithdrawalQueue />
+
+      <BusinessWeeks />
 
       <section className="space-y-3">
         <h2 className="font-display text-lg uppercase text-paper">Ajustement manuel du solde</h2>
@@ -291,5 +297,42 @@ export default function EconomyAdminPage() {
         </p>
       </section>
     </div>
+  );
+}
+
+/** Ventes de la semaine de chaque entreprise ouverte (Lot 67), les plus en retard d'abord. */
+function BusinessWeeks() {
+  const supabase = createClient();
+  const [rows, setRows] = useState<BusinessWeek[] | null>(null);
+  useEffect(() => {
+    supabase.rpc("business_weeks", { p_all: true }).then(({ data, error }) => setRows(error ? [] : ((data ?? []) as BusinessWeek[])));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  if (!rows || rows.length === 0) return null;
+  const sorted = [...rows].sort((a, b) => Number(a.revenue) / Number(a.minimum || 1) - Number(b.revenue) / Number(b.minimum || 1));
+  return (
+    <section className="space-y-3">
+      <h2 className="font-display text-lg uppercase text-paper">Entreprises : ventes de la semaine</h2>
+      <p className="font-body text-sm text-paper/65">
+        Sous {Number(rows[0].minimum).toLocaleString("fr-FR")} z de ventes à la fin de sa semaine, une entreprise fait faillite
+        (réglage : <code className="font-mono text-xs">business_min_weekly_revenue</code>, 0 pour désactiver).
+      </p>
+      <ul className="grid gap-3 md:grid-cols-2">
+        {sorted.map((w) => (
+          <li key={w.business_id} className="glass-card space-y-2 p-4">
+            <p className="font-display uppercase">
+              {w.name} <span className="font-mono text-[11px] normal-case text-paper/60">· {w.founder ?? "—"}</span>
+            </p>
+            <WeekRevenue w={w} compact />
+            <p className="font-mono text-[11px] text-paper/60">
+              Trésorerie {Math.round(Number(w.treasury)).toLocaleString("fr-FR")} z
+              {Number(w.pending_withdrawals) > 0 && ` · ${Math.round(Number(w.pending_withdrawals)).toLocaleString("fr-FR")} z de retrait en attente`}
+              {" · fin de semaine le "}
+              {new Date(w.period_end).toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+            </p>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

@@ -87,7 +87,7 @@ export const NAV_ENTRIES: NavEntry[] = [
 
   { key: "applications", href: "/dashboard/admin/applications", label: "Recrutement", description: "Candidatures en attente", emoji: "📋", icon: "clipboard", group: "admin", perm: ["recruit"] },
   { key: "roles", href: "/dashboard/admin/roles", label: "Rôles & équipes", description: "Rôles, permissions, rangs", emoji: "🎖️", icon: "rank", group: "admin", perm: ["manage_roles", "manage_teams", "manage_users"] },
-  { key: "economy", href: "/dashboard/admin/economy", label: "Économie", description: "Soldes, salaires, impôts", emoji: "💰", icon: "coins", group: "admin", perm: ["manage_economy"] },
+  { key: "economy", href: "/dashboard/admin/economy", label: "Économie", description: "Retraits, soldes, salaires, impôts", emoji: "💰", icon: "coins", group: "admin", perm: ["manage_economy"] },
   { key: "simulation", href: "/dashboard/admin/simulation", label: "Simulation", description: "La population simulée", emoji: "🧬", icon: "dna", group: "admin", perm: ["manage_economy"] },
   { key: "stats", href: "/dashboard/admin/stats", label: "Statistiques", description: "Activité du site", emoji: "📊", icon: "chart", group: "admin", perm: ["manage_users"] },
   { key: "users", href: "/dashboard/admin/users", label: "Comptes", description: "Fiches des membres, bannir, muter", emoji: "🛡️", icon: "shieldUser", group: "admin", perm: ["manage_users"] },

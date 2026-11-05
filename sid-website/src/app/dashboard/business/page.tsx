@@ -9,6 +9,8 @@ import { inputClass, labelClass } from "@/lib/ui";
 import { loadCurrentUser, can } from "@/lib/permissions";
 import { visibleMembers } from "@/lib/visibility";
 import { SidIcon } from "@/components/icons/SidIcon";
+import { MyWithdrawals } from "@/components/bank/Withdrawals";
+import { WeekRevenue, type BusinessWeek } from "@/components/business/WeekRevenue";
 
 const FREQUENCY_LABELS: Record<SalaryFrequency, string> = {
   daily: "Quotidien",
@@ -42,6 +44,8 @@ export default function BusinessPage() {
   const [openPanel, setOpenPanel] = useState<Record<string, "employees" | "ledger" | null>>({});
   const [employees, setEmployees] = useState<Record<string, BusinessEmployee[]>>({});
   const [ledger, setLedger] = useState<Record<string, BusinessTransaction[]>>({});
+  const [weeks, setWeeks] = useState<Record<string, BusinessWeek>>({});
+  const [withdrawVersion, setWithdrawVersion] = useState(0);
   const [hireForm, setHireForm] = useState<Record<string, { userId: string; title: string; salary: string; frequency: SalaryFrequency }>>({});
 
   async function refresh() {
@@ -51,13 +55,15 @@ export default function BusinessPage() {
     if (!user) return;
 
     // Tout part en même temps (un seul aller-retour).
-    const [{ data }, { data: m }, { permissions }, { data: emp }, { data: settings }] = await Promise.all([
+    const [{ data }, { data: m }, { permissions }, { data: emp }, { data: settings }, { data: wk }] = await Promise.all([
       supabase.rpc("list_my_businesses"),
       supabase.from("profiles").select("*").eq("status", "active"),
       loadCurrentUser(),
       supabase.rpc("get_my_employments"),
       supabase.rpc("get_market_settings"),
+      supabase.rpc("business_weeks", { p_all: false }),
     ]);
+    setWeeks(Object.fromEntries(((wk ?? []) as BusinessWeek[]).map((w) => [w.business_id, w])));
     setMyBusinesses((data ?? []) as Business[]);
     setMembers(visibleMembers(m ?? [], user.id, can(permissions, "manage_users")));
     setMyEmployments((emp ?? []) as MyEmployment[]);
@@ -273,6 +279,8 @@ export default function BusinessPage() {
                   </button>
                 </div>
 
+                {weeks[b.id] && <WeekRevenue w={weeks[b.id]} />}
+
                 <div className="grid grid-cols-2 gap-4 border-t border-white/10 pt-3 sm:grid-cols-3">
                   <div>
                     <p className="font-mono text-[10px] uppercase text-paper/65">Trésorerie</p>
@@ -332,12 +340,24 @@ export default function BusinessPage() {
                     </button>
                     <input type="number" min={0} placeholder="Montant" className={`${inputClass} w-28`} value={amt.withdraw} onChange={(e) => setAmount(b.id, "withdraw", e.target.value)} />
                     <button
-                      onClick={() => run(() => supabase.rpc("withdraw_business_funds", { p_business_id: b.id, p_amount: Number(amt.withdraw) || 0 }), "Retrait effectué.", () => setAmount(b.id, "withdraw", ""))}
+                      onClick={() =>
+                        run(
+                          () => supabase.rpc("withdraw_business_funds", { p_business_id: b.id, p_amount: Number(amt.withdraw) || 0 }),
+                          "Demande de retrait envoyée : un admin doit la valider. La somme est mise de côté en attendant.",
+                          () => {
+                            setAmount(b.id, "withdraw", "");
+                            setWithdrawVersion((v) => v + 1);
+                          }
+                        )
+                      }
                       disabled={busy || !amt.withdraw}
                       className="rounded-lg border border-blue px-3 py-2 font-mono text-xs uppercase text-blue hover:bg-blue hover:text-ink disabled:opacity-40"
                     >
-                      Retirer
+                      Demander un retrait
                     </button>
+                  </div>
+                  <div className="mt-2">
+                    <MyWithdrawals kind="business" businessId={b.id} version={withdrawVersion} onChanged={refresh} />
                   </div>
                 </div>
 
