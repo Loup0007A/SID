@@ -1,0 +1,53 @@
+/* Liste de souhaits et cadeaux (Lot 66). */
+
+.wish-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 99px;
+  background: rgba(20, 22, 32, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(4px);
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+.wish-btn path {
+  fill: transparent;
+  stroke: #ede6d3;
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+  transition: fill 0.2s ease, stroke 0.2s ease;
+}
+.wish-btn:hover { border-color: rgba(217, 154, 154, 0.7); }
+.wish-btn:hover path { stroke: #e8b4b4; }
+.wish-btn:active { transform: scale(0.9); }
+.wish-btn.is-on { background: rgba(217, 154, 154, 0.2); border-color: #d99a9a; }
+.wish-btn.is-on path { fill: #d99a9a; stroke: #d99a9a; }
+.wish-btn.is-on svg { animation: wish-pop 0.35s ease-out; }
+@keyframes wish-pop {
+  40% { transform: scale(1.3); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wish-btn.is-on svg { animation: none; }
+}
+
+.wish-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.6rem;
+}
+.wish-row.is-out { opacity: 0.6; }
+
+.gift-panel {
+  border-radius: 1rem;
+  border: 1px solid rgba(217, 154, 154, 0.35);
+  background:
+    radial-gradient(circle at 100% 0, rgba(217, 154, 154, 0.16), transparent 55%),
+    rgba(255, 255, 255, 0.03);
+  padding: 1rem;
+}

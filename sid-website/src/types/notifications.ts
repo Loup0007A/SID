@@ -15,7 +15,17 @@ export type NotificationType =
   | "troll"
   | "business"
   | "auction"
-  | "poll";
+  | "poll"
+  | "gift"
+  | "wishlist"
+  | "wedding";
+
+/** Une ligne d'une notification regroupée (Lot 66). */
+export interface NotificationDetail {
+  at: string;
+  text: string;
+  amount?: number;
+}
 
 export interface AppNotification {
   id: string;
@@ -28,4 +38,9 @@ export interface AppNotification {
   is_read: boolean;
   created_at: string;
   updated_at: string;
+  /** Lot 66 : notification qui regroupe plusieurs événements du jour. */
+  group_key?: string | null;
+  details?: NotificationDetail[] | null;
+  amount?: number | null;
+  seen_at?: string | null;
 }

@@ -19,6 +19,10 @@ export type Poll = {
   closed_at: string | null;
   is_open: boolean;
   created_at: string;
+  /** Lot 66 : publication programmée (visible des admins seulement avant l'heure). */
+  publish_at?: string | null;
+  scheduled?: boolean;
+  notify?: boolean;
   author: string | null;
   voted: boolean;
   results_visible: boolean;
@@ -60,6 +64,7 @@ export function PollCard({
     setEditing(!poll.voted);
   }, [poll.voted, poll.my_votes]);
 
+  const scheduled = !!poll.scheduled;
   const choosing = poll.is_open && editing;
   const total = poll.voters || 0;
   const best = Math.max(0, ...poll.options.map((o) => o.votes ?? 0));
@@ -79,7 +84,7 @@ export function PollCard({
     onChanged();
   }
 
-  async function admin_(fn: "poll_close" | "poll_delete") {
+  async function admin_(fn: "poll_close" | "poll_delete" | "poll_publish_now") {
     if (fn === "poll_delete" && !confirm("Supprimer ce sondage et tous ses votes ?")) return;
     setBusy(true);
     const { error } = await supabase.rpc(fn, { p_poll: poll.id });
@@ -91,18 +96,20 @@ export function PollCard({
   const meta = [
     poll.author ? `par ${poll.author}` : null,
     `${total} votant${total > 1 ? "s" : ""}`,
-    poll.is_open
-      ? poll.closes_at
-        ? until(poll.closes_at)
-        : null
-      : `clos le ${new Date(poll.closed_at ?? poll.closes_at ?? poll.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "long" })}`,
+    scheduled && poll.publish_at
+      ? `publié le ${new Date(poll.publish_at).toLocaleString("fr-FR", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}${poll.notify === false ? " sans notification" : ""}`
+      : poll.is_open
+        ? poll.closes_at
+          ? until(poll.closes_at)
+          : null
+        : `clos le ${new Date(poll.closed_at ?? poll.closes_at ?? poll.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "long" })}`,
   ].filter(Boolean);
 
   return (
-    <article id={`sondage-${poll.id}`} className={`poll-card ${poll.is_open ? "" : "is-closed"} ${highlight ? "is-highlight" : ""}`}>
+    <article id={`sondage-${poll.id}`} className={`poll-card ${poll.is_open || scheduled ? "" : "is-closed"} ${scheduled ? "is-scheduled" : ""} ${highlight ? "is-highlight" : ""}`}>
       <header className="space-y-1">
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className={`poll-tag ${poll.is_open ? "is-open" : ""}`}>{poll.is_open ? "Ouvert" : "Clos"}</span>
+          <span className={`poll-tag ${poll.is_open ? "is-open" : scheduled ? "is-scheduled" : ""}`}>{scheduled ? "Programmé" : poll.is_open ? "Ouvert" : "Clos"}</span>
           {poll.multiple && <span className="poll-tag">Plusieurs choix</span>}
           <span className="poll-tag">{poll.anonymous ? "Anonyme" : "Vote public"}</span>
         </div>
@@ -111,7 +118,15 @@ export function PollCard({
         <p className="font-mono text-[10px] uppercase tracking-wider text-paper/55">{meta.join(" · ")}</p>
       </header>
 
-      {choosing ? (
+      {scheduled ? (
+        <ul className="space-y-1">
+          {poll.options.map((o) => (
+            <li key={o.id} className="font-body text-sm text-paper/75">
+              · {o.label}
+            </li>
+          ))}
+        </ul>
+      ) : choosing ? (
         <div className="space-y-2" role={poll.multiple ? "group" : "radiogroup"} aria-label={poll.question}>
           {poll.options.map((o) => {
             const on = sel.includes(o.id);
@@ -192,6 +207,11 @@ export function PollCard({
           )}
           {admin && (
             <span className="ml-auto flex gap-3">
+              {scheduled && (
+                <button type="button" onClick={() => admin_("poll_publish_now")} disabled={busy} className="font-mono text-[11px] uppercase text-blue hover:underline">
+                  Publier maintenant
+                </button>
+              )}
               {poll.is_open && (
                 <button type="button" onClick={() => admin_("poll_close")} disabled={busy} className="font-mono text-[11px] uppercase text-paper/70 hover:text-paper">
                   Clore

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { can } from "@/lib/permissions";
 import { visibleEntries } from "@/lib/navigation";
+import { useReveals } from "@/lib/reveals";
 import type { PermissionKey } from "@/types/database";
 import { SidIcon } from "@/components/icons/SidIcon";
 import type { IconName } from "@/components/icons/sidIcons";
@@ -103,6 +104,7 @@ const z = (n: number) => `${Math.round(n).toLocaleString("fr-FR")} z`;
 export function CommandPalette({ perms, onLogout }: { perms: Set<PermissionKey>; onLogout: () => void }) {
   const router = useRouter();
   const tuto = useTuto();
+  const reveals = useReveals();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
@@ -187,7 +189,7 @@ export function CommandPalette({ perms, onLogout }: { perms: Set<PermissionKey>;
   const staticItems = useMemo<Item[]>(() => {
     const pages: Item[] = [
       { id: "p:home", kind: "page", label: "Accueil", hint: "Tableau de bord", icon: "home", href: "/dashboard" },
-      ...visibleEntries((...anyOf) => can(perms, ...anyOf)).map(
+      ...visibleEntries((...anyOf) => can(perms, ...anyOf), reveals).map(
         (e): Item => ({ id: `p:${e.key}`, kind: "page", label: e.label, hint: e.description, icon: e.icon, href: e.href }),
       ),
       { id: "p:carto", kind: "page", label: "Cartographie", hint: "La carte du monde (autre site)", icon: "compass", href: "https://sid-map.vercel.app/carte", external: true, keywords: "carte monde atlas" },
@@ -202,7 +204,7 @@ export function CommandPalette({ perms, onLogout }: { perms: Set<PermissionKey>;
     }
     actions.push({ id: "a:logout", kind: "action", label: "Se déconnecter", icon: "power", keywords: "deconnexion quitter", run: onLogout });
     return [...pages, ...actions];
-  }, [perms, tuto, onLogout]);
+  }, [perms, tuto, onLogout, reveals]);
 
   const all = useMemo(() => [...staticItems, ...(data ?? [])], [staticItems, data]);
 

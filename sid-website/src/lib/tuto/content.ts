@@ -352,7 +352,11 @@ export const PAGE_TIPS: Record<string, PageTip> = {
     key: "notifications",
     title: "Notifications",
     icon: "bell",
-    points: ["Tout ce qui t'est arrivé : argent reçu, quêtes, messages, arrivées, titres…", "Pour être prévenu onglet fermé : Mon dossier → Notifications push."],
+    points: [
+      "Les petites rentrées d'argent du jour sont regroupées : « Voir le détail » les liste.",
+      "Une notification s'efface 7 jours après ton passage. La cloche ramène à la page d'avant.",
+      "Pour être prévenu onglet fermé : Mon dossier → Notifications push.",
+    ],
   },
   "/dashboard/titles": {
     key: "titles",
@@ -445,6 +449,7 @@ export const PAGE_TIPS: Record<string, PageTip> = {
     points: [
       (n) => `Le vendeur reverse ${pct(n.vat)} de TVA.`,
       "Enchères : ton offre est bloquée sur ta bourse et rendue si quelqu'un te dépasse.",
+      "Le cœur ajoute un objet à tes souhaits ; « Offrir » l'envoie à un autre membre.",
       "Solde négatif = achats bloqués jusqu'à ce qu'il remonte.",
     ],
     tourFrom: "boutique",
@@ -454,6 +459,12 @@ export const PAGE_TIPS: Record<string, PageTip> = {
     title: "Sondages",
     icon: "ballot",
     points: ["Ton vote se change tant que le sondage est ouvert."],
+  },
+  "/dashboard/mariage": {
+    key: "mariage",
+    title: "Mariages",
+    icon: "rings",
+    points: ["Une demande à la fois ; l'union est inscrite au registre dès que l'autre dit oui.", "Les promesses sont recopiées sur l'acte, lisible par tous."],
   },
   "/dashboard/bank": {
     key: "bank",
@@ -478,8 +489,13 @@ export const PAGE_TIPS: Record<string, PageTip> = {
   "/dashboard/admin/simulation": { key: "a-simulation", title: "Simulation", icon: "dna", points: ["La population simulée qui achète, investit et fait vivre l'économie."] },
   "/dashboard/admin/stats": { key: "a-stats", title: "Statistiques", icon: "chart", points: ["Visites, membres actifs, activité par jour."] },
   "/dashboard/admin/users": { key: "a-users", title: "Comptes", icon: "shieldUser", points: ["La fiche complète de chaque agent : bannir, muter, geler, réinitialiser un mot de passe."] },
-  "/dashboard/admin/alerts": { key: "a-alerts", title: "Alertes", icon: "siren", points: ["Activité inhabituelle détectée automatiquement, et demandes de suppression de compte."] },
-  "/dashboard/admin/moderation": { key: "a-moderation", title: "Modération", icon: "scales", points: ["Annonces, maintenance d'une rubrique, sanctions.", "Les décors des fêtes s'allument d'ici aussi."] },
+  "/dashboard/admin/alerts": {
+    key: "a-alerts",
+    title: "Alertes",
+    icon: "siren",
+    points: ["Activité inhabituelle détectée automatiquement, et demandes de suppression de compte.", "« Normal » masque les alertes du même genre pour ce membre ; « Exceptions » les réactive."],
+  },
+  "/dashboard/admin/moderation": { key: "a-moderation", title: "Modération", icon: "scales", points: ["Annonces, maintenance d'une rubrique, sanctions.", "Les décors des fêtes s'allument d'ici aussi, et les pages en aperçu (Mariages) se dévoilent ici."] },
   "/dashboard/admin/titles": { key: "a-titles", title: "Titres & farces", icon: "masks", points: ["Qui porte quoi, les farces en cours, et les boucliers anti-farce."] },
   "/dashboard/admin/sandbox": { key: "a-sandbox", title: "Bac à sable", icon: "bucket", points: ["Un compte temporaire pour tester le site comme un agent ordinaire."] },
   "/dashboard/admin/audit": { key: "a-audit", title: "Journal d'audit", icon: "magnifier", points: ["Qui a fait quoi, et quand : chaque action sensible y est inscrite."] },

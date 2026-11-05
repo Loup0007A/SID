@@ -9,6 +9,7 @@ import type { PermissionKey, Profile, Quest, Wallet } from "@/types/database";
 import { QuestCard } from "@/components/QuestCard";
 import { NavIcon } from "@/components/NavIcon";
 import { NAV_GROUPS, visibleEntries } from "@/lib/navigation";
+import { useReveals } from "@/lib/reveals";
 import { ConstructionTape } from "@/components/ConstructionTape";
 import { useSuspendedSections } from "@/lib/maintenance";
 import { MemberStatBars } from "@/components/MemberStatBars";
@@ -92,7 +93,8 @@ export default function DashboardHome() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const entries = visibleEntries((...anyOf) => can(permissions, ...anyOf));
+  const reveals = useReveals();
+  const entries = visibleEntries((...anyOf) => can(permissions, ...anyOf), reveals);
   const suspended = useSuspendedSections();
 
   return (

@@ -34,8 +34,9 @@ export default function PollsPage() {
     window.setTimeout(() => setFocus(null), 2500);
   });
 
+  const scheduled = polls?.filter((p) => p.scheduled) ?? [];
   const open = polls?.filter((p) => p.is_open) ?? [];
-  const closed = polls?.filter((p) => !p.is_open) ?? [];
+  const closed = polls?.filter((p) => !p.is_open && !p.scheduled) ?? [];
 
   return (
     <div className="space-y-6">
@@ -72,6 +73,18 @@ export default function PollsPage() {
         </div>
       ) : (
         <>
+          {scheduled.length > 0 && (
+            <section className="space-y-3" aria-labelledby="polls-scheduled">
+              <h2 id="polls-scheduled" className="font-mono text-xs uppercase tracking-[0.2em] text-paper/60">
+                Programmés · visibles des admins seulement
+              </h2>
+              <div className="grid gap-4 lg:grid-cols-2">
+                {scheduled.map((p) => (
+                  <PollCard key={p.id} poll={p} admin={admin} highlight={focus === p.id} onChanged={load} />
+                ))}
+              </div>
+            </section>
+          )}
           {open.length > 0 && (
             <section className="grid gap-4 lg:grid-cols-2" aria-label="Sondages ouverts">
               {open.map((p) => (
@@ -99,9 +112,9 @@ export default function PollsPage() {
 
 const CLOSES: [string, string][] = [
   ["", "Pas de date (clos à la main)"],
-  ["24", "Dans 24 heures"],
-  ["72", "Dans 3 jours"],
-  ["168", "Dans 7 jours"],
+  ["24", "Après 24 heures"],
+  ["72", "Après 3 jours"],
+  ["168", "Après 7 jours"],
   ["custom", "Date précise…"],
 ];
 
@@ -116,6 +129,7 @@ function NewPoll({ onCancel, onCreated }: { onCancel: () => void; onCreated: (id
   const [closes, setCloses] = useState("");
   const [custom, setCustom] = useState("");
   const [notify, setNotify] = useState(true);
+  const [publish, setPublish] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -128,7 +142,16 @@ function NewPoll({ onCancel, onCreated }: { onCancel: () => void; onCreated: (id
     if (closes === "custom") {
       if (!custom) return setErr("Choisis la date de clôture.");
       closesAt = new Date(custom).toISOString();
-    } else if (closes) closesAt = new Date(Date.now() + Number(closes) * 3_600_000).toISOString();
+    }
+    let publishAt: string | null = null;
+    if (publish) {
+      const at = new Date(publish);
+      if (at.getTime() <= Date.now() + 60_000) return setErr("La publication doit être dans le futur.");
+      publishAt = at.toISOString();
+    }
+    if (closes && closes !== "custom") {
+      closesAt = new Date((publishAt ? new Date(publishAt).getTime() : Date.now()) + Number(closes) * 3_600_000).toISOString();
+    }
     setBusy(true);
     const { data, error } = await supabase.rpc("poll_create", {
       p_question: question,
@@ -139,6 +162,7 @@ function NewPoll({ onCancel, onCreated }: { onCancel: () => void; onCreated: (id
       p_show_results: show,
       p_closes_at: closesAt,
       p_notify: notify,
+      ...(publishAt ? { p_publish_at: publishAt } : {}),
     });
     setBusy(false);
     if (error) return setErr(error.message);
@@ -203,6 +227,13 @@ function NewPoll({ onCancel, onCreated }: { onCancel: () => void; onCreated: (id
             ))}
           </select>
         </label>
+        <label className="space-y-1 sm:col-span-2">
+          <span className="font-mono text-xs uppercase tracking-wide text-paper/70">Publication</span>
+          <input type="datetime-local" value={publish} onChange={(e) => setPublish(e.target.value)} className="field-dark" aria-describedby="poll-publish-hint" />
+          <span id="poll-publish-hint" className="block font-mono text-[10px] text-paper/55">
+            {publish ? "Invisible des membres jusqu'à cette date ; la notification part à ce moment-là." : "Vide : publié tout de suite."}
+          </span>
+        </label>
         {closes === "custom" && (
           <label className="space-y-1 sm:col-span-2">
             <span className="font-mono text-xs uppercase tracking-wide text-paper/70">Date de clôture</span>
@@ -233,7 +264,7 @@ function NewPoll({ onCancel, onCreated }: { onCancel: () => void; onCreated: (id
           Annuler
         </button>
         <button type="submit" disabled={busy || question.trim().length < 3 || filled < 2} className="shop-buy">
-          {busy ? "…" : "Publier"}
+          {busy ? "…" : publish ? "Programmer" : "Publier"}
         </button>
       </div>
     </form>

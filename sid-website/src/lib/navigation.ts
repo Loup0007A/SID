@@ -32,7 +32,13 @@ export interface NavEntry {
   wip?: boolean;
   /** Section que l'administration peut suspendre (bandeau « Service suspendu »). */
   section?: MaintenanceSection;
+  /** Page en aperçu (réservée à `perm`) que l'administration peut dévoiler à tous (Lot 66). */
+  reveal?: RevealKey;
 }
+
+/** Pages dévoilables depuis Modération (site_reveals(), migration 0081). */
+export type RevealKey = "wedding";
+export type Reveals = Partial<Record<RevealKey, boolean>>;
 
 export const NAV_GROUPS: { key: NavGroup; label: string }[] = [
   { key: "espace", label: "Mon espace" },
@@ -57,6 +63,7 @@ export const NAV_ENTRIES: NavEntry[] = [
   { key: "leaderboard", href: "/dashboard/leaderboard", label: "Classement", description: "Puissance, argent, renommée", emoji: "🏆", icon: "trophy", group: "jeu" },
   { key: "org-chart", href: "/dashboard/org-chart", label: "Organigramme", description: "La hiérarchie du S.I.D.", emoji: "🏛️", icon: "orgchart", group: "jeu" },
   { key: "polls", href: "/dashboard/polls", label: "Sondages", description: "Les votes ouverts par l'administration", emoji: "🗳️", icon: "ballot", group: "jeu" },
+  { key: "mariage", href: "/dashboard/mariage", label: "Mariages", description: "Le registre des unions", emoji: "💍", icon: "rings", group: "jeu", perm: ["manage_users"], reveal: "wedding" },
   { key: "members", href: "/dashboard/members", label: "Trombinoscope", description: "Tous les membres", emoji: "👥", icon: "people", group: "jeu" },
 
   ...(["donjons", "intelligence", "techniques"] as SimulationKind[]).map((kind): NavEntry => {
@@ -91,9 +98,9 @@ export const NAV_ENTRIES: NavEntry[] = [
   { key: "audit", href: "/dashboard/admin/audit", label: "Journal d'audit", description: "Qui a fait quoi, et quand", emoji: "🕵️", icon: "magnifier", group: "admin", perm: ["manage_users"] },
 ];
 
-/** Les entrées visibles pour un membre selon ses permissions. */
-export function visibleEntries(can: (...anyOf: PermissionKey[]) => boolean): NavEntry[] {
-  return NAV_ENTRIES.filter((e) => !e.perm || can(...e.perm));
+/** Les entrées visibles pour un membre selon ses permissions (et les pages dévoilées). */
+export function visibleEntries(can: (...anyOf: PermissionKey[]) => boolean, reveals: Reveals = {}): NavEntry[] {
+  return NAV_ENTRIES.filter((e) => !e.perm || can(...e.perm) || (e.reveal && reveals[e.reveal]));
 }
 
 /** L'entrée correspondant à une URL (la plus précise), ex. /dashboard/admin/users/xyz -> "Comptes". */

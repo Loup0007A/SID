@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { SidIcon } from "@/components/icons/SidIcon";
+import { NOTIFS_PATH, pageBeforeNotifs } from "@/lib/notifReturn";
 
 /**
  * Simple lien vers /dashboard/notifications, avec juste un badge de
@@ -12,10 +14,18 @@ import { SidIcon } from "@/components/icons/SidIcon";
  * source de bugs récurrents (débordement, ancrage qui ne suit pas le
  * scroll…) selon l'appareil. Une page dédiée, comme les autres onglets du
  * site, est beaucoup plus robuste.
+ *
+ * Depuis la page Notifications, la cloche ramène à la page d'avant (Lot 66).
  */
 export function NotificationBell({ userId }: { userId: string }) {
   const supabase = createClient();
   const [unreadCount, setUnreadCount] = useState(0);
+  const pathname = usePathname();
+  const onNotifs = pathname.startsWith(NOTIFS_PATH);
+  const [back, setBack] = useState("/dashboard");
+  useEffect(() => {
+    if (onNotifs) setBack(pageBeforeNotifs() ?? "/dashboard");
+  }, [onNotifs]);
   // Le composant est rendu deux fois en simultané dans le layout (version
   // desktop + version mobile, l'une des deux étant juste masquée en CSS) :
   // sans identifiant unique, les deux instances créeraient un canal
@@ -54,9 +64,11 @@ export function NotificationBell({ userId }: { userId: string }) {
 
   return (
     <Link
-      href="/dashboard/notifications"
-      className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/15 bg-white/5 text-paper hover:bg-white/10"
-      aria-label="Notifications"
+      href={onNotifs ? back : NOTIFS_PATH}
+      scroll={!onNotifs}
+      className={`relative flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border text-paper hover:bg-white/10 ${onNotifs ? "border-blue/60 bg-blue/15" : "border-white/15 bg-white/5"}`}
+      aria-label={onNotifs ? "Fermer les notifications" : "Notifications"}
+      title={onNotifs ? "Revenir à la page précédente" : undefined}
     >
       <SidIcon name="bell" />
       {unreadCount > 0 && (

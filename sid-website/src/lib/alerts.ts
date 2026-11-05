@@ -71,7 +71,7 @@ function fmt(v: unknown): string {
 export function describeAlert(details: Record<string, unknown> | null): string {
   if (!details) return "";
   return Object.entries(details)
-    .filter(([k, v]) => v !== null && v !== undefined && k !== "details")
+    .filter(([k, v]) => v !== null && v !== undefined && k !== "details" && k !== "exception")
     .map(([k, v]) => `${DETAIL_LABELS[k] ?? k} : ${fmt(v)}`)
     .join(" · ");
 }
@@ -94,4 +94,23 @@ export function timeAgo(iso: string): string {
   if (s < 86400) return `il y a ${Math.floor(s / 3600)} h`;
   if (s < 86400 * 7) return `il y a ${Math.floor(s / 86400)} j`;
   return new Date(iso).toLocaleDateString("fr-FR");
+}
+
+/** Exception « normal pour ce membre » (Lot 66, migration 0081). */
+export type AlertExemption = {
+  id: number;
+  user_id: string;
+  nickname: string | null;
+  kind: string;
+  signature: string;
+  created_by_nickname: string | null;
+  created_at: string;
+  hits: number;
+  last_hit_at: string | null;
+};
+
+/** « Gros mouvement d'argent · reversement des impôts/tva (part admin) » */
+export function exemptionLabel(e: { kind: string; signature: string }): string {
+  const kind = ALERT_KINDS[e.kind] ?? e.kind;
+  return e.signature ? `${kind} · ${e.signature}` : kind;
 }

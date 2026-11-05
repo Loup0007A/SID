@@ -30,6 +30,7 @@ import { Sceau1, Sceau2, Sceau7, Sceau8, Sceau9, Sceau10, Sceau11 } from "@/comp
 import { SidIcon } from "@/components/icons/SidIcon";
 import { TutoProvider } from "@/components/tuto/TutoProvider";
 import { TutoHelpButton, TutoPageTip } from "@/components/tuto/TutoUi";
+import { rememberPage } from "@/lib/notifReturn";
 
 // Pas urgents : téléchargés une fois la page affichée.
 const TitleUnlock = dynamic(() => import("@/components/titles/TitleUnlock").then((m) => m.TitleUnlock), { ssr: false });
@@ -155,7 +156,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         // marché) : rattrape le temps écoulé, donc inutile à chaque page.
         if (due("sid-run-economy", 5 * 60_000)) jobs.push(supabase.rpc("process_daily_economy"));
         // Détecteur d'activité inhabituelle (la base ne le relance pas plus d'une fois toutes les 3 min).
-        if (due("sid-run-scan", 3 * 60_000)) jobs.push(supabase.rpc("maybe_scan_activity_alerts"));
+        if (due("sid-run-scan", 3 * 60_000)) jobs.push(supabase.rpc("maybe_run_jobs"), supabase.rpc("maybe_scan_activity_alerts"));
         if (can(permissions, "manage_users") && !profile.sandbox_expires_at) {
           jobs.push(
             supabase.rpc("count_open_alerts").then(({ data: n }) => {
@@ -178,7 +179,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     const t = pageTitle(pathname);
     document.title = t ? `${t} · S.I.D.` : "S.I.D. — Dossier Central";
+    rememberPage(pathname + window.location.search);
   }, [pathname]);
+
+  // Tâches planifiées (sondages programmés, rappels d'enchère…) : une fois
+  // par minute tant qu'un onglet est visible ; la base ne les lance pas plus
+  // d'une fois par minute pour tout le site.
+  useEffect(() => {
+    if (!fresh) return;
+    const tick = () => {
+      if (document.visibilityState === "visible") supabase.rpc("maybe_run_jobs").then(() => {}, () => {});
+    };
+    const id = window.setInterval(tick, 60_000);
+    return () => window.clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fresh]);
 
   async function handleLogout() {
     try {

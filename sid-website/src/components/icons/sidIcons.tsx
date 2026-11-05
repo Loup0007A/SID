@@ -825,6 +825,19 @@ export const ICONS = {
       <S d="M9 28h3l-1 13H9z" op={0.35} />
     </>
   ),
+  rings: (
+    <>
+      <circle cx="18" cy="29" r="11" fill="none" stroke={K} strokeWidth="7" />
+      <circle cx="18" cy="29" r="11" fill="none" stroke="#f0c27a" strokeWidth="3.6" />
+      <circle cx="30" cy="29" r="11" fill="none" stroke={K} strokeWidth="7" />
+      <circle cx="30" cy="29" r="11" fill="none" stroke="#dfe6ef" strokeWidth="3.6" />
+      <L d="M26.4 36.1A11 11 0 0 1 20.8 39.6" c={K} w={7} />
+      <L d="M26.4 36.1A11 11 0 0 1 20.8 39.6" c="#f0c27a" w={3.6} />
+      <P d="M13.5 13l4.5-6 4.5 6-4.5 5.5z" f="#a8dcf5" />
+      <S d="M15.6 12.4l2.4-3.2.6 3.2z" op={0.7} />
+      <L d="M10 24.5a9 9 0 0 1 4-4.4" c="#fff" w={1.4} op={0.7} />
+    </>
+  ),
   bat: (
     <>
       <P d="M24 12c-2 0-3 1.2-3.4 3l-2-5-1.2 5.6C13 9.4 7 8 1 11c5 2 8 7 8 13 3.4-3 8.4-2.6 11 2 2-3 4-4.4 4-4.4s2 1.4 4 4.4c2.6-4.6 7.6-5 11-2 0-6 3-11 8-13-6-3-12-1.6-16.4 4.6L29.4 10l-2 5c-.4-1.8-1.4-3-3.4-3z" f="#7a52b8" />

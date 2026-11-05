@@ -9,6 +9,9 @@ import clsx from "clsx";
 import { DECOR_CHANGED_EVENT, type DecorKey, type DecorMode, type SiteDecor } from "@/components/seasonal/siteDecor";
 import { EVENTS, EVENT_ORDER } from "@/lib/events";
 import { SidIcon } from "@/components/icons/SidIcon";
+import Link from "next/link";
+import { storeReveals } from "@/lib/reveals";
+import type { Reveals } from "@/lib/navigation";
 
 const DECOR_MODES: { v: DecorMode; label: string; hint: string }[] = [
   { v: "auto", label: "Automatique", hint: "Pendant la période de l'événement (heure de Paris)." },
@@ -57,6 +60,9 @@ export default function ModerationPage() {
   const [decor, setDecor] = useState<SiteDecor | null>(null);
   const [decorSaving, setDecorSaving] = useState(false);
 
+  // Pages en aperçu (Lot 66)
+  const [reveals, setReveals] = useState<Reveals | null>(null);
+
   // Sanctions
   const [members, setMembers] = useState<Profile[]>([]);
   const [sanctions, setSanctions] = useState<SanctionView[]>([]);
@@ -91,6 +97,21 @@ export default function ModerationPage() {
     setDecor(data as SiteDecor);
     window.dispatchEvent(new CustomEvent(DECOR_CHANGED_EVENT, { detail: data }));
   }
+  async function refreshReveals() {
+    const { data, error } = await supabase.rpc("site_reveals");
+    setReveals(error ? null : ((data ?? {}) as Reveals));
+  }
+  async function toggleWedding(on: boolean) {
+    if (on && !confirm("Dévoiler la page Mariages à tous les membres ?")) return;
+    const { data, error } = await supabase.rpc("set_wedding_public", { p_on: on });
+    if (error) {
+      setMessage(`Échec : ${error.message}`);
+      return;
+    }
+    setReveals(data as Reveals);
+    storeReveals(data as Reveals);
+    setMessage(on ? "La page Mariages est visible par tous." : "La page Mariages est de nouveau réservée aux admins.");
+  }
   async function refreshSanctions() {
     const { data } = await supabase.rpc("list_all_sanctions");
     setSanctions((data ?? []) as SanctionView[]);
@@ -100,7 +121,7 @@ export default function ModerationPage() {
     (async () => {
       const { data: m } = await supabase.from("profiles").select("*").eq("status", "active").order("nickname");
       setMembers(m ?? []);
-      await Promise.all([refreshAnnouncements(), refreshFlags(), refreshSanctions(), refreshDecor()]);
+      await Promise.all([refreshAnnouncements(), refreshFlags(), refreshSanctions(), refreshDecor(), refreshReveals()]);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -319,6 +340,38 @@ export default function ModerationPage() {
           );
         })}
       </section>
+
+      {/* Pages en aperçu */}
+      {reveals && (
+        <section className="space-y-4">
+          <h2 className="font-display text-lg uppercase text-paper">Pages en aperçu</h2>
+          <div className="glass-card flex flex-wrap items-center gap-4 p-4">
+            <SidIcon name="rings" size={34} />
+            <div className="min-w-[14rem] flex-1">
+              <p className="font-display uppercase">
+                <Link href="/dashboard/mariage" className="hover:underline">
+                  Mariages
+                </Link>
+              </p>
+              <p className="font-body text-sm text-paper/65">
+                {reveals.wedding
+                  ? "Visible par tous : chaque membre peut faire sa demande."
+                  : "Réservée aux admins : eux seuls voient la page et peuvent s'y demander en mariage."}
+              </p>
+            </div>
+            <button
+              onClick={() => toggleWedding(!reveals.wedding)}
+              aria-pressed={!!reveals.wedding}
+              className={clsx(
+                "rounded-lg border px-4 py-2 font-mono text-xs uppercase",
+                reveals.wedding ? "border-white/20 text-paper/80 hover:bg-white/10" : "border-blue bg-blue text-ink hover:bg-blue-light"
+              )}
+            >
+              {reveals.wedding ? "Remettre en aperçu" : "Dévoiler à tous"}
+            </button>
+          </div>
+        </section>
+      )}
 
       {/* Sanctions */}
       <section className="space-y-4">

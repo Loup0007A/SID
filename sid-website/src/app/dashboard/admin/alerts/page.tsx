@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { loadCurrentUser, can } from "@/lib/permissions";
 import type { PermissionKey } from "@/types/database";
 import { inputClass, buttonPrimary } from "@/lib/ui";
-import { ALERT_KINDS, ALERT_SETTINGS, SEVERITY, describeAlert, timeAgo, type AlertRow } from "@/lib/alerts";
+import { ALERT_KINDS, ALERT_SETTINGS, SEVERITY, describeAlert, exemptionLabel, timeAgo, type AlertExemption, type AlertRow } from "@/lib/alerts";
 import { SidIcon } from "@/components/icons/SidIcon";
 
 const TABS = [
@@ -24,6 +24,13 @@ export default function AlertsPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [showSettings, setShowSettings] = useState(false);
+  const [exemptions, setExemptions] = useState<AlertExemption[] | null>(null);
+  const [showExemptions, setShowExemptions] = useState(false);
+
+  async function refreshExemptions() {
+    const { data, error } = await supabase.rpc("alert_exemptions_list");
+    setExemptions(error ? null : ((data ?? []) as AlertExemption[]));
+  }
 
   async function refresh(status = tab) {
     const { data, error } = await supabase.rpc("list_activity_alerts", { p_status: status, p_user: null, p_limit: 300 });
@@ -40,6 +47,7 @@ export default function AlertsPage() {
       setPermissions(permissions);
       if (!can(permissions, "manage_users")) return;
       await refresh("open");
+      refreshExemptions();
       const { data } = await supabase.rpc("get_alert_settings");
       if (data) setSettings(Object.fromEntries(Object.entries(data as Record<string, number>).map(([k, v]) => [k, String(v)])));
     })();
@@ -55,6 +63,24 @@ export default function AlertsPage() {
     else refresh();
   }
 
+  async function markNormal(a: AlertRow) {
+    const { data, error } = await supabase.rpc("alert_mark_normal", { p_id: a.id });
+    if (error) {
+      setMessage(error.message.includes("alert_mark_normal") ? "Pas encore disponible : la migration 0081 doit être lancée sur la base." : `Échec : ${error.message}`);
+      return;
+    }
+    const n = Number(data) || 1;
+    setMessage(`${a.nickname ?? "Ce membre"} : ${n} alerte${n > 1 ? "s" : ""} classée${n > 1 ? "s" : ""}. Les suivantes du même genre ne seront plus affichées.`);
+    refresh();
+    refreshExemptions();
+  }
+
+  async function removeExemption(e: AlertExemption) {
+    const { error } = await supabase.rpc("alert_exemption_delete", { p_id: e.id });
+    if (error) setMessage(`Échec : ${error.message}`);
+    else refreshExemptions();
+  }
+
   async function saveSettings() {
     const payload = Object.fromEntries(Object.entries(settings).map(([k, v]) => [k, Number(v)]));
     const { error } = await supabase.rpc("set_alert_settings", { p_settings: payload });
@@ -68,10 +94,9 @@ export default function AlertsPage() {
       <div className="space-y-2">
         <h1 className="font-display text-2xl uppercase tracking-wide text-red">Alertes d&apos;activité</h1>
         <p className="font-body text-sm text-paper/70">
-          Le site repère tout seul ce qui sort de l&apos;ordinaire (vérification toutes les 3 minutes, à chaque visite d&apos;un
-          membre) : gros mouvements de zénis, rafales de messages ou d&apos;achats, simulations trop rapides, actions
-          d&apos;admin en série ou sur son propre compte, comptes endormis qui se réveillent… Une alerte n&apos;est pas une
-          preuve : ouvre la fiche du membre pour vérifier, puis classe-la.
+          Gros mouvements de zénis, rafales de messages ou d&apos;achats, simulations trop rapides, actions d&apos;admin en
+          série ou sur son propre compte, comptes endormis qui se réveillent. « Normal » range l&apos;alerte et masque les
+          suivantes du même genre pour ce membre.
         </p>
       </div>
 
@@ -116,6 +141,7 @@ export default function AlertsPage() {
                   )}{" "}
                   · {timeAgo(a.created_at)}
                   {a.status !== "open" && a.handled_by_nickname && ` · ${a.status === "resolved" ? "traitée" : "ignorée"} par ${a.handled_by_nickname}`}
+                  {a.details && (a.details as { exception?: boolean }).exception && " · classée seule (exception)"}
                 </p>
                 {describeAlert(a.details) && <p className="font-mono text-[11px] text-paper/65">{describeAlert(a.details)}</p>}
               </div>
@@ -125,6 +151,15 @@ export default function AlertsPage() {
                     <button onClick={() => setStatus(a, "resolved")} className="rounded-lg border border-blue px-3 py-1.5 font-mono text-xs uppercase text-blue hover:bg-blue hover:text-ink">
                       ✓ Traitée
                     </button>
+                    {a.user_id && (
+                      <button
+                        onClick={() => markNormal(a)}
+                        title={`Les alertes « ${ALERT_KINDS[a.kind] ?? a.kind} » de ${a.nickname ?? "ce membre"} ne seront plus affichées.`}
+                        className="rounded-lg border border-green-400/50 px-3 py-1.5 font-mono text-xs uppercase text-green-300 hover:bg-green-400/10"
+                      >
+                        Normal
+                      </button>
+                    )}
                     <button onClick={() => setStatus(a, "ignored")} className="rounded-lg border border-white/20 px-3 py-1.5 font-mono text-xs uppercase text-paper/70 hover:bg-white/10">
                       Ignorer
                     </button>
@@ -139,6 +174,40 @@ export default function AlertsPage() {
           );
         })}
       </div>
+
+      {exemptions && (
+        <div className="glass-card space-y-3 p-5">
+          <button onClick={() => setShowExemptions((s) => !s)} className="flex w-full items-center justify-between font-display text-lg uppercase">
+            Exceptions ({exemptions.length}) <span className="font-mono text-xs text-paper/65">{showExemptions ? "▲" : "▼"}</span>
+          </button>
+          {showExemptions &&
+            (exemptions.length === 0 ? (
+              <p className="font-body text-sm text-paper/60">Aucune. Le bouton « Normal » d&apos;une alerte en crée une.</p>
+            ) : (
+              <ul className="divide-y divide-white/10">
+                {exemptions.map((e) => (
+                  <li key={e.id} className="flex flex-wrap items-center gap-3 py-2">
+                    <div className="min-w-[12rem] flex-1">
+                      <p className="font-body text-sm">
+                        <Link href={`/dashboard/admin/members/${e.user_id}`} className="text-blue-light underline">
+                          {e.nickname ?? "membre supprimé"}
+                        </Link>{" "}
+                        · {exemptionLabel(e)}
+                      </p>
+                      <p className="font-mono text-[11px] text-paper/60">
+                        par {e.created_by_nickname ?? "—"}, {timeAgo(e.created_at)} · {e.hits} alerte{e.hits > 1 ? "s" : ""} classée{e.hits > 1 ? "s" : ""} depuis
+                        {e.last_hit_at ? ` (dernière ${timeAgo(e.last_hit_at)})` : ""}
+                      </p>
+                    </div>
+                    <button onClick={() => removeExemption(e)} className="rounded-lg border border-white/20 px-3 py-1.5 font-mono text-xs uppercase text-paper/70 hover:bg-white/10">
+                      Réactiver
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ))}
+        </div>
+      )}
 
       <div className="glass-card space-y-3 p-5">
         <button onClick={() => setShowSettings((s) => !s)} className="flex w-full items-center justify-between font-display text-lg uppercase">

@@ -80,3 +80,7 @@
 @media (prefers-reduced-motion: reduce) {
   .poll-fill { transition: none; }
 }
+
+/* Lot 66 : sondage programmé (admins). */
+.poll-card.is-scheduled { border-style: dashed; }
+.poll-tag.is-scheduled { color: #262a38; background: #f0c27a; border-color: #f0c27a; }

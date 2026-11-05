@@ -15,6 +15,7 @@ import { SidIcon } from "@/components/icons/SidIcon";
 import { ShopFrame } from "@/components/shop/ShopFrame";
 import { useDeepLink } from "@/lib/deeplink";
 import type { AuctionPreset } from "@/components/shop/Auctions";
+import { WishlistTab, WishButton, GiftPanel, type Member } from "@/components/shop/Wishlist";
 
 // La salle des ventes n'est chargée qu'à l'ouverture de son onglet.
 const AuctionsTab = dynamic(() => import("@/components/shop/Auctions").then((m) => m.AuctionsTab), {
@@ -26,12 +27,22 @@ const AuctionsTab = dynamic(() => import("@/components/shop/Auctions").then((m) 
  * filtres et tri, fiche détaillée (quantité, total, bourse après achat),
  * mes achats, mes objets en vente, et création avec aperçu en direct.
  * Lot 65 : onglet Enchères (components/shop/Auctions.tsx).
+ * Lot 66 : liste de souhaits et cadeaux (components/shop/Wishlist.tsx).
  */
 
-type Tab = "vitrine" | "encheres" | "achats" | "ventes" | "nouveau";
+type Tab = "vitrine" | "encheres" | "souhaits" | "achats" | "ventes" | "nouveau";
 type Filter = "tout" | "promo" | "effet" | "rares";
 type Sort = "recent" | "prix-asc" | "prix-desc" | "nom";
-type Purchase = { id: string; status: string; quantity: number; total_price: number; created_at: string; shop_items: { name: string; image_url: string | null; effect: ShopItemEffect | null } | null };
+type Purchase = {
+  id: string;
+  status: string;
+  quantity: number;
+  total_price: number;
+  created_at: string;
+  shop_items: { name: string; image_url: string | null; effect: ShopItemEffect | null } | null;
+  gift_message?: string | null;
+  giver?: { nickname: string } | null;
+};
 
 const z = (n: number) => `${Number(n).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} z`;
 
@@ -66,6 +77,9 @@ export default function ShopPage() {
     setAuctionPreset(null);
     setAuctionOpen(null);
   }, []);
+  const [wished, setWished] = useState<Set<string>>(new Set());
+  const [members, setMembers] = useState<Member[] | null>(null);
+  const [giftTo, setGiftTo] = useState<string | null>(null);
 
   const canManage = can(permissions, "manage_shop");
 
@@ -108,13 +122,48 @@ export default function ShopPage() {
 
   async function refreshPurchases(uid = userId) {
     if (!uid) return;
-    const { data } = await supabase
-      .from("purchases")
-      .select("id, status, quantity, total_price, created_at, shop_items(name, image_url, effect)")
-      .eq("user_id", uid)
-      .order("created_at", { ascending: false })
-      .limit(60);
-    setPurchases((data ?? []) as unknown as Purchase[]);
+    const base = "id, status, quantity, total_price, created_at, shop_items(name, image_url, effect)";
+    const query = (cols: string) => supabase.from("purchases").select(cols).eq("user_id", uid).order("created_at", { ascending: false }).limit(60);
+    // Sans la migration 0081, les colonnes des cadeaux n'existent pas encore.
+    const first = await query(`${base}, gift_message, giver:profiles!purchases_gift_from_fkey(nickname)`);
+    const res = first.error ? await query(base) : first;
+    setPurchases((res.data ?? []) as unknown as Purchase[]);
+  }
+
+  async function refreshWishes() {
+    const { data, error } = await supabase.from("shop_wishlist").select("item_id");
+    if (!error) setWished(new Set(((data ?? []) as { item_id: string }[]).map((r) => r.item_id)));
+  }
+
+  async function loadMembers() {
+    if (members) return;
+    const { data } = await supabase.from("profiles").select("id, nickname, avatar_url").eq("status", "active").order("nickname");
+    setMembers((data ?? []) as Member[]);
+  }
+
+  async function toggleWish(item: { id: string; name: string }) {
+    const { data, error } = await supabase.rpc("wishlist_toggle", { p_item: item.id });
+    if (error) return say(false, error.message.includes("wishlist_toggle") ? "Liste de souhaits indisponible : la migration 0081 doit être lancée." : error.message);
+    setWished((s) => {
+      const next = new Set(s);
+      if (data) next.add(item.id);
+      else next.delete(item.id);
+      return next;
+    });
+    say(true, data ? `« ${item.name} » ajouté à tes souhaits.` : `« ${item.name} » retiré de tes souhaits.`);
+  }
+
+  async function gift(item: ShopItem, to: Member, qty: number, message: string) {
+    const { error } = await supabase.rpc("shop_gift", { p_item: item.id, p_to: to.id, p_quantity: qty, p_message: message || null });
+    if (error) {
+      say(false, error.message.includes("shop_gift") ? "Cadeaux indisponibles : la migration 0081 doit être lancée." : error.message);
+      return false;
+    }
+    say(true, `Cadeau envoyé à ${to.nickname} : ${qty > 1 ? `${qty} × ` : ""}${item.name}.`);
+    setOpen(null);
+    setGiftTo(null);
+    await Promise.all([refresh(), refreshWallet()]);
+    return true;
   }
 
   async function refreshWallet(uid = userId) {
@@ -132,6 +181,7 @@ export default function ShopPage() {
         uid ? refreshMine() : null,
         uid ? refreshWallet(uid) : null,
         uid ? supabase.rpc("list_my_businesses") : null,
+        uid ? refreshWishes() : null,
       ]);
       setPermissions(permissions);
       setUserId(profile?.id ?? null);
@@ -147,6 +197,11 @@ export default function ShopPage() {
       setTab("vitrine");
       setOpen(it);
     }
+  });
+
+  // Onglet demandé par une notification (cadeau reçu…).
+  useDeepLink("onglet", true, (t) => {
+    if (t === "achats" || t === "souhaits" || t === "encheres") setTab(t);
   });
 
   // Lien direct vers une vente aux enchères (notifications).
@@ -227,9 +282,10 @@ export default function ShopPage() {
     refreshMine();
   }
 
-  const tabs: { key: Tab; label: string; icon: "store" | "gavel" | "receipt" | "tag" | "pen"; count?: number; show: boolean }[] = [
+  const tabs: { key: Tab; label: string; icon: "store" | "gavel" | "heart" | "receipt" | "tag" | "pen"; count?: number; show: boolean }[] = [
     { key: "vitrine", label: "Vitrine", icon: "store", count: items?.length, show: true },
     { key: "encheres", label: "Enchères", icon: "gavel", count: openAuctions, show: true },
+    { key: "souhaits", label: "Souhaits", icon: "heart", count: wished.size, show: true },
     { key: "achats", label: "Mes achats", icon: "receipt", show: true },
     { key: "ventes", label: "Mes objets en vente", icon: "tag", count: myItems.length, show: myItems.length > 0 || canManage },
     { key: "nouveau", label: "Nouvel objet", icon: "pen", show: canManage },
@@ -318,7 +374,7 @@ export default function ShopPage() {
           ) : (
             <div data-tuto="boutique-vitrine" className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {shown.map((item) => (
-                <ShopCard key={item.id} item={item} seller={sellerLabel(item)} onOpen={() => setOpen(item)} />
+                <ShopCard key={item.id} item={item} seller={sellerLabel(item)} onOpen={() => setOpen(item)} wished={wished.has(item.id)} onWish={() => toggleWish(item)} />
               ))}
             </div>
           )}
@@ -344,6 +400,24 @@ export default function ShopPage() {
         />
       )}
 
+      {/* ------------------------------------------------------------ Souhaits */}
+      {tab === "souhaits" && (
+        <WishlistTab
+          userId={userId}
+          members={members}
+          loadMembers={loadMembers}
+          wished={wished}
+          onToggle={toggleWish}
+          onOpen={(itemId, to) => {
+            const it = items?.find((x) => x.id === itemId);
+            if (!it) return say(false, "Cet objet n'est pas en vitrine en ce moment.");
+            setGiftTo(to ?? null);
+            if (to) loadMembers();
+            setOpen(it);
+          }}
+        />
+      )}
+
       {/* ------------------------------------------------------------ Mes achats */}
       {tab === "achats" && (
         <section className="space-y-3">
@@ -359,7 +433,7 @@ export default function ShopPage() {
           ) : (
             <>
               <p className="font-mono text-xs uppercase tracking-wide text-paper/60">
-                {purchases.length} achat{purchases.length > 1 ? "s" : ""} · {z(purchases.reduce((s, p) => s + Number(p.total_price), 0))} dépensés
+                {purchases.length} achat{purchases.length > 1 ? "s" : ""} · {z(purchases.filter((p) => !p.giver).reduce((s, p) => s + Number(p.total_price), 0))} dépensés
               </p>
               <ul className="glass-card divide-y divide-white/10 overflow-hidden">
                 {purchases.map((p) => (
@@ -371,6 +445,12 @@ export default function ShopPage() {
                         {new Date(p.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}
                         {p.shop_items?.effect && " · s'utilise depuis une simulation"}
                       </p>
+                      {p.giver && (
+                        <p className="mt-0.5 font-body text-xs text-red-light">
+                          <SidIcon name="gift" size={13} /> Offert par {p.giver.nickname}
+                          {p.gift_message && <span className="italic text-paper/70"> · « {p.gift_message} »</span>}
+                        </p>
+                      )}
                     </div>
                     <div className="shrink-0 text-right">
                       <p className="font-display text-lg text-blue">{z(Number(p.total_price))}</p>
@@ -432,8 +512,18 @@ export default function ShopPage() {
           balance={wallet?.balance ?? null}
           mine={open.created_by === userId}
           canManage={canManage}
-          onClose={() => setOpen(null)}
+          onClose={() => {
+            setOpen(null);
+            setGiftTo(null);
+          }}
           onBuy={buy}
+          wished={wished.has(open.id)}
+          onWish={() => toggleWish(open)}
+          members={members}
+          loadMembers={loadMembers}
+          userId={userId}
+          giftTo={giftTo}
+          onGift={gift}
           onDelete={hideItem}
           onWithdraw={withdraw}
         />
@@ -487,14 +577,17 @@ function PriceTag({ item, big = false }: { item: ShopItem; big?: boolean }) {
   );
 }
 
-function ShopCard({ item, seller, onOpen }: { item: ShopItem; seller: string; onOpen: () => void }) {
+function ShopCard({ item, seller, onOpen, wished, onWish }: { item: ShopItem; seller: string; onOpen: () => void; wished: boolean; onWish: () => void }) {
   return (
     <article className="shop-card group">
-      <button onClick={onOpen} className="relative block w-full text-left" aria-label={`Voir ${item.name}`}>
-        <ShopFrame src={item.image_url} alt={item.name} className="aspect-[4/3] w-full" />
-        <Badges item={item} />
-        <StockTag item={item} />
-      </button>
+      <div className="relative">
+        <button onClick={onOpen} className="relative block w-full text-left" aria-label={`Voir ${item.name}`}>
+          <ShopFrame src={item.image_url} alt={item.name} className="aspect-[4/3] w-full" />
+          <Badges item={item} />
+          <StockTag item={item} />
+        </button>
+        <WishButton on={wished} onClick={onWish} name={item.name} className="absolute bottom-3 right-3 z-[2]" />
+      </div>
       <div className="flex flex-1 flex-col gap-2 p-4">
         <div>
           <h2 className="font-display text-lg uppercase leading-tight tracking-wide">{item.name}</h2>
@@ -523,6 +616,13 @@ function ItemSheet({
   onBuy,
   onDelete,
   onWithdraw,
+  wished,
+  onWish,
+  members,
+  loadMembers,
+  userId,
+  giftTo,
+  onGift,
 }: {
   item: ShopItem;
   seller: string;
@@ -533,9 +633,17 @@ function ItemSheet({
   onBuy: (item: ShopItem, qty: number) => Promise<boolean>;
   onDelete: (item: ShopItem) => void;
   onWithdraw: (item: ShopItem) => void;
+  wished: boolean;
+  onWish: () => void;
+  members: Member[] | null;
+  loadMembers: () => void;
+  userId: string | null;
+  giftTo: string | null;
+  onGift: (item: ShopItem, to: Member, qty: number, message: string) => Promise<boolean>;
 }) {
   const [qty, setQty] = useState(1);
   const [busy, setBusy] = useState(false);
+  const [giving, setGiving] = useState(!!giftTo);
   const max = item.stock ?? 99;
   const total = priceOf(item) * qty;
   const after = balance == null ? null : balance - total;
@@ -563,9 +671,12 @@ function ItemSheet({
           <Badges item={item} />
         </div>
         <div className="flex flex-col gap-4 p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] md:max-h-[88vh] md:overflow-y-auto">
-          <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-paper/65">par {seller}</p>
-            <h2 className="font-display text-3xl uppercase leading-tight tracking-wide">{item.name}</h2>
+          <div className="flex items-start justify-between gap-3 pr-10 md:pr-8">
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-paper/65">par {seller}</p>
+              <h2 className="font-display text-3xl uppercase leading-tight tracking-wide">{item.name}</h2>
+            </div>
+            <WishButton on={wished} onClick={onWish} name={item.name} className="mt-1 shrink-0" />
           </div>
           {item.effect && (
             <p className="rounded-xl border border-blue/40 bg-blue/10 px-3 py-2 font-body text-sm text-blue-light">
@@ -624,6 +735,31 @@ function ItemSheet({
             >
               {busy ? "Achat…" : short ? "Pas assez de zénis" : `Acheter${qty > 1 ? ` ${qty} exemplaires` : ""} · ${z(total)}`}
             </button>
+
+            {giving ? (
+              <GiftPanel
+                item={item}
+                qty={qty}
+                total={total}
+                short={short || (balance != null && balance < 0)}
+                members={members}
+                userId={userId}
+                initialTo={giftTo}
+                onCancel={() => setGiving(false)}
+                onGift={(to, message) => onGift(item, to, qty, message)}
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  loadMembers();
+                  setGiving(true);
+                }}
+                className="w-full rounded-xl border border-red/40 py-2.5 font-mono text-xs uppercase tracking-wide text-red-light hover:bg-red/10"
+              >
+                <SidIcon name="gift" size={15} /> Offrir à un membre
+              </button>
+            )}
 
             {(mine || canManage) && (
               <div className="flex flex-wrap gap-2 border-t border-white/10 pt-3">
@@ -983,7 +1119,7 @@ function NewItemForm({
       <div className="space-y-2 self-start lg:sticky lg:top-24">
         <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-paper/65">Aperçu en vitrine</p>
         <div className="pointer-events-none">
-          <ShopCard item={sample} seller={businesses.find((b) => b.id === form.businessId)?.name ?? sellerName} onOpen={() => undefined} />
+          <ShopCard item={sample} seller={businesses.find((b) => b.id === form.businessId)?.name ?? sellerName} onOpen={() => undefined} wished={false} onWish={() => undefined} />
         </div>
       </div>
     </form>

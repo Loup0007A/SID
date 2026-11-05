@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { LineChart } from "@/components/LineChart";
 import type { AdminStats } from "@/types/stats";
 import { SidIcon, Glyph } from "@/components/icons/SidIcon";
+import { StatsMore } from "@/components/admin/StatsMore";
 
 // Lundi en premier ; `dow` renvoyé par la base : 0 = dimanche … 6 = samedi.
 const DOW_ORDER = [1, 2, 3, 4, 5, 6, 0];
@@ -111,6 +112,8 @@ export default function AdminStatsPage() {
           value={stats.top_seller ? `${stats.top_seller.nickname} (${money(stats.top_seller.total_earned)})` : "—"}
         />
       </div>
+
+      <StatsMore />
 
       <div className="glass-card space-y-3 p-6">
         <h2 className="font-display text-lg uppercase"><SidIcon name="chart" /> Activité des 30 derniers jours</h2>
