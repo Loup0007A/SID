@@ -9,6 +9,14 @@ const PING_MS = 45_000; // un signal toutes les 45 s (le navigateur ralentit les
 const IDLE_MS = 5 * 60_000; // sans clic ni touche depuis 5 min : « absent »
 const HIDDEN_STOP_MS = 30 * 60_000; // onglet caché depuis 30 min : plus de signal, donc hors ligne
 
+/** Type d'appareil, pour les statistiques de temps passé (Lot 72). */
+function deviceKind(): "mobile" | "tablette" | "ordinateur" {
+  if (typeof window === "undefined") return "ordinateur";
+  const coarse = window.matchMedia?.("(pointer: coarse)").matches;
+  if (!coarse) return "ordinateur";
+  return Math.min(window.screen.width, window.screen.height) >= 600 ? "tablette" : "mobile";
+}
+
 /**
  * Signale au S.I.D. que le membre est là, sur quelle page, et s'il est
  * absent (onglet caché ou inactif). Rien n'est affiché.
@@ -21,13 +29,20 @@ export function PresenceTracker() {
   const lastInput = useRef(Date.now());
   const hiddenSince = useRef<number | null>(null);
   const token = useRef<string | null>(null);
+  // Sans la migration 0089, presence_ping n'a pas de paramètre p_device : on le retire.
+  const withDevice = useRef(true);
 
   const ping = useCallback(async () => {
     const hidden = typeof document !== "undefined" && document.visibilityState === "hidden";
     if (hidden && hiddenSince.current && Date.now() - hiddenSince.current > HIDDEN_STOP_MS) return;
     const idle = hidden || Date.now() - lastInput.current > IDLE_MS;
     try {
-      await supabase.rpc("presence_ping", { p_page: pathRef.current, p_extra: extra.current, p_idle: idle });
+      const args = { p_page: pathRef.current, p_extra: extra.current, p_idle: idle };
+      let res = await supabase.rpc("presence_ping", withDevice.current ? { ...args, p_device: deviceKind() } : args);
+      if (res.error && withDevice.current && (res.error.code === "PGRST202" || /p_device|function/i.test(res.error.message))) {
+        withDevice.current = false;
+        res = await supabase.rpc("presence_ping", args);
+      }
       window.dispatchEvent(new Event(PRESENCE_PINGED_EVENT));
     } catch {
       // silencieux : migration 0063 pas encore lancée
