@@ -87,7 +87,8 @@ export function SinceLastVisit({ userId }: { userId: string }) {
       const tiles: Tile[] = [];
       let topGain: string | null = null;
       if (tx.status === "fulfilled" && tx.value.data?.length) {
-        const rows = tx.value.data as { amount: number; reason: string }[];
+        // Une réforme monétaire change l'échelle, ce n'est ni un gain ni une dépense.
+        const rows = (tx.value.data as { amount: number; reason: string }[]).filter((r) => !r.reason?.startsWith("Réforme monétaire"));
         const gain = rows.filter((r) => Number(r.amount) > 0).reduce((a, r) => a + Number(r.amount), 0);
         const spent = rows.filter((r) => Number(r.amount) < 0).reduce((a, r) => a + Number(r.amount), 0);
         if (gain > 0) tiles.push({ key: "gain", icon: "moneyBag", value: `+${fmt(gain)} z`, label: "gagnés", href: "/dashboard/bank", tone: "up" });

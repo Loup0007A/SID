@@ -1,0 +1,131 @@
+/* Réforme monétaire (Lot 70). */
+
+.ref-step {
+  position: relative;
+  padding-left: 3rem;
+}
+.ref-step::before {
+  content: attr(data-n);
+  position: absolute;
+  left: 0;
+  top: 0.1rem;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  border: 1px solid rgba(240, 194, 122, 0.6);
+  color: #f0c27a;
+  font-family: var(--font-display);
+  font-size: 1rem;
+}
+.ref-step + .ref-step {
+  margin-top: 2rem;
+}
+
+.ref-range {
+  width: 100%;
+  accent-color: #f0c27a;
+  height: 1.75rem;
+}
+
+.ref-cat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  border-radius: 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.8rem 0.9rem;
+  text-align: left;
+  transition: border-color 0.15s, background-color 0.15s, opacity 0.15s;
+}
+.ref-cat:hover {
+  border-color: rgba(240, 194, 122, 0.5);
+}
+.ref-cat.is-on {
+  border-color: rgba(240, 194, 122, 0.55);
+  background: rgba(240, 194, 122, 0.07);
+}
+.ref-cat.is-off {
+  opacity: 0.55;
+}
+.ref-cat:focus-visible {
+  outline: 2px solid #f0c27a;
+  outline-offset: 2px;
+}
+.ref-switch {
+  position: relative;
+  flex: none;
+  width: 2.2rem;
+  height: 1.25rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.15);
+  transition: background-color 0.15s;
+}
+.ref-switch::after {
+  content: "";
+  position: absolute;
+  top: 0.15rem;
+  left: 0.15rem;
+  width: 0.95rem;
+  height: 0.95rem;
+  border-radius: 999px;
+  background: #ede6d3;
+  transition: transform 0.15s;
+}
+.is-on > div > .ref-switch,
+.ref-switch.is-on {
+  background: #f0c27a;
+}
+.is-on > div > .ref-switch::after,
+.ref-switch.is-on::after {
+  transform: translateX(0.95rem);
+  background: #262a38;
+}
+
+.ref-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  padding: 0.2rem 0.4rem 0.2rem 0.7rem;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+}
+.ref-chip button {
+  display: grid;
+  place-items: center;
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 999px;
+  color: rgba(237, 230, 211, 0.6);
+}
+.ref-chip button:hover {
+  background: rgba(217, 154, 154, 0.25);
+  color: #e8c0c0;
+}
+
+.ref-bar {
+  position: sticky;
+  bottom: 0.75rem;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(240, 194, 122, 0.4);
+  background: rgba(30, 33, 45, 0.92);
+  padding: 0.75rem 1rem;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.ref-big {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}

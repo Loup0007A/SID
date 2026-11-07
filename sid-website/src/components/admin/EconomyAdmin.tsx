@@ -71,6 +71,16 @@ export function CentralBankAdmin() {
         </button>
         {msg && <p className="w-full font-mono text-xs text-red">{msg}</p>}
       </div>
+      <Link href="/dashboard/admin/reforme" className="glass-card flex items-center justify-between gap-3 p-4 transition hover:-translate-y-0.5">
+        <span className="flex items-center gap-3">
+          <SidIcon name="zeni" size={28} />
+          <span>
+            <span className="block font-display uppercase text-paper">Réforme monétaire</span>
+            <span className="block font-body text-sm text-paper/65">Multiplier tous les montants par un même facteur quand les prix ont trop monté, avec des exceptions et une vérification.</span>
+          </span>
+        </span>
+        <span className="font-mono text-xs uppercase text-blue">Ouvrir →</span>
+      </Link>
     </section>
   );
 }

@@ -535,6 +535,17 @@ export const PAGE_TIPS: Record<string, PageTip> = {
   },
   "/dashboard/admin/applications": { key: "a-applications", title: "Recrutement", icon: "clipboard", points: ["Les candidatures en attente : accepter fait entrer l'agent au S.I.D."] },
   "/dashboard/admin/roles": { key: "a-roles", title: "Rôles & équipes", icon: "rank", points: ["Un rôle regroupe des permissions ; une équipe regroupe des agents.", "Le rang (E à S, Divin) se règle ici aussi."] },
+  "/dashboard/admin/reforme": {
+    key: "a-reforme",
+    title: "Réforme monétaire",
+    icon: "zeni",
+    points: [
+      "Tous les montants cochés sont multipliés par le même facteur ; le pouvoir d'achat ne change pas.",
+      "Exceptions : une quête, un objet, un membre ou une entreprise qui ne bouge pas.",
+      "Rien ne s'applique avant la validation d'un autre admin « Économie ».",
+      "La banque centrale compte l'inflation hors réforme.",
+    ],
+  },
   "/dashboard/admin/economy": { key: "a-economy", title: "Économie", icon: "coins", points: ["Banque centrale, retraits et frais d'entreprise à valider, avis d'impôt, amendes.", "Soldes, salaires, renommée et niveaux des agents.", "Chaque correction est inscrite au journal d'audit."] },
   "/dashboard/admin/simulation": { key: "a-simulation", title: "Simulation", icon: "dna", points: ["La population simulée qui achète, investit et fait vivre l'économie."] },
   "/dashboard/admin/stats": { key: "a-stats", title: "Statistiques", icon: "chart", points: ["Visites, membres actifs, activité par jour."] },

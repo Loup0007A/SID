@@ -22,11 +22,17 @@ export default function EconomiePage() {
   const supabase = useMemo(() => createClient(), []);
   const [eco, setEco] = useState<EconomyOverview | null>(null);
   const [index, setIndex] = useState<{ at: string; value: number }[]>([]);
+  const [reforms, setReforms] = useState<{ number: number; factor: number; motive: string; applied_at: string; index_before: number | null; index_after: number | null }[]>([]);
   const [missing, setMissing] = useState(false);
 
   useEffect(() => {
     (async () => {
-      const [e, i] = await Promise.all([supabase.rpc("economy_overview", { p_days: 90 }), supabase.rpc("market_index_series", { p_days: 30 })]);
+      const [e, i, r] = await Promise.all([
+        supabase.rpc("economy_overview", { p_days: 90 }),
+        supabase.rpc("market_index_series", { p_days: 30 }),
+        supabase.rpc("money_reforms_public"),
+      ]);
+      if (!r.error) setReforms((r.data ?? []) as typeof reforms);
       if (e.error) return setMissing(true);
       setEco(e.data as EconomyOverview);
       setIndex(((i.data ?? []) as { at: string; value: number }[]).map((p) => ({ ...p, value: Number(p.value) })));
@@ -215,6 +221,31 @@ export default function EconomiePage() {
           Les salaires et récompenses fixés par l&apos;administration ne bougent pas ; les salaires de la population suivent les prix.
         </p>
       </section>
+
+      {reforms.length > 0 && (
+        <section className="glass-card space-y-3 p-5">
+          <h2 className="font-display text-lg uppercase">Réformes monétaires</h2>
+          <p className="font-body text-xs text-paper/60">
+            Tous les montants multipliés par un même facteur : le pouvoir d&apos;achat ne change pas, l&apos;indice des prix change d&apos;échelle. L&apos;inflation est
+            calculée hors réforme.
+          </p>
+          <ul className="divide-y divide-white/5">
+            {reforms.map((r) => (
+              <li key={r.number} className="flex flex-wrap items-baseline gap-x-4 gap-y-1 py-2">
+                <span className={`font-display text-xl ${r.factor < 1 ? "text-red-light" : "text-blue-light"}`}>
+                  {r.factor < 1 ? "−" : "+"}
+                  {(Math.round(Math.abs(r.factor - 1) * 1000) / 10).toLocaleString("fr-FR")} %
+                </span>
+                <span className="font-mono text-[11px] text-paper/55">
+                  n° {r.number} · {day(r.applied_at)}
+                  {r.index_before != null && r.index_after != null && ` · indice ${px(r.index_before)} → ${px(r.index_after)}`}
+                </span>
+                <span className="w-full font-body text-sm text-paper/75 sm:w-auto sm:flex-1">{r.motive}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <details className="glass-card p-5">
         <summary className="cursor-pointer list-none font-display uppercase text-paper/85">
