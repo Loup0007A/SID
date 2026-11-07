@@ -1,0 +1,85 @@
+/* Litiges (Lot 69) : le greffe. */
+
+.greffe-card {
+  position: relative;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(237, 230, 211, 0.12);
+  background: linear-gradient(160deg, rgba(237, 230, 211, 0.06), rgba(237, 230, 211, 0.015));
+  transition: border-color 0.15s, transform 0.15s;
+}
+.greffe-card:hover {
+  border-color: rgba(143, 179, 217, 0.45);
+}
+.greffe-card.is-on {
+  border-color: rgba(143, 179, 217, 0.7);
+  background: linear-gradient(160deg, rgba(143, 179, 217, 0.12), rgba(143, 179, 217, 0.03));
+}
+.greffe-num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(237, 230, 211, 0.5);
+}
+
+.greffe-versus {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+}
+.greffe-versus .vs {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: rgba(237, 230, 211, 0.35);
+}
+
+.greffe-msg {
+  max-width: min(36rem, 88%);
+  border-radius: 0.9rem;
+  padding: 0.6rem 0.9rem;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.greffe-msg.is-demandeur {
+  border-bottom-left-radius: 0.25rem;
+  background: rgba(143, 179, 217, 0.12);
+  border: 1px solid rgba(143, 179, 217, 0.25);
+}
+.greffe-msg.is-defendeur {
+  margin-left: auto;
+  border-bottom-right-radius: 0.25rem;
+  background: rgba(217, 154, 154, 0.12);
+  border: 1px solid rgba(217, 154, 154, 0.25);
+}
+.greffe-msg.is-juge {
+  margin-inline: auto;
+  background: rgba(240, 194, 122, 0.1);
+  border: 1px solid rgba(240, 194, 122, 0.35);
+}
+.greffe-event {
+  margin-inline: auto;
+  max-width: 34rem;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: rgba(237, 230, 211, 0.6);
+  white-space: pre-line;
+}
+
+.greffe-verdict {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.9rem;
+  border: 1px dashed rgba(240, 194, 122, 0.5);
+  background: rgba(240, 194, 122, 0.06);
+}
+.greffe-verdict .stamp {
+  font-size: 1.05rem;
+  padding: 0.25rem 0.9rem;
+  border-width: 3px;
+  transform: rotate(-4deg);
+}

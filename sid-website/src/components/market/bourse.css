@@ -1,0 +1,165 @@
+/* Bourse du S.I.D. (Lot 69) : salle des marchés. */
+
+.bourse-num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Bandeau des cours */
+.bourse-tape {
+  position: relative;
+  overflow: hidden;
+  border-block: 1px solid rgba(143, 179, 217, 0.22);
+  background: linear-gradient(90deg, rgba(20, 23, 34, 0.9), rgba(38, 42, 56, 0.55) 18%, rgba(38, 42, 56, 0.55) 82%, rgba(20, 23, 34, 0.9));
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+.bourse-tape-track {
+  display: flex;
+  width: max-content;
+  gap: 2.25rem;
+  padding: 0.5rem 1rem;
+  animation: bourse-tape 48s linear infinite;
+}
+.bourse-tape:hover .bourse-tape-track {
+  animation-play-state: paused;
+}
+@keyframes bourse-tape {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bourse-tape-track {
+    animation: none;
+  }
+}
+
+/* La cote */
+.bourse-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  border-radius: 0.6rem;
+  border: 1px solid transparent;
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+.bourse-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+.bourse-row.is-on {
+  border-color: rgba(143, 179, 217, 0.5);
+  background: rgba(143, 179, 217, 0.08);
+}
+.bourse-row:focus-visible {
+  outline: 2px solid #8fb3d9;
+  outline-offset: 1px;
+}
+.bourse-flash-up {
+  animation: bourse-up 1.2s ease-out;
+}
+.bourse-flash-down {
+  animation: bourse-down 1.2s ease-out;
+}
+@keyframes bourse-up {
+  from {
+    background: rgba(143, 179, 217, 0.28);
+  }
+}
+@keyframes bourse-down {
+  from {
+    background: rgba(217, 154, 154, 0.28);
+  }
+}
+
+/* Carnet d'ordres */
+.bourse-book {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+.bourse-level {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+  border-radius: 0.35rem;
+  padding: 0.22rem 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  cursor: pointer;
+  isolation: isolate;
+}
+.bourse-level::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  z-index: -1;
+  width: var(--depth, 0%);
+  border-radius: inherit;
+  transition: width 0.3s;
+}
+.bourse-level.is-bid::before {
+  right: 0;
+  background: rgba(143, 179, 217, 0.16);
+}
+.bourse-level.is-ask::before {
+  left: 0;
+  background: rgba(217, 154, 154, 0.16);
+}
+.bourse-level:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.bourse-level.is-mine {
+  box-shadow: inset 2px 0 0 #f0c27a;
+}
+
+/* Formulaire d'ordre */
+.bourse-side {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-radius: 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 3px;
+  gap: 3px;
+}
+.bourse-side button {
+  border-radius: 0.45rem;
+  padding: 0.45rem 0;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(237, 230, 211, 0.7);
+  transition: background-color 0.15s, color 0.15s;
+}
+.bourse-side button.is-buy {
+  background: #8fb3d9;
+  color: #262a38;
+}
+.bourse-side button.is-sell {
+  background: #d99a9a;
+  color: #262a38;
+}
+.bourse-chip {
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 0.2rem 0.65rem;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  color: rgba(237, 230, 211, 0.7);
+}
+.bourse-chip.is-on {
+  border-color: #8fb3d9;
+  color: #bbd3ea;
+  background: rgba(143, 179, 217, 0.1);
+}
+
+.bourse-halt {
+  background: repeating-linear-gradient(-45deg, rgba(240, 194, 122, 0.16) 0 10px, transparent 10px 20px);
+  border: 1px solid rgba(240, 194, 122, 0.5);
+}

@@ -42,7 +42,11 @@ type Purchase = {
   shop_items: { name: string; image_url: string | null; effect: ShopItemEffect | null } | null;
   gift_message?: string | null;
   giver?: { nickname: string } | null;
+  payer?: { name: string } | null;
 };
+
+/** Entreprise qui peut payer un achat en frais (fondée ou employeur). */
+type Payer = { id: string; name: string; role: "fondateur" | "employé" };
 
 const z = (n: number) => `${Number(n).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} z`;
 
@@ -64,6 +68,7 @@ export default function ShopPage() {
   const [sellers, setSellers] = useState<Record<string, string>>({});
   const [businesses, setBusinesses] = useState<Record<string, string>>({});
   const [myBusinesses, setMyBusinesses] = useState<Business[]>([]);
+  const [payers, setPayers] = useState<Payer[]>([]);
   const [toast, setToast] = useState<{ ok: boolean; text: string } | null>(null);
 
   const [query, setQuery] = useState("");
@@ -124,9 +129,11 @@ export default function ShopPage() {
     if (!uid) return;
     const base = "id, status, quantity, total_price, created_at, shop_items(name, image_url, effect)";
     const query = (cols: string) => supabase.from("purchases").select(cols).eq("user_id", uid).order("created_at", { ascending: false }).limit(60);
-    // Sans la migration 0081, les colonnes des cadeaux n'existent pas encore.
-    const first = await query(`${base}, gift_message, giver:profiles!purchases_gift_from_fkey(nickname)`);
-    const res = first.error ? await query(base) : first;
+    // Sans les migrations 0081 et 0086, les colonnes des cadeaux et des frais n'existent pas encore.
+    const gifts = `${base}, gift_message, giver:profiles!purchases_gift_from_fkey(nickname)`;
+    const first = await query(`${gifts}, payer:businesses!purchases_paid_by_business_fkey(name)`);
+    const second = first.error ? await query(gifts) : first;
+    const res = second.error ? await query(base) : second;
     setPurchases((res.data ?? []) as unknown as Purchase[]);
   }
 
@@ -175,17 +182,24 @@ export default function ShopPage() {
   useEffect(() => {
     (async () => {
       const uid = await currentUserId();
-      const [{ profile, permissions }, , , , biz] = await Promise.all([
+      const [{ profile, permissions }, , , , biz, , jobs] = await Promise.all([
         loadCurrentUser(),
         refresh(),
         uid ? refreshMine() : null,
         uid ? refreshWallet(uid) : null,
         uid ? supabase.rpc("list_my_businesses") : null,
         uid ? refreshWishes() : null,
+        uid ? supabase.rpc("get_my_employments") : null,
       ]);
       setPermissions(permissions);
       setUserId(profile?.id ?? null);
-      setMyBusinesses((biz?.data ?? []) as Business[]);
+      const owned = (biz?.data ?? []) as Business[];
+      setMyBusinesses(owned);
+      const employers = ((jobs?.data ?? []) as { business_id: string; business_name: string }[]).filter((j) => !owned.some((b) => b.id === j.business_id));
+      setPayers([
+        ...owned.map((b): Payer => ({ id: b.id, name: b.name, role: "fondateur" })),
+        ...employers.map((j): Payer => ({ id: j.business_id, name: j.business_name, role: "employé" })),
+      ]);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -258,6 +272,17 @@ export default function ShopPage() {
     setOpen(null);
     setPurchases(null);
     await Promise.all([refresh(), refreshWallet()]);
+    return true;
+  }
+
+  async function requestExpense(item: ShopItem, businessId: string, qty: number, motive: string) {
+    const { error } = await supabase.rpc("expense_request", { p_business: businessId, p_item: item.id, p_quantity: qty, p_motive: motive });
+    if (error) {
+      say(false, error.message.includes("expense_request") ? "Frais d'entreprise indisponibles : la migration 0086 doit être lancée." : error.message);
+      return false;
+    }
+    say(true, "Demande envoyée : la somme est mise de côté sur la trésorerie en attendant la validation d'un admin.");
+    setOpen(null);
     return true;
   }
 
@@ -433,7 +458,7 @@ export default function ShopPage() {
           ) : (
             <>
               <p className="font-mono text-xs uppercase tracking-wide text-paper/60">
-                {purchases.length} achat{purchases.length > 1 ? "s" : ""} · {z(purchases.filter((p) => !p.giver).reduce((s, p) => s + Number(p.total_price), 0))} dépensés
+                {purchases.length} achat{purchases.length > 1 ? "s" : ""} · {z(purchases.filter((p) => !p.giver && !p.payer).reduce((s, p) => s + Number(p.total_price), 0))} dépensés
               </p>
               <ul className="glass-card divide-y divide-white/10 overflow-hidden">
                 {purchases.map((p) => (
@@ -445,6 +470,11 @@ export default function ShopPage() {
                         {new Date(p.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}
                         {p.shop_items?.effect && " · s'utilise depuis une simulation"}
                       </p>
+                      {p.payer && (
+                        <p className="mt-0.5 font-body text-xs text-blue-light">
+                          <SidIcon name="office" size={13} /> Payé par {p.payer.name} (frais d&apos;entreprise)
+                        </p>
+                      )}
                       {p.giver && (
                         <p className="mt-0.5 font-body text-xs text-red-light">
                           <SidIcon name="gift" size={13} /> Offert par {p.giver.nickname}
@@ -479,6 +509,7 @@ export default function ShopPage() {
       {tab === "ventes" && (
         <MyListings
           items={myItems}
+          businesses={myBusinesses}
           onChanged={() => {
             refresh();
             refreshMine();
@@ -526,6 +557,8 @@ export default function ShopPage() {
           onGift={gift}
           onDelete={hideItem}
           onWithdraw={withdraw}
+          payers={payers}
+          onExpense={requestExpense}
         />
       )}
 
@@ -623,6 +656,8 @@ function ItemSheet({
   userId,
   giftTo,
   onGift,
+  payers,
+  onExpense,
 }: {
   item: ShopItem;
   seller: string;
@@ -640,10 +675,14 @@ function ItemSheet({
   userId: string | null;
   giftTo: string | null;
   onGift: (item: ShopItem, to: Member, qty: number, message: string) => Promise<boolean>;
+  payers: Payer[];
+  onExpense: (item: ShopItem, businessId: string, qty: number, motive: string) => Promise<boolean>;
 }) {
   const [qty, setQty] = useState(1);
   const [busy, setBusy] = useState(false);
   const [giving, setGiving] = useState(!!giftTo);
+  const [paying, setPaying] = useState(false);
+  const canPay = payers.filter((p) => p.id !== item.business_id);
   const max = item.stock ?? 99;
   const total = priceOf(item) * qty;
   const after = balance == null ? null : balance - total;
@@ -761,6 +800,19 @@ function ItemSheet({
               </button>
             )}
 
+            {canPay.length > 0 && !mine &&
+              (paying ? (
+                <ExpensePanel payers={canPay} qty={qty} total={total} onCancel={() => setPaying(false)} onSend={(biz, motive) => onExpense(item, biz, qty, motive)} />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setPaying(true)}
+                  className="w-full rounded-xl border border-blue/40 py-2.5 font-mono text-xs uppercase tracking-wide text-blue-light hover:bg-blue/10"
+                >
+                  <SidIcon name="office" size={15} /> Faire payer par l&apos;entreprise
+                </button>
+              ))}
+
             {(mine || canManage) && (
               <div className="flex flex-wrap gap-2 border-t border-white/10 pt-3">
                 {mine && (
@@ -782,15 +834,64 @@ function ItemSheet({
   );
 }
 
+function ExpensePanel({ payers, qty, total, onCancel, onSend }: { payers: Payer[]; qty: number; total: number; onCancel: () => void; onSend: (businessId: string, motive: string) => Promise<boolean> }) {
+  const [biz, setBiz] = useState(payers[0]?.id ?? "");
+  const [motive, setMotive] = useState("");
+  const [busy, setBusy] = useState(false);
+  return (
+    <form
+      className="space-y-3 rounded-xl border border-blue/30 bg-blue/5 p-4"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        setBusy(true);
+        await onSend(biz, motive.trim());
+        setBusy(false);
+      }}
+    >
+      <p className="font-display uppercase text-blue-light">Frais d&apos;entreprise</p>
+      <p className="font-body text-xs text-paper/70">
+        La trésorerie paie {qty > 1 ? `ces ${qty} exemplaires` : "cet objet"} pour toi, après validation d&apos;un admin. La somme est mise de côté dès la demande et
+        revient si elle est refusée.
+      </p>
+      {payers.length > 1 && (
+        <label className="block space-y-1">
+          <span className={labelClass}>Entreprise</span>
+          <select className={inputClass} value={biz} onChange={(e) => setBiz(e.target.value)}>
+            {payers.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name} ({p.role === "fondateur" ? "ton entreprise" : "ton employeur"})
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+      <label className="block space-y-1">
+        <span className={labelClass}>Motif</span>
+        <textarea required minLength={3} maxLength={300} rows={2} className={inputClass} value={motive} onChange={(e) => setMotive(e.target.value)} placeholder="À quoi servira cet achat pour l'entreprise ?" />
+      </label>
+      <div className="flex gap-2">
+        <button type="submit" disabled={busy || motive.trim().length < 3} className="flex-1 rounded-lg bg-blue py-2 font-mono text-xs uppercase text-ink hover:bg-blue-light disabled:opacity-40">
+          {busy ? "Envoi…" : `Demander · ${z(total)}${payers.length === 1 ? ` (${payers[0].name})` : ""}`}
+        </button>
+        <button type="button" onClick={onCancel} className="rounded-lg border border-white/20 px-3 font-mono text-xs uppercase text-paper/70 hover:text-paper">
+          Annuler
+        </button>
+      </div>
+    </form>
+  );
+}
+
 // ---------------------------------------------------------------- Mes objets en vente
 function MyListings({
   items,
+  businesses,
   onChanged,
   onDelete,
   say,
   onCreate,
 }: {
   items: ShopItem[];
+  businesses: Business[];
   onChanged: () => void;
   onDelete: (item: ShopItem) => void;
   say: (ok: boolean, text: string) => void;
@@ -801,7 +902,20 @@ function MyListings({
   const [openStats, setOpenStats] = useState<string | null>(null);
   const [stats, setStats] = useState<ShopItemStats | null>(null);
 
+  const [transferTo, setTransferTo] = useState<Record<string, string>>({});
+  const bizName = Object.fromEntries(businesses.map((b) => [b.id, b.name]));
+
   const edit = (id: string, patch: Partial<ShopItem>) => setEdits((e) => ({ ...e, [id]: { ...e[id], ...patch } }));
+
+  async function transfer(item: ShopItem) {
+    const target = transferTo[item.id] ?? businesses[0]?.id;
+    if (!target) return;
+    if (!confirm(`Passer « ${item.name} » au nom de ${bizName[target]} ? Les ventes iront à sa trésorerie. Ce n'est pas réversible.`)) return;
+    const { error } = await supabase.rpc("shop_item_transfer", { p_item: item.id, p_business: target });
+    if (error) return say(false, error.message.includes("shop_item_transfer") ? "Transfert indisponible : la migration 0086 doit être lancée." : error.message);
+    say(true, `« ${item.name} » est maintenant vendu par ${bizName[target]}.`);
+    onChanged();
+  }
 
   async function save(item: ShopItem) {
     const p = edits[item.id];
@@ -865,6 +979,7 @@ function MyListings({
                   <span className={`shop-badge !static ${item.is_active ? "" : "is-off"}`}>{item.is_active ? "En vente" : "Retiré"}</span>
                   {promo && <span className="shop-badge is-promo !static">−{promo.pct} %</span>}
                   {item.stock === 0 && <span className="shop-badge is-rare !static">Épuisé</span>}
+                  {item.business_id && <span className="font-mono text-[10px] uppercase text-blue-light">vendu par {bizName[item.business_id] ?? "une entreprise"}</span>}
                 </div>
                 <div className="grid gap-3 sm:grid-cols-4">
                   <label className="space-y-1">
@@ -917,6 +1032,25 @@ function MyListings({
                     <SidIcon name="trash" /> Supprimer
                   </button>
                 </div>
+                {!item.business_id && businesses.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-2 border-t border-white/10 pt-3">
+                    <span className="font-mono text-[11px] uppercase text-paper/60">Vendre au nom de</span>
+                    {businesses.length > 1 ? (
+                      <select className={`${inputClass} !w-auto !py-1 text-sm`} value={transferTo[item.id] ?? businesses[0].id} onChange={(ev) => setTransferTo((t) => ({ ...t, [item.id]: ev.target.value }))}>
+                        {businesses.map((b) => (
+                          <option key={b.id} value={b.id}>
+                            {b.name}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span className="font-display uppercase text-blue-light">{businesses[0].name}</span>
+                    )}
+                    <button onClick={() => transfer(item)} className="rounded-lg border border-blue/60 px-3 py-1 font-mono text-xs uppercase text-blue hover:bg-blue hover:text-ink">
+                      <SidIcon name="office" size={13} /> Transférer
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
             {openStats === item.id && (

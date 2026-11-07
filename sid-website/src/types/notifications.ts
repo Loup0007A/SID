@@ -18,7 +18,10 @@ export type NotificationType =
   | "poll"
   | "gift"
   | "wishlist"
-  | "wedding";
+  | "wedding"
+  | "tax"
+  | "dispute"
+  | "market";
 
 /** Une ligne d'une notification regroupée (Lot 66). */
 export interface NotificationDetail {

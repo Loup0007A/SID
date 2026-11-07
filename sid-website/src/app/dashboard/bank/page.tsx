@@ -4,21 +4,14 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { currentUser } from "@/lib/session";
 import type { Wallet, BankAccount } from "@/types/database";
-import type { BusinessSharePricePoint, MarketEntry, MarketSettings, MyShareholding, SellResult } from "@/types/business";
-import { LineChart } from "@/components/LineChart";
+import Link from "next/link";
+import type { MyShareholding } from "@/types/business";
 import { WalletHistory } from "@/components/bank/WalletHistory";
+import { Taxes } from "@/components/bank/Taxes";
+import { pct, px, z } from "@/lib/econ";
 import { MyWithdrawals } from "@/components/bank/Withdrawals";
 import { inputClass, labelClass } from "@/lib/ui";
 import { SidIcon } from "@/components/icons/SidIcon";
-
-const cr = (n: number, digits = 2) => `${n.toLocaleString("fr-FR", { maximumFractionDigits: digits })} z`;
-
-function valuation(entry: MarketEntry): { label: string; className: string } {
-  const ratio = entry.share_price / Math.max(entry.fair_value, 0.0001);
-  if (ratio > 1.15) return { label: "Surévaluée", className: "border-red text-red" };
-  if (ratio < 0.87) return { label: "Sous-évaluée", className: "border-blue text-blue-light" };
-  return { label: "Cours cohérent", className: "border-white/30 text-paper/70" };
-}
 
 export default function BankPage() {
   const supabase = createClient();
@@ -33,26 +26,8 @@ export default function BankPage() {
   const [repayAmount, setRepayAmount] = useState("");
   const [withdrawVersion, setWithdrawVersion] = useState(0);
 
-  // Bourse
-  const [market, setMarket] = useState<MarketEntry[]>([]);
-  const [settings, setSettings] = useState<MarketSettings>({
-    liquidity_factor: 2,
-    fee_rate: 0.002,
-    admin_fee_per_share: 0.5,
-    min_holding_minutes: 30,
-    tick_minutes: 60,
-    default_share_count: 1000,
-    min_initial_investment: 500,
-    growth_revenue_threshold_pct: 0.03,
-    growth_share_increase_pct: 0.04,
-    issue_float_target_pct: 0.25,
-    issue_interval_hours: 8,
-  });
   const [myShares, setMyShares] = useState<MyShareholding[]>([]);
-  const [sellable, setSellable] = useState<Record<string, number>>({});
-  const [openChartId, setOpenChartId] = useState<string | null>(null);
-  const [priceHistory, setPriceHistory] = useState<BusinessSharePricePoint[]>([]);
-  const [tradeQty, setTradeQty] = useState<Record<string, string>>({});
+  const [rates, setRates] = useState<{ savings: number | null; loan: number | null } | null>(null);
 
   async function refresh() {
     const {
@@ -61,30 +36,16 @@ export default function BankPage() {
     if (!user) return;
 
     // Tout part en même temps (un seul aller-retour).
-    const [{ data: w }, { data: b }, { data: overview }, { data: s }, { data: shares }] = await Promise.all([
+    const [{ data: w }, { data: b }, { data: shares }, { data: eco }] = await Promise.all([
       supabase.from("wallets").select("*").eq("user_id", user.id).single(),
       supabase.from("bank_accounts").select("*").eq("user_id", user.id).maybeSingle(),
-      supabase.rpc("list_market_overview"),
-      supabase.rpc("get_market_settings"),
       supabase.rpc("get_my_shareholdings"),
+      supabase.from("economy_daily").select("savings_rate_daily, loan_rate_daily").order("day", { ascending: false }).limit(1).maybeSingle(),
     ]);
     setWallet(w);
     setBankAccount(b);
-    setMarket((overview ?? []) as MarketEntry[]);
-    if (s) setSettings(s as MarketSettings);
     setMyShares((shares ?? []) as MyShareholding[]);
-
-    if (shares && (shares as MyShareholding[]).length > 0) {
-      const pairs = await Promise.all(
-        (shares as MyShareholding[]).map(async (s) => {
-          const { data: n } = await supabase.rpc("get_my_sellable_shares", { p_business_id: s.business_id });
-          return [s.business_id, (n as number) ?? 0] as const;
-        })
-      );
-      setSellable(Object.fromEntries(pairs));
-    } else {
-      setSellable({});
-    }
+    if (eco) setRates({ savings: eco.savings_rate_daily, loan: eco.loan_rate_daily });
   }
 
   useEffect(() => {
@@ -110,40 +71,9 @@ export default function BankPage() {
     setMessage(successMsg);
     clear();
     await refresh();
-    if (openChartId) await loadHistory(openChartId);
   }
 
   const isInDebt = (wallet?.balance ?? 0) < 0;
-
-  async function loadHistory(businessId: string) {
-    const { data } = await supabase.rpc("get_business_price_history", { p_business_id: businessId });
-    setPriceHistory((data ?? []) as BusinessSharePricePoint[]);
-  }
-
-  async function toggleChart(businessId: string) {
-    if (openChartId === businessId) {
-      setOpenChartId(null);
-      return;
-    }
-    setOpenChartId(businessId);
-    setPriceHistory([]);
-    await loadHistory(businessId);
-  }
-
-  function myHolding(businessId: string) {
-    return myShares.find((s) => s.business_id === businessId)?.quantity ?? 0;
-  }
-
-  // Estimation côté client, même formule que buy/sell_business_shares
-  function estimate(entry: MarketEntry, qty: number, side: "buy" | "sell") {
-    const impact = Math.min(0.5, (qty / entry.share_count) * settings.liquidity_factor);
-    const exec = entry.share_price * (side === "buy" ? 1 + impact / 2 : 1 - impact / 2);
-    const total = exec * qty;
-    const fee = total * settings.fee_rate;
-    const adminFee = side === "buy" ? settings.admin_fee_per_share * qty : 0;
-    return { impact, total, fee, adminFee, net: side === "buy" ? total + fee + adminFee : total - fee };
-  }
-
   const portfolioValue = myShares.reduce((sum, s) => sum + s.quantity * s.share_price, 0);
 
   return (
@@ -188,6 +118,11 @@ export default function BankPage() {
           L&apos;argent déposé rapporte des intérêts chaque jour, tant que tu ne redéposes pas (un nouveau dépôt
           relance le décompte). Un retrait doit être validé par un admin : la somme est mise de côté en attendant.
         </p>
+        {rates?.savings != null && (
+          <p className="font-mono text-xs text-blue-light">
+            Taux du jour : {pct(rates.savings, 3)} par jour, fixé par la <Link href="/dashboard/economie" className="underline">banque centrale</Link>.
+          </p>
+        )}
         <div className="flex flex-wrap gap-3">
           <div className="flex-1 space-y-1">
             <label className={labelClass}>Déposer</label>
@@ -239,6 +174,7 @@ export default function BankPage() {
           montant emprunté — s&apos;ils font passer ton solde en négatif, tu ne pourras plus acheter en boutique
           jusqu&apos;à ce qu&apos;il remonte à 0 ou plus.
         </p>
+        {rates?.loan != null && <p className="font-mono text-xs text-red-light">Taux du jour : {pct(rates.loan, 3)} par jour.</p>}
         <div className="flex flex-wrap gap-3">
           <div className="flex-1 space-y-1">
             <label className={labelClass}>Emprunter</label>
@@ -281,185 +217,36 @@ export default function BankPage() {
         )}
       </div>
 
-      <div data-tuto="banque-bourse" className="glass-card space-y-4 p-6">
-        <h2 className="font-display text-lg uppercase">Bourse</h2>
-        <p className="font-body text-sm text-paper/70">
-          Le cours évolue toutes les {settings.tick_minutes} min autour de la <strong>valeur intrinsèque</strong> de
-          l&apos;entreprise (fonds propres, bénéfices récents, dividendes) — un peu comme un cours qui suit le
-          « PIB » de l&apos;entreprise — avec de la volatilité et parfois des actualités qui font sursauter le cours.
-          Chaque achat coûte {(settings.fee_rate * 100).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} % de
-          frais (caisse commune) + {settings.admin_fee_per_share.toLocaleString("fr-FR")} z par action reversés
-          directement à l&apos;administration. Une action achetée doit être détenue au moins{" "}
-          <strong>{settings.min_holding_minutes} min</strong> avant de pouvoir être revendue (anti-spéculation) —
-          une entreprise peut toujours racheter au moins une action grâce au filet de liquidité de la caisse commune.
-        </p>
+      <div id="impots" data-tuto="banque-impots" className="glass-card scroll-mt-24 space-y-4 p-6">
+        <h2 className="font-display text-lg uppercase">Impôts et amendes</h2>
+        <Taxes savings={Number(bankAccount?.balance ?? 0)} onPaid={refresh} />
+      </div>
 
-        {myShares.length > 0 && (
-          <div className="space-y-1 rounded-lg border border-white/10 p-3">
-            <p className="font-mono text-xs uppercase text-paper/60">
-              Mes actions — valeur du portefeuille ≈ {cr(portfolioValue, 0)}
-            </p>
-            {myShares.map((s) => (
-              <p key={s.business_id} className="font-body text-sm">
-                {s.business_name} : {s.quantity} action(s) — ≈ {cr(s.quantity * s.share_price)}
-              </p>
-            ))}
-          </div>
-        )}
-
-        {market.length === 0 ? (
-          <p className="font-body text-sm text-paper/60">Aucune entreprise cotée pour le moment.</p>
+      <div data-tuto="banque-bourse" className="glass-card space-y-3 p-6">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="font-display text-lg uppercase">Mes actions</h2>
+          <Link href="/dashboard/bourse" className="font-mono text-xs uppercase text-blue hover:underline">
+            Ouvrir la bourse →
+          </Link>
+        </div>
+        {myShares.length === 0 ? (
+          <p className="font-body text-sm text-paper/60">Aucune action. Les entreprises du S.I.D. se négocient à la bourse, par ordres d&apos;achat et de vente.</p>
         ) : (
-          <div className="space-y-3">
-            {market.map((b) => {
-              const marketCap = b.share_price * b.share_count;
-              const held = myHolding(b.id);
-              const canSell = sellable[b.id] ?? 0;
-              const qtyStr = tradeQty[b.id] ?? "";
-              const qty = Math.floor(Number(qtyStr) || 0);
-              const buyEst = qty > 0 ? estimate(b, qty, "buy") : null;
-              const sellEst = qty > 0 ? estimate(b, qty, "sell") : null;
-              const val = valuation(b);
-              const up = b.change_24h_pct >= 0;
-              return (
-                <div key={b.id} className="rounded-lg border border-white/10 p-4">
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div>
-                      <p className="font-display uppercase text-blue-light">{b.name}</p>
-                      {b.description && <p className="font-body text-xs text-paper/60">{b.description}</p>}
-                      <span className={`mt-1 inline-block rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase ${val.className}`}>
-                        {val.label}
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-mono text-sm text-blue">{cr(b.share_price)} / action</p>
-                      <p className={`font-mono text-xs ${up ? "text-blue-light" : "text-red"}`}>
-                        {up ? "▲" : "▼"} {Math.abs(b.change_24h_pct).toLocaleString("fr-FR")} % (24 h)
-                      </p>
-                      <p className="font-mono text-[10px] text-paper/65">Capitalisation : {cr(marketCap, 0)}</p>
-                    </div>
-                  </div>
-
-                  <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1 border-t border-white/10 pt-3 font-mono text-[11px] sm:grid-cols-4">
-                    <div>
-                      <p className="uppercase text-paper/65">Valeur intrinsèque</p>
-                      <p className="text-paper">{cr(b.fair_value)}</p>
-                    </div>
-                    <div>
-                      <p className="uppercase text-paper/65">Bénéfice (7 j)</p>
-                      <p className={b.profit_7d >= 0 ? "text-blue-light" : "text-red"}>{cr(b.profit_7d, 0)}</p>
-                    </div>
-                    <div>
-                      <p className="uppercase text-paper/65">Dividendes (30 j)</p>
-                      <p className="text-paper">{cr(b.dividends_30d, 0)}</p>
-                    </div>
-                    <div>
-                      <p className="uppercase text-paper/65">Fonds propres</p>
-                      <p className={b.equity >= 0 ? "text-paper" : "text-red"}>{cr(b.equity, 0)}</p>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => toggleChart(b.id)}
-                    className="mt-3 font-mono text-[10px] uppercase text-blue-light underline"
-                  >
-                    {openChartId === b.id ? "Masquer le graphique" : <><SidIcon name="chart" /> Voir le graphique du cours</>}
-                  </button>
-
-                  {openChartId === b.id && (
-                    <div className="mt-2">
-                      {priceHistory.length < 2 ? (
-                        <p className="font-body text-xs text-paper/65">Pas encore assez d&apos;historique.</p>
-                      ) : (
-                        <LineChart
-                          labels={priceHistory.map((p) =>
-                            new Date(p.recorded_at).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
-                          )}
-                          series={[{ name: "Cours", color: "#8FB3D9", values: priceHistory.map((p) => Number(p.price)) }]}
-                          refLine={{ value: b.fair_value, label: `valeur intrinsèque ${b.fair_value.toLocaleString("fr-FR", { maximumFractionDigits: 2 })}` }}
-                          formatValue={(n) => cr(n)}
-                          formatAxis={(n) => n.toLocaleString("fr-FR", { maximumFractionDigits: 2 })}
-                          height={240}
-                        />
-                      )}
-                    </div>
-                  )}
-
-                  <p className="mt-2 font-mono text-[10px] text-paper/65">
-                    {b.shares_in_treasury} action(s) disponible(s) à l&apos;achat sur {b.share_count}
-                    {b.shares_in_treasury < (settings.issue_float_target_pct ?? 0.25) * b.share_count && (
-                      <span className="text-[#7dffb0]"> · stock bas : de nouvelles actions seront émises (toutes les {settings.issue_interval_hours ?? 8} h au plus)</span>
-                    )}
-                    {held > 0 && ` · tu en détiens ${held}`}
-                    {held > 0 && canSell < held && ` (dont ${canSell} revendable(s) tout de suite)`}
-                  </p>
-
-                  <div className="mt-2 flex flex-wrap items-end gap-2">
-                    <div className="space-y-1">
-                      <label className={labelClass}>Quantité</label>
-                      <input
-                        type="number"
-                        min={1}
-                        className={`${inputClass} w-24`}
-                        value={qtyStr}
-                        onChange={(e) => setTradeQty((t) => ({ ...t, [b.id]: e.target.value }))}
-                      />
-                    </div>
-                    <button
-                      onClick={() =>
-                        run(
-                          () => supabase.rpc("buy_business_shares", { p_business_id: b.id, p_quantity: qty }),
-                          "Actions achetées.",
-                          () => setTradeQty((t) => ({ ...t, [b.id]: "" }))
-                        )
-                      }
-                      disabled={busy || qty < 1}
-                      className="rounded-lg bg-blue px-3 py-2 font-mono text-xs uppercase text-ink hover:bg-blue-light disabled:opacity-40"
-                    >
-                      Acheter
-                    </button>
-                    {held > 0 && (
-                      <button
-                        onClick={async () => {
-                          setBusy(true);
-                          setMessage(null);
-                          const { data, error } = await supabase.rpc("sell_business_shares", { p_business_id: b.id, p_quantity: qty });
-                          setBusy(false);
-                          if (error) {
-                            setMessage(`Échec : ${error.message}`);
-                            return;
-                          }
-                          const r = data as SellResult;
-                          setMessage(
-                            r.partial
-                              ? `Vente partielle : ${r.sold} / ${r.requested} action(s) vendue(s) (trésorerie de l'entreprise limitée) pour ${r.net_received.toLocaleString("fr-FR")} z nets.`
-                              : `${r.sold} action(s) vendue(s) pour ${r.net_received.toLocaleString("fr-FR")} z nets.`
-                          );
-                          setTradeQty((t) => ({ ...t, [b.id]: "" }));
-                          await refresh();
-                          if (openChartId) await loadHistory(openChartId);
-                        }}
-                        disabled={busy || qty < 1 || qty > canSell}
-                        title={qty > canSell ? `Seulement ${canSell} action(s) revendable(s) pour l'instant (délai de détention)` : undefined}
-                        className="rounded-lg border border-red px-3 py-2 font-mono text-xs uppercase text-red hover:bg-red hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        Vendre
-                      </button>
-                    )}
-                  </div>
-
-                  {buyEst && sellEst && (
-                    <p className="mt-2 font-mono text-[10px] text-paper/60">
-                      Achat estimé : {cr(buyEst.net)} (dont {cr(buyEst.fee)} de frais + {cr(buyEst.adminFee)} reversés à
-                      l&apos;administration) — impact sur le cours ≈ +
-                      {(buyEst.impact * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %
-                      {held > 0 && ` · Vente estimée : ${cr(sellEst.net)} nets`}
-                    </p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+          <>
+            <p className="font-mono text-xs uppercase text-paper/60">Valeur au dernier cours ≈ {z(portfolioValue, 0)}</p>
+            <ul className="space-y-1">
+              {myShares.map((s) => (
+                <li key={s.business_id}>
+                  <Link href={`/dashboard/bourse?valeur=${s.business_id}`} className="flex flex-wrap justify-between gap-2 rounded-lg bg-white/5 px-3 py-2 font-body text-sm hover:bg-white/10">
+                    <span className="font-display uppercase text-blue-light">{s.business_name}</span>
+                    <span className="font-mono text-xs text-paper/80">
+                      {s.quantity} × {px(s.share_price)} z = {z(s.quantity * s.share_price, 0)}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </>
         )}
       </div>
     </div>

@@ -39,13 +39,6 @@ export interface BusinessTransaction {
   created_at: string;
 }
 
-export interface BusinessSharePricePoint {
-  id: string;
-  business_id: string;
-  price: number;
-  recorded_at: string;
-}
-
 export interface MyShareholding {
   business_id: string;
   business_name: string;
@@ -59,27 +52,6 @@ export interface TaxPoolStatus {
   next_distribution_at: string;
   vat_rate: number;
   weekly_wealth_tax_rate: number;
-}
-
-/** Ligne du marché boursier (list_market_overview) : cours + fondamentaux publiés. */
-export interface MarketEntry {
-  id: string;
-  name: string;
-  description: string | null;
-  share_price: number;
-  share_count: number;
-  shares_in_treasury: number;
-  treasury_balance: number;
-  debt_principal: number;
-  change_24h_pct: number;
-  revenue_7d: number;
-  costs_7d: number;
-  profit_7d: number;
-  dividends_30d: number;
-  equity: number;
-  goodwill: number;
-  /** valeur intrinsèque estimée d'une action */
-  fair_value: number;
 }
 
 export interface MarketSettings {
@@ -108,11 +80,3 @@ export interface MarketSettings {
   issue_interval_hours?: number;
 }
 
-/** Résultat de sell_business_shares : la vente peut être partielle si la
- * trésorerie de l'entreprise ne pouvait pas couvrir la quantité demandée. */
-export interface SellResult {
-  requested: number;
-  sold: number;
-  net_received: number;
-  partial: boolean;
-}

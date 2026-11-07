@@ -31,6 +31,9 @@ const TYPE_ICON: Record<string, IconName> = {
   gift: "gift",
   wishlist: "heart",
   wedding: "rings",
+  tax: "receipt",
+  dispute: "scales",
+  market: "candles",
 };
 
 /** Icône d'une notification : celle de son type, sinon celle de l'émoji de son titre (anciens textes). */

@@ -11,6 +11,9 @@ import { visibleMembers } from "@/lib/visibility";
 import { SidIcon } from "@/components/icons/SidIcon";
 import { MyWithdrawals } from "@/components/bank/Withdrawals";
 import { WeekRevenue, type BusinessWeek } from "@/components/business/WeekRevenue";
+import { Expenses } from "@/components/business/Expenses";
+import { Taxes } from "@/components/bank/Taxes";
+import Link from "next/link";
 
 const FREQUENCY_LABELS: Record<SalaryFrequency, string> = {
   daily: "Quotidien",
@@ -191,8 +194,8 @@ export default function BusinessPage() {
       </div>
 
       <p className="font-body text-sm text-paper/70">
-        Pour investir dans une entreprise (acheter/vendre des actions), rends-toi sur{" "}
-        <a href="/dashboard/bank" className="text-blue underline">Banque</a> → section Bourse.
+        Les actions s&apos;achètent et se vendent à la{" "}
+        <Link href="/dashboard/bourse" className="text-blue underline">bourse</Link>, par ordres d&apos;achat et de vente.
       </p>
 
       {message && <p className="font-mono text-sm text-red">{message}</p>}
@@ -221,8 +224,8 @@ export default function BusinessPage() {
               fonds propres de départ de l&apos;entreprise. Le nombre d&apos;actions (
               {estimatedShareCount.toLocaleString("fr-FR")}) est fixe : le prix de départ en découle automatiquement
               {investmentNum > 0 && ` — ≈ ${estimatedPrice.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} z/action`}
-              . Le cours évolue ensuite tout seul selon la santé réelle de l&apos;entreprise (trésorerie, bénéfices,
-              dividendes) — voir Banque → Bourse.
+              . Le cours se fait ensuite à la bourse, entre acheteurs et vendeurs ; la population s&apos;appuie sur la santé de
+              l&apos;entreprise (trésorerie, bénéfices, dividendes) pour fixer ses prix.
             </p>
           </div>
           <button disabled={busy} className="rounded-lg w-full bg-blue py-2 font-display uppercase text-ink hover:bg-blue-light disabled:opacity-40">
@@ -240,6 +243,10 @@ export default function BusinessPage() {
               <strong>{e.business_name}</strong> — {e.salary.toLocaleString("fr-FR")} z ({FREQUENCY_LABELS[e.frequency]})
             </p>
           ))}
+          <p className="pt-1 font-body text-xs text-paper/60">
+            Un achat utile au travail peut être payé par l&apos;entreprise : fiche de l&apos;objet en boutique → « Faire payer par l&apos;entreprise ».
+          </p>
+          <Expenses />
         </div>
       )}
 
@@ -249,7 +256,7 @@ export default function BusinessPage() {
         </p>
       ) : (
         <div className="space-y-4">
-          {myBusinesses.map((b) => {
+          {myBusinesses.map((b, i) => {
             const amt = amountFor(b.id);
             const edit = editForm[b.id] ?? { name: b.name, description: b.description ?? "" };
             const hireState = hireFor(b.id);
@@ -359,6 +366,16 @@ export default function BusinessPage() {
                   <div className="mt-2">
                     <MyWithdrawals kind="business" businessId={b.id} version={withdrawVersion} onChanged={refresh} />
                   </div>
+                </div>
+
+                <div id={i === 0 ? "impots" : undefined} className="scroll-mt-24 border-t border-white/10 pt-3">
+                  <p className="mb-2 font-mono text-xs uppercase text-paper/60">Impôts et amendes</p>
+                  <Taxes businessId={b.id} onPaid={refresh} />
+                </div>
+
+                <div id={i === 0 ? "frais" : undefined} className="scroll-mt-24 border-t border-white/10 pt-3">
+                  <p className="mb-2 font-mono text-xs uppercase text-paper/60">Frais d&apos;entreprise</p>
+                  <Expenses businessId={b.id} onChanged={refresh} />
                 </div>
 
                 <div className="border-t border-white/10 pt-3">

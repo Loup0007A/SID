@@ -44,6 +44,9 @@ const NOTIF_LABELS: Record<string, string> = {
   gift: "Cadeaux",
   wishlist: "Souhaits",
   wedding: "Mariages",
+  tax: "Impôts et amendes",
+  dispute: "Litiges",
+  market: "Bourse",
   push_test: "Tests push",
 };
 

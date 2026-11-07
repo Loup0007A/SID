@@ -8,6 +8,7 @@ import type { Profile, Wallet, SalaryView, SalaryFrequency } from "@/types/datab
 import type { TaxPoolStatus } from "@/types/business";
 import { inputClass } from "@/lib/ui";
 import { PowerAdminSection } from "@/components/PowerAdminSection";
+import { CentralBankAdmin, DisputesShortcut, ExpenseQueue, TaxesAdmin } from "@/components/admin/EconomyAdmin";
 
 const FREQUENCY_LABELS: Record<SalaryFrequency, string> = {
   daily: "Quotidien",
@@ -131,7 +132,15 @@ export default function EconomyAdminPage() {
     <div className="space-y-10">
       <h1 className="font-display text-2xl uppercase tracking-wide text-red">Économie du S.I.D.</h1>
 
+      <CentralBankAdmin />
+
       <WithdrawalQueue />
+
+      <ExpenseQueue />
+
+      <DisputesShortcut />
+
+      <TaxesAdmin />
 
       <BusinessWeeks />
 
@@ -266,7 +275,7 @@ export default function EconomyAdminPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="font-display text-lg uppercase text-paper">Impôts &amp; TVA</h2>
+        <h2 className="font-display text-lg uppercase text-paper">Caisse commune &amp; TVA</h2>
         {taxStatus ? (
           <div className="glass-card grid grid-cols-2 gap-4 p-4 sm:grid-cols-4">
             <div>
@@ -278,8 +287,8 @@ export default function EconomyAdminPage() {
               <p className="font-display text-xl text-paper">{(taxStatus.vat_rate * 100).toFixed(0)}%</p>
             </div>
             <div>
-              <p className="font-mono text-[10px] uppercase text-paper/65">Impôt hebdo.</p>
-              <p className="font-display text-xl text-paper">{(taxStatus.weekly_wealth_tax_rate * 100).toFixed(0)}%/sem.</p>
+              <p className="font-mono text-[10px] uppercase text-paper/65">Impôt sur la fortune</p>
+              <p className="font-display text-xl text-paper">{(taxStatus.weekly_wealth_tax_rate * 100).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} %/sem.</p>
             </div>
             <div>
               <p className="font-mono text-[10px] uppercase text-paper/65">Prochaine redistribution</p>
@@ -290,10 +299,9 @@ export default function EconomyAdminPage() {
           <p className="font-body text-sm text-paper/60">Chargement…</p>
         )}
         <p className="font-mono text-[10px] text-paper/65">
-          Répartie automatiquement chaque semaine (à la connexion d&apos;un membre, sans job planifié) : 80% aux
-          admins à parts égales, 20% aux entreprises à parts égales. Réglages ajustables dans la table
-          <code> app_config</code> (clés <code>vat_rate</code>, <code>weekly_wealth_tax_rate</code>,
-          <code> tax_admin_share</code>, <code>tax_business_share</code>).
+          TVA, impôts payés ou saisis, amendes, frais de dossier et frais de bourse y entrent. Répartie chaque semaine : 80 % aux
+          admins à parts égales, 20 % aux entreprises à parts égales (<code>tax_admin_share</code>, <code>tax_business_share</code>).
+          Les taux d&apos;impôt suivent la banque centrale tant que l&apos;adaptation automatique est active.
         </p>
       </section>
     </div>

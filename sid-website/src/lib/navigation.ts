@@ -82,8 +82,11 @@ export const NAV_ENTRIES: NavEntry[] = [
   }),
 
   { key: "shop", href: "/dashboard/shop", label: "Boutique", description: "Acheter et vendre des objets", emoji: "🛒", icon: "cart", group: "economie", section: "shop" },
-  { key: "bank", href: "/dashboard/bank", label: "Banque", description: "Épargne, emprunts et bourse", emoji: "🏦", icon: "bank", group: "economie", section: "bank" },
+  { key: "bank", href: "/dashboard/bank", label: "Banque", description: "Épargne, emprunts, impôts", emoji: "🏦", icon: "bank", group: "economie", section: "bank" },
+  { key: "bourse", href: "/dashboard/bourse", label: "Bourse", description: "Actions, carnet d'ordres, indice", emoji: "📈", icon: "candles", group: "economie", section: "bank" },
+  { key: "economie", href: "/dashboard/economie", label: "Banque centrale", description: "Cours du zéni, prix, taux", emoji: "🪙", icon: "zeni", group: "economie" },
   { key: "business", href: "/dashboard/business", label: "Entreprise", description: "Gérer tes entreprises", emoji: "🏢", icon: "office", group: "economie", perm: ["entreprise"] },
+  { key: "litiges", href: "/dashboard/litiges", label: "Litiges", description: "Plaintes, accords, décisions", emoji: "⚖️", icon: "gavel", group: "economie" },
 
   { key: "applications", href: "/dashboard/admin/applications", label: "Recrutement", description: "Candidatures en attente", emoji: "📋", icon: "clipboard", group: "admin", perm: ["recruit"] },
   { key: "roles", href: "/dashboard/admin/roles", label: "Rôles & équipes", description: "Rôles, permissions, rangs", emoji: "🎖️", icon: "rank", group: "admin", perm: ["manage_roles", "manage_teams", "manage_users"] },
