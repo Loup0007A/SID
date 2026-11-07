@@ -196,7 +196,9 @@ export default function NotificationsPage() {
                             {n.count > 1 && !grouped && <span className="ml-1 text-blue-light">×{n.count}</span>}
                           </p>
                           <span className="flex shrink-0 items-center gap-2">
-                            <span className="font-mono text-[11px] text-paper/60">{hour(n.updated_at ?? n.created_at)}</span>
+                            <span className="font-mono text-[11px] text-paper/60">
+                              {grouped && n.updated_at && hour(n.created_at) !== hour(n.updated_at) ? `${hour(n.created_at)} → ${hour(n.updated_at)}` : hour(n.updated_at ?? n.created_at)}
+                            </span>
                             {!n.is_read && <span className="h-2 w-2 rounded-full bg-red" aria-label="non lue" />}
                           </span>
                         </div>
@@ -231,7 +233,7 @@ export default function NotificationsPage() {
               </ul>
             </section>
           ))}
-          <p className="font-mono text-[11px] text-paper/50">Une notification s&apos;efface 7 jours après ton passage.</p>
+          <p className="font-mono text-[11px] text-paper/50">Les nouvelles d&apos;un même sujet à moins de deux heures d&apos;écart sont regroupées. Une notification s&apos;efface 7 jours après ton passage.</p>
         </div>
       )}
     </div>
