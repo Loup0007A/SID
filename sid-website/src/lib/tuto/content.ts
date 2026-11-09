@@ -507,7 +507,7 @@ export const PAGE_TIPS: Record<string, PageTip> = {
     points: [
       "Le cours du zéni vient des prix vraiment payés : boutique, enchères, population.",
       "Inflation au-dessus de la cible : les taux montent. En dessous : ils baissent.",
-      "Abattement, seuil de faillite et plafonds d'emprunt suivent l'indice des prix.",
+      "Abattement et plafonds d'emprunt suivent l'indice des prix.",
     ],
   },
   "/dashboard/litiges": {
@@ -526,7 +526,7 @@ export const PAGE_TIPS: Record<string, PageTip> = {
     icon: "office",
     points: [
       "Ta mise de départ crée la trésorerie et fixe le cours de l'action.",
-      "Moins de 2 000 z de ventes en une semaine : faillite. La trésorerie rembourse la dette, le reste va aux actionnaires.",
+      "Sous l'objectif de ventes de la semaine : faillite. La trésorerie rembourse la dette, le reste va aux actionnaires.",
       "Un retrait de trésorerie doit être validé par un admin.",
       "Impôt sur les sociétés : un avis par semaine sur le bénéfice, payé depuis la trésorerie.",
       "Frais d'entreprise : un achat en boutique payé par la trésorerie, après validation d'un admin.",

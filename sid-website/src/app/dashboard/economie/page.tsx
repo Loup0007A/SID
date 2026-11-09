@@ -208,7 +208,7 @@ export default function EconomiePage() {
             ["Abattement", z(t.wealth_allowance, 0)],
             ["Impôt sur les sociétés", `${pct(t.corporate_tax_rate, 1)} du bénéfice`],
             ["TVA", pct(eco.vat_rate, 0)],
-            ["Chiffre d'affaires minimum", `${z(t.bankruptcy_threshold, 0)} par semaine`],
+            ["Chiffre d'affaires minimum", Number(t.bankruptcy_threshold) > 0 ? `${z(t.bankruptcy_threshold, 0)} par semaine` : "aucun"],
             ["Plafond d'emprunt", `${z(t.max_debt, 0)} (membre) · ${z(t.max_business_debt, 0)} (entreprise)`],
           ].map(([k, v]) => (
             <p key={k} className="flex justify-between gap-3 border-b border-white/5 py-1 font-body text-sm">

@@ -52,7 +52,7 @@ export function CentralBankAdmin() {
       <div className="glass-card flex flex-wrap items-center gap-3 p-4">
         <p className="flex-1 font-body text-sm text-paper/75">
           Adaptation automatique <b className={eco.auto ? "text-green-300" : "text-red-light"}>{eco.auto ? "active" : "suspendue"}</b> : chaque jour, taux d&apos;épargne
-          et d&apos;emprunt, impôts, abattement, seuil de faillite et plafonds d&apos;emprunt sont recalculés depuis le relevé des prix. Suspendue, les réglages
+          et d&apos;emprunt, impôts, abattement et plafonds d&apos;emprunt sont recalculés depuis le relevé des prix. Suspendue, les réglages
           d&apos;<code className="font-mono text-xs">app_config</code> restent tels quels et le relevé continue.
         </p>
         <button

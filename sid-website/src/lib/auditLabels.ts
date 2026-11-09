@@ -41,6 +41,7 @@ export const ACTION_LABELS: Record<string, string> = {
   troll_shield_off: "Bouclier anti-farces retiré",
   trolls_toggled: "Farces activées / coupées",
   decor_changed: "Affichage événementiel changé",
+  business_min_set: "Objectif de ventes des entreprises",
 };
 
 export const FIELD_LABELS: Record<string, string> = {
@@ -162,6 +163,12 @@ export function describe(row: { action: string; details: Record<string, unknown>
     case "account_invisible":
     case "account_visible":
       return d.par_le_membre ? "par le membre lui-même" : "par l'administration";
+    case "business_min_set":
+      return d.mode === "auto"
+        ? `automatique (${Number(d.en_vigueur).toLocaleString("fr-FR")} z par semaine)`
+        : d.mode === "off"
+          ? "désactivé : plus de faillite"
+          : `fixé à ${Number(d.apres).toLocaleString("fr-FR")} z par semaine`;
     case "wallet_adjusted":
       return `${money(d.amount)} z${d.reason ? ` — « ${d.reason} »` : ""}`;
     case "reputation_adjusted":

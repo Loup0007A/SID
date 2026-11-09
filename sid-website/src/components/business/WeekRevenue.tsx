@@ -3,6 +3,7 @@
 /**
  * Chiffre d'affaires de la semaine en cours (Lot 67, migration 0082) :
  * sous le minimum à la fin de la semaine, l'entreprise fait faillite.
+ * Le minimum peut être fixe, automatique ou désactivé (Lot 75, migration 0092).
  */
 
 export type BusinessWeek = {
@@ -15,6 +16,8 @@ export type BusinessWeek = {
   revenue: number;
   minimum: number;
   pending_withdrawals: number;
+  /** 0092 : objectif fixe, automatique (d'après les ventes du S.I.D.) ou sans faillite. */
+  mode?: "fixe" | "auto" | "off";
 };
 
 const z = (n: number) => `${Math.round(Number(n)).toLocaleString("fr-FR")} z`;
@@ -29,6 +32,14 @@ function left(iso: string) {
 }
 
 export function WeekRevenue({ w, compact = false }: { w: BusinessWeek; compact?: boolean }) {
+  if (!(Number(w.minimum) > 0)) {
+    return (
+      <p className={`font-body text-sm text-paper/75 ${compact ? "" : "rounded-xl border border-white/10 bg-white/[0.03] p-3"}`}>
+        Ventes de la semaine : <strong className="text-paper">{z(w.revenue)}</strong>
+        <span className="ml-2 font-mono text-[11px] text-paper/55">pas d&apos;objectif en ce moment : aucune faillite possible</span>
+      </p>
+    );
+  }
   const ratio = w.minimum > 0 ? Math.min(1, Number(w.revenue) / Number(w.minimum)) : 1;
   const done = Number(w.revenue) >= Number(w.minimum);
   const hoursLeft = (new Date(w.period_end).getTime() - Date.now()) / 3_600_000;
@@ -49,6 +60,7 @@ export function WeekRevenue({ w, compact = false }: { w: BusinessWeek; compact?:
         <p className="font-body text-xs text-paper/60">
           Sans {z(w.minimum)} de ventes d&apos;ici {end}, l&apos;entreprise fait faillite : sa trésorerie rembourse sa dette, puis le reste est
           réparti entre ses actionnaires. Tes propres achats ne comptent pas.
+          {w.mode === "auto" && " L'objectif suit les ventes des entreprises du S.I.D. et se met à jour chaque jour."}
         </p>
       )}
     </div>
