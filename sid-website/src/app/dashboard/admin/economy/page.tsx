@@ -53,10 +53,15 @@ export default function EconomyAdminPage() {
 
   // Sur mobile, la barre d'onglets défile : garder l'onglet actif visible.
   useEffect(() => {
-    const el = document.getElementById(`tab-${tab}`);
-    const bar = el?.parentElement;
-    if (el && bar) bar.scrollLeft = el.offsetLeft - bar.clientWidth / 2 + el.clientWidth / 2;
-  }, [tab]);
+    const center = () => {
+      const el = document.getElementById(`tab-${tab}`);
+      const bar = el?.parentElement;
+      if (el && bar) bar.scrollLeft = el.offsetLeft - bar.clientWidth / 2 + el.clientWidth / 2;
+    };
+    center();
+    // Les largeurs changent une fois les polices chargées et les compteurs affichés.
+    document.fonts?.ready.then(center);
+  }, [tab, counts]);
 
   function go(t: Tab) {
     setTab(t);
@@ -82,7 +87,7 @@ export default function EconomyAdminPage() {
         </p>
       </div>
 
-      <div role="tablist" aria-label="Sections de l'économie" className="relative -mx-1 flex gap-1 overflow-x-auto border-b border-white/10 px-1">
+      <div role="tablist" aria-label="Sections de l'économie" className="relative -mx-1 flex gap-1 overflow-x-auto overflow-y-hidden px-1 shadow-[inset_0_-1px_0_rgba(255,255,255,0.1)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {TABS.map((t) => (
           <button
             key={t.key}
@@ -92,7 +97,7 @@ export default function EconomyAdminPage() {
             aria-controls={`panel-${t.key}`}
             onClick={() => go(t.key)}
             className={clsx(
-              "-mb-px flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-2 font-mono text-xs uppercase",
+              "flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-2 font-mono text-xs uppercase",
               tab === t.key ? "border-red text-paper" : "border-transparent text-paper/55 hover:text-paper"
             )}
           >
