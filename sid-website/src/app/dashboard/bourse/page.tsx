@@ -6,14 +6,16 @@ import { createClient } from "@/lib/supabase/client";
 import { currentUser } from "@/lib/session";
 import { useDeepLink } from "@/lib/deeplink";
 import { SidIcon } from "@/components/icons/SidIcon";
-import { Candles } from "@/components/market/Candles";
+import { StockChart } from "@/components/market/StockChart";
 import { Spark } from "@/components/market/Spark";
-import { arrow, change, pct, px, time, tone, when, z, zk } from "@/lib/econ";
+import { arrow, change, pct, px, time, when, z, zk } from "@/lib/econ";
 import { inputClass, labelClass } from "@/lib/ui";
 import type { BookLevel, MarketDetail, MarketOrder, MarketRow, OrderResult } from "@/types/economy";
 import "@/components/market/bourse.css";
 
-type IndexPoint = { at: string; value: number; cap: number };
+
+/** Hausse en vert, baisse en rouge, comme sur les sites boursiers. */
+const tone = (x: number | null | undefined) => (x == null || Math.abs(x) < 1e-9 ? "text-paper/60" : x > 0 ? "text-[#26a69a]" : "text-[#ef5350]");
 
 function valuation(r: MarketRow) {
   const ratio = r.price / Math.max(r.fair_value, 0.0001);
@@ -39,7 +41,6 @@ function walk(levels: BookLevel[], qty: number) {
 export default function BoursePage() {
   const supabase = useMemo(() => createClient(), []);
   const [rows, setRows] = useState<MarketRow[] | null>(null);
-  const [index, setIndex] = useState<IndexPoint[]>([]);
   const [myOrders, setMyOrders] = useState<MarketOrder[]>([]);
   const [sel, setSel] = useState<string | null>(null);
   const [detail, setDetail] = useState<MarketDetail | null>(null);
@@ -55,9 +56,8 @@ export default function BoursePage() {
 
   const loadBoard = useCallback(async () => {
     const { data: { user } } = await currentUser();
-    const [o, i, m, w] = await Promise.all([
+    const [o, m, w] = await Promise.all([
       supabase.rpc("market_overview"),
-      supabase.rpc("market_index_series", { p_days: 30 }),
       supabase.rpc("market_my_orders"),
       user ? supabase.from("wallets").select("balance").eq("user_id", user.id).maybeSingle() : null,
     ]);
@@ -76,7 +76,6 @@ export default function BoursePage() {
     }
     setFlash(f);
     setRows(list);
-    setIndex(((i.data ?? []) as IndexPoint[]).map((p) => ({ ...p, value: Number(p.value), cap: Number(p.cap) })));
     // market_my_orders ne renvoie que les ordres ouverts.
     setMyOrders(((m.data ?? []) as MarketOrder[]).map((o) => ({ ...o, status: o.status ?? "open" })));
     if (w?.data) setBalance(Number(w.data.balance));
@@ -113,12 +112,6 @@ export default function BoursePage() {
   });
 
   const row = rows?.find((r) => r.id === sel) ?? null;
-  const idxNow = index.at(-1)?.value ?? null;
-  const idxDayAgo = useMemo(() => {
-    const cut = Date.now() - 86_400_000;
-    const before = index.filter((p) => new Date(p.at).getTime() <= cut);
-    return before.at(-1)?.value ?? index[0]?.value ?? null;
-  }, [index]);
   const totalCap = rows?.reduce((s, r) => s + Number(r.cap), 0) ?? 0;
   const dayValue = rows?.reduce((s, r) => s + Number(r.value), 0) ?? 0;
   const myValue = rows?.reduce((s, r) => s + r.my_qty * Number(r.price), 0) ?? 0;
@@ -130,29 +123,25 @@ export default function BoursePage() {
   return (
     <div className="mx-auto max-w-6xl space-y-5">
       {/* ---------------------------------------------------------------- En-tête */}
-      <header className="glass-card grid gap-5 p-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
-        <div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-paper/55">Salle des marchés</p>
-          <h1 className="font-display text-3xl uppercase tracking-wide text-red">Bourse du S.I.D.</h1>
-          <p className="mt-1 max-w-xl font-body text-sm text-paper/70">
-            Les cours se font entre investisseurs : un échange a lieu quand un acheteur et un vendeur s&apos;entendent sur un prix.
-            La population tient le marché et l&apos;entreprise place les actions qu&apos;elle n&apos;a pas encore vendues.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
+      <header className="glass-card grid gap-6 p-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,30rem)]">
+        <div className="flex flex-col justify-between gap-4">
           <div>
-            <p className={labelClass}>Indice SID</p>
-            <p className="bourse-num font-display text-4xl text-paper">{idxNow == null ? "—" : px(idxNow)}</p>
-            <p className={`bourse-num font-mono text-xs ${tone(change(idxNow, idxDayAgo))}`}>
-              {arrow(change(idxNow, idxDayAgo))} {pct(change(idxNow, idxDayAgo), 2, true)} sur 24 h
+            <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-paper/55">Salle des marchés</p>
+            <h1 className="font-display text-3xl uppercase tracking-wide text-red">Bourse du S.I.D.</h1>
+            <p className="mt-1 max-w-xl font-body text-sm text-paper/70">
+              Les cours se font entre investisseurs : un échange a lieu quand un acheteur et un vendeur s&apos;entendent sur un prix.
+              La population tient le marché et l&apos;entreprise place les actions qu&apos;elle n&apos;a pas encore vendues.
             </p>
           </div>
-          <Spark values={index.map((p) => p.value)} width={150} height={48} />
-          <div className="space-y-0.5 font-mono text-[11px] text-paper/65">
+          <div className="flex flex-wrap gap-x-6 gap-y-1 font-mono text-[11px] text-paper/65">
             <p>Capitalisation <b className="bourse-num text-paper">{zk(totalCap)}</b></p>
             <p>Échangé aujourd&apos;hui <b className="bourse-num text-paper">{zk(dayValue)}</b></p>
-            {myValue > 0 && <p>Mes actions <b className="bourse-num text-blue-light">{z(myValue, 0)}</b></p>}
+            {myValue > 0 && <p>Mes actions <b className="bourse-num text-paper">{z(myValue, 0)}</b></p>}
           </div>
+        </div>
+        <div>
+          <p className="mb-1 font-display uppercase text-paper/85">Indice SID</p>
+          <StockChart index height={190} defaultRange="5J" />
         </div>
       </header>
 
@@ -356,12 +345,12 @@ function ValuePanel({ row, detail, balance, say, onDone }: { row: MarketRow; det
         </p>
       )}
 
-      <Candles candles={detail?.candles ?? []} refLine={{ value: Number(row.fair_value), label: `fondamentaux ${px(row.fair_value)}` }} />
+      <StockChart businessId={row.id} defaultRange="1M" />
 
       <dl className="grid grid-cols-2 gap-x-4 gap-y-2 border-y border-white/10 py-3 font-mono text-[11px] sm:grid-cols-4">
         {[
           ["Valeur des fondamentaux", px(row.fair_value), "text-paper"],
-          ["Bénéfice 7 j", z(row.profit_7d, 0), Number(row.profit_7d) >= 0 ? "text-blue-light" : "text-red"],
+          ["Bénéfice 7 j", z(row.profit_7d, 0), Number(row.profit_7d) >= 0 ? "text-[#26a69a]" : "text-[#ef5350]"],
           ["Dividendes 30 j", z(row.dividends_30d, 0), "text-paper"],
           ["Fonds propres", z(row.equity, 0), Number(row.equity) >= 0 ? "text-paper" : "text-red"],
           ["Capitalisation", z(row.cap, 0), "text-paper"],
@@ -395,7 +384,7 @@ function ValuePanel({ row, detail, balance, say, onDone }: { row: MarketRow; det
               {detail.trades.map((t, i) => (
                 <li key={`${t.at}-${i}`} className={`bourse-num grid grid-cols-[3.2rem_1fr_auto] gap-2 rounded px-1.5 py-0.5 ${t.mine ? "bg-[#f0c27a]/10" : ""}`}>
                   <span className="text-paper/50">{time(t.at)}</span>
-                  <span className={t.side === "sell" ? "text-red" : "text-blue-light"}>{px(t.price)}</span>
+                  <span className={t.side === "sell" ? "text-[#ef5350]" : "text-[#26a69a]"}>{px(t.price)}</span>
                   <span className="text-paper/70">{t.qty}</span>
                 </li>
               ))}
@@ -472,7 +461,7 @@ function ValuePanel({ row, detail, balance, say, onDone }: { row: MarketRow; det
           <button
             type="submit"
             disabled={busy || q < 1 || (mode === "limit" && L <= 0) || tooFar || cantSell || !!halted}
-            className={`w-full rounded-lg py-2.5 font-display uppercase tracking-wide text-ink transition disabled:cursor-not-allowed disabled:opacity-40 ${side === "buy" ? "bg-blue hover:bg-blue-light" : "bg-red hover:bg-red-light"}`}
+            className={`w-full rounded-lg py-2.5 font-display uppercase tracking-wide text-ink transition disabled:cursor-not-allowed disabled:opacity-40 ${side === "buy" ? "bg-[#26a69a] hover:brightness-110" : "bg-[#ef5350] hover:brightness-110"}`}
           >
             {busy ? "Envoi…" : `${side === "buy" ? "Acheter" : "Vendre"}${q > 0 ? ` ${q}` : ""}${mode === "market" ? " au marché" : L > 0 ? ` à ${px(L)} z` : ""}`}
           </button>
@@ -524,7 +513,7 @@ function Book({ bids, asks, onPick }: { bids: BookLevel[]; asks: BookLevel[]; on
             className={`bourse-level bourse-num w-full is-${kind} ${l.mine ? "is-mine" : ""}`}
             style={{ "--depth": `${(Number(l.qty) / max) * 100}%` } as React.CSSProperties}
           >
-            <span className={`text-left ${kind === "bid" ? "text-blue-light" : "text-red"}`}>{px(l.price)}</span>
+            <span className={`text-left ${kind === "bid" ? "text-[#26a69a]" : "text-[#ef5350]"}`}>{px(l.price)}</span>
             <span className="text-paper/80">{Number(l.qty).toLocaleString("fr-FR")}</span>
           </button>
         ))
@@ -552,7 +541,7 @@ function OrderLine({ o, name, onCancel, onOpen }: { o: MarketOrder; name?: strin
   const label: Record<MarketOrder["status"], string> = { open: "Ouvert", filled: "Exécuté", cancelled: "Annulé", expired: "Échu" };
   return (
     <li className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2 font-mono text-xs">
-      <span className={`rounded-full border px-2 py-0.5 text-[10px] uppercase ${o.side === "buy" ? "border-blue/60 text-blue-light" : "border-red/60 text-red"}`}>{o.side === "buy" ? "Achat" : "Vente"}</span>
+      <span className={`rounded-full border px-2 py-0.5 text-[10px] uppercase ${o.side === "buy" ? "border-[#26a69a]/60 text-[#26a69a]" : "border-[#ef5350]/60 text-[#ef5350]"}`}>{o.side === "buy" ? "Achat" : "Vente"}</span>
       {name && (
         <button type="button" onClick={onOpen} className="font-display uppercase text-paper hover:text-blue-light">
           {name}

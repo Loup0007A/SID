@@ -7,7 +7,7 @@ export function Spark({ values, width = 84, height = 24, className = "" }: { val
   const span = hi - lo || 1;
   const pts = v.map((x, i) => `${((i / (v.length - 1)) * (width - 2) + 1).toFixed(1)},${(height - 2 - ((x - lo) / span) * (height - 4)).toFixed(1)}`);
   const up = v[v.length - 1] >= v[0];
-  const color = up ? "#BBD3EA" : "#D99A9A";
+  const color = up ? "#26a69a" : "#ef5350";
   return (
     <svg viewBox={`0 0 ${width} ${height}`} width={width} height={height} className={className} aria-hidden>
       <polyline points={pts.join(" ")} fill="none" stroke={color} strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round" />

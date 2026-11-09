@@ -67,12 +67,12 @@
 }
 @keyframes bourse-up {
   from {
-    background: rgba(143, 179, 217, 0.28);
+    background: rgba(38, 166, 154, 0.3);
   }
 }
 @keyframes bourse-down {
   from {
-    background: rgba(217, 154, 154, 0.28);
+    background: rgba(239, 83, 80, 0.28);
   }
 }
 
@@ -105,11 +105,11 @@
 }
 .bourse-level.is-bid::before {
   right: 0;
-  background: rgba(143, 179, 217, 0.16);
+  background: rgba(38, 166, 154, 0.18);
 }
 .bourse-level.is-ask::before {
   left: 0;
-  background: rgba(217, 154, 154, 0.16);
+  background: rgba(239, 83, 80, 0.16);
 }
 .bourse-level:hover {
   background: rgba(255, 255, 255, 0.05);
@@ -137,11 +137,11 @@
   transition: background-color 0.15s, color 0.15s;
 }
 .bourse-side button.is-buy {
-  background: #8fb3d9;
+  background: #26a69a;
   color: #262a38;
 }
 .bourse-side button.is-sell {
-  background: #d99a9a;
+  background: #ef5350;
   color: #262a38;
 }
 .bourse-chip {
