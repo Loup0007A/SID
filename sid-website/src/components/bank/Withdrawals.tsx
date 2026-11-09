@@ -88,7 +88,7 @@ export function MyWithdrawals({ kind, businessId, version = 0, onChanged }: { ki
 }
 
 /** File des retraits à valider (admins « Économie »). */
-export function WithdrawalQueue() {
+export function WithdrawalQueue({ onCount }: { onCount?: (n: number) => void } = {}) {
   const supabase = useMemo(() => createClient(), []);
   const [pending, setPending] = useState<Withdrawal[] | null>(null);
   const [recent, setRecent] = useState<Withdrawal[] | null>(null);
@@ -105,6 +105,8 @@ export function WithdrawalQueue() {
       return;
     }
     setPending((data ?? []) as Withdrawal[]);
+    onCount?.(((data ?? []) as Withdrawal[]).length);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [supabase]);
 
   useEffect(() => {

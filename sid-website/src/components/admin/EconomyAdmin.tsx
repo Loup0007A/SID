@@ -85,7 +85,7 @@ export function CentralBankAdmin() {
   );
 }
 
-export function ExpenseQueue() {
+export function ExpenseQueue({ onCount }: { onCount?: (n: number) => void } = {}) {
   const supabase = useMemo(() => createClient(), []);
   const [rows, setRows] = useState<ExpenseRequest[] | null>(null);
   const [recent, setRecent] = useState<ExpenseRequest[]>([]);
@@ -97,7 +97,9 @@ export function ExpenseQueue() {
     const [p, r] = await Promise.all([supabase.rpc("expenses_list", { p_scope: "pending" }), supabase.rpc("expenses_list", { p_scope: "recent" })]);
     if (p.error) return setRows([]);
     setRows((p.data ?? []) as ExpenseRequest[]);
+    onCount?.(((p.data ?? []) as ExpenseRequest[]).length);
     setRecent(((r.data ?? []) as ExpenseRequest[]).slice(0, 6));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [supabase]);
   useEffect(() => {
     load();
@@ -342,11 +344,16 @@ function FineForm({ onDone }: { onDone: () => void }) {
   );
 }
 
-export function DisputesShortcut() {
+export function DisputesShortcut({ onCount }: { onCount?: (n: number) => void } = {}) {
   const supabase = useMemo(() => createClient(), []);
   const [n, setN] = useState<number | null>(null);
   useEffect(() => {
-    supabase.rpc("disputes_list", { p_scope: "open" }).then(({ data, error }) => setN(error ? null : ((data ?? []) as unknown[]).length));
+    supabase.rpc("disputes_list", { p_scope: "open" }).then(({ data, error }) => {
+      const k = error ? null : ((data ?? []) as unknown[]).length;
+      setN(k);
+      if (k != null) onCount?.(k);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [supabase]);
   if (n == null) return null;
   return (

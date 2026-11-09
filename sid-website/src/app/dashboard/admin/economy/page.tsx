@@ -1,346 +1,244 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import clsx from "clsx";
 import { WithdrawalQueue } from "@/components/bank/Withdrawals";
-import { WeekRevenue, type BusinessWeek } from "@/components/business/WeekRevenue";
+import { type BusinessWeek } from "@/components/business/WeekRevenue";
 import { createClient } from "@/lib/supabase/client";
-import type { Profile, Wallet, SalaryView, SalaryFrequency } from "@/types/database";
 import type { TaxPoolStatus } from "@/types/business";
-import { inputClass } from "@/lib/ui";
-import { PowerAdminSection } from "@/components/PowerAdminSection";
+import { SidIcon } from "@/components/icons/SidIcon";
+import type { IconName } from "@/components/icons/sidIcons";
 import { CentralBankAdmin, DisputesShortcut, ExpenseQueue, TaxesAdmin } from "@/components/admin/EconomyAdmin";
+import { EconomyMembers } from "@/components/admin/EconomyMembers";
 
-const FREQUENCY_LABELS: Record<SalaryFrequency, string> = {
-  daily: "Quotidien",
-  weekly: "Hebdomadaire",
-  biweekly: "Toutes les 2 semaines",
-  monthly: "Mensuel",
-};
+/**
+ * Administration → Économie, en onglets (Lot 74). Tous les panneaux sont
+ * montés dès l'ouverture : les compteurs « à traiter » sont connus tout de
+ * suite et le changement d'onglet est instantané.
+ */
+
+type Tab = "traiter" | "banque" | "impots" | "membres" | "entreprises";
+const TABS: { key: Tab; label: string; icon: IconName }[] = [
+  { key: "traiter", label: "À traiter", icon: "check" },
+  { key: "banque", label: "Banque centrale", icon: "zeni" },
+  { key: "impots", label: "Impôts et amendes", icon: "receipt" },
+  { key: "membres", label: "Membres", icon: "people" },
+  { key: "entreprises", label: "Entreprises", icon: "office" },
+];
+/** Ancres des notifications et anciens liens → onglet. */
+const ANCHOR: Record<string, Tab> = { retraits: "traiter", frais: "traiter", litiges: "traiter", impots: "impots", amendes: "impots", caisse: "impots" };
+
+function tabFromHash(): { tab: Tab | null; anchor: string | null } {
+  const h = window.location.hash.slice(1);
+  if (!h) return { tab: null, anchor: null };
+  if (TABS.some((t) => t.key === h)) return { tab: h as Tab, anchor: null };
+  return { tab: ANCHOR[h] ?? null, anchor: ANCHOR[h] ? h : null };
+}
 
 export default function EconomyAdminPage() {
-  const supabase = createClient();
-  const [members, setMembers] = useState<Profile[]>([]);
-  const [wallets, setWallets] = useState<Map<string, Wallet>>(new Map());
-  const [amounts, setAmounts] = useState<Record<string, string>>({});
-  const [reasons, setReasons] = useState<Record<string, string>>({});
-
-  const [reputationAmounts, setReputationAmounts] = useState<Record<string, string>>({});
-  const [reputationMessage, setReputationMessage] = useState<string | null>(null);
-
-  const [salaries, setSalaries] = useState<SalaryView[]>([]);
-  const [salaryForm, setSalaryForm] = useState<{ userId: string; amount: string; frequency: SalaryFrequency }>({
-    userId: "",
-    amount: "2500",
-    frequency: "weekly",
-  });
-  const [salaryMessage, setSalaryMessage] = useState<string | null>(null);
-  const [payingNow, setPayingNow] = useState(false);
-
-  const [taxStatus, setTaxStatus] = useState<TaxPoolStatus | null>(null);
-
-  async function refresh() {
-    const [{ data: m }, { data: w }] = await Promise.all([
-      supabase.from("profiles").select("*").eq("status", "active").order("nickname"),
-      supabase.from("wallets").select("*"),
-    ]);
-    setMembers(m ?? []);
-    setWallets(new Map((w ?? []).map((x) => [x.user_id, x])));
-  }
-
-  async function refreshSalaries() {
-    const { data } = await supabase.rpc("list_salaries");
-    setSalaries((data ?? []) as SalaryView[]);
-  }
-
-  async function refreshTaxStatus() {
-    const { data } = await supabase.rpc("get_tax_pool_status");
-    if (data) setTaxStatus(data as TaxPoolStatus);
-  }
+  const [tab, setTab] = useState<Tab>("traiter");
+  const [counts, setCounts] = useState<{ retraits?: number; frais?: number; litiges?: number }>({});
 
   useEffect(() => {
-    refresh();
-    refreshSalaries();
-    refreshTaxStatus();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    const apply = () => {
+      const { tab: t, anchor } = tabFromHash();
+      if (!t) return;
+      setTab(t);
+      if (anchor) setTimeout(() => document.getElementById(anchor)?.scrollIntoView({ behavior: "smooth", block: "start" }), 400);
+    };
+    apply();
+    window.addEventListener("hashchange", apply);
+    return () => window.removeEventListener("hashchange", apply);
+  }, []);
 
-  async function adjust(userId: string) {
-    const amount = Number(amounts[userId]);
-    if (!amount) return;
-    await supabase.rpc("adjust_wallet", { p_user_id: userId, p_amount: amount, p_reason: reasons[userId] ?? "Ajustement manuel" });
-    setAmounts((a) => ({ ...a, [userId]: "" }));
-    setReasons((r) => ({ ...r, [userId]: "" }));
-    refresh();
+  // Sur mobile, la barre d'onglets défile : garder l'onglet actif visible.
+  useEffect(() => {
+    const el = document.getElementById(`tab-${tab}`);
+    const bar = el?.parentElement;
+    if (el && bar) bar.scrollLeft = el.offsetLeft - bar.clientWidth / 2 + el.clientWidth / 2;
+  }, [tab]);
+
+  function go(t: Tab) {
+    setTab(t);
+    history.replaceState(null, "", `#${t}`);
   }
 
-  async function adjustReputation(userId: string) {
-    const amount = Number(reputationAmounts[userId]);
-    if (!amount) return;
-    const { error } = await supabase.rpc("adjust_reputation", { p_user_id: userId, p_amount: amount });
-    if (error) {
-      setReputationMessage(`Échec : ${error.message}`);
-      return;
-    }
-    setReputationAmounts((a) => ({ ...a, [userId]: "" }));
-    refresh();
-  }
-
-  async function saveSalary(e: React.FormEvent) {
-    e.preventDefault();
-    setSalaryMessage(null);
-    if (!salaryForm.userId) {
-      setSalaryMessage("Choisis un membre.");
-      return;
-    }
-    const { error } = await supabase.rpc("set_salary", {
-      p_user_id: salaryForm.userId,
-      p_amount: Number(salaryForm.amount) || 2500,
-      p_frequency: salaryForm.frequency,
-    });
-    if (error) {
-      setSalaryMessage(`Échec : ${error.message}`);
-      return;
-    }
-    setSalaryForm({ userId: "", amount: "2500", frequency: "weekly" });
-    refreshSalaries();
-  }
-
-  async function stopSalary(userId: string) {
-    if (!confirm("Suspendre ce salaire ?")) return;
-    const { error } = await supabase.rpc("stop_salary", { p_user_id: userId });
-    if (error) {
-      setSalaryMessage(`Échec : ${error.message}`);
-      return;
-    }
-    refreshSalaries();
-  }
-
-  async function payNow() {
-    setPayingNow(true);
-    setSalaryMessage(null);
-    const { data, error } = await supabase.rpc("pay_salaries_now");
-    setPayingNow(false);
-    if (error) {
-      setSalaryMessage(`Échec : ${error.message}`);
-      return;
-    }
-    setSalaryMessage(`${data ?? 0} salaire(s) versé(s).`);
-    refreshSalaries();
-    refresh();
-  }
+  const todo = (counts.retraits ?? 0) + (counts.frais ?? 0) + (counts.litiges ?? 0);
 
   return (
-    <div className="space-y-10">
-      <h1 className="font-display text-2xl uppercase tracking-wide text-red">Économie du S.I.D.</h1>
-
-      <CentralBankAdmin />
-
-      <WithdrawalQueue />
-
-      <ExpenseQueue />
-
-      <DisputesShortcut />
-
-      <TaxesAdmin />
-
-      <BusinessWeeks />
-
-      <section className="space-y-3">
-        <h2 className="font-display text-lg uppercase text-paper">Ajustement manuel du solde</h2>
-        {members.map((m) => (
-          <div key={m.id} className="glass-card flex flex-wrap items-center gap-3 p-4">
-            <div className="min-w-[10rem]">
-              <p className="font-display uppercase">{m.nickname}</p>
-              <p className="font-mono text-xs text-blue">{(wallets.get(m.id)?.balance ?? 0).toLocaleString("fr-FR")} z</p>
-            </div>
-            <input
-              type="number"
-              placeholder="Montant (+/-)"
-              className={`${inputClass} w-32`}
-              value={amounts[m.id] ?? ""}
-              onChange={(e) => setAmounts((a) => ({ ...a, [m.id]: e.target.value }))}
-            />
-            <input
-              placeholder="Raison"
-              className={`${inputClass} flex-1`}
-              value={reasons[m.id] ?? ""}
-              onChange={(e) => setReasons((r) => ({ ...r, [m.id]: e.target.value }))}
-            />
-            <button onClick={() => adjust(m.id)} className="rounded-lg bg-red px-4 py-2 font-mono text-xs uppercase text-ink hover:bg-red-light">
-              Appliquer
-            </button>
-          </div>
-        ))}
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="font-display text-lg uppercase text-paper">Renommée</h2>
-        {reputationMessage && <p className="font-mono text-sm text-red">{reputationMessage}</p>}
-        {members.map((m) => (
-          <div key={m.id} className="glass-card flex flex-wrap items-center gap-3 p-4">
-            <div className="min-w-[10rem]">
-              <p className="font-display uppercase">{m.nickname}</p>
-              <p className="font-mono text-xs text-blue">{m.reputation.toLocaleString("fr-FR")} pts</p>
-            </div>
-            <input
-              type="number"
-              placeholder="Points (+/-)"
-              className={`${inputClass} w-32`}
-              value={reputationAmounts[m.id] ?? ""}
-              onChange={(e) => setReputationAmounts((a) => ({ ...a, [m.id]: e.target.value }))}
-            />
-            <button onClick={() => adjustReputation(m.id)} className="rounded-lg bg-blue px-4 py-2 font-mono text-xs uppercase text-ink hover:bg-blue-light">
-              Appliquer
-            </button>
-          </div>
-        ))}
-      </section>
-
-      <PowerAdminSection />
-
-      <section className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="font-display text-lg uppercase text-paper">Salaires</h2>
-          <button
-            onClick={payNow}
-            disabled={payingNow}
-            className="rounded-lg bg-blue px-4 py-2 font-mono text-xs uppercase text-ink hover:bg-blue-light disabled:opacity-40"
-          >
-            {payingNow ? "Versement…" : "Verser les salaires dus maintenant"}
-          </button>
-        </div>
-
-        {salaryMessage && <p className="font-mono text-sm text-red">{salaryMessage}</p>}
-
-        <form onSubmit={saveSalary} className="glass-card flex flex-wrap items-end gap-3 p-4">
-          <div className="space-y-1">
-            <label className="font-mono text-xs uppercase tracking-wide text-paper/70">Membre</label>
-            <select
-              className={inputClass}
-              value={salaryForm.userId}
-              onChange={(e) => setSalaryForm((f) => ({ ...f, userId: e.target.value }))}
-            >
-              <option value="">Choisir…</option>
-              {members.map((m) => (
-                <option key={m.id} value={m.id}>{m.nickname}</option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-1">
-            <label className="font-mono text-xs uppercase tracking-wide text-paper/70">Montant</label>
-            <input
-              type="number" min={0} className={`${inputClass} w-32`}
-              value={salaryForm.amount}
-              onChange={(e) => setSalaryForm((f) => ({ ...f, amount: e.target.value }))}
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="font-mono text-xs uppercase tracking-wide text-paper/70">Fréquence</label>
-            <select
-              className={inputClass}
-              value={salaryForm.frequency}
-              onChange={(e) => setSalaryForm((f) => ({ ...f, frequency: e.target.value as SalaryFrequency }))}
-            >
-              {(Object.keys(FREQUENCY_LABELS) as SalaryFrequency[]).map((f) => (
-                <option key={f} value={f}>{FREQUENCY_LABELS[f]}</option>
-              ))}
-            </select>
-          </div>
-          <button className="rounded-lg bg-blue px-4 py-2 font-display text-sm uppercase text-ink hover:bg-blue-light">
-            Définir le salaire
-          </button>
-        </form>
-
-        <div className="space-y-2">
-          {salaries.map((s) => (
-            <div key={s.user_id} className="glass-card flex flex-wrap items-center justify-between gap-3 p-3">
-              <div>
-                <p className="font-display uppercase">{s.nickname}</p>
-                <p className="font-mono text-xs text-paper/60">
-                  {s.amount.toLocaleString("fr-FR")} z · {FREQUENCY_LABELS[s.frequency]} · prochain versement :{" "}
-                  {new Date(s.next_payment_at).toLocaleString("fr-FR")} · {s.is_active ? "actif" : "suspendu"}
-                </p>
-              </div>
-              {s.is_active && (
-                <button
-                  onClick={() => stopSalary(s.user_id)}
-                  className="rounded-lg border border-red px-3 py-1 font-mono text-xs uppercase text-red hover:bg-red hover:text-ink"
-                >
-                  Suspendre
-                </button>
-              )}
-            </div>
-          ))}
-          {salaries.length === 0 && <p className="font-body text-sm text-paper/60">Aucun salaire configuré.</p>}
-        </div>
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="font-display text-lg uppercase text-paper">Caisse commune &amp; TVA</h2>
-        {taxStatus ? (
-          <div className="glass-card grid grid-cols-2 gap-4 p-4 sm:grid-cols-4">
-            <div>
-              <p className="font-mono text-[10px] uppercase text-paper/65">Caisse actuelle</p>
-              <p className="font-display text-xl text-blue-light">{taxStatus.balance.toLocaleString("fr-FR")} z</p>
-            </div>
-            <div>
-              <p className="font-mono text-[10px] uppercase text-paper/65">TVA</p>
-              <p className="font-display text-xl text-paper">{(taxStatus.vat_rate * 100).toFixed(0)}%</p>
-            </div>
-            <div>
-              <p className="font-mono text-[10px] uppercase text-paper/65">Impôt sur la fortune</p>
-              <p className="font-display text-xl text-paper">{(taxStatus.weekly_wealth_tax_rate * 100).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} %/sem.</p>
-            </div>
-            <div>
-              <p className="font-mono text-[10px] uppercase text-paper/65">Prochaine redistribution</p>
-              <p className="font-mono text-xs text-paper/70">{new Date(taxStatus.next_distribution_at).toLocaleString("fr-FR")}</p>
-            </div>
-          </div>
-        ) : (
-          <p className="font-body text-sm text-paper/60">Chargement…</p>
-        )}
-        <p className="font-mono text-[10px] text-paper/65">
-          TVA, impôts payés ou saisis, amendes, frais de dossier et frais de bourse y entrent. Répartie chaque semaine : 80 % aux
-          admins à parts égales, 20 % aux entreprises à parts égales (<code>tax_admin_share</code>, <code>tax_business_share</code>).
-          Les taux d&apos;impôt suivent la banque centrale tant que l&apos;adaptation automatique est active.
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h1 className="font-display text-2xl uppercase tracking-wide text-red">Économie du S.I.D.</h1>
+        <p className="font-mono text-xs text-paper/60">
+          {todo === 0
+            ? "Rien à traiter."
+            : [
+                counts.retraits ? `${counts.retraits} retrait${counts.retraits > 1 ? "s" : ""}` : null,
+                counts.frais ? `${counts.frais} frais` : null,
+                counts.litiges ? `${counts.litiges} litige${counts.litiges > 1 ? "s" : ""}` : null,
+              ]
+                .filter(Boolean)
+                .join(" · ") + " en attente"}
         </p>
-      </section>
+      </div>
+
+      <div role="tablist" aria-label="Sections de l'économie" className="relative -mx-1 flex gap-1 overflow-x-auto border-b border-white/10 px-1">
+        {TABS.map((t) => (
+          <button
+            key={t.key}
+            role="tab"
+            id={`tab-${t.key}`}
+            aria-selected={tab === t.key}
+            aria-controls={`panel-${t.key}`}
+            onClick={() => go(t.key)}
+            className={clsx(
+              "-mb-px flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-3 py-2 font-mono text-xs uppercase",
+              tab === t.key ? "border-red text-paper" : "border-transparent text-paper/55 hover:text-paper"
+            )}
+          >
+            <SidIcon name={t.icon} size={14} />
+            {t.label}
+            {t.key === "traiter" && todo > 0 && <span className="rounded-full bg-yellow-400/20 px-1.5 font-mono text-[10px] text-yellow-300">{todo}</span>}
+          </button>
+        ))}
+      </div>
+
+      <Panel id="traiter" tab={tab}>
+        <WithdrawalQueue onCount={(n) => setCounts((c) => ({ ...c, retraits: n }))} />
+        <ExpenseQueue onCount={(n) => setCounts((c) => ({ ...c, frais: n }))} />
+        <div id="litiges" className="scroll-mt-24">
+          <DisputesShortcut onCount={(n) => setCounts((c) => ({ ...c, litiges: n }))} />
+        </div>
+      </Panel>
+
+      <Panel id="banque" tab={tab}>
+        <CentralBankAdmin />
+      </Panel>
+
+      <Panel id="impots" tab={tab}>
+        <TaxPool />
+        <TaxesAdmin />
+      </Panel>
+
+      <Panel id="membres" tab={tab}>
+        <EconomyMembers />
+      </Panel>
+
+      <Panel id="entreprises" tab={tab}>
+        <BusinessWeeks />
+      </Panel>
     </div>
+  );
+}
+
+function Panel({ id, tab, children }: { id: Tab; tab: Tab; children: React.ReactNode }) {
+  return (
+    <div role="tabpanel" id={`panel-${id}`} aria-labelledby={`tab-${id}`} hidden={tab !== id} className="space-y-8">
+      {children}
+    </div>
+  );
+}
+
+function TaxPool() {
+  const supabase = useMemo(() => createClient(), []);
+  const [t, setT] = useState<TaxPoolStatus | null>(null);
+  useEffect(() => {
+    supabase.rpc("get_tax_pool_status").then(({ data }) => data && setT(data as TaxPoolStatus));
+  }, [supabase]);
+  if (!t) return null;
+  return (
+    <section id="caisse" className="scroll-mt-24 space-y-3">
+      <h2 className="font-display text-lg uppercase text-paper">Caisse commune et TVA</h2>
+      <div className="glass-card grid grid-cols-2 gap-4 p-4 sm:grid-cols-4">
+        <div>
+          <p className="font-mono text-[10px] uppercase text-paper/65">Caisse actuelle</p>
+          <p className="font-display text-xl text-blue-light">{Number(t.balance).toLocaleString("fr-FR")} z</p>
+        </div>
+        <div>
+          <p className="font-mono text-[10px] uppercase text-paper/65">TVA</p>
+          <p className="font-display text-xl text-paper">{(t.vat_rate * 100).toFixed(0)} %</p>
+        </div>
+        <div>
+          <p className="font-mono text-[10px] uppercase text-paper/65">Impôt sur la fortune</p>
+          <p className="font-display text-xl text-paper">{(t.weekly_wealth_tax_rate * 100).toLocaleString("fr-FR", { maximumFractionDigits: 2 })} % / sem.</p>
+        </div>
+        <div>
+          <p className="font-mono text-[10px] uppercase text-paper/65">Prochaine redistribution</p>
+          <p className="font-mono text-xs text-paper/70">{new Date(t.next_distribution_at).toLocaleString("fr-FR", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
+        </div>
+      </div>
+      <p className="font-body text-xs text-paper/60">
+        Y entrent : TVA, impôts payés ou saisis, amendes, frais de dossier et frais de bourse. Répartie chaque semaine : 80 % aux admins, 20 % aux entreprises, à
+        parts égales (<code className="font-mono">tax_admin_share</code>, <code className="font-mono">tax_business_share</code>). Les taux suivent la banque centrale
+        tant que l&apos;adaptation automatique est active.
+      </p>
+    </section>
   );
 }
 
 /** Ventes de la semaine de chaque entreprise ouverte (Lot 67), les plus en retard d'abord. */
 function BusinessWeeks() {
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
   const [rows, setRows] = useState<BusinessWeek[] | null>(null);
   useEffect(() => {
     supabase.rpc("business_weeks", { p_all: true }).then(({ data, error }) => setRows(error ? [] : ((data ?? []) as BusinessWeek[])));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  if (!rows || rows.length === 0) return null;
-  const sorted = [...rows].sort((a, b) => Number(a.revenue) / Number(a.minimum || 1) - Number(b.revenue) / Number(b.minimum || 1));
+  }, [supabase]);
+  if (!rows) return <p className="font-body text-sm text-paper/60">Chargement…</p>;
+  if (rows.length === 0) return <p className="glass-card p-4 font-body text-sm text-paper/60">Aucune entreprise ouverte.</p>;
+  const ratio = (w: BusinessWeek) => (Number(w.minimum) > 0 ? Number(w.revenue) / Number(w.minimum) : 1);
+  const sorted = [...rows].sort((a, b) => ratio(a) - ratio(b));
+  const zz = (n: number) => `${Math.round(Number(n)).toLocaleString("fr-FR")} z`;
   return (
     <section className="space-y-3">
-      <h2 className="font-display text-lg uppercase text-paper">Entreprises : ventes de la semaine</h2>
+      <h2 className="font-display text-lg uppercase text-paper">Ventes de la semaine</h2>
       <p className="font-body text-sm text-paper/65">
-        Sous {Number(rows[0].minimum).toLocaleString("fr-FR")} z de ventes à la fin de sa semaine, une entreprise fait faillite
-        (réglage : <code className="font-mono text-xs">business_min_weekly_revenue</code>, 0 pour désactiver).
+        Sous {zz(rows[0].minimum)} de ventes à la fin de sa semaine, une entreprise fait faillite (<code className="font-mono text-xs">business_min_weekly_revenue</code>, 0
+        pour désactiver). Les plus en retard d&apos;abord.
       </p>
-      <ul className="grid gap-3 md:grid-cols-2">
-        {sorted.map((w) => (
-          <li key={w.business_id} className="glass-card space-y-2 p-4">
-            <p className="font-display uppercase">
-              {w.name} <span className="font-mono text-[11px] normal-case text-paper/60">· {w.founder ?? "—"}</span>
-            </p>
-            <WeekRevenue w={w} compact />
-            <p className="font-mono text-[11px] text-paper/60">
-              Trésorerie {Math.round(Number(w.treasury)).toLocaleString("fr-FR")} z
-              {Number(w.pending_withdrawals) > 0 && ` · ${Math.round(Number(w.pending_withdrawals)).toLocaleString("fr-FR")} z de retrait en attente`}
-              {" · fin de semaine le "}
-              {new Date(w.period_end).toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
-            </p>
-          </li>
-        ))}
-      </ul>
+      <div className="glass-card overflow-x-auto p-2">
+        <table className="w-full border-collapse font-mono text-xs sm:min-w-[640px]">
+          <thead>
+            <tr className="border-b border-white/10 text-left uppercase text-paper/60">
+              <th className="p-2 font-normal">Entreprise</th>
+              <th className="p-2 font-normal">Ventes / minimum</th>
+              <th className="hidden p-2 font-normal sm:table-cell">Fin de semaine</th>
+              <th className="p-2 text-right font-normal">Trésorerie</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.map((w) => {
+              const done = Number(w.revenue) >= Number(w.minimum);
+              const hours = (new Date(w.period_end).getTime() - Date.now()) / 3_600_000;
+              const danger = !done && hours <= 48;
+              return (
+                <tr key={w.business_id} className="border-b border-white/5">
+                  <td className="p-2">
+                    <span className="font-display text-sm uppercase text-paper">{w.name}</span>
+                    <span className="block text-[11px] text-paper/50">{w.founder ?? "—"}</span>
+                  </td>
+                  <td className="w-[38%] p-2">
+                    <div className="flex items-baseline justify-between gap-2 whitespace-nowrap">
+                      <span className={done ? "text-green-300" : danger ? "text-red-light" : "text-paper"}>{zz(w.revenue)}</span>
+                      <span className="text-paper/50">/ {zz(w.minimum)}</span>
+                    </div>
+                    <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-white/10">
+                      <div className={clsx("h-full rounded-full", done ? "bg-green-400/80" : danger ? "bg-red" : "bg-blue")} style={{ width: `${Math.max(2, Math.min(1, ratio(w)) * 100)}%` }} />
+                    </div>
+                  </td>
+                  <td className={clsx("hidden p-2 sm:table-cell", danger ? "text-red-light" : "text-paper/70")}>
+                    {new Date(w.period_end).toLocaleString("fr-FR", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                    {done && <span className="block text-[11px] text-green-300">objectif atteint</span>}
+                  </td>
+                  <td className="p-2 text-right text-paper/80">
+                    {zz(w.treasury)}
+                    {Number(w.pending_withdrawals) > 0 && <span className="block text-[11px] text-[#f0c27a]">{zz(w.pending_withdrawals)} en retrait</span>}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 }
