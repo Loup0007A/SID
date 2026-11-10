@@ -42,6 +42,11 @@ export const ACTION_LABELS: Record<string, string> = {
   trolls_toggled: "Farces activées / coupées",
   decor_changed: "Affichage événementiel changé",
   business_min_set: "Objectif de ventes des entreprises",
+  wheel_prize_saved: "Roue du jour : gain enregistré",
+  wheel_prize_deleted: "Roue du jour : gain supprimé",
+  wheel_settings: "Roue du jour : réglages",
+  inactivity_settings: "Pénalité d'absence : réglages",
+  inactivity_exempt: "Pénalité d'absence : dispense",
 };
 
 export const FIELD_LABELS: Record<string, string> = {
@@ -163,6 +168,11 @@ export function describe(row: { action: string; details: Record<string, unknown>
     case "account_invisible":
     case "account_visible":
       return d.par_le_membre ? "par le membre lui-même" : "par l'administration";
+    case "wheel_prize_saved":
+    case "wheel_prize_deleted":
+      return String(d.label ?? "");
+    case "inactivity_exempt":
+      return d.until ? `jusqu'au ${new Date(String(d.until)).toLocaleDateString("fr-FR")}${d.reason ? ` (${d.reason})` : ""}` : "dispense levée";
     case "business_min_set":
       return d.mode === "auto"
         ? `automatique (${Number(d.en_vigueur).toLocaleString("fr-FR")} z par semaine)`

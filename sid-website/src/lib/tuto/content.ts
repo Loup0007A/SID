@@ -486,6 +486,7 @@ export const PAGE_TIPS: Record<string, PageTip> = {
       (n) => `Emprunt : ${pct(n.debt_rate)} par jour, jusqu'à ${zenis(n.max_debt)}.`,
       "Taux fixés chaque jour par la banque centrale, selon l'inflation mesurée.",
       "Impôts : un avis par semaine, à payer sous 7 jours. Impayé : saisie +10 % et impôts majorés 2 mois.",
+      "7 jours sans visite : chaque jour d'absence coûte 200 z × le nombre de jours, pris sur actions, épargne, solde, puis en dette.",
     ],
     tourFrom: "epargne",
   },
@@ -508,6 +509,16 @@ export const PAGE_TIPS: Record<string, PageTip> = {
       "Le cours du zéni vient des prix vraiment payés : boutique, enchères, population.",
       "Inflation au-dessus de la cible : les taux montent. En dessous : ils baissent.",
       "Abattement et plafonds d'emprunt suivent l'indice des prix.",
+    ],
+  },
+  "/dashboard/roue": {
+    key: "roue",
+    title: "Roue du jour",
+    icon: "wheel",
+    points: [
+      "Un tour par jour, remis à zéro à minuit.",
+      "Chaque jour de visite d'affilée agrandit les parts des gains rares ; un jour manqué remet la série à 1.",
+      "Les chances de chaque gain sont affichées : aujourd'hui, demain et à la série maximale.",
     ],
   },
   "/dashboard/litiges": {

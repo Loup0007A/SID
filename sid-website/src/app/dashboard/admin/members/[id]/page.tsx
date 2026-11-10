@@ -218,8 +218,8 @@ export default function MemberAdminPage() {
         ) : (
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-paper-dark font-display text-2xl text-ink">{p.nickname.slice(0, 1).toUpperCase()}</div>
         )}
-        <div className="min-w-[12rem] flex-1 space-y-1">
-          <h1 className="font-display text-2xl uppercase tracking-wide text-red">{p.nickname}</h1>
+        <div className="min-w-0 flex-1 basis-48 space-y-1">
+          <h1 className="wrap-any font-display text-2xl uppercase tracking-wide text-red">{p.nickname}</h1>
           <div className="flex flex-wrap gap-1">
             {badge(p.status === "active" ? "actif" : p.status === "banned" ? "banni" : p.status === "pending" ? "en attente" : "refusé", p.status === "active" ? "border-blue/60 text-blue-light" : "border-red text-red")}
             {badge(`rang ${p.member_rank}`)}

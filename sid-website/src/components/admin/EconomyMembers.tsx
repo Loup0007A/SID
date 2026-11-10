@@ -174,7 +174,7 @@ export function EconomyMembers() {
               {head("reputation", "Renommée", true)}
               {head("salary", "Salaire", false, "hidden sm:table-cell")}
               {head("power", "Puissance", true, "hidden sm:table-cell")}
-              <th className="w-8 p-2" />
+              <th className="w-6 p-1" />
             </tr>
           </thead>
           <tbody>
@@ -185,9 +185,9 @@ export function EconomyMembers() {
                   className={clsx("cursor-pointer border-b border-white/5 hover:bg-white/5", open === r.id && "bg-white/[0.06]")}
                   aria-expanded={open === r.id}
                 >
-                  <td className="p-2 font-display text-sm uppercase text-paper">{r.nickname}</td>
-                  <td className={clsx("p-2 text-right", r.balance < 0 ? "text-red-light" : "text-blue-light")}>{z(r.balance)}</td>
-                  <td className="p-2 text-right">{r.reputation.toLocaleString("fr-FR")} pts</td>
+                  <td className="wrap-any p-2 font-display text-sm uppercase text-paper">{r.nickname}</td>
+                  <td className={clsx("whitespace-nowrap p-2 text-right", r.balance < 0 ? "text-red-light" : "text-blue-light")}>{z(r.balance)}</td>
+                  <td className="whitespace-nowrap p-2 text-right">{r.reputation.toLocaleString("fr-FR")} pts</td>
                   <td className="hidden p-2 text-paper/75 sm:table-cell">
                     {r.salary ? (
                       <span className={clsx(!r.salary.is_active && "text-paper/40 line-through")}>
@@ -198,7 +198,7 @@ export function EconomyMembers() {
                     )}
                   </td>
                   <td className="hidden p-2 text-right sm:table-cell">{r.power ? formatPower(Number(r.power.power_score)) : "—"}</td>
-                  <td className="p-2 text-center text-paper/50">{open === r.id ? "▴" : "▾"}</td>
+                  <td className="p-1 text-center text-paper/50">{open === r.id ? "▴" : "▾"}</td>
                 </tr>
                 {open === r.id && (
                   <tr className="border-b border-white/10">

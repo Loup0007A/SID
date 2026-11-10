@@ -77,7 +77,7 @@ export default function LeaderboardPage() {
             </span>
             <span className="min-w-0 flex-1">
               <span className="flex flex-wrap items-center gap-2">
-                <span className="font-display uppercase">{e.nickname}</span>
+                <span className="wrap-any font-display uppercase">{e.nickname}</span>
                 {titles.get(e.user_id) && <TitleBadge titleId={titles.get(e.user_id)!.title_id} level={titles.get(e.user_id)!.level} dragon={titles.get(e.user_id)!.dragon} size="xs" />}
               </span>
               {sortKey === "power_score" && e.intelligence !== undefined && (

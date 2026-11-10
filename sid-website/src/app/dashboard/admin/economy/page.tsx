@@ -10,6 +10,8 @@ import { SidIcon } from "@/components/icons/SidIcon";
 import type { IconName } from "@/components/icons/sidIcons";
 import { CentralBankAdmin, DisputesShortcut, ExpenseQueue, TaxesAdmin } from "@/components/admin/EconomyAdmin";
 import { EconomyMembers } from "@/components/admin/EconomyMembers";
+import { WheelAdmin } from "@/components/admin/WheelAdmin";
+import { InactivityAdmin } from "@/components/admin/InactivityAdmin";
 
 /**
  * Administration → Économie, en onglets (Lot 74). Tous les panneaux sont
@@ -17,13 +19,15 @@ import { EconomyMembers } from "@/components/admin/EconomyMembers";
  * suite et le changement d'onglet est instantané.
  */
 
-type Tab = "traiter" | "banque" | "impots" | "membres" | "entreprises";
+type Tab = "traiter" | "banque" | "impots" | "membres" | "entreprises" | "roue" | "absences";
 const TABS: { key: Tab; label: string; icon: IconName }[] = [
   { key: "traiter", label: "À traiter", icon: "check" },
   { key: "banque", label: "Banque centrale", icon: "zeni" },
   { key: "impots", label: "Impôts et amendes", icon: "receipt" },
   { key: "membres", label: "Membres", icon: "people" },
   { key: "entreprises", label: "Entreprises", icon: "office" },
+  { key: "roue", label: "Roue du jour", icon: "wheel" },
+  { key: "absences", label: "Absences", icon: "hourglass" },
 ];
 /** Ancres des notifications et anciens liens → onglet. */
 const ANCHOR: Record<string, Tab> = { retraits: "traiter", frais: "traiter", litiges: "traiter", impots: "impots", amendes: "impots", caisse: "impots" };
@@ -87,7 +91,7 @@ export default function EconomyAdminPage() {
         </p>
       </div>
 
-      <div role="tablist" aria-label="Sections de l'économie" className="relative -mx-1 flex gap-1 overflow-x-auto overflow-y-hidden px-1 shadow-[inset_0_-1px_0_rgba(255,255,255,0.1)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div role="tablist" aria-label="Sections de l'économie" className="scroll-fade relative -mx-1 flex gap-1 overflow-x-auto overflow-y-hidden px-1 shadow-[inset_0_-1px_0_rgba(255,255,255,0.1)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {TABS.map((t) => (
           <button
             key={t.key}
@@ -131,6 +135,14 @@ export default function EconomyAdminPage() {
 
       <Panel id="entreprises" tab={tab}>
         <BusinessWeeks />
+      </Panel>
+
+      <Panel id="roue" tab={tab}>
+        {tab === "roue" && <WheelAdmin />}
+      </Panel>
+
+      <Panel id="absences" tab={tab}>
+        {tab === "absences" && <InactivityAdmin />}
       </Panel>
     </div>
   );

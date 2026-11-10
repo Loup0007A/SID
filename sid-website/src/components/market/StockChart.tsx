@@ -75,7 +75,7 @@ export function StockChart({ businessId, index = false, height = 340, defaultRan
   useEffect(() => {
     const el = wrap.current;
     if (!el) return;
-    const ro = new ResizeObserver(([e]) => setW(Math.max(280, Math.round(e.contentRect.width))));
+    const ro = new ResizeObserver(([e]) => setW(Math.max(200, Math.round(e.contentRect.width))));
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
@@ -287,7 +287,7 @@ export function StockChart({ businessId, index = false, height = 340, defaultRan
         </div>
       </div>
 
-      <div ref={wrap} className="relative">
+      <div ref={wrap} className="relative min-w-0 overflow-hidden">
         {!geo ? (
           <div className="grid place-items-center rounded-lg border border-white/10 font-body text-sm text-paper/55" style={{ height }}>
             {loading ? "Chargement…" : "Graphique indisponible."}
@@ -298,7 +298,7 @@ export function StockChart({ businessId, index = false, height = 340, defaultRan
             viewBox={`0 0 ${W} ${height}`}
             width={W}
             height={height}
-            className="block touch-none select-none"
+            className="block max-w-full touch-none select-none"
             onPointerMove={onMove}
             onPointerDown={onMove}
             onPointerLeave={() => setHover(null)}
@@ -328,10 +328,20 @@ export function StockChart({ businessId, index = false, height = 340, defaultRan
             <line x1={W - PAD.r} x2={W - PAD.r} y1={PAD.t} y2={PAD.t + plotH} stroke="rgba(255,255,255,0.08)" />
 
             {/* Libellés du temps */}
-            {xLabels.map((l) => (
+            {/* Pas deux libellés à moins de 54 px (téléphone) ; aux bords, alignés vers l'intérieur. */}
+            {xLabels
+              .reduce<typeof xLabels>((kept, l) => (kept.length === 0 || l.x - kept[kept.length - 1].x >= 54 ? [...kept, l] : kept), [])
+              .map((l) => (
               <g key={`${l.x}-${l.text}`}>
                 <line x1={l.x} x2={l.x} y1={PAD.t} y2={PAD.t + plotH} stroke="rgba(255,255,255,0.035)" />
-                <text x={l.x} y={height - 8} fontSize="10.5" textAnchor="middle" fill="rgba(237,230,211,0.5)" fontFamily="var(--font-mono)">
+                <text
+                  x={l.x}
+                  y={height - 8}
+                  fontSize="10.5"
+                  textAnchor={l.x < PAD.l + 22 ? "start" : l.x > W - PAD.r - 22 ? "end" : "middle"}
+                  fill="rgba(237,230,211,0.5)"
+                  fontFamily="var(--font-mono)"
+                >
                   {l.text}
                 </text>
               </g>
@@ -341,9 +351,11 @@ export function StockChart({ businessId, index = false, height = 340, defaultRan
             {geo.base > 0 && (
               <g>
                 <line x1={PAD.l} x2={W - PAD.r} y1={geo.y(geo.base)} y2={geo.y(geo.base)} stroke="rgba(237,230,211,0.4)" strokeDasharray="2 4" />
-                <text x={W - PAD.r - 6} y={geo.y(geo.base) + (geo.y(geo.base) > PAD.t + 16 ? -5 : 13)} textAnchor="end" fontSize="10" fill="rgba(237,230,211,0.5)" fontFamily="var(--font-mono)">
-                  {range === "1J" ? "clôture veille" : "début de période"}
-                </text>
+                {pts.length > 0 && (
+                  <text x={W - PAD.r - 6} y={geo.y(geo.base) + (geo.y(geo.base) > PAD.t + 16 ? -5 : 13)} textAnchor="end" fontSize="10" fill="rgba(237,230,211,0.5)" fontFamily="var(--font-mono)">
+                    {range === "1J" ? "clôture veille" : "début de période"}
+                  </text>
+                )}
                 {Math.abs(geo.y(geo.base) - geo.y(geo.last)) > 18 && (
                   <>
                     <rect x={W - PAD.r + 2} y={geo.y(geo.base) - 9} width={PAD.r - 4} height="18" rx="3" fill="rgba(237,230,211,0.14)" />

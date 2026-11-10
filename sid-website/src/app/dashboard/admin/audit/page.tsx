@@ -135,7 +135,7 @@ export default function AuditPage() {
                 </>
               )}
             </span>
-            <span className="w-full font-mono text-xs text-paper/70 sm:w-auto">{describe(r)}</span>
+            <span className="wrap-any w-full font-mono text-xs text-paper/70 sm:w-auto">{describe(r)}</span>
           </div>
         ))}
         {visible.length === 0 && !loading && (

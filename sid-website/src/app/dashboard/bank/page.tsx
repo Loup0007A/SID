@@ -12,6 +12,7 @@ import { pct, px, z } from "@/lib/econ";
 import { MyWithdrawals } from "@/components/bank/Withdrawals";
 import { inputClass, labelClass } from "@/lib/ui";
 import { SidIcon } from "@/components/icons/SidIcon";
+import { Absences } from "@/components/bank/Absences";
 
 export default function BankPage() {
   const supabase = createClient();
@@ -109,6 +110,8 @@ export default function BankPage() {
       )}
 
       {message && <p className="font-mono text-sm text-red">{message}</p>}
+
+      <Absences />
 
       {wallet && <WalletHistory userId={wallet.user_id} balance={Number(wallet.balance)} />}
 

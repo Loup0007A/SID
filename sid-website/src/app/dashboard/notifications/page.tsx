@@ -34,6 +34,7 @@ const TYPE_ICON: Record<string, IconName> = {
   tax: "receipt",
   dispute: "scales",
   market: "candles",
+  absence: "hourglass",
 };
 
 /** Icône d'une notification : celle de son type, sinon celle de l'émoji de son titre (anciens textes). */
@@ -202,7 +203,7 @@ export default function NotificationsPage() {
                             {!n.is_read && <span className="h-2 w-2 rounded-full bg-red" aria-label="non lue" />}
                           </span>
                         </div>
-                        {n.body && <p className="mt-1 font-body text-sm text-paper/70">{n.body}</p>}
+                        {n.body && <p className="wrap-any mt-1 font-body text-sm text-paper/70">{n.body}</p>}
                       </button>
                       {grouped && (
                         <div className="border-t border-white/10 px-4 py-2">

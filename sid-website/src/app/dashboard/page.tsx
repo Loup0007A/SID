@@ -22,6 +22,7 @@ import { TutoInvite } from "@/components/tuto/TutoUi";
 import { SinceLastVisit } from "@/components/SinceLastVisit";
 import { PinnedShortcuts } from "@/components/PinnedShortcuts";
 import { PollSpotlight } from "@/components/polls/PollSpotlight";
+import { DailyWheel, useWheelAvailable } from "@/components/wheel/DailyWheel";
 
 export default function DashboardHome() {
   const supabase = createClient();
@@ -33,6 +34,8 @@ export default function DashboardHome() {
   const [training, setTraining] = useState<SimulationOverview | null>(null);
   // « À faire » : ce qui attend le membre (et l'administration) en ce moment.
   const [todo, setTodo] = useState<{ notifs: number; pending: number; alerts: number; deletions: number }>({ notifs: 0, pending: 0, alerts: 0, deletions: 0 });
+  const [wheel, reloadWheel] = useWheelAvailable();
+  const wheelReady = !!wheel && wheel.enabled && wheel.active && wheel.available && wheel.prizes.length > 0;
 
   useEffect(() => {
     let alive = true;
@@ -123,7 +126,14 @@ export default function DashboardHome() {
 
       <SeasonalBoard />
 
+      {profile && !profile.sandbox_expires_at && <DailyWheel status={wheel} onSpun={reloadWheel} />}
+
       <section aria-label="À faire" data-tuto="a-faire" className="flex flex-wrap gap-2">
+        {wheelReady && (
+          <Link href="/dashboard/roue" scroll={false} className="glass-card border-[#f0c27a]/50 px-3 py-2 font-mono text-xs text-[#f0c27a] hover:border-[#f0c27a]">
+            <SidIcon name="wheel" /> Roue du jour à tourner · série {wheel?.streak}
+          </Link>
+        )}
         {myQuests.length > 0 && (
           <a href="#missions" className="glass-card px-3 py-2 font-mono text-xs hover:border-blue/50">
             <SidIcon name="scroll" /> {myQuests.length} mission{myQuests.length > 1 ? "s" : ""} en cours
@@ -149,7 +159,7 @@ export default function DashboardHome() {
             <SidIcon name="trash" /> {todo.deletions} demande{todo.deletions > 1 ? "s" : ""} de suppression de compte
           </Link>
         )}
-        {myQuests.length === 0 && todo.notifs === 0 && todo.pending === 0 && todo.alerts === 0 && todo.deletions === 0 && (
+        {!wheelReady && myQuests.length === 0 && todo.notifs === 0 && todo.pending === 0 && todo.alerts === 0 && todo.deletions === 0 && (
           <Link href="/dashboard/quests" scroll={false} className="glass-card px-3 py-2 font-mono text-xs text-paper/70 hover:border-blue/50">
             Rien ne t&apos;attend pour l&apos;instant · voir les quêtes ouvertes →
           </Link>

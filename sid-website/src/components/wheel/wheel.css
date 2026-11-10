@@ -1,0 +1,124 @@
+/* Roue du jour (Lot 76). */
+
+.wheel-stage {
+  position: relative;
+  width: min(100%, 22rem);
+  aspect-ratio: 1;
+  margin-inline: auto;
+}
+.wheel-stage svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.wheel-disc {
+  transform-origin: 100px 100px;
+  transition: transform 5.2s cubic-bezier(0.12, 0.62, 0.08, 1);
+}
+.wheel-disc.is-still {
+  transition: none;
+}
+.wheel-bulb {
+  fill: #ffe9a8;
+  opacity: 0.35;
+}
+.wheel-stage.is-spinning .wheel-bulb {
+  animation: wheel-blink 0.5s steps(1) infinite;
+}
+.wheel-stage.is-spinning .wheel-bulb:nth-child(odd) {
+  animation-delay: 0.25s;
+}
+.wheel-stage.is-won .wheel-bulb {
+  opacity: 0.95;
+}
+@keyframes wheel-blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+.wheel-pointer {
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+}
+.wheel-stage.is-spinning .wheel-pointer {
+  animation: wheel-tick 0.12s ease-in-out infinite alternate;
+  transform-origin: 100px 6px;
+}
+@keyframes wheel-tick {
+  to {
+    transform: rotate(-7deg);
+  }
+}
+.wheel-hub {
+  cursor: pointer;
+}
+.wheel-hub:focus-visible circle:first-child {
+  stroke: #8fb3d9;
+  stroke-width: 3;
+}
+.wheel-hub[aria-disabled="true"] {
+  cursor: default;
+}
+
+/* Résultat */
+.wheel-result {
+  animation: wheel-pop 0.45s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+@keyframes wheel-pop {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+}
+.wheel-result.is-epique,
+.wheel-result.is-legendaire {
+  position: relative;
+  overflow: hidden;
+}
+.wheel-result.is-legendaire::after,
+.wheel-result.is-epique::after {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  background: conic-gradient(from 0deg, transparent 0 20%, rgba(255, 226, 122, 0.22) 25%, transparent 30% 70%, rgba(255, 226, 122, 0.22) 75%, transparent 80%);
+  animation: wheel-rays 6s linear infinite;
+  pointer-events: none;
+}
+.wheel-result.is-epique::after {
+  background: conic-gradient(from 0deg, transparent 0 20%, rgba(195, 155, 255, 0.2) 25%, transparent 30% 70%, rgba(195, 155, 255, 0.2) 75%, transparent 80%);
+}
+@keyframes wheel-rays {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Série */
+.wheel-streak {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.3rem;
+}
+.wheel-streak span {
+  height: 0.5rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+}
+.wheel-streak span.is-on {
+  background: linear-gradient(90deg, #f0c27a, #ff7a59);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wheel-disc {
+    transition-duration: 0.8s;
+  }
+  .wheel-stage.is-spinning .wheel-bulb,
+  .wheel-stage.is-spinning .wheel-pointer,
+  .wheel-result,
+  .wheel-result::after {
+    animation: none !important;
+  }
+}

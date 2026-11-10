@@ -123,7 +123,7 @@ export default function BoursePage() {
   return (
     <div className="mx-auto max-w-6xl space-y-5">
       {/* ---------------------------------------------------------------- En-tête */}
-      <header className="glass-card grid gap-6 p-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,30rem)]">
+      <header className="glass-card grid grid-cols-[minmax(0,1fr)] gap-6 p-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,30rem)]">
         <div className="flex flex-col justify-between gap-4">
           <div>
             <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-paper/55">Salle des marchés</p>
@@ -152,7 +152,7 @@ export default function BoursePage() {
       ) : rows.length === 0 ? (
         <p className="glass-card p-6 font-body text-sm text-paper/60">Aucune entreprise cotée pour le moment.</p>
       ) : (
-        <div className="grid gap-5 xl:grid-cols-[22rem_minmax(0,1fr)]">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-5 xl:grid-cols-[22rem_minmax(0,1fr)]">
           {/* ------------------------------------------------------------ La cote */}
           <section className="glass-card self-start p-3" aria-label="La cote">
             <div className="flex items-center justify-between px-2 pb-2 pt-1">
@@ -365,7 +365,7 @@ function ValuePanel({ row, detail, balance, say, onDone }: { row: MarketRow; det
         ))}
       </dl>
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         {/* ---------------------------------------------------------- Carnet */}
         <div className="space-y-3">
           <h3 className="font-display uppercase">Carnet d&apos;ordres</h3>

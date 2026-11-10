@@ -1215,6 +1215,22 @@ export const ICONS = {
       <circle cx="32" cy="28" r="1.8" fill={K} />
     </>
   ),
+  wheel: (
+    <>
+      <C cx={24} cy={26} r={19} f="#3a2f55" />
+      <path d="M24 26L24.0 9.5A16.5 16.5 0 0 1 38.3 17.8z" fill="#ff4f5e" />
+      <path d="M24 26L38.3 17.8A16.5 16.5 0 0 1 38.3 34.2z" fill="#ffcf5a" />
+      <path d="M24 26L38.3 34.2A16.5 16.5 0 0 1 24.0 42.5z" fill="#7aa2ff" />
+      <path d="M24 26L24.0 42.5A16.5 16.5 0 0 1 9.7 34.2z" fill="#5fdc8a" />
+      <path d="M24 26L9.7 34.2A16.5 16.5 0 0 1 9.7 17.8z" fill="#c58cff" />
+      <path d="M24 26L9.7 17.8A16.5 16.5 0 0 1 24.0 9.5z" fill="#ffcf5a" />
+      <circle cx="24" cy="26" r="16.5" fill="none" stroke={K} strokeWidth="1.6" />
+      <L d="M24 9.5v33M9.7 17.75l28.6 16.5M9.7 34.25l28.6-16.5" c={K} w={1.4} op={0.55} />
+      <C cx={24} cy={26} r={4} f="#f4f6fb" />
+      <P d="M19.5 3.5h9L24 11z" f="#ff4f5e" />
+      <S d="M12 18a14 14 0 0 1 8-7l.7 1.6a12 12 0 0 0-6.9 6.1z" />
+    </>
+  ),
   crown: (
     <>
       <P d="M5 16l9 8 10-14 10 14 9-8-4 22H9z" f="#ffcf5a" />

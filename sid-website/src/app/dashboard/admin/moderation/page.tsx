@@ -270,7 +270,7 @@ export default function ModerationPage() {
               </div>
               <input
                 placeholder="Message affiché aux membres"
-                className={`${inputClass} flex-[2]`}
+                className={`${inputClass} basis-full sm:basis-0 sm:flex-[2]`}
                 defaultValue={f.message ?? ""}
                 onChange={(e) => setFlagMessages((m) => ({ ...m, [f.key]: e.target.value }))}
               />

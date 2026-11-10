@@ -58,6 +58,7 @@ export const NAV_ENTRIES: NavEntry[] = [
   { key: "privacy", href: "/dashboard/privacy", label: "Mes données", description: "Ce que le S.I.D. garde sur toi", emoji: "🔐", icon: "padlock", group: "espace" },
 
   { key: "quests", href: "/dashboard/quests", label: "Quêtes", description: "Missions ouvertes et en cours", emoji: "📜", icon: "scroll", group: "jeu", section: "quests" },
+  { key: "roue", href: "/dashboard/roue", label: "Roue du jour", description: "Un tour par jour : plus ta série est longue, plus les gros lots sortent", emoji: "🎡", icon: "wheel", group: "jeu" },
   { key: "tech", href: "/dashboard/tech", label: "Arbre technologique", description: "Dépense tes points de simulation", emoji: "🌳", icon: "tree", group: "entrainement" },
   { key: "map", href: "/dashboard/map", label: "Carte", description: "Ta position et tes trajets", emoji: "🗺️", icon: "map", group: "jeu" },
   { key: "leaderboard", href: "/dashboard/leaderboard", label: "Classement", description: "Puissance, argent, renommée", emoji: "🏆", icon: "trophy", group: "jeu" },

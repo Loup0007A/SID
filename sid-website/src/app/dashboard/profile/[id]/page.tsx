@@ -76,7 +76,7 @@ export default function MemberProfilePage() {
           <RankCard rank={profile.member_rank ?? "E"} />
         </div>
         <div className="relative z-[1] min-w-0 flex-1">
-          <h1 className="font-display text-2xl uppercase tracking-wide text-red">
+          <h1 className="wrap-any font-display text-2xl uppercase tracking-wide text-red">
             {profile.nickname}
             <BirthdayGift targetId={profile.id} nickname={profile.nickname} />
           </h1>

@@ -320,7 +320,7 @@ export function StatsEngagement() {
         </div>
 
         <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_16rem]">
-          <div className="space-y-2">
+          <div className="min-w-0 space-y-2">
             <Sub>Quand on vient (temps actif, 30 j)</Sub>
             <p className="min-h-[1.25rem] font-mono text-xs text-blue-light">
               {cell ? `${DOW_FULL[cell.dow]} de ${cell.hour}h à ${(cell.hour + 1) % 24}h : ${dur(cellSec)}` : "Survole ou touche une case."}

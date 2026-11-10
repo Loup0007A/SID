@@ -21,7 +21,8 @@ export type NotificationType =
   | "wedding"
   | "tax"
   | "dispute"
-  | "market";
+  | "market"
+  | "absence";
 
 /** Une ligne d'une notification regroupée (Lot 66). */
 export interface NotificationDetail {
