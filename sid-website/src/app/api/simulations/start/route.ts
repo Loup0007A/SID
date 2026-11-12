@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { SIMULATION_SITES, isSimulationKind } from "@/lib/simulationSites";
 import { hashRunToken, newRunToken } from "@/lib/simulationServer";
+import { getBrand } from "@/lib/brand-server";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
 
   if (!site.url) {
     return NextResponse.json(
-      { error: "Cette simulation est encore en développement : son site n'est pas encore branché au S.I.D." },
+      { error: `Cette simulation est encore en développement : son site n'est pas encore branché au ${(await getBrand()).name}.` },
       { status: 409 }
     );
   }

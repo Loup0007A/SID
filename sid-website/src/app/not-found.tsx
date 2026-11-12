@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { Sceau3 } from "@/components/lazy/Seals";
+import { getBrand } from "@/lib/brand-server";
 
-export default function NotFound() {
+export default async function NotFound() {
+  // Composant serveur : rendu en parallèle de la mise en page, il attend lui-même les noms (Lot 77).
+  await getBrand();
   return (
     <main className="flex min-h-screen items-center justify-center px-4">
       <div className="glass-card max-w-md space-y-4 p-8 text-center">

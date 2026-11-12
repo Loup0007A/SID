@@ -2,6 +2,7 @@ import type { PermissionKey } from "@/types/database";
 import { SIMULATION_SITES, type SimulationKind } from "@/lib/simulationSites";
 import type { MaintenanceSection } from "@/lib/maintenance";
 import type { IconName } from "@/components/icons/sidIcons";
+import { isTabHidden } from "@/lib/brand";
 
 /**
  * Toutes les pages du tableau de bord, à un seul endroit : la page
@@ -103,9 +104,17 @@ export const NAV_ENTRIES: NavEntry[] = [
   { key: "audit", href: "/dashboard/admin/audit", label: "Journal d'audit", description: "Qui a fait quoi, et quand", emoji: "🕵️", icon: "magnifier", group: "admin", perm: ["manage_users"] },
 ];
 
-/** Les entrées visibles pour un membre selon ses permissions (et les pages dévoilées). */
+/**
+ * Rubriques que l'administration ne peut pas retirer du site (Modération →
+ * Rubriques du site, Lot 77) : le dossier, les notifications, les réglages,
+ * les données personnelles et toute l'administration.
+ */
+export const LOCKED_TABS = new Set(["profile", "notifications", "settings", "privacy"]);
+export const canHideTab = (e: NavEntry) => e.group !== "admin" && !LOCKED_TABS.has(e.key);
+
+/** Les entrées visibles pour un membre selon ses permissions, les pages dévoilées et les rubriques masquées. */
 export function visibleEntries(can: (...anyOf: PermissionKey[]) => boolean, reveals: Reveals = {}): NavEntry[] {
-  return NAV_ENTRIES.filter((e) => !e.perm || can(...e.perm) || (e.reveal && reveals[e.reveal]));
+  return NAV_ENTRIES.filter((e) => (!e.perm || can(...e.perm) || (e.reveal && reveals[e.reveal])) && !(canHideTab(e) && isTabHidden(e.key)));
 }
 
 /** L'entrée correspondant à une URL (la plus précise), ex. /dashboard/admin/users/xyz -> "Comptes". */
@@ -113,4 +122,10 @@ export function entryForPath(pathname: string): NavEntry | undefined {
   return [...NAV_ENTRIES]
     .sort((a, b) => b.href.length - a.href.length)
     .find((e) => pathname === e.href || pathname.startsWith(`${e.href}/`));
+}
+
+/** La page appartient à une rubrique masquée (Modération → Rubriques du site). */
+export function isPathHidden(pathname: string): boolean {
+  const e = entryForPath(pathname.split(/[?#]/)[0]);
+  return !!e && canHideTab(e) && isTabHidden(e.key);
 }

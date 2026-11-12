@@ -6,17 +6,28 @@ import { SeasonalDecor } from "@/components/seasonal/Seasonal";
 import { LazyCursorTrail } from "@/components/lazy/LazyCursorTrail";
 import { LabelLinker } from "@/components/a11y/LabelLinker";
 import { getSupabaseEnv } from "@/lib/supabase/env";
+import { getBrand } from "@/lib/brand-server";
+import { brandify } from "@/lib/brand";
+import { BrandProvider } from "@/components/BrandProvider";
 
-export const metadata: Metadata = {
-  title: "S.I.D. — Dossier Central",
-  description: "Plateforme communautaire du S.I.D.",
-  manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "S.I.D.",
-  },
-};
+// Les pages prêtes à l'avance (accueil, connexion, CGU…) sont refaites toutes
+// les 5 minutes : un changement de nom dans app_config y arrive sans redéployer.
+export const revalidate = 300;
+
+// Noms du jeu et du site : app_config (Lot 77, voir SETUP.md).
+export async function generateMetadata(): Promise<Metadata> {
+  const b = await getBrand();
+  return {
+    title: { default: `${b.name} — ${b.site}`, template: `%s · ${b.name}` },
+    description: brandify(b.description),
+    manifest: "/manifest.json",
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "black-translucent",
+      title: b.name,
+    },
+  };
+}
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -25,11 +36,12 @@ export const viewport: Viewport = {
   themeColor: "#1b1e27",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const brand = await getBrand();
   return (
     <html lang="fr">
       <head>
@@ -47,13 +59,15 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/apple-touch-180.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="S.I.D." />
+        <meta name="apple-mobile-web-app-title" content={brand.name} />
       </head>
       <body className="font-body">
-        {children}
-        <SeasonalDecor />
-        <LazyCursorTrail />
-        <LabelLinker />
+        <BrandProvider brand={brand}>
+          {children}
+          <SeasonalDecor />
+          <LazyCursorTrail />
+          <LabelLinker />
+        </BrandProvider>
       </body>
     </html>
   );

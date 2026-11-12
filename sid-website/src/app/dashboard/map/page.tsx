@@ -8,6 +8,7 @@ import { findShortestPath } from "@/lib/pathfinding";
 import { inputClass, labelClass } from "@/lib/ui";
 import { formatCountdown, formatMinutes, tripState } from "@/lib/travel";
 import { SidIcon } from "@/components/icons/SidIcon";
+import { BRAND } from "@/lib/brand";
 
 export default function MapPage() {
   const supabase = createClient();
@@ -208,8 +209,8 @@ export default function MapPage() {
       <h1 className="font-display text-2xl uppercase tracking-wide text-red">Carte du S.I.D.</h1>
       <p className="font-body text-sm text-paper/70">
         Carte visuelle complète sur{" "}
-        <a href="https://sid-map.vercel.app" target="_blank" rel="noreferrer" className="text-blue underline">
-          sid-map.vercel.app
+        <a href={BRAND.urls.map} target="_blank" rel="noreferrer" className="text-blue underline">
+          {BRAND.urls.map.replace(/^https?:\/\//, "")}
         </a>{" "}
         — cette page permet de consulter sa position et de se déplacer, chaque trajet prenant un temps réel à parcourir
         (aucune téléportation possible).

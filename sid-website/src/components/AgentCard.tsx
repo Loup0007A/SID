@@ -6,6 +6,7 @@ import type { Profile } from "@/types/database";
 import { RANK_INFO } from "@/components/RankCard";
 import { TITLE_BY_ID, titleLabel, type TitleId } from "@/lib/titles";
 import { SidIcon } from "@/components/icons/SidIcon";
+import { BRAND, brandify } from "@/lib/brand";
 
 /**
  * Carte d'agent (Lot 60) : une carte d'identité du S.I.D. dessinée dans le
@@ -108,7 +109,7 @@ async function draw(canvas: HTMLCanvasElement, { profile, title, reputation }: D
   }
   ctx.fillStyle = "#ede6d3";
   ctx.font = '700 44px Oswald, Impact, sans-serif';
-  ctx.fillText("S.I.D.", 144, 66);
+  ctx.fillText(BRAND.name, 144, 66);
   ctx.fillStyle = "#8fb3d9";
   ctx.font = '500 18px "JetBrains Mono", monospace';
   ctx.fillText("C A R T E   D ' A G E N T", 146, 94);
@@ -284,7 +285,7 @@ function AgentCardDialog({ onClose, ...data }: Data & { onClose: () => void }) {
   async function share() {
     if (!blob) return;
     try {
-      await navigator.share({ files: [new File([blob], fileName, { type: "image/png" })], title: "Ma carte d'agent du S.I.D." });
+      await navigator.share({ files: [new File([blob], fileName, { type: "image/png" })], title: brandify("Ma carte d'agent du S.I.D.") });
     } catch {
       /* partage annulé */
     }

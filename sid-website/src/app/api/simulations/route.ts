@@ -1,5 +1,6 @@
 import { SIMULATION_SITES, STAT_LABELS } from "@/lib/simulationSites";
 import { corsJson, corsPreflight } from "@/lib/simulationServer";
+import { getBrand } from "@/lib/brand-server";
 
 export const dynamic = "force-dynamic";
 
@@ -7,7 +8,7 @@ export const dynamic = "force-dynamic";
 // site de simulation que le S.I.D. répond. Détails : API_SIMULATIONS.md.
 export async function GET() {
   return corsJson({
-    api: "S.I.D. — simulations",
+    api: `${(await getBrand()).name} — simulations`,
     version: 1,
     endpoints: {
       run: "GET /api/simulations/run?token=<jeton> — infos sur la partie en cours",

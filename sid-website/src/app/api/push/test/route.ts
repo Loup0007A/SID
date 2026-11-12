@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import webpush from "web-push";
 import { createClient } from "@/lib/supabase/server";
+import { getBrand } from "@/lib/brand-server";
 
 /**
  * Test direct des notifications push (Lot 64) : envoie une notification à
@@ -37,7 +38,7 @@ export async function POST() {
   if (!subs?.length) return NextResponse.json({ config, error: "no_subscription", results: [] });
 
   const payload = JSON.stringify({
-    title: "Test du S.I.D.",
+    title: `Test du ${(await getBrand()).name}`,
     body: "Si tu lis ceci sur ton écran, les notifications push fonctionnent.",
     link: "/dashboard/profile",
     tag: "push-test",

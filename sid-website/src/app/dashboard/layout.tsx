@@ -31,6 +31,8 @@ import { SidIcon } from "@/components/icons/SidIcon";
 import { TutoProvider } from "@/components/tuto/TutoProvider";
 import { TutoHelpButton, TutoPageTip } from "@/components/tuto/TutoUi";
 import { rememberPage } from "@/lib/notifReturn";
+import { BRAND, brandify, brandFromConfig, isTabHidden, setBrand } from "@/lib/brand";
+import { TabGate } from "@/components/TabGate";
 
 // Pas urgents : téléchargés une fois la page affichée.
 const TitleUnlock = dynamic(() => import("@/components/titles/TitleUnlock").then((m) => m.TitleUnlock), { ssr: false });
@@ -174,11 +176,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Identité du jeu et rubriques masquées (Lot 77) : la page arrive avec la
+  // configuration mise en cache par le serveur (5 min) ; on la relit une fois
+  // pour appliquer tout de suite un changement fait depuis Modération.
+  const [, bumpBrand] = useState(0);
+  useEffect(() => {
+    createClient()
+      .rpc("public_config")
+      .then(({ data, error }) => {
+        if (error || !data) return;
+        const before = JSON.stringify(BRAND.hiddenTabs) + BRAND.name;
+        setBrand(brandFromConfig(data as Record<string, unknown>));
+        if (JSON.stringify(BRAND.hiddenTabs) + BRAND.name !== before) bumpBrand((n) => n + 1);
+      });
+  }, []);
+
   // Titre de l'onglet : la page en cours (pratique avec plusieurs onglets et
   // dans l'historique du navigateur).
   useEffect(() => {
     const t = pageTitle(pathname);
-    document.title = t ? `${t} · S.I.D.` : "S.I.D. — Dossier Central";
+    document.title = t ? `${brandify(t)} · ${BRAND.name}` : `${BRAND.name} — ${BRAND.site}`;
     rememberPage(pathname + window.location.search);
   }, [pathname]);
 
@@ -347,7 +364,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div style={booting ? { visibility: "hidden" } : undefined} aria-busy={booting || undefined}>
           <TutoPageTip />
           <SectionGate section={entryForPath(pathname)?.section} bypass={isStaff}>
-            {children}
+            <TabGate tab={entryForPath(pathname)?.key} bypass={isStaff}>
+              {children}
+            </TabGate>
           </SectionGate>
         </div>
         {profile && fresh && (
@@ -362,7 +381,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     {profile && fresh && <PresenceTracker />}
     {profile && fresh && (
       <AfterIdle>
-        <TitleUnlock userId={profile.id} equipped={profile.equipped_title ?? null} />
+        {!isTabHidden("titles") && <TitleUnlock userId={profile.id} equipped={profile.equipped_title ?? null} />}
         <Sceau1 />
         {decor?.halloween && <Sceau7 />}
         {decor?.noel && <Sceau8 />}

@@ -10,10 +10,10 @@ self.addEventListener("push", (event) => {
   try {
     data = event.data ? event.data.json() : {};
   } catch {
-    data = { title: "S.I.D.", body: event.data ? event.data.text() : "" };
+    data = { title: "Notification", body: event.data ? event.data.text() : "" };
   }
 
-  const title = data.title || "S.I.D.";
+  const title = data.title || "Notification";
   const options = {
     body: data.body || "",
     icon: "/icons/app-192.png",

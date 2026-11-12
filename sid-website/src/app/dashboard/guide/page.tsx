@@ -7,7 +7,8 @@ import { SidIcon } from "@/components/icons/SidIcon";
 import type { IconName } from "@/components/icons/sidIcons";
 import { useTuto } from "@/components/tuto/TutoProvider";
 import { Rich } from "@/components/tuto/Rich";
-import { STEPS, TOUR, pct, zenis, type TutoNumbers } from "@/lib/tuto/content";
+import { TOUR, openSteps, pct, zenis, type TutoNumbers } from "@/lib/tuto/content";
+import { isPathHidden } from "@/lib/navigation";
 
 type Chapter = {
   id: string;
@@ -182,7 +183,11 @@ export default function GuidePage() {
     await tuto?.refresh();
   }
 
-  const ring = (done / STEPS.length) * 100;
+  // Sans les rubriques masquées (Modération → Rubriques du site).
+  const steps = openSteps();
+  const shownDone = steps.filter((s) => d?.steps[s.key]).length;
+  const chapters = CHAPTERS.filter((c) => !c.href || !isPathHidden(c.href));
+  const ring = steps.length ? (shownDone / steps.length) * 100 : 100;
 
   return (
     <div className="space-y-10">
@@ -208,8 +213,8 @@ export default function GuidePage() {
           <div>
             <p className="font-mono text-[10px] uppercase tracking-wide text-paper/60">Premiers pas</p>
             <p className="font-display text-3xl text-paper">
-              {done}
-              <span className="text-lg text-paper/65"> / {STEPS.length}</span>
+              {shownDone}
+              <span className="text-lg text-paper/65"> / {steps.length}</span>
             </p>
           </div>
         </div>
@@ -219,7 +224,7 @@ export default function GuidePage() {
       <section data-tuto="guide-premiers-pas" className="space-y-4">
         <h2 className="font-display text-xl uppercase tracking-wide text-red">Tes premiers pas</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {STEPS.map((s) => {
+          {steps.map((s) => {
             const ok = !!d?.steps[s.key];
             return (
               <Link
@@ -267,7 +272,7 @@ export default function GuidePage() {
 
       {/* ---------------------------------------------------------------- Sommaire */}
       <nav aria-label="Sommaire du guide" className="flex flex-wrap gap-2">
-        {CHAPTERS.map((c, i) => (
+        {chapters.map((c, i) => (
           <a key={c.id} href={`#${c.id}`} className="glass-card flex items-center gap-1.5 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wide text-paper/80 hover:border-blue/60 hover:text-blue">
             <span className="text-paper/65">{String(i + 1).padStart(2, "0")}</span> {c.title}
           </a>
@@ -278,7 +283,7 @@ export default function GuidePage() {
 
       {/* ---------------------------------------------------------------- Chapitres */}
       <div className="grid gap-5 lg:grid-cols-2">
-        {CHAPTERS.map((c, i) => (
+        {chapters.map((c, i) => (
           <section key={c.id} id={c.id} className="glass-card scroll-mt-24 p-6">
             <div className="flex items-start gap-3">
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/5">

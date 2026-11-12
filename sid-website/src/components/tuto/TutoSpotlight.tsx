@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { CHAPTERS, TOUR, resolveText } from "@/lib/tuto/content";
+import { CHAPTERS, TOUR, openChapters, openTour, resolveText } from "@/lib/tuto/content";
 import { SidIcon } from "@/components/icons/SidIcon";
 import { useTuto } from "./TutoProvider";
 import { Rich } from "./Rich";
@@ -62,7 +62,10 @@ export function TutoSpotlight() {
   const { tour, numbers, me } = tuto;
   const step = TOUR[tour!.index];
   const chapter = CHAPTERS.find((c) => c.n === step.chapter)!;
-  const scope = useMemo(() => (tour!.chapterOnly != null ? TOUR.filter((s) => s.chapter === tour!.chapterOnly) : TOUR), [tour]);
+  // Sans les étapes des rubriques masquées (Modération → Rubriques du site).
+  const open = useMemo(() => openTour(), []);
+  const scope = useMemo(() => (tour!.chapterOnly != null ? open.filter((s) => s.chapter === tour!.chapterOnly) : open), [tour, open]);
+  const chapters = useMemo(() => openChapters(), []);
   const pos = scope.findIndex((s) => s.id === step.id);
   const isFirst = pos === 0;
   const isLast = pos === scope.length - 1;
@@ -250,7 +253,7 @@ export function TutoSpotlight() {
           <span className="tuto-clip" aria-hidden />
           <header className="flex items-start justify-between gap-3">
             <span className="tuto-stamp">
-              <SidIcon name={chapter.icon} size={12} /> {chapterOnly ? chapter.title : `Ch. ${chapter.n} · ${chapter.title}`}
+              <SidIcon name={chapter.icon} size={12} /> {chapterOnly ? chapter.title : `Ch. ${chapters.findIndex((c) => c.n === chapter.n) + 1} · ${chapter.title}`}
             </span>
             <span className="font-mono text-[10px] uppercase tracking-wider text-paper-text/55">
               {pos + 1} / {scope.length}
@@ -268,13 +271,13 @@ export function TutoSpotlight() {
 
           {!chapterOnly && (
             <div className="mt-4 flex gap-1" aria-hidden>
-              {CHAPTERS.map((c) => (
+              {chapters.map((c) => (
                 <span key={c.n} className={`tuto-rail ${c.n < step.chapter ? "is-done" : c.n === step.chapter ? "is-now" : ""}`}>
                   {c.n === step.chapter && (
                     <span
                       className="tuto-rail-fill"
                       style={{
-                        width: `${((TOUR.filter((s) => s.chapter === c.n).findIndex((s) => s.id === step.id) + 1) / TOUR.filter((s) => s.chapter === c.n).length) * 100}%`,
+                        width: `${((open.filter((s) => s.chapter === c.n).findIndex((s) => s.id === step.id) + 1) / open.filter((s) => s.chapter === c.n).length) * 100}%`,
                       }}
                     />
                   )}

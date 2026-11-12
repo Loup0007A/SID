@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { MemberRank } from "@/types/database";
-import { DEFAULT_NUMBERS, TOUR, type TutoNumbers } from "@/lib/tuto/content";
+import { DEFAULT_NUMBERS, TOUR, openTourIndex, type TutoNumbers } from "@/lib/tuto/content";
 
 // Rien de lourd tant qu'on n'en a pas besoin.
 const TutoSpotlight = dynamic(() => import("./TutoSpotlight").then((m) => m.TutoSpotlight), { ssr: false });
@@ -110,7 +110,7 @@ export function TutoProvider({ me, enabled, children }: { me: Me; enabled: boole
 
   const startTour = useCallback(
     (fromId?: string, chapterOnly?: boolean) => {
-      const i = fromId ? Math.max(0, TOUR.findIndex((s) => s.id === fromId)) : 0;
+      const i = openTourIndex(fromId ? TOUR.findIndex((s) => s.id === fromId) : 0);
       setForcedTip(null);
       setBriefingOpen(false);
       setTour({ index: i, chapterOnly: chapterOnly ? TOUR[i].chapter : null });

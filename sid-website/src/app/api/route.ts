@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { corsJson, corsPreflight, isRunToken } from "@/lib/simulationServer";
 import { lookupRun, recordSimulationResult } from "@/lib/simulationRecord";
 import { interpretSiteReport, siteForEpreuve } from "@/lib/simulationSites";
+import { getBrand } from "@/lib/brand-server";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
 
   if (!q.has("epreuve") && !q.has("sid_run")) {
     return corsJson({
-      api: "S.I.D.",
+      api: (await getBrand()).name,
       message:
         "Adresse de réception des résultats des simulations (Potions, Techniques, 3D-game-world). Détails : API_SIMULATIONS.md.",
       simulations: "/api/simulations",
@@ -46,7 +47,7 @@ export async function GET(request: NextRequest) {
         ok: false,
         counted: false,
         error: "no_run",
-        message: "Résultat reçu mais non compté : pour gagner un point, lance la simulation depuis le S.I.D.",
+        message: `Résultat reçu mais non compté : pour gagner un point, lance la simulation depuis le ${(await getBrand()).name}.`,
       },
       202
     );

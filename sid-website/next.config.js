@@ -60,6 +60,24 @@ const nextConfig = {
   // Les « polyfills » de Next pour les très vieux navigateurs sont retirés
   // du JavaScript envoyé (voir src/lib/polyfills-modernes.js).
   webpack(config, { isServer, webpack }) {
+    // Lot 77 : tout le site passe par la couche JSX de src/brand (tsconfig
+    // jsxImportSource). Changer cette version force la recompilation de tous
+    // les fichiers, y compris ceux que le cache de build (Vercel compris)
+    // garderait compilés avec l'ancienne couche.
+    if (config.cache && typeof config.cache === 'object') {
+      config.cache.version = `${config.cache.version || ''}|jsx-brand-2`;
+    }
+    // Composants scellés (titres, déjà compilés en JS) : leur JSX passe aussi
+    // par la couche du site, sans toucher à leur code.
+    config.module.rules.push({
+      test: /[\\/]src[\\/]components[\\/]sceaux[\\/][^\\/]+\.js$/,
+      resolve: {
+        alias: {
+          'react/jsx-runtime$': path.resolve(__dirname, 'src/brand/jsx-runtime.ts'),
+          'react/jsx-dev-runtime$': path.resolve(__dirname, 'src/brand/jsx-dev-runtime.ts'),
+        },
+      },
+    });
     if (!isServer) {
       config.plugins.push(
         new webpack.NormalModuleReplacementPlugin(

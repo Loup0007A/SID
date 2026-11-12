@@ -5,6 +5,9 @@ permissions, messagerie privée/groupe, boutique, et gestion des candidatures.
 
 Stack : **Next.js 14 (TypeScript, App Router) + Tailwind CSS + Supabase (Postgres, Auth, Realtime, Storage)**.
 
+Noms du RP, des sites, de la monnaie, adresses et rubriques présentes :
+[SETUP.md](SETUP.md).
+
 ---
 
 ## 0. À propos du point "compte espion caché"

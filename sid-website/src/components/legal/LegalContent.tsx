@@ -6,22 +6,26 @@
 // trois, et changer TERMS_VERSION pour redemander l'acceptation à tous.
 // ─────────────────────────────────────────────────────────────────────
 
+import { BRAND } from "@/lib/brand";
+
 export const TERMS_VERSION = "2026-10-17";
 export const TERMS_DATE = "17 octobre 2026";
 
 export type LegalSite = "quest" | "map" | "wiki";
 
+// Avec leur article : un nom changé dans app_config prend celui de son genre (Lot 77).
 export const SITE_NAMES: Record<LegalSite, string> = {
-  quest: "Dossier Central (sid-quest)",
-  map: "Cartographie (sid-map)",
-  wiki: "Wiki du S.I.D.",
+  quest: "le Dossier Central",
+  map: "la Cartographie",
+  wiki: "le Wiki",
 };
 
-const QUEST_URL = "https://sid-quest.vercel.app";
+// Adresse du site principal : app_config (url_site, Lot 77).
+const questUrl = () => BRAND.urls.site;
 
-/** Adresse de contact facultative (variable d'environnement NEXT_PUBLIC_CONTACT_EMAIL). */
+/** Adresse de contact facultative : app_config.contact_email, sinon NEXT_PUBLIC_CONTACT_EMAIL. */
 function Contact() {
-  const email = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
+  const email = BRAND.contactEmail || process.env.NEXT_PUBLIC_CONTACT_EMAIL;
   return (
     <>
       par la messagerie du Dossier Central, en écrivant à un fondateur
@@ -42,7 +46,7 @@ function Intro({ site, doc }: { site: LegalSite; doc: string }) {
   return (
     <p className="legal-meta">
       {doc} — version du {TERMS_DATE}. S&apos;applique aux trois sites du S.I.D. : le Dossier Central, la Cartographie et
-      le Wiki (même compte, mêmes règles). Tu lis la version publiée sur le {SITE_NAMES[site]}.
+      le Wiki (même compte, mêmes règles). Tu lis la version publiée sur {SITE_NAMES[site]}.
     </p>
   );
 }
@@ -321,7 +325,7 @@ export function Privacy({ site }: { site: LegalSite }) {
       <p>
         Si cette politique change, la date en haut de page est mise à jour et ton accord est redemandé. Les versions
         sont publiées sur les trois sites ; la référence est celle du{" "}
-        <a href={`${QUEST_URL}/confidentialite`}>Dossier Central</a>.
+        <a href={`${questUrl()}/confidentialite`}>Dossier Central</a>.
       </p>
     </div>
   );

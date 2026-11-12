@@ -1,5 +1,6 @@
 import type { IconName } from "@/components/icons/sidIcons";
 import type { PermissionKey } from "@/types/database";
+import { isPathHidden } from "@/lib/navigation";
 
 /**
  * Le tuto du Dossier Central (Lot 53) : tout le texte est ici.
@@ -574,7 +575,21 @@ export const PAGE_TIPS: Record<string, PageTip> = {
 };
 
 export function tipForPath(pathname: string): PageTip | null {
+  if (isPathHidden(pathname)) return null;
   return PAGE_TIPS[pathname] ?? null;
+}
+
+/** La visite et les premiers pas sans les rubriques masquées (Modération → Rubriques du site). */
+export const openTour = () => TOUR.filter((s) => !isPathHidden(s.route));
+export const openSteps = () => STEPS.filter((s) => !isPathHidden(s.href));
+export const openChapters = () => {
+  const tour = openTour();
+  return CHAPTERS.filter((c) => tour.some((s) => s.chapter === c.n));
+};
+/** Première étape ouverte à partir de l'index i (ou la première de la visite). */
+export function openTourIndex(i: number): number {
+  for (let k = Math.max(0, i); k < TOUR.length; k++) if (!isPathHidden(TOUR[k].route)) return k;
+  return Math.max(0, TOUR.findIndex((s) => !isPathHidden(s.route)));
 }
 
 export function resolveText(t: Text, n: TutoNumbers, nickname: string): string {

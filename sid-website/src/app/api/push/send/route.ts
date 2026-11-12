@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import webpush from "web-push";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getBrand } from "@/lib/brand-server";
+import { brandify } from "@/lib/brand";
 
 const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
@@ -46,9 +48,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ sent: 0 });
   }
 
+  const brand = await getBrand();
   const payload = JSON.stringify({
-    title: body.title || "S.I.D.",
-    body: body.body || "",
+    title: brandify(body.title || brand.name),
+    body: brandify(body.body || ""),
     link: body.link || "/dashboard",
     // Même conversation : la notification remplace la précédente au lieu de s'empiler.
     tag: body.tag || undefined,

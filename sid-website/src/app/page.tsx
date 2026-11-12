@@ -2,12 +2,15 @@ import Link from "next/link";
 import { createPublicClient } from "@/lib/supabase/public";
 import { QuestCard } from "@/components/QuestCard";
 import type { Quest } from "@/types/database";
+import { getBrand } from "@/lib/brand-server";
 
 // Page publique, identique pour tout le monde : préparée à l'avance et
 // servie par le CDN, puis remise à jour toutes les 30 s au plus.
 export const revalidate = 30;
 
 export default async function HomePage() {
+  // Composant serveur : rendu en parallèle de la mise en page, il attend lui-même les noms (Lot 77).
+  await getBrand();
   const supabase = createPublicClient();
   const { data: quests } = await supabase
     .from("quests")

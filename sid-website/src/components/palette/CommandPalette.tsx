@@ -12,6 +12,7 @@ import { SidIcon } from "@/components/icons/SidIcon";
 import type { IconName } from "@/components/icons/sidIcons";
 import { useTuto } from "@/components/tuto/TutoProvider";
 import { announceDeepLink } from "@/lib/deeplink";
+import { BRAND, isTabHidden } from "@/lib/brand";
 
 /**
  * Palette de recherche (Lot 59) : Ctrl+K (ou ⌘K, ou « / ») depuis n'importe
@@ -192,8 +193,8 @@ export function CommandPalette({ perms, onLogout }: { perms: Set<PermissionKey>;
       ...visibleEntries((...anyOf) => can(perms, ...anyOf), reveals).map(
         (e): Item => ({ id: `p:${e.key}`, kind: "page", label: e.label, hint: e.description, icon: e.icon, href: e.href }),
       ),
-      { id: "p:carto", kind: "page", label: "Cartographie", hint: "La carte du monde (autre site)", icon: "compass", href: "https://sid-map.vercel.app/carte", external: true, keywords: "carte monde atlas" },
-      { id: "p:wiki", kind: "page", label: "Wiki du S.I.D.", hint: "Lieux, armes, mobs, objets (autre site)", icon: "book", href: "https://sid-wiki.vercel.app", external: true, keywords: "codex fiches" },
+      ...(isTabHidden("map") ? [] : ([{ id: "p:carto", kind: "page", label: "Cartographie", hint: "La carte du monde (autre site)", icon: "compass", href: `${BRAND.urls.map}/carte`, external: true, keywords: "carte monde atlas" }] as Item[])),
+      { id: "p:wiki", kind: "page", label: "Wiki du S.I.D.", hint: "Lieux, armes, mobs, objets (autre site)", icon: "book", href: BRAND.urls.wiki, external: true, keywords: "codex fiches" },
     ];
     const actions: Item[] = [];
     if (tuto?.data) {

@@ -47,6 +47,7 @@ export const ACTION_LABELS: Record<string, string> = {
   wheel_settings: "Roue du jour : réglages",
   inactivity_settings: "Pénalité d'absence : réglages",
   inactivity_exempt: "Pénalité d'absence : dispense",
+  site_tabs: "Rubriques du site",
 };
 
 export const FIELD_LABELS: Record<string, string> = {
@@ -171,6 +172,10 @@ export function describe(row: { action: string; details: Record<string, unknown>
     case "wheel_prize_saved":
     case "wheel_prize_deleted":
       return String(d.label ?? "");
+    case "site_tabs": {
+      const after = Array.isArray(d.apres) ? (d.apres as string[]) : [];
+      return after.length ? `masquées : ${after.join(", ")}` : "toutes présentes";
+    }
     case "inactivity_exempt":
       return d.until ? `jusqu'au ${new Date(String(d.until)).toLocaleDateString("fr-FR")}${d.reason ? ` (${d.reason})` : ""}` : "dispense levée";
     case "business_min_set":

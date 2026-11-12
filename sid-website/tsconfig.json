@@ -12,6 +12,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
+    "jsxImportSource": "@/brand",
     "incremental": true,
     "plugins": [{ "name": "next" }],
     "paths": {

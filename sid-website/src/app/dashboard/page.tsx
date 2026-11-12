@@ -9,6 +9,7 @@ import type { PermissionKey, Profile, Quest, Wallet } from "@/types/database";
 import { QuestCard } from "@/components/QuestCard";
 import { NavIcon } from "@/components/NavIcon";
 import { NAV_GROUPS, visibleEntries } from "@/lib/navigation";
+import { isTabHidden } from "@/lib/brand";
 import { useReveals } from "@/lib/reveals";
 import { ConstructionTape } from "@/components/ConstructionTape";
 import { useSuspendedSections } from "@/lib/maintenance";
@@ -35,7 +36,7 @@ export default function DashboardHome() {
   // « À faire » : ce qui attend le membre (et l'administration) en ce moment.
   const [todo, setTodo] = useState<{ notifs: number; pending: number; alerts: number; deletions: number }>({ notifs: 0, pending: 0, alerts: 0, deletions: 0 });
   const [wheel, reloadWheel] = useWheelAvailable();
-  const wheelReady = !!wheel && wheel.enabled && wheel.active && wheel.available && wheel.prizes.length > 0;
+  const wheelReady = !isTabHidden("roue") && !!wheel && wheel.enabled && wheel.active && wheel.available && wheel.prizes.length > 0;
 
   useEffect(() => {
     let alive = true;
@@ -126,7 +127,7 @@ export default function DashboardHome() {
 
       <SeasonalBoard />
 
-      {profile && !profile.sandbox_expires_at && <DailyWheel status={wheel} onSpun={reloadWheel} />}
+      {profile && !profile.sandbox_expires_at && !isTabHidden("roue") && <DailyWheel status={wheel} onSpun={reloadWheel} />}
 
       <section aria-label="À faire" data-tuto="a-faire" className="flex flex-wrap gap-2">
         {wheelReady && (
@@ -134,7 +135,7 @@ export default function DashboardHome() {
             <SidIcon name="wheel" /> Roue du jour à tourner · série {wheel?.streak}
           </Link>
         )}
-        {myQuests.length > 0 && (
+        {myQuests.length > 0 && !isTabHidden("quests") && (
           <a href="#missions" className="glass-card px-3 py-2 font-mono text-xs hover:border-blue/50">
             <SidIcon name="scroll" /> {myQuests.length} mission{myQuests.length > 1 ? "s" : ""} en cours
           </a>
@@ -166,11 +167,11 @@ export default function DashboardHome() {
         )}
       </section>
 
-      {profile && <PollSpotlight />}
+      {profile && !isTabHidden("polls") && <PollSpotlight />}
 
       {profile && <OnlineNow />}
 
-      {myQuests.length > 0 && (
+      {myQuests.length > 0 && !isTabHidden("quests") && (
         <section id="missions" className="scroll-mt-24 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="font-display text-xl uppercase tracking-wide text-red">Mes missions en cours</h2>

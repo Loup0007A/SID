@@ -12,6 +12,7 @@ import { SidIcon } from "@/components/icons/SidIcon";
 import Link from "next/link";
 import { storeReveals } from "@/lib/reveals";
 import type { Reveals } from "@/lib/navigation";
+import { SiteTabs } from "@/components/admin/SiteTabs";
 
 const DECOR_MODES: { v: DecorMode; label: string; hint: string }[] = [
   { v: "auto", label: "Automatique", hint: "Pendant la période de l'événement (heure de Paris)." },
@@ -254,6 +255,15 @@ export default function ModerationPage() {
       </section>
 
       {/* Maintenance */}
+      <section className="space-y-4">
+        <h2 className="font-display text-lg uppercase text-paper">Rubriques du site</h2>
+        <p className="font-body text-sm text-paper/60">
+          Choisis les rubriques présentes sur le site. Une rubrique décochée disparaît des menus, de l&apos;accueil et de la recherche ; sa page
+          affiche « Rubrique fermée » aux membres.
+        </p>
+        <SiteTabs />
+      </section>
+
       <section className="space-y-4">
         <h2 className="font-display text-lg uppercase text-paper">Suspendre une section du site</h2>
         <p className="font-body text-sm text-paper/60">

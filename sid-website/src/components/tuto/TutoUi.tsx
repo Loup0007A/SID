@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SidIcon } from "@/components/icons/SidIcon";
-import { STEPS, TOUR, resolveText, tipForPath, zenis } from "@/lib/tuto/content";
+import { TOUR, openSteps, resolveText, tipForPath, zenis } from "@/lib/tuto/content";
 import { useTuto } from "./TutoProvider";
 
 // ---------------------------------------------------------------- Bouton « ? »
@@ -76,7 +76,7 @@ export function TutoHelpButton() {
             <span className="flex-1">Guide du S.I.D.</span>
             {data && (
               <span className="font-mono text-[10px] text-paper/65">
-                {data.steps_done}/{STEPS.length}
+                {openSteps().filter((s) => data.steps[s.key]).length}/{openSteps().length}
               </span>
             )}
           </Link>
