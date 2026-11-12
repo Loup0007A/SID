@@ -1,11 +1,11 @@
 # SETUP — configurer le jeu
 
 Ce fichier liste, une par une, les valeurs à régler pour lancer le jeu ou le
-renommer : nom du RP, des trois sites, de la monnaie, adresses, rubriques
-présentes. L'installation elle-même (Supabase, Vercel, compte Fondateur) est
+renommer : nom du RP, des trois sites, de la monnaie, adresses, sites et
+rubriques ouverts, adresses des simulations. L'installation elle-même (Supabase, Vercel, compte Fondateur) est
 dans [README.md](README.md).
 
-Prérequis : migrations passées jusqu'à `0094_configuration_site.sql`
+Prérequis : migrations passées jusqu'à `0095_sites_simulations.sql`
 (Dossier Central), ainsi que celles de la Cartographie et du Wiki.
 
 ---
@@ -233,17 +233,42 @@ moment de l'affichage.
   1.6). « Le Dossier Central est ouvert » devient « Les Archives est ouvert ».
   Un nom qui se lit comme l'original (masculin singulier pour le RP) évite le
   problème ; sinon, corriger les phrases concernées dans le code ;
-- **les images** (section 5) ;
-- **les emails de connexion** envoyés par Supabase (section 6) ;
+- **les images** (section 6) ;
+- **les emails de connexion** envoyés par Supabase (section 7) ;
 - **les simulations** hébergées à part (Donjons, Intelligence, Techniques,
-  arène) : sites séparés, à renommer dans leurs propres dépôts.
+  arène) : sites séparés, à renommer dans leurs propres dépôts. Leur adresse,
+  elle, se règle ici (section 5).
 
 ---
 
-## 4. Rubriques présentes sur le site
+## 4. Sites et rubriques ouverts
 
-Administration → **Modération** → **Rubriques du site**. Décocher une
-rubrique puis **Enregistrer**. Effet immédiat sur le Dossier Central.
+Administration → **Modération** → **Sites et rubriques**. Décocher puis
+**Enregistrer**.
+
+### 4.1 Cartographie et Wiki
+
+Un site fermé :
+- affiche « Site fermé » aux membres, sur toutes ses pages sauf la
+  connexion et les pages légales ;
+- reste ouvert à l'équipe, avec un bandeau : permission « Gérer les
+  comptes », ou les droits d'édition du site (`manage_map` pour la
+  Cartographie, administrateurs du Wiki) ;
+- n'a plus de lien depuis le Dossier Central (recherche Ctrl K, page Carte).
+
+Effet au prochain chargement de page. La fermeture est un affichage : les
+données restent protégées comme avant par la base, pas davantage.
+
+En SQL (`on` ou `off`) :
+
+```sql
+update public.app_config set value = 'off' where key = 'wiki_enabled';
+update public.app_config set value = 'on' where key = 'map_enabled';
+```
+
+### 4.2 Rubriques du Dossier Central
+
+Effet immédiat.
 
 Une rubrique masquée :
 - disparaît des menus, de l'accueil, de la recherche (Ctrl K) et des
@@ -279,7 +304,41 @@ update public.app_config set value = '["titles", "roue"]' where key = 'tabs_hidd
 
 ---
 
-## 5. Images
+## 5. Adresses des simulations
+
+Chaque simulation est un site à part, affiché dans le Dossier Central. Son
+adresse se règle dans `app_config` :
+
+| Clé | Simulation | Adresse du code |
+| --- | --- | --- |
+| `sim_url_donjons` | Donjons | `https://loup0007a.github.io/3D-game-world/` |
+| `sim_url_intelligence` | Intelligence (potions, énigmes, problème) | `https://intelligence-seven-henna.vercel.app/` |
+| `sim_url_techniques` | Techniques | `https://techniques-delta.vercel.app/` |
+| `sim_url_arena` | Arène du « Défi du Dragon » | `arena.html` à côté des Donjons |
+
+- **Vide** : l'adresse du code.
+- **Une adresse** (`https://…`) : la remplace. Une adresse mal écrite est
+  ignorée.
+- **`off`** : simulation débranchée, bouton « Lancer » grisé (sauf l'arène,
+  qui reprend l'adresse du code).
+
+```sql
+update public.app_config set value = 'https://mes-donjons.vercel.app/' where key = 'sim_url_donjons';
+```
+
+- **Arène** : sans `sim_url_arena`, elle suit les Donjons (variable
+  `NEXT_PUBLIC_ARENA_URL` si elle est posée, sinon `arena.html` à la même
+  adresse que les Donjons).
+- **Délai** : 5 minutes au plus, ou tout de suite avec
+  `curl -X POST https://<adresse-du-site>/api/config/revalidate`.
+- **Résultats** : chaque partie donne au site de la simulation l'adresse de
+  l'API du Dossier Central (paramètre `sid_api`, voir API_SIMULATIONS.md). Si
+  le code d'une simulation contient lui-même l'adresse du Dossier Central,
+  la changer aussi dans son dépôt quand `url_site` change.
+
+---
+
+## 6. Images
 
 À remplacer à la main, mêmes noms et mêmes tailles :
 
@@ -291,7 +350,7 @@ update public.app_config set value = '["titles", "roue"]' where key = 'tabs_hidd
 
 ---
 
-## 6. Emails de connexion
+## 7. Emails de connexion
 
 Supabase → **Authentication** → **Email Templates** : confirmation
 d'inscription, mot de passe oublié, changement d'email. Remplacer le nom du
@@ -299,7 +358,7 @@ jeu dans l'objet et le texte de chaque modèle.
 
 ---
 
-## 7. Variables d'environnement (Vercel)
+## 8. Variables d'environnement (Vercel)
 
 Les trois sites utilisent le **même** projet Supabase.
 
@@ -311,7 +370,7 @@ Les trois sites utilisent le **même** projet Supabase.
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | Dossier Central | notifications push |
 | `PUSH_WEBHOOK_SECRET` | Dossier Central | même texte que `app_config.push_webhook_secret` |
 | `NEXT_PUBLIC_CONTACT_EMAIL` | les trois | contact, si `contact_email` est vide |
-| `NEXT_PUBLIC_ARENA_URL` | Dossier Central | adresse de l'arène, si elle n'est pas hébergée avec les Donjons |
+| `NEXT_PUBLIC_ARENA_URL` | Dossier Central | adresse de l'arène, si `sim_url_arena` est vide et qu'elle n'est pas hébergée avec les Donjons |
 | `NEXT_PUBLIC_DOSSIER_CENTRAL_URL` | Wiki | lien « Pas encore de compte ? » ; vide : `url_site` + `/register` |
 
 Notifications push : régler aussi `site_url` et `push_webhook_secret` dans
@@ -320,7 +379,7 @@ se fait depuis Mon dossier → Notifications push.
 
 ---
 
-## 8. Autres réglages
+## 9. Autres réglages
 
 Déjà modifiables depuis le site :
 
@@ -333,6 +392,7 @@ Déjà modifiables depuis le site :
 | Pénalité d'absence | Administration → Économie → Absences |
 | Seuils des alertes | Administration → Alertes |
 | Annonces, maintenance, décors des fêtes, pages en aperçu | Administration → Modération |
+| Cartographie et Wiki ouverts, rubriques présentes | Administration → Modération → Sites et rubriques |
 | Farces | Administration → Titres & farces |
 
 Le reste se règle en SQL. Liste complète :

@@ -183,7 +183,7 @@ export default function GuidePage() {
     await tuto?.refresh();
   }
 
-  // Sans les rubriques masquées (Modération → Rubriques du site).
+  // Sans les rubriques masquées (Modération → Sites et rubriques).
   const steps = openSteps();
   const shownDone = steps.filter((s) => d?.steps[s.key]).length;
   const chapters = CHAPTERS.filter((c) => !c.href || !isPathHidden(c.href));

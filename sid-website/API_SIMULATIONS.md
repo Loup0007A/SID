@@ -153,9 +153,19 @@ update app_config set value = '5'   where key = 'simulation_max_results_per_day'
 
 ## 5. Brancher, débrancher, bandeau
 
-Tout se règle dans `src/lib/simulationSites.ts`, pour chaque simulation :
+L'adresse se change sans toucher au code, dans `app_config` (voir SETUP.md) :
 
-- `url` : adresse du site (`null` = bouton **Lancer** grisé) ;
+```sql
+update public.app_config set value = 'https://nouvelle-adresse.vercel.app/' where key = 'sim_url_donjons';
+```
+
+Clés : `sim_url_donjons`, `sim_url_intelligence`, `sim_url_techniques`,
+`sim_url_arena`. Vide : l'adresse du code. `off` : simulation débranchée
+(bouton **Lancer** grisé).
+
+Le reste se règle dans `src/lib/simulationSites.ts`, pour chaque simulation :
+
+- `url` : adresse par défaut (`null` = bouton **Lancer** grisé) ;
 - `inDevelopment: true` : remet le bandeau de chantier « En développement » ;
 - `epreuves` : valeurs du champ `epreuve` acceptées pour cette simulation.
 

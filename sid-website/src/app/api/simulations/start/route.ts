@@ -20,11 +20,13 @@ export async function POST(request: NextRequest) {
   if (!isSimulationKind(body.kind)) {
     return NextResponse.json({ error: "Simulation inconnue." }, { status: 400 });
   }
+  // Adresse de la simulation : app_config (sim_url_<type>) si elle y est réglée.
+  const brand = await getBrand();
   const site = SIMULATION_SITES[body.kind];
 
   if (!site.url) {
     return NextResponse.json(
-      { error: `Cette simulation est encore en développement : son site n'est pas encore branché au ${(await getBrand()).name}.` },
+      { error: `Cette simulation est encore en développement : son site n'est pas encore branché au ${brand.name}.` },
       { status: 409 }
     );
   }

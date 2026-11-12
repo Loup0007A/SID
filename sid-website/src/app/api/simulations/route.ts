@@ -7,8 +7,10 @@ export const dynamic = "force-dynamic";
 // GET /api/simulations — sommaire de l'API, utile pour vérifier depuis un
 // site de simulation que le S.I.D. répond. Détails : API_SIMULATIONS.md.
 export async function GET() {
+  // Nom du jeu et adresses des simulations (app_config) avant de répondre.
+  const brand = await getBrand();
   return corsJson({
-    api: `${(await getBrand()).name} — simulations`,
+    api: `${brand.name} — simulations`,
     version: 1,
     endpoints: {
       run: "GET /api/simulations/run?token=<jeton> — infos sur la partie en cours",

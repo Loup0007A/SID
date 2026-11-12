@@ -106,7 +106,7 @@ export const NAV_ENTRIES: NavEntry[] = [
 
 /**
  * Rubriques que l'administration ne peut pas retirer du site (Modération →
- * Rubriques du site, Lot 77) : le dossier, les notifications, les réglages,
+ * Sites et rubriques, Lot 77) : le dossier, les notifications, les réglages,
  * les données personnelles et toute l'administration.
  */
 export const LOCKED_TABS = new Set(["profile", "notifications", "settings", "privacy"]);
@@ -124,7 +124,7 @@ export function entryForPath(pathname: string): NavEntry | undefined {
     .find((e) => pathname === e.href || pathname.startsWith(`${e.href}/`));
 }
 
-/** La page appartient à une rubrique masquée (Modération → Rubriques du site). */
+/** La page appartient à une rubrique masquée (Modération → Sites et rubriques). */
 export function isPathHidden(pathname: string): boolean {
   const e = entryForPath(pathname.split(/[?#]/)[0]);
   return !!e && canHideTab(e) && isTabHidden(e.key);

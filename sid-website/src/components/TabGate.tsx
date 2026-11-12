@@ -5,7 +5,7 @@ import { isTabHidden } from "@/lib/brand";
 import { SidIcon } from "@/components/icons/SidIcon";
 
 /**
- * Rubrique retirée du site depuis Modération → Rubriques du site (Lot 77) :
+ * Rubrique retirée du site depuis Modération → Sites et rubriques (Lot 77) :
  * la page n'est plus ouverte aux membres. L'équipe la voit encore, avec un
  * bandeau, pour pouvoir la préparer.
  */
@@ -15,7 +15,7 @@ export function TabGate({ tab, bypass, children }: { tab?: string; bypass: boole
     return (
       <div className="space-y-4">
         <p className="glass-card border-[#f0c27a]/50 px-4 py-2 font-mono text-[11px] text-[#f0c27a]">
-          <SidIcon name="eye" /> Rubrique masquée aux membres (Modération → Rubriques du site). Tu la vois grâce à tes droits d&apos;administration.
+          <SidIcon name="eye" /> Rubrique masquée aux membres (Modération → Sites et rubriques). Tu la vois grâce à tes droits d&apos;administration.
         </p>
         {children}
       </div>

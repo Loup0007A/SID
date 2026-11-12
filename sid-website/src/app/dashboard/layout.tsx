@@ -185,9 +185,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       .rpc("public_config")
       .then(({ data, error }) => {
         if (error || !data) return;
-        const before = JSON.stringify(BRAND.hiddenTabs) + BRAND.name;
+        const snap = () => JSON.stringify([BRAND.hiddenTabs, BRAND.name, BRAND.sites, BRAND.simUrls]);
+        const before = snap();
         setBrand(brandFromConfig(data as Record<string, unknown>));
-        if (JSON.stringify(BRAND.hiddenTabs) + BRAND.name !== before) bumpBrand((n) => n + 1);
+        if (snap() !== before) bumpBrand((n) => n + 1);
       });
   }, []);
 

@@ -8,11 +8,21 @@ import { BRAND, brandFromConfig, setBrand } from "@/lib/brand";
 import { SidIcon } from "@/components/icons/SidIcon";
 
 /**
- * Modération → Rubriques du site (Lot 77, migration 0094) : quelles pages du
+ * Modération → Sites et rubriques (Lot 77, migration 0094) : quelles pages du
  * site principal sont présentes. Une rubrique masquée disparaît des menus, de
  * l'accueil, de la recherche et des épingles ; sa page affiche « Rubrique
  * fermée » aux membres. L'équipe la voit encore, avec un bandeau.
+ *
+ * Lot 78 (migration 0095) : la Cartographie et le Wiki s'ouvrent ou se
+ * ferment d'ici aussi.
  */
+
+type Sites = { map: boolean; wiki: boolean };
+
+const SITES: { key: keyof Sites; label: string; description: string; icon: "map" | "book" }[] = [
+  { key: "map", label: "Cartographie", description: "Le monde, les villes, les routes, les montures", icon: "map" },
+  { key: "wiki", label: "Wiki", description: "Les fiches : lieux, armes, monstres, objets, skills", icon: "book" },
+];
 
 // Ce qui disparaît aussi ailleurs quand la rubrique est masquée.
 const ALSO: Record<string, string> = {
@@ -27,6 +37,8 @@ export function SiteTabs() {
   const supabase = useMemo(() => createClient(), []);
   const [saved, setSaved] = useState<string[] | null>(null);
   const [hidden, setHidden] = useState<Set<string>>(new Set());
+  const [savedSites, setSavedSites] = useState<Sites | null>(null);
+  const [sites, setSites] = useState<Sites>({ map: true, wiki: true });
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [missing, setMissing] = useState(false);
@@ -37,6 +49,8 @@ export function SiteTabs() {
       const b = brandFromConfig(data as Record<string, unknown>);
       setSaved(b.hiddenTabs);
       setHidden(new Set(b.hiddenTabs));
+      setSavedSites(b.sites);
+      setSites(b.sites);
     });
   }, [supabase]);
 
@@ -47,9 +61,11 @@ export function SiteTabs() {
       </p>
     );
   }
-  if (!saved) return <p className="font-body text-sm text-paper/60">Chargement…</p>;
+  if (!saved || !savedSites) return <p className="font-body text-sm text-paper/60">Chargement…</p>;
 
-  const dirty = saved.length !== hidden.size || saved.some((k) => !hidden.has(k));
+  const tabsDirty = saved.length !== hidden.size || saved.some((k) => !hidden.has(k));
+  const sitesDirty = sites.map !== savedSites.map || sites.wiki !== savedSites.wiki;
+  const dirty = tabsDirty || sitesDirty;
   const toggle = (k: string) =>
     setHidden((h) => {
       const n = new Set(h);
@@ -61,19 +77,79 @@ export function SiteTabs() {
   async function save() {
     setBusy(true);
     setMsg(null);
-    const { data, error } = await supabase.rpc("site_tabs_set", { p_hidden: [...hidden] });
+    let list = saved!;
+    if (tabsDirty) {
+      const { data, error } = await supabase.rpc("site_tabs_set", { p_hidden: [...hidden] });
+      if (error) {
+        setBusy(false);
+        return setMsg({ ok: false, text: error.message });
+      }
+      list = (data ?? []) as string[];
+      setSaved(list);
+    }
+    if (sitesDirty) {
+      const { error } = await supabase.rpc("sites_set", { p_map: sites.map, p_wiki: sites.wiki });
+      if (error) {
+        setBusy(false);
+        return setMsg({ ok: false, text: /sites_set/.test(error.message) ? "Lance la migration 0095_sites_simulations.sql." : error.message });
+      }
+      setSavedSites(sites);
+    }
     setBusy(false);
-    if (error) return setMsg({ ok: false, text: error.message });
-    const list = (data ?? []) as string[];
-    setSaved(list);
-    setBrand({ ...BRAND, hiddenTabs: list });
+    setBrand({ ...BRAND, hiddenTabs: list, sites });
     // Le serveur garde la configuration 5 minutes : on la lui fait relire.
     fetch("/api/config/revalidate", { method: "POST" }).catch(() => undefined);
-    setMsg({ ok: true, text: list.length ? `${list.length} rubrique${list.length > 1 ? "s" : ""} masquée${list.length > 1 ? "s" : ""}.` : "Toutes les rubriques sont présentes." });
+    const closed = SITES.filter((x) => !sites[x.key]).map((x) => x.label);
+    setMsg({
+      ok: true,
+      text: [
+        list.length ? `${list.length} rubrique${list.length > 1 ? "s" : ""} masquée${list.length > 1 ? "s" : ""}` : "Toutes les rubriques sont présentes",
+        closed.length ? `fermé : ${closed.join(", ")}` : "",
+      ]
+        .filter(Boolean)
+        .join(" · ") + ".",
+    });
   }
 
   return (
     <div className="space-y-4">
+      <div className="space-y-2">
+        <p className="font-mono text-[11px] uppercase tracking-wide text-paper/55">Sites</p>
+        <ul className="grid gap-2 sm:grid-cols-2">
+          {SITES.map((x) => {
+            const off = !sites[x.key];
+            return (
+              <li key={x.key}>
+                <label
+                  className={clsx(
+                    "glass-card flex cursor-pointer items-start gap-3 p-3 transition",
+                    off ? "border-red/40 opacity-70" : "hover:border-white/25",
+                  )}
+                >
+                  <input
+                    type="checkbox"
+                    checked={!off}
+                    onChange={() => setSites((v) => ({ ...v, [x.key]: !v[x.key] }))}
+                    className="mt-1 h-4 w-4 shrink-0 accent-[#5fdc8a]"
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center gap-1.5 font-display uppercase text-paper">
+                      <SidIcon name={x.icon} size={15} /> {x.label}
+                      <span className={clsx("ml-auto shrink-0 font-mono text-[10px]", off ? "text-red-light" : "text-green-300")}>{off ? "fermé" : "ouvert"}</span>
+                    </span>
+                    <span className="block font-body text-xs text-paper/55">{x.description}</span>
+                    {off && (
+                      <span className="block font-mono text-[10px] text-[#f0c27a]">
+                        Les membres y voient « Site fermé », l&apos;équipe y entre encore. Plus de lien depuis le Dossier Central.
+                      </span>
+                    )}
+                  </span>
+                </label>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
       {NAV_GROUPS.filter((g) => g.key !== "admin").map((g) => {
         const entries = NAV_ENTRIES.filter((e) => e.group === g.key && canHideTab(e));
         if (!entries.length) return null;
@@ -118,7 +194,14 @@ export function SiteTabs() {
           {busy ? "Enregistrement…" : "Enregistrer"}
         </button>
         {dirty && (
-          <button type="button" onClick={() => setHidden(new Set(saved))} className="font-mono text-xs uppercase text-paper/55 hover:text-paper">
+          <button
+            type="button"
+            onClick={() => {
+              setHidden(new Set(saved));
+              setSites(savedSites);
+            }}
+            className="font-mono text-xs uppercase text-paper/55 hover:text-paper"
+          >
             Annuler
           </button>
         )}

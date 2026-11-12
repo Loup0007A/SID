@@ -62,7 +62,7 @@ export function TutoSpotlight() {
   const { tour, numbers, me } = tuto;
   const step = TOUR[tour!.index];
   const chapter = CHAPTERS.find((c) => c.n === step.chapter)!;
-  // Sans les étapes des rubriques masquées (Modération → Rubriques du site).
+  // Sans les étapes des rubriques masquées (Modération → Sites et rubriques).
   const open = useMemo(() => openTour(), []);
   const scope = useMemo(() => (tour!.chapterOnly != null ? open.filter((s) => s.chapter === tour!.chapterOnly) : open), [tour, open]);
   const chapters = useMemo(() => openChapters(), []);

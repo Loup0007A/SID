@@ -48,6 +48,7 @@ export const ACTION_LABELS: Record<string, string> = {
   inactivity_settings: "Pénalité d'absence : réglages",
   inactivity_exempt: "Pénalité d'absence : dispense",
   site_tabs: "Rubriques du site",
+  sites: "Cartographie et Wiki",
 };
 
 export const FIELD_LABELS: Record<string, string> = {
@@ -172,6 +173,11 @@ export function describe(row: { action: string; details: Record<string, unknown>
     case "wheel_prize_saved":
     case "wheel_prize_deleted":
       return String(d.label ?? "");
+    case "sites": {
+      const a = (d.apres ?? {}) as { carte?: string; wiki?: string };
+      const word = (v?: string) => (v === "off" ? "fermé" : "ouvert");
+      return `Cartographie : ${word(a.carte)} · Wiki : ${word(a.wiki)}`;
+    }
     case "site_tabs": {
       const after = Array.isArray(d.apres) ? (d.apres as string[]) : [];
       return after.length ? `masquées : ${after.join(", ")}` : "toutes présentes";

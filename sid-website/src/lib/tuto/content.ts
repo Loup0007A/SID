@@ -579,7 +579,7 @@ export function tipForPath(pathname: string): PageTip | null {
   return PAGE_TIPS[pathname] ?? null;
 }
 
-/** La visite et les premiers pas sans les rubriques masquées (Modération → Rubriques du site). */
+/** La visite et les premiers pas sans les rubriques masquées (Modération → Sites et rubriques). */
 export const openTour = () => TOUR.filter((s) => !isPathHidden(s.route));
 export const openSteps = () => STEPS.filter((s) => !isPathHidden(s.href));
 export const openChapters = () => {

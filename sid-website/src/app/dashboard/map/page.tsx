@@ -208,12 +208,19 @@ export default function MapPage() {
     <div className="space-y-6">
       <h1 className="font-display text-2xl uppercase tracking-wide text-red">Carte du S.I.D.</h1>
       <p className="font-body text-sm text-paper/70">
-        Carte visuelle complète sur{" "}
-        <a href={BRAND.urls.map} target="_blank" rel="noreferrer" className="text-blue underline">
-          {BRAND.urls.map.replace(/^https?:\/\//, "")}
-        </a>{" "}
-        — cette page permet de consulter sa position et de se déplacer, chaque trajet prenant un temps réel à parcourir
-        (aucune téléportation possible).
+        {/* Pas de lien quand la Cartographie est fermée (Modération → Sites et rubriques). */}
+        {BRAND.sites.map ? (
+          <>
+            Carte visuelle complète sur{" "}
+            <a href={BRAND.urls.map} target="_blank" rel="noreferrer" className="text-blue underline">
+              {BRAND.urls.map.replace(/^https?:\/\//, "")}
+            </a>{" "}
+            — cette page permet de consulter sa position et de se déplacer,
+          </>
+        ) : (
+          "Cette page permet de consulter sa position et de se déplacer,"
+        )}{" "}
+        chaque trajet prenant un temps réel à parcourir (aucune téléportation possible).
       </p>
 
       {arrival && (

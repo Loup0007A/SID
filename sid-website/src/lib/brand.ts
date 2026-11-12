@@ -1,5 +1,6 @@
 /**
  * Identité du jeu (Lot 77) : nom du RP, des sites, de la monnaie, adresses.
+ * Lot 78 : Cartographie et Wiki ouverts ou fermés, adresses des simulations.
  *
  * Les valeurs viennent de app_config (RPC public_config, migration 0094) et
  * se règlent une par une (voir SETUP.md). Le code garde les textes d'origine
@@ -21,6 +22,10 @@
 /** Genre d'un nom, pour l'article qui le précède : masculin, féminin, pluriel. */
 export type Gender = "m" | "f" | "pl";
 
+/** Sites des simulations dont l'adresse se règle (sim_url_<clé>). */
+export const SIM_URL_KEYS = ["donjons", "intelligence", "techniques", "arena"] as const;
+export type SimUrlKey = (typeof SIM_URL_KEYS)[number];
+
 export type Brand = {
   /** Sigle ou nom court du RP. */
   name: string;
@@ -40,6 +45,10 @@ export type Brand = {
   urls: { site: string; map: string; wiki: string };
   /** Rubriques masquées du site principal (clés de src/lib/navigation.ts du Dossier Central). */
   hiddenTabs: string[];
+  /** Cartographie et Wiki ouverts aux membres (map_enabled, wiki_enabled). */
+  sites: { map: boolean; wiki: boolean };
+  /** Adresses des simulations : absente = celle du code, null = pas branchée (« off »). */
+  simUrls: Partial<Record<SimUrlKey, string | null>>;
 };
 
 export const DEFAULT_BRAND: Brand = {
@@ -54,6 +63,16 @@ export const DEFAULT_BRAND: Brand = {
   contactEmail: "",
   urls: { site: "https://sid-quest.vercel.app", map: "https://sid-map.vercel.app", wiki: "https://sid-wiki.vercel.app" },
   hiddenTabs: [],
+  sites: { map: true, wiki: true },
+  simUrls: {},
+};
+
+const isHttpUrl = (v: string) => {
+  try {
+    return /^https?:$/.test(new URL(v).protocol);
+  } catch {
+    return false;
+  }
 };
 
 /** app_config (public_config) → Brand, valeur par défaut pour chaque clé absente ou vide. */
@@ -71,6 +90,14 @@ export function brandFromConfig(c: Record<string, unknown> | null | undefined): 
     hidden = [];
   }
   const D = DEFAULT_BRAND;
+  const on = (k: string) => c?.[k] !== "off";
+  const simUrls: Brand["simUrls"] = {};
+  for (const k of SIM_URL_KEYS) {
+    const v = c?.[`sim_url_${k}`];
+    if (typeof v !== "string" || v.trim() === "") continue;
+    if (v.trim() === "off") simUrls[k] = null;
+    else if (isHttpUrl(v.trim())) simUrls[k] = v.trim(); // adresse invalide : celle du code
+  }
   const g = (k: string, d: Gender): Gender => {
     const v = c?.[k];
     return v === "m" || v === "f" || v === "pl" ? v : d;
@@ -87,6 +114,8 @@ export function brandFromConfig(c: Record<string, unknown> | null | undefined): 
     contactEmail: s("contact_email", D.contactEmail),
     urls: { site: s("url_site", D.urls.site), map: s("url_map", D.urls.map), wiki: s("url_wiki", D.urls.wiki) },
     hiddenTabs: hidden,
+    sites: { map: on("map_enabled"), wiki: on("wiki_enabled") },
+    simUrls,
   };
 }
 
@@ -159,6 +188,8 @@ export function setBrand(b: Partial<Brand>) {
       currency: { ...D.currency, ...b.currency },
       urls: { ...D.urls, ...b.urls },
       hiddenTabs: Array.isArray(b.hiddenTabs) ? b.hiddenTabs : [],
+      sites: { ...D.sites, ...b.sites },
+      simUrls: { ...b.simUrls },
     }),
   );
 }

@@ -256,10 +256,10 @@ export default function ModerationPage() {
 
       {/* Maintenance */}
       <section className="space-y-4">
-        <h2 className="font-display text-lg uppercase text-paper">Rubriques du site</h2>
+        <h2 className="font-display text-lg uppercase text-paper">Sites et rubriques</h2>
         <p className="font-body text-sm text-paper/60">
-          Choisis les rubriques présentes sur le site. Une rubrique décochée disparaît des menus, de l&apos;accueil et de la recherche ; sa page
-          affiche « Rubrique fermée » aux membres.
+          Ouvre ou ferme la Cartographie et le Wiki, et choisis les rubriques présentes sur le Dossier Central. Une rubrique décochée disparaît
+          des menus, de l&apos;accueil et de la recherche ; sa page affiche « Rubrique fermée » aux membres.
         </p>
         <SiteTabs />
       </section>

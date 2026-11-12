@@ -6,12 +6,10 @@ import { DragonSvg } from "@/components/titles/TitleVisuals";
 import type { ActiveTroll } from "@/lib/titles";
 import { connectArena, type ArenaBattle, type ArenaRole } from "@/lib/arenaRelay";
 import { DRAGON_FINALES, readOptions } from "@/lib/trollOptions";
-import { SIMULATION_SITES } from "@/lib/simulationSites";
+import { arenaUrl } from "@/lib/simulationSites";
 import { announceActivity } from "@/lib/presence";
 import { SidIcon, Glyph } from "@/components/icons/SidIcon";
 
-/** Page de l'arène dans le jeu 3D (surchargeable pour les essais). */
-const ARENA_URL = process.env.NEXT_PUBLIC_ARENA_URL || `${SIMULATION_SITES.donjons.url ?? "https://loup0007a.github.io/3D-game-world/"}arena.html`;
 const PLAYER_WAIT = 15; // secondes avant l'entrée automatique d'un joueur convoqué
 const TRIBUNE_WAIT = 15; // secondes avant l'ouverture de la tribune
 
@@ -103,7 +101,7 @@ export function DragonArena({
   // Le jeu en plein écran, et le relais temps réel.
   useEffect(() => {
     if (stage !== "arena") return;
-    const origin = new URL(ARENA_URL).origin;
+    const origin = new URL(arenaUrl()).origin;
     const toGame = (msg: Record<string, unknown>) => {
       if (msg.action === "event" && msg.event === "phase") {
         const p = (msg.payload as { p?: string } | undefined)?.p;
@@ -174,7 +172,7 @@ export function DragonArena({
 
   if (stage === "arena") {
     const coarse = typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)").matches;
-    const src = `${ARENA_URL}?arena=${encodeURIComponent(battle.id)}&role=${role}${coarse ? "&q=low" : ""}`;
+    const src = `${arenaUrl()}?arena=${encodeURIComponent(battle.id)}&role=${role}${coarse ? "&q=low" : ""}`;
     return (
       <div data-troll-ui className="fixed inset-0 z-[9600] bg-black">
         <iframe

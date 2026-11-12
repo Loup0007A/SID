@@ -187,14 +187,17 @@ export function CommandPalette({ perms, onLogout }: { perms: Set<PermissionKey>;
     requestAnimationFrame(() => returnFocus.current?.focus?.());
   }, []);
 
+  // Rubriques masquées et sites fermés : relus quand la configuration change.
+  const brandKey = `${BRAND.hiddenTabs.join()}|${BRAND.sites.map}|${BRAND.sites.wiki}`;
   const staticItems = useMemo<Item[]>(() => {
     const pages: Item[] = [
       { id: "p:home", kind: "page", label: "Accueil", hint: "Tableau de bord", icon: "home", href: "/dashboard" },
       ...visibleEntries((...anyOf) => can(perms, ...anyOf), reveals).map(
         (e): Item => ({ id: `p:${e.key}`, kind: "page", label: e.label, hint: e.description, icon: e.icon, href: e.href }),
       ),
-      ...(isTabHidden("map") ? [] : ([{ id: "p:carto", kind: "page", label: "Cartographie", hint: "La carte du monde (autre site)", icon: "compass", href: `${BRAND.urls.map}/carte`, external: true, keywords: "carte monde atlas" }] as Item[])),
-      { id: "p:wiki", kind: "page", label: "Wiki du S.I.D.", hint: "Lieux, armes, mobs, objets (autre site)", icon: "book", href: BRAND.urls.wiki, external: true, keywords: "codex fiches" },
+      // Cartographie et Wiki : pas de lien vers un site fermé (Modération → Sites et rubriques).
+      ...(isTabHidden("map") || !BRAND.sites.map ? [] : ([{ id: "p:carto", kind: "page", label: "Cartographie", hint: "La carte du monde (autre site)", icon: "compass", href: `${BRAND.urls.map}/carte`, external: true, keywords: "carte monde atlas" }] as Item[])),
+      ...(!BRAND.sites.wiki ? [] : ([{ id: "p:wiki", kind: "page", label: "Wiki du S.I.D.", hint: "Lieux, armes, mobs, objets (autre site)", icon: "book", href: BRAND.urls.wiki, external: true, keywords: "codex fiches" }] as Item[])),
     ];
     const actions: Item[] = [];
     if (tuto?.data) {
@@ -205,7 +208,8 @@ export function CommandPalette({ perms, onLogout }: { perms: Set<PermissionKey>;
     }
     actions.push({ id: "a:logout", kind: "action", label: "Se déconnecter", icon: "power", keywords: "deconnexion quitter", run: onLogout });
     return [...pages, ...actions];
-  }, [perms, tuto, onLogout, reveals]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [perms, tuto, onLogout, reveals, brandKey]);
 
   const all = useMemo(() => [...staticItems, ...(data ?? [])], [staticItems, data]);
 

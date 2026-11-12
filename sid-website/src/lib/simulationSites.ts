@@ -1,10 +1,13 @@
 import type { IconName } from "@/components/icons/sidIcons";
+import { BRAND, type SimUrlKey } from "@/lib/brand";
 /**
  * Les trois simulations externes qui font progresser les facteurs de
  * puissance. C'est ICI qu'on branche un site quand il est prêt :
  *
  *   url            adresse du site à afficher dans l'iframe
  *                  (null = pas encore branché : le bouton « Lancer » reste grisé)
+ *                  Celle du code sert par défaut : app_config.sim_url_<type>
+ *                  la remplace (Lot 78, voir SETUP.md), « off » la débranche.
  *   inDevelopment  true = bandeau « En développement » sur la tuile et la page
  *
  * Les deux sont indépendants : on peut renseigner l'url pour tester le
@@ -64,9 +67,16 @@ export interface SimulationSite {
   icon: IconName;
   /** Dépôt GitHub du site. */
   repo: string;
-  url: string | null;
+  /** Adresse en vigueur : app_config si elle y est réglée, sinon celle du code. */
+  readonly url: string | null;
   inDevelopment: boolean;
   epreuves: string[];
+}
+
+/** Adresse réglée dans app_config (sim_url_<clé>), sinon celle du code. */
+function configuredUrl(key: SimUrlKey, fallback: string | null): string | null {
+  const v = BRAND.simUrls[key];
+  return v === undefined ? fallback : v;
 }
 
 export const SIMULATION_SITES: Record<SimulationKind, SimulationSite> = {
@@ -78,7 +88,9 @@ export const SIMULATION_SITES: Record<SimulationKind, SimulationSite> = {
     emoji: "🏰",
     icon: "castle",
     repo: "Loup0007A/3D-game-world",
-    url: "https://loup0007a.github.io/3D-game-world/",
+    get url() {
+      return configuredUrl("donjons", "https://loup0007a.github.io/3D-game-world/");
+    },
     inDevelopment: false,
     epreuves: ["mondes-vivants"],
   },
@@ -90,7 +102,9 @@ export const SIMULATION_SITES: Record<SimulationKind, SimulationSite> = {
     emoji: "🧪",
     icon: "brain",
     repo: "Loup0007A/Potions",
-    url: "https://intelligence-seven-henna.vercel.app/",
+    get url() {
+      return configuredUrl("intelligence", "https://intelligence-seven-henna.vercel.app/");
+    },
     inDevelopment: false,
     epreuves: ["potions", "enigmes", "probleme"],
   },
@@ -102,13 +116,35 @@ export const SIMULATION_SITES: Record<SimulationKind, SimulationSite> = {
     emoji: "🥋",
     icon: "gi",
     repo: "Loup0007A/Techniques",
-    url: "https://techniques-delta.vercel.app/",
+    get url() {
+      return configuredUrl("techniques", "https://techniques-delta.vercel.app/");
+    },
     inDevelopment: false,
     epreuves: ["techniques"],
   },
 };
 
 export const SIMULATION_KINDS = Object.keys(SIMULATION_SITES) as SimulationKind[];
+
+/**
+ * Arène des dragons (farce « Duel de dragons ») : app_config.sim_url_arena,
+ * sinon NEXT_PUBLIC_ARENA_URL, sinon arena.html à côté des Donjons.
+ */
+export function arenaUrl(): string {
+  const set = BRAND.simUrls.arena;
+  if (set) return set;
+  if (process.env.NEXT_PUBLIC_ARENA_URL) return process.env.NEXT_PUBLIC_ARENA_URL;
+  const fallback = "https://loup0007a.github.io/3D-game-world/arena.html";
+  const base = SIMULATION_SITES.donjons.url;
+  if (!base) return fallback;
+  try {
+    // « …/3D-game-world » et « …/3D-game-world/ » mènent au même dossier.
+    const dir = base.endsWith("/") || /\.[a-z0-9]+$/i.test(new URL(base).pathname) ? base : `${base}/`;
+    return new URL("arena.html", dir).toString();
+  } catch {
+    return fallback;
+  }
+}
 
 export function isSimulationKind(value: unknown): value is SimulationKind {
   return typeof value === "string" && (SIMULATION_KINDS as string[]).includes(value);
