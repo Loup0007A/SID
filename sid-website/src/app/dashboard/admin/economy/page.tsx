@@ -156,6 +156,8 @@ function Panel({ id, tab, children }: { id: Tab; tab: Tab; children: React.React
   );
 }
 
+const pctShare = (x: number) => `${Math.round(x * 100)} %`;
+
 function TaxPool() {
   const supabase = useMemo(() => createClient(), []);
   const [t, setT] = useState<TaxPoolStatus | null>(null);
@@ -185,10 +187,22 @@ function TaxPool() {
         </div>
       </div>
       <p className="font-body text-xs text-paper/60">
-        Y entrent : TVA, impôts payés ou saisis, amendes, frais de dossier et frais de bourse. Répartie chaque semaine : 80 % aux admins, 20 % aux entreprises, à
-        parts égales (<code className="font-mono">tax_admin_share</code>, <code className="font-mono">tax_business_share</code>). Les taux suivent la banque centrale
-        tant que l&apos;adaptation automatique est active.
+        Y entrent : TVA, impôts payés ou saisis, amendes, frais de dossier et frais de bourse. Répartie chaque semaine, à parts égales :{" "}
+        {pctShare(t.admin_share ?? 0.8)} aux fondateurs (grade Fondateur), {pctShare(t.business_share ?? 0.2)} aux entreprises ouvertes (
+        <code className="font-mono">tax_admin_share</code>, <code className="font-mono">tax_business_share</code>). Ce qui n&apos;est pas versé reste dans la
+        caisse. Les taux suivent la banque centrale tant que l&apos;adaptation automatique est active.
       </p>
+      {t.founders && (
+        <p className="wrap-any font-body text-xs text-paper/70">
+          {t.founders.length ? (
+            <>
+              Part des fondateurs ({t.founders.length}) : {t.founders.join(", ")}. Ils touchent aussi la part admin des frais de courtage.
+            </>
+          ) : (
+            <span className="text-[#f0c27a]">Aucun fondateur actif : la part des fondateurs reste dans la caisse.</span>
+          )}
+        </p>
+      )}
     </section>
   );
 }

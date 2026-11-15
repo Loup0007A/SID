@@ -589,7 +589,7 @@ function HowItWorks({ fees }: { fees?: MarketDetail["fees"] }) {
           (cours, fondamentaux, actualités) et passe des ordres. Plus l&apos;entreprise est petite, plus l&apos;écart entre achat et vente est large.
         </p>
         <p>
-          Frais : {pct(f.rate, 1)} de chaque côté (caisse commune) et {z(f.admin_per_share)} par action achetée (administration). Une action achetée se revend
+          Frais : {pct(f.rate, 1)} de chaque côté (caisse commune) et {z(f.admin_per_share)} par action achetée (versés aux fondateurs). Une action achetée se revend
           après {f.min_hold} min.
         </p>
         <p>

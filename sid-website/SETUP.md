@@ -401,7 +401,16 @@ Le reste se règle en SQL. Liste complète :
 select key, value from public.app_config order by key;
 ```
 
-Exemple, le fuseau horaire des statistiques et du passage au jour suivant :
+Exemple, la répartition hebdomadaire de la caisse commune : part des
+fondateurs (comptes au grade Fondateur) et part des entreprises ouvertes.
+Ce qui n'est pas versé reste dans la caisse.
+
+```sql
+update public.app_config set value = '0.8' where key = 'tax_admin_share';
+update public.app_config set value = '0.2' where key = 'tax_business_share';
+```
+
+Autre exemple, le fuseau horaire des statistiques et du passage au jour suivant :
 
 ```sql
 update public.app_config set value = 'Europe/Paris' where key = 'stats_timezone';

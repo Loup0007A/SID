@@ -52,6 +52,11 @@ export interface TaxPoolStatus {
   next_distribution_at: string;
   vat_rate: number;
   weekly_wealth_tax_rate: number;
+  /** Lot 79 (0096) : répartition et fondateurs qui touchent la part admin. Absents avant la migration. */
+  admin_share?: number;
+  business_share?: number;
+  founders?: string[];
+  open_businesses?: number;
 }
 
 export interface MarketSettings {
