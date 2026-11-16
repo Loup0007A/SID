@@ -9,6 +9,7 @@ import { inputClass, labelClass } from "@/lib/ui";
 import { formatCountdown, formatMinutes, tripState } from "@/lib/travel";
 import { SidIcon } from "@/components/icons/SidIcon";
 import { BRAND } from "@/lib/brand";
+import { GlitchText } from "@/components/glitch/GlitchName";
 
 export default function MapPage() {
   const supabase = createClient();
@@ -304,8 +305,8 @@ export default function MapPage() {
               {myPosition.note && <p className="font-body text-sm text-paper/80">{myPosition.note}</p>}
               {myPosition.glitched && (
                 <p className="font-mono text-xs text-[#7dffb0]">
-                  Pour les autres : <span className="glitch-word" data-text="Lieu inconnu">Lieu inconnu</span> (brouillé depuis L&apos;Envers,
-                  à rétablir dans « Ma position » sur la Cartographie).
+                  Pour les autres : <GlitchText tone="matrix" />. Tu n&apos;es plus sur leur carte, et ton pseudo comme ton avatar buguent sur
+                  les trois sites (à rétablir dans « Ma position » sur la Cartographie).
                 </p>
               )}
             </div>
@@ -390,7 +391,15 @@ export default function MapPage() {
                   <span className="font-display uppercase">{r.nickname}</span>
                 </div>
                 <span className="font-mono text-xs text-paper/60">
-                  {r.travel_started_at || r.route_id ? "En déplacement…" : r.place_id ? placeName(r.place_id) : r.note || "Position inconnue"}
+                  {r.glitched && !r.place_id && !r.travel_started_at ? (
+                    <GlitchText tone="matrix" />
+                  ) : r.travel_started_at || r.route_id ? (
+                    "En déplacement…"
+                  ) : r.place_id ? (
+                    placeName(r.place_id)
+                  ) : (
+                    r.note || "Position inconnue"
+                  )}
                 </span>
               </li>
             ))}

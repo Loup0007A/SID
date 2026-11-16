@@ -2808,23 +2808,6 @@ html.troll-fanfare .glass-card:nth-child(2n) { animation-delay: calc(var(--beat,
   }
 }
 
-/* Lieu inconnu (Lot 80, L'Envers de la Cartographie) : mot qui « bugue ». */
-.glitch-word { position: relative; display: inline-block; color: #7dffb0; text-shadow: 0 0 6px rgb(60 255 140 / 0.5); }
-.glitch-word::before,
-.glitch-word::after { content: attr(data-text); position: absolute; inset: 0; opacity: 0; pointer-events: none; }
-.glitch-word::before { color: #ff3b6b; clip-path: inset(0 0 52% 0); animation: glitch-word 2.3s steps(1) infinite; }
-.glitch-word::after { color: #3be0ff; clip-path: inset(48% 0 0 0); animation: glitch-word 1.7s steps(1) infinite reverse; }
-@keyframes glitch-word {
-  0%, 84%, 100% { opacity: 0; transform: translate(0, 0); }
-  86% { opacity: 0.9; transform: translate(-2px, 1px); }
-  90% { opacity: 0.9; transform: translate(2px, -1px); }
-  94% { opacity: 0.6; transform: translate(-1px, 0); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .glitch-word::before,
-  .glitch-word::after { animation: none; }
-}
-
 /* Salon Admin de la messagerie (Lot 80). */
 .chat-chan-group.is-admin { background: linear-gradient(150deg, #8c3b2e, #4a1f1a); color: #f3d9a4; }
 .admin-pins { margin: 10px 12px 0; border: 1px solid rgb(240 194 122 / .35); border-radius: 12px; background: rgb(40 28 16 / .55); }

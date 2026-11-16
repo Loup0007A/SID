@@ -13,6 +13,7 @@ import { useEquippedTitles } from "@/lib/useEquippedTitles";
 import { TitleAuraLayer, TitleBadge } from "@/components/titles/TitleVisuals";
 import { BirthdayGift } from "@/components/lazy/Seals";
 import { SidIcon } from "@/components/icons/SidIcon";
+import { GlitchWhere } from "@/components/glitch/GlitchName";
 
 type VisibleProfile = Partial<Profile> & { id: string; nickname: string };
 type MemberRole = { user_id: string; role_name: string; role_color: string; role_rank: number };
@@ -80,6 +81,7 @@ export default function MemberProfilePage() {
             {profile.nickname}
             <BirthdayGift targetId={profile.id} nickname={profile.nickname} />
           </h1>
+          <GlitchWhere name={profile.nickname} className="font-mono text-xs" />
           {title && (
             <div className="my-1">
               <TitleBadge titleId={title.title_id} level={title.level} dragon={title.dragon} size="md" />

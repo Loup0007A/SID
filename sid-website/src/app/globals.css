@@ -324,3 +324,36 @@ input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus-visib
   background: radial-gradient(circle at 35% 30%, #f0a08f, #a8352a 60%, #6d1f17); box-shadow: 0 3px 4px rgb(0 0 0 / .45);
 }
 
+
+/* Lieu inconnu (Lot 81) : pseudo et avatar d'un membre brouillé depuis
+   L'Envers de la Cartographie (GlitchText, src/brand/glitch.ts).
+   Bloc identique dans les trois sites. */
+.gl { position: relative; display: inline-block; white-space: pre; text-indent: 0; text-shadow: .07em 0 rgb(255 59 107 / .45), -.07em 0 rgb(47 216 255 / .45); }
+.gl::before, .gl::after { content: attr(data-text); position: absolute; left: 0; top: 0; white-space: pre; pointer-events: none; opacity: 0; text-shadow: none; }
+.gl::before { color: #ff3b6b; clip-path: inset(0 0 55% 0); animation: gl-slice 2.3s steps(1) infinite; }
+.gl::after { color: #2fd8ff; clip-path: inset(45% 0 0 0); animation: gl-slice 1.7s steps(1) infinite reverse; }
+.gl[data-burst]::before { animation: none; opacity: .85; transform: translate(-2px, 1px); }
+.gl[data-burst]::after { animation: none; opacity: .85; transform: translate(2px, -1px); }
+.gl[data-burst] > .gl-real { visibility: hidden; }
+.gl-fx { position: absolute; left: 0; top: 0; white-space: pre; }
+.gl-matrix { color: var(--gl-matrix, #7dffb0); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing: .02em; text-shadow: 0 0 6px rgb(60 255 140 / .45); }
+.gl-where { display: inline-flex; align-items: baseline; gap: .35em; }
+.gl-where-label { opacity: .7; }
+@keyframes gl-slice {
+  0%, 84%, 100% { opacity: 0; transform: translate(0, 0); }
+  86% { opacity: .9; transform: translate(-2px, 1px); }
+  90% { opacity: .9; transform: translate(2px, -1px); }
+  94% { opacity: .6; transform: translate(-1px, 0); }
+}
+img.gl-avatar { filter: drop-shadow(2px 0 0 rgb(255 59 107 / .75)) drop-shadow(-2px 0 0 rgb(47 216 255 / .75)); animation: gl-avatar 2.8s steps(1) infinite; }
+@keyframes gl-avatar {
+  0%, 76%, 100% { clip-path: inset(0); transform: none; }
+  78% { clip-path: inset(12% 0 58% 0); transform: translateX(3px); }
+  81% { clip-path: inset(48% 0 18% 0); transform: translateX(-4px) skewX(10deg); }
+  84% { clip-path: inset(0); transform: translateX(2px); filter: hue-rotate(110deg) saturate(2.4) drop-shadow(3px 0 0 rgb(255 59 107 / .8)); }
+  87% { clip-path: inset(70% 0 0 0); transform: translateX(-2px); }
+  90% { clip-path: inset(0); transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gl::before, .gl::after, img.gl-avatar { animation: none; }
+}

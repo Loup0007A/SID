@@ -6,7 +6,7 @@ rubriques ouverts, adresses des simulations. L'installation elle-même (Supabase
 dans [README.md](README.md).
 
 Prérequis : migrations passées jusqu'à `0098_election.sql` (Dossier
-Central), ainsi que celles de la Cartographie (jusqu'à `0116_lieu_inconnu.sql`)
+Central), ainsi que celles de la Cartographie (jusqu'à `0117_lieu_inconnu_partout.sql`)
 et du Wiki.
 
 ---

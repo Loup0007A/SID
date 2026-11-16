@@ -56,6 +56,8 @@ export interface ActivePosition {
   note: string | null;
   is_visible: boolean;
   updated_at: string;
+  /** Brouillé depuis L'Envers : ni lieu ni trajet (Lot 80). */
+  glitched?: boolean;
 }
 
 // Renvoyé par list_map_quests() — quêtes localisées sur la carte

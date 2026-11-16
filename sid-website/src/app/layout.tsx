@@ -6,7 +6,8 @@ import { SeasonalDecor } from "@/components/seasonal/Seasonal";
 import { LazyCursorTrail } from "@/components/lazy/LazyCursorTrail";
 import { LabelLinker } from "@/components/a11y/LabelLinker";
 import { getSupabaseEnv } from "@/lib/supabase/env";
-import { getBrand } from "@/lib/brand-server";
+import { getBrand, getGlitched } from "@/lib/brand-server";
+import { GlitchSync } from "@/components/glitch/GlitchSync";
 import { brandify } from "@/lib/brand";
 import { BrandProvider } from "@/components/BrandProvider";
 
@@ -41,7 +42,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const brand = await getBrand();
+  const [brand, glitched] = await Promise.all([getBrand(), getGlitched()]);
   return (
     <html lang="fr">
       <head>
@@ -62,11 +63,12 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-title" content={brand.name} />
       </head>
       <body className="font-body">
-        <BrandProvider brand={brand}>
+        <BrandProvider brand={brand} glitched={glitched}>
           {children}
           <SeasonalDecor />
           <LazyCursorTrail />
           <LabelLinker />
+          <GlitchSync />
         </BrandProvider>
       </body>
     </html>

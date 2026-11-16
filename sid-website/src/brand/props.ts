@@ -1,9 +1,11 @@
 import { BRAND, brandify } from "@/lib/brand";
+import { glitchProps } from "./glitch";
 
 /**
  * Couche JSX (Lot 77) : passe le texte rendu par React dans brandify().
  * Tout le site est compilé avec jsxImportSource "@/brand" (tsconfig.json).
  * Avec la configuration d'origine, rien n'est copié ni modifié.
+ * Puis les pseudos brouillés (Lot 81, lieu inconnu) : voir ./glitch.ts.
  */
 
 // Attributs de texte des éléments HTML/SVG ; jamais value, href, src, className…
@@ -37,7 +39,11 @@ function child(c: unknown): unknown {
 }
 
 export function brandProps(type: unknown, props: Record<string, unknown> | null | undefined) {
-  if (BRAND.isDefault || !props) return props;
+  if (!props) return props;
+  return glitchProps(type, BRAND.isDefault ? props : brand(type, props));
+}
+
+function brand(type: unknown, props: Record<string, unknown>) {
   const host = typeof type === "string";
   if (host && RAW.has(type)) return props;
   let out: Record<string, unknown> | null = null;
