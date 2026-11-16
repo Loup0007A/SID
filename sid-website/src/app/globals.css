@@ -345,15 +345,19 @@ input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus-visib
   90% { opacity: .9; transform: translate(2px, -1px); }
   94% { opacity: .6; transform: translate(-1px, 0); }
 }
-img.gl-avatar { filter: drop-shadow(2px 0 0 rgb(255 59 107 / .75)) drop-shadow(-2px 0 0 rgb(47 216 255 / .75)); animation: gl-avatar 2.8s steps(1) infinite; }
+/* Avatar : reflets rouge et cyan qui suivent sa forme ; par moments une
+   déchirure fine et un décalage. Jamais de découpe au repos (le contour
+   resterait coupé), et translate plutôt que transform pour ne pas écraser
+   le placement de l'image. */
+.gl-avatar { --gl-av: drop-shadow(1.5px 0 0 rgb(255 59 107 / .65)) drop-shadow(-1.5px 0 0 rgb(47 216 255 / .65)); filter: var(--gl-av); animation: gl-avatar 3.4s steps(1) infinite; }
 @keyframes gl-avatar {
-  0%, 76%, 100% { clip-path: inset(0); transform: none; }
-  78% { clip-path: inset(12% 0 58% 0); transform: translateX(3px); }
-  81% { clip-path: inset(48% 0 18% 0); transform: translateX(-4px) skewX(10deg); }
-  84% { clip-path: inset(0); transform: translateX(2px); filter: hue-rotate(110deg) saturate(2.4) drop-shadow(3px 0 0 rgb(255 59 107 / .8)); }
-  87% { clip-path: inset(70% 0 0 0); transform: translateX(-2px); }
-  90% { clip-path: inset(0); transform: none; }
+  0%, 72%, 86%, 100% { clip-path: none; translate: 0 0; filter: var(--gl-av); }
+  74% { clip-path: polygon(-20% -20%, 120% -20%, 120% 26%, 10% 26%, 10% 33%, 120% 33%, 120% 120%, -20% 120%); translate: 2px 0; filter: var(--gl-av); }
+  77% { clip-path: polygon(-20% -20%, 120% -20%, 120% 120%, -20% 120%, -20% 66%, 88% 66%, 88% 60%, -20% 60%); translate: -3px 0;
+        filter: drop-shadow(3px 0 0 rgb(255 59 107 / .8)) drop-shadow(-3px 0 0 rgb(47 216 255 / .8)); }
+  80% { clip-path: none; translate: 1px 0; filter: drop-shadow(2px 0 0 rgb(255 59 107 / .8)) drop-shadow(-2px 0 0 rgb(47 216 255 / .8)) contrast(1.25) saturate(1.6); }
+  83% { clip-path: polygon(-20% -20%, 120% -20%, 120% 44%, 0% 44%, 0% 48%, 120% 48%, 120% 120%, -20% 120%); translate: -1px 0; filter: var(--gl-av); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .gl::before, .gl::after, img.gl-avatar { animation: none; }
+  .gl::before, .gl::after, .gl-avatar { animation: none; }
 }

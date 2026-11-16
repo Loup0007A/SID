@@ -47,7 +47,7 @@ export default function RegisterPage() {
         data: {
           first_name: form.firstName,
           last_name: form.lastName,
-          nickname: form.nickname,
+          nickname: form.nickname.trim(),
           weapons: form.weapons,
           desired_role: form.desiredRole,
           equipment: form.equipment,

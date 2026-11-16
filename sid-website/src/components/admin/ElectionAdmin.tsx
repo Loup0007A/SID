@@ -19,11 +19,19 @@ function toLocal(iso: string | null) {
 }
 const fromLocal = (v: string) => (v ? new Date(v).toISOString() : null);
 
+/** Pseudo comparable : Unicode normalisé, sans invisibles ni espaces autour, en minuscules. */
+const nickKey = (s: string) =>
+  s
+    .normalize("NFC")
+    .replace(/[\u200B-\u200D\u2060\uFEFF]/g, "")
+    .trim()
+    .toLowerCase();
+
 export function ElectionAdmin({ onSaved }: { onSaved?: () => void }) {
   const supabase = useMemo(() => createClient(), []);
   const [cfg, setCfg] = useState<Admin | null>(null);
   const [missing, setMissing] = useState(false);
-  const [names, setNames] = useState<string[]>([]);
+  const [members, setMembers] = useState<{ id: string; nickname: string }[]>([]);
   const [winner, setWinner] = useState("");
   const [starts, setStarts] = useState("");
   const [reveal, setReveal] = useState("");
@@ -46,10 +54,10 @@ export function ElectionAdmin({ onSaved }: { onSaved?: () => void }) {
     });
     supabase
       .from("profiles")
-      .select("nickname")
+      .select("id, nickname")
       .eq("status", "active")
       .order("nickname")
-      .then(({ data }) => setNames((data ?? []).map((p) => p.nickname as string)));
+      .then(({ data }) => setMembers((data ?? []) as { id: string; nickname: string }[]));
   }, [supabase]);
 
   // Proposition : du jour même à 2 jours après une proclamation demain à 21 h.
@@ -69,8 +77,12 @@ export function ElectionAdmin({ onSaved }: { onSaved?: () => void }) {
   async function save() {
     setBusy(true);
     setMsg(null);
+    // L'élu choisi dans la liste part avec son identifiant : pas d'erreur
+    // possible sur la casse, un espace en trop ou les accents.
+    const typed = nickKey(winner);
+    const picked = typed ? members.find((m) => nickKey(m.nickname) === typed) : undefined;
     const { data, error } = await supabase.rpc("election_set", {
-      p_winner: winner.trim(),
+      p_winner: picked?.id ?? winner.trim(),
       p_starts: fromLocal(starts),
       p_reveal: fromLocal(reveal),
       p_ends: fromLocal(ends),
@@ -94,8 +106,8 @@ export function ElectionAdmin({ onSaved }: { onSaved?: () => void }) {
           <span className="font-mono text-[11px] uppercase text-paper/60">Élu (secret jusqu&apos;à la proclamation)</span>
           <input list="election-names" value={winner} onChange={(e) => setWinner(e.target.value)} placeholder="Pseudo, ou vide pour choisir plus tard" className={input} />
           <datalist id="election-names">
-            {names.map((n) => (
-              <option key={n} value={n} />
+            {members.map((m) => (
+              <option key={m.id} value={m.nickname.trim()} />
             ))}
           </datalist>
         </label>
