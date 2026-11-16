@@ -70,6 +70,7 @@ export interface OrgNode {
   holder_id: string | null;
   group_id: string | null;
   sort_order: number;
+  description?: string | null;
 }
 
 export type QuestDifficulty = "E" | "D" | "C" | "B" | "A" | "S";

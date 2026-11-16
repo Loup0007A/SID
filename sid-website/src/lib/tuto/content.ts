@@ -420,7 +420,11 @@ export const PAGE_TIPS: Record<string, PageTip> = {
     key: "org-chart",
     title: "Organigramme",
     icon: "orgchart",
-    points: ["La hiérarchie du S.I.D. : qui dirige quoi.", "Touche un agent pour ouvrir son dossier."],
+    points: [
+      "La hiérarchie du S.I.D. : chaque poste, son titulaire, sa mission et son équipe.",
+      "Touche un pseudo pour ouvrir son dossier ; « sous-postes » replie ou déplie une branche.",
+      "Arbre ou Liste, au choix sur ordinateur ; « Ton poste » t'amène au tien.",
+    ],
   },
   "/dashboard/members": {
     key: "members",

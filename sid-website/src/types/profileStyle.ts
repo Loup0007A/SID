@@ -41,7 +41,11 @@ box-shadow: 0 0 16px rgba(212, 175, 55, 0.12);
 /** Classes utiles à connaître par section (celles vraiment présentes dans le rendu). Les noms sont sensibles à la casse (écris-les en minuscules). */
 export const AVAILABLE_CLASSES: Record<ProfileCssSection, { className: string; hint: string }[]> = {
   org_chart: [
-    { className: "font-display", hint: "titre du poste" },
+    { className: "org-card-title", hint: "titre du poste (aussi font-display)" },
+    { className: "org-card-holder", hint: "ligne du titulaire (avatar + pseudo)" },
+    { className: "org-card-name", hint: "ton pseudo" },
+    { className: "org-card-mission", hint: "mission du poste" },
+    { className: "org-card-team", hint: "équipe rattachée" },
   ],
   roster: [
     { className: "font-display", hint: "ton pseudo (grand titre)" },

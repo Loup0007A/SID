@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { currentUser } from "@/lib/session";
 import { PROFILE_CSS_SECTIONS } from "@/types/profileStyle";
 import type { ProfileCssSection, ProfileStyleRow } from "@/types/profileStyle";
+import { OrgCard } from "@/components/org/OrgCard";
 import { ProfileStyle, profileSkinClass } from "@/components/ProfileStyle";
 import { CssBuilderPanel } from "@/components/CssBuilderPanel";
 import { RankCard } from "@/components/RankCard";
@@ -304,11 +305,14 @@ function SectionPreview({ section, userId, nickname, css }: { section: ProfileCs
 
   if (section === "org_chart") {
     return (
-      <div className={`glass-card inline-flex flex-col gap-1 px-4 py-2 ${skin}`}>
-        <ProfileStyle userId={userId} css={css} />
-        <span className="font-display uppercase tracking-wide">Poste occupé</span>
-        <span className="font-mono text-xs text-paper/70">{nickname}</span>
-      </div>
+      <OrgCard
+        label="Poste occupé"
+        description="La mission du poste s'affiche ici."
+        holder={{ id: userId, nickname, avatar_url: null }}
+        team={{ id: "apercu", name: "Équipe rattachée", independent: false }}
+        css={css}
+        linkHolder={false}
+      />
     );
   }
 

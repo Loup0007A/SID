@@ -50,6 +50,8 @@ export const ACTION_LABELS: Record<string, string> = {
   site_tabs: "Rubriques du site",
   sites: "Cartographie et Wiki",
   election_set: "Élection du Dictateur",
+  org_node_saved: "Organigramme : poste",
+  org_node_deleted: "Organigramme : poste supprimé",
 };
 
 export const FIELD_LABELS: Record<string, string> = {
@@ -174,6 +176,16 @@ export function describe(row: { action: string; details: Record<string, unknown>
     case "wheel_prize_saved":
     case "wheel_prize_deleted":
       return String(d.label ?? "");
+    case "org_node_saved": {
+      if (d.nouveau) return `Nouveau poste « ${d.poste} »`;
+      const parts = [`« ${d.poste} »`];
+      if (d.ancien_titre) parts.push(`(avant : « ${d.ancien_titre} »)`);
+      if (d.titulaire_change) parts.push(d.ancien_titulaire ? `titulaire changé (avant : ${d.ancien_titulaire})` : "titulaire changé");
+      if (d.deplace) parts.push("déplacé");
+      return parts.join(" · ");
+    }
+    case "org_node_deleted":
+      return `« ${d.poste} »${Number(d.sous_postes_remontes) > 0 ? ` · ${d.sous_postes_remontes} sous-poste(s) remonté(s)` : ""}`;
     case "election_set": {
       const fmt = (v: unknown) => (typeof v === "string" ? new Date(v).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Paris" }) : "?");
       return `Élu : ${(d.elu as string) || "à choisir"} · proclamation ${fmt(d.proclamation)} (du ${fmt(d.debut)} au ${fmt(d.fin)})`;
