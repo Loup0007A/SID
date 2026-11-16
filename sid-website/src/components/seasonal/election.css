@@ -52,7 +52,8 @@
 
 /* Portrait couronné */
 .el-portrait { position: relative; display: inline-grid; flex: none; place-items: center; border-radius: 50%; box-shadow: 0 0 0 3px #f0c27a, 0 0 28px rgb(240 194 122 / 0.55); background: #2b1220; }
-.el-portrait-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+/* Image posée dans le cercle : une photo en hauteur ne l'allonge plus en ovale. */
+.el-portrait-img { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 .el-portrait-initials { font: 700 2rem/1 var(--font-display); color: #fff3d2; }
 .el-portrait-crown { position: absolute; left: 50%; top: -42%; width: 62%; transform: translateX(-50%) rotate(-6deg); filter: drop-shadow(0 4px 6px rgb(0 0 0 / 0.45)); z-index: 1; }
 
