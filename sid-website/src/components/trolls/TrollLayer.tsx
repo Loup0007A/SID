@@ -33,6 +33,7 @@ const PartyMode = dynamic(() => import("@/components/trolls/AmbientEffects").the
 const Rationing = dynamic(() => import("@/components/trolls/AmbientEffects").then((m) => m.Rationing), { ssr: false });
 const RewriteEffect = dynamic(() => import("@/components/trolls/AmbientEffects").then((m) => m.RewriteEffect), { ssr: false });
 const Assaut = dynamic(() => import("@/components/trolls/HuntEffects").then((m) => m.Assaut), { ssr: false });
+const Decree = dynamic(() => import("@/components/trolls/ElectionEffects").then((m) => m.Decree), { ssr: false });
 const BalanceVaryexis = dynamic(() => import("@/components/trolls/BalanceEffects").then((m) => m.BalanceVaryexis), { ssr: false });
 
 const CHIP_TEXT: Partial<Record<ActiveTroll["power"], string>> = {
@@ -59,6 +60,7 @@ const CHIP_TEXT: Partial<Record<ActiveTroll["power"], string>> = {
   treve: "aucune autre farce ne peut te viser",
   assaut: "une wyverne s'abat sur ta page",
   balance: "ta page est sur la balance de Varyexis",
+  decret: "un décret t'attend",
 };
 
 function chipText(t: ActiveTroll) {
@@ -192,6 +194,7 @@ export function TrollLayer({ nickname }: { nickname: string }) {
       {has("treve") && <Truce troll={has("treve")!} />}
       {has("assaut") && <Assaut troll={has("assaut")!} />}
       {has("balance") && <BalanceVaryexis troll={has("balance")!} />}
+      {has("decret") && <Decree troll={has("decret")!} nickname={nickname} />}
 
       {active.filter((t) => t.power !== "defi_dragon").length > 0 && (
         <div data-troll-ui className="troll-chip fixed bottom-3 left-3 z-[9450] max-w-[calc(100vw-1.5rem)] space-y-1">

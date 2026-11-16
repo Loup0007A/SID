@@ -23,7 +23,7 @@ import { leaveSandbox } from "@/lib/sandbox";
 import { TermsBanner } from "@/components/TermsBanner";
 import { SiteFooter } from "@/components/SiteFooter";
 import { TrollLayer } from "@/components/trolls/TrollLayer";
-import { SeasonalGarland, anyHoliday } from "@/components/seasonal/Seasonal";
+import { SeasonalCeremony, SeasonalGarland, anyHoliday } from "@/components/seasonal/Seasonal";
 import { useSiteDecor } from "@/components/seasonal/siteDecor";
 import { AfterIdle } from "@/components/lazy/AfterIdle";
 import { Sceau1, Sceau2, Sceau7, Sceau8, Sceau9, Sceau10, Sceau11 } from "@/components/lazy/Seals";
@@ -297,6 +297,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <SkipLink />
       <header className="glass-panel sticky top-0 z-20 border-x-0 border-t-0 pt-[env(safe-area-inset-top)]">
         <SeasonalGarland />
+        <SeasonalCeremony />
         <div className="mx-auto flex max-w-6xl items-center gap-2 px-3 py-3 sm:gap-3 sm:px-6">
           <Link href="/dashboard" scroll={false} className={`shrink-0 items-center gap-2 ${isHome ? "flex" : "hidden sm:flex"}`} aria-label="Accueil du S.I.D.">
             {/* eslint-disable-next-line @next/next/no-img-element */}

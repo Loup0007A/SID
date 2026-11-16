@@ -14,7 +14,8 @@ export type EventKey =
   | "fete_musique"
   | "quatorze_juillet"
   | "armistice"
-  | "grande_chasse";
+  | "grande_chasse"
+  | "election";
 
 export type EventInfo = {
   key: EventKey;
@@ -111,6 +112,16 @@ export const EVENT_LIST: EventInfo[] = [
       "Semaine des chasseurs : crépuscule sur la vallée, campement et feu de camp, Brasombre (la wyverne des cendres) perchée au loin puis qui survole la page avec son ombre, fanions de chasse, cor au pied de page, tableau de chasse sur l'accueil. Carte et wiki : fanions, survol, braises, « proie du jour » sur le wiki.",
   },
   {
+    key: "election",
+    name: "Élection du Dictateur",
+    emoji: "👑",
+    icon: "crown",
+    period: "du début à la fin réglés ci-dessous",
+    color: "#f0c27a",
+    description:
+      "Dossier : projecteurs, confettis, fanions pourpre et or, compte à rebours sur l'accueil, puis la cérémonie de proclamation (une fois pour chaque membre) et le portrait du nouveau Dictateur. Carte et wiki : fanions et confettis. L'élu reçoit le titre « Dictateur », aucun grade.",
+  },
+  {
     key: "halloween",
     name: "Halloween",
     emoji: "🎃",
@@ -144,6 +155,7 @@ export const EVENT_ORDER: EventKey[] = [
   "halloween",
   "armistice",
   "noel",
+  "election",
 ];
 
 export const EVENTS = Object.fromEntries(EVENT_LIST.map((e) => [e.key, e])) as Record<EventKey, EventInfo>;

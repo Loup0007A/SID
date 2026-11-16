@@ -8,6 +8,7 @@ import { inputClass, labelClass } from "@/lib/ui";
 import clsx from "clsx";
 import { DECOR_CHANGED_EVENT, type DecorKey, type DecorMode, type SiteDecor } from "@/components/seasonal/siteDecor";
 import { EVENTS, EVENT_ORDER } from "@/lib/events";
+import { ElectionAdmin } from "@/components/admin/ElectionAdmin";
 import { SidIcon } from "@/components/icons/SidIcon";
 import Link from "next/link";
 import { storeReveals } from "@/lib/reveals";
@@ -345,6 +346,17 @@ export default function ModerationPage() {
                 <p className="basis-full font-mono text-[11px] text-paper/65">
                   {mode === "auto" ? `Automatique : ${ev.period} (heure de Paris).` : DECOR_MODES.find((m) => m.v === mode)?.hint}
                 </p>
+              )}
+              {ev.key === "election" && !missing && (
+                <ElectionAdmin
+                  onSaved={() =>
+                    supabase.rpc("site_decor").then(({ data }) => {
+                      if (!data) return;
+                      setDecor(data as SiteDecor);
+                      window.dispatchEvent(new CustomEvent(DECOR_CHANGED_EVENT, { detail: data }));
+                    })
+                  }
+                />
               )}
             </div>
           );

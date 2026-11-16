@@ -15,6 +15,7 @@ import { useEquippedTitles } from "@/lib/useEquippedTitles";
 import { TitleBadge } from "@/components/titles/TitleVisuals";
 import { SidIcon, GlyphText } from "@/components/icons/SidIcon";
 import { RpBar, RpMessage, RP_MODES, ROLL_ERRORS, parseRp, type RpMode } from "@/components/chat/RpChat";
+import { AdminContent, AdminLinkPicker, AdminPins, useAdminPins, type AdminChatInfo } from "@/components/chat/AdminChat";
 
 /** Avatar : la photo, sinon l'initiale sur une couleur tirée du pseudo. */
 function Avatar({ name, url, size = 32 }: { name: string; url: string | null | undefined; size?: number }) {
@@ -72,6 +73,9 @@ function ChatInner() {
   const [showAddMembers, setShowAddMembers] = useState(false);
   const [channelParticipantIds, setChannelParticipantIds] = useState<Set<string>>(new Set());
   const [membersToAdd, setMembersToAdd] = useState<string[]>([]);
+  // Salon Admin (Lot 80) : son identifiant et son maître.
+  const [adminChat, setAdminChat] = useState<AdminChatInfo | null>(null);
+  const [showPicker, setShowPicker] = useState(false);
 
   async function refreshChannels(uid: string) {
     // Salons (via ses participations) et noms des correspondants : en même temps.
@@ -82,7 +86,10 @@ function ChatInner() {
     const chans = ((parts ?? []) as unknown as { chat_channels: ChatChannel | null }[])
       .map((p) => p.chat_channels)
       .filter((c): c is ChatChannel => !!c)
-      .sort((a, b) => (a.created_at < b.created_at ? 1 : a.created_at > b.created_at ? -1 : 0));
+      .sort((a, b) =>
+        // Le salon Admin en tête, puis du plus récent au plus ancien.
+        a.type === "admin" ? -1 : b.type === "admin" ? 1 : a.created_at < b.created_at ? 1 : a.created_at > b.created_at ? -1 : 0,
+      );
     setChannels(chans);
     setDmPartners(new Map(((partners ?? []) as DmPartner[]).map((p) => [p.channel_id, p.partner_nickname])));
   }
@@ -95,7 +102,9 @@ function ChatInner() {
       if (!user) return;
       setUserId(user.id);
 
-      // Membres, droits et salons : tout part en même temps.
+      // Membres, droits et salons : tout part en même temps. Le salon Admin
+      // se synchronise à l'ouverture (ses membres suivent les permissions).
+      const adminP = supabase.rpc("admin_chat_open");
       const channelsP = refreshChannels(user.id);
       const [{ data: m }, { permissions }] = await Promise.all([
         supabase.from("profiles").select("*").eq("status", "active"),
@@ -111,6 +120,12 @@ function ChatInner() {
       // (leurs messages restent signés de leur nom).
       setMembers(visibleMembers(m ?? [], user.id, admin));
       await channelsP;
+      const { data: ac } = await adminP;
+      const a = ac as { channel_id?: string; owner_id?: string | null; owner_nickname?: string | null; is_owner?: boolean } | null;
+      if (a?.channel_id) {
+        setAdminChat({ channelId: a.channel_id, ownerId: a.owner_id ?? null, ownerNickname: a.owner_nickname ?? null, isOwner: !!a.is_owner });
+        await refreshChannels(user.id);
+      }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -406,12 +421,37 @@ function ChatInner() {
   }
 
   function channelLabel(c: ChatChannel) {
+    if (c.type === "admin") return "Admin";
     if (c.type === "group" || c.type === "application") return c.name ?? "Discussion";
     return dmPartners.get(c.id) ? `MP — ${dmPartners.get(c.id)}` : "Message privé";
   }
 
   const activeChannelObj = channels.find((c) => c.id === activeChannel);
   const isGroup = activeChannelObj?.type === "group";
+  const isAdminChannel = activeChannelObj?.type === "admin";
+  const ownerTools = isAdminChannel && !!adminChat?.isOwner;
+  const { pins, setPins } = useAdminPins(isAdminChannel ? activeChannel : null);
+
+  // Maître du salon Admin : épingler, supprimer n'importe quel message.
+  async function pinMessage(id: string, on: boolean) {
+    const { data, error } = await supabase.rpc("admin_chat_pin", { p_message_id: id, p_on: on });
+    if (error || (data as { error?: string } | null)?.error) return setMessage("Épingle impossible.");
+    setPins((p) => (on ? [...p.filter((x) => x !== id), id] : p.filter((x) => x !== id)));
+  }
+  async function adminDelete(id: string) {
+    if (!confirm("Supprimer ce message du salon Admin ?")) return;
+    const { data, error } = await supabase.rpc("admin_chat_delete", { p_message_id: id });
+    if (error || (data as { error?: string } | null)?.error) return setMessage("Suppression impossible.");
+    setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, is_deleted: true } : m)));
+    setPins((p) => p.filter((x) => x !== id));
+  }
+  function jumpTo(id: string) {
+    const el = document.getElementById(`msg-${id}`);
+    if (!el) return;
+    el.scrollIntoView({ block: "center", behavior: "smooth" });
+    el.classList.add("is-flash");
+    setTimeout(() => el.classList.remove("is-flash"), 1600);
+  }
 
   const activeLabel = activeChannelObj ? channelLabel(activeChannelObj) : "";
   const dayLabel = (d: Date) => {
@@ -489,13 +529,15 @@ function ChatInner() {
                 {c.type === "dm" ? (
                   <Avatar name={label} url={partnerProfile?.avatar_url ?? null} size={36} />
                 ) : (
-                  <span className="chat-chan-group" aria-hidden>
-                    <SidIcon name={c.type === "application" ? "clipboard" : "people"} />
+                  <span className={clsx("chat-chan-group", c.type === "admin" && "is-admin")} aria-hidden>
+                    <SidIcon name={c.type === "application" ? "clipboard" : c.type === "admin" ? "shield" : "people"} />
                   </span>
                 )}
                 <span className="min-w-0 flex-1">
                   <span className="chat-chan-name">{label}</span>
-                  <span className="chat-chan-sub">{c.type === "dm" ? "Message privé" : c.type === "application" ? "Candidature" : "Groupe"}</span>
+                  <span className="chat-chan-sub">
+                    {c.type === "dm" ? "Message privé" : c.type === "application" ? "Candidature" : c.type === "admin" ? "Administration" : "Groupe"}
+                  </span>
                 </span>
               </button>
             );
@@ -526,12 +568,20 @@ function ChatInner() {
               {activeChannelObj?.type === "dm" ? (
                 <Avatar name={dmPartners.get(activeChannel) ?? "?"} url={Array.from(profiles.values()).find((p) => p.nickname === dmPartners.get(activeChannel))?.avatar_url ?? null} size={40} />
               ) : (
-                <span className="chat-chan-group is-lg" aria-hidden><SidIcon name="people" /></span>
+                <span className={clsx("chat-chan-group is-lg", isAdminChannel && "is-admin")} aria-hidden>
+                  <SidIcon name={isAdminChannel ? "shield" : "people"} />
+                </span>
               )}
               <div className="min-w-0 flex-1">
                 <h2 className="truncate font-display text-lg uppercase tracking-wide">{activeChannelObj?.type === "dm" ? dmPartners.get(activeChannel) ?? activeLabel : activeLabel}</h2>
                 <p className="font-mono text-[11px] text-paper/65">
-                  {isGroup ? (channelParticipantIds.size ? `${channelParticipantIds.size} participants` : "Groupe") : "Message privé"}
+                  {isAdminChannel
+                    ? `Administration · ${channelParticipantIds.size || "…"} membres${adminChat?.ownerNickname ? ` · tenu par ${adminChat.ownerNickname}` : ""}`
+                    : isGroup
+                      ? channelParticipantIds.size
+                        ? `${channelParticipantIds.size} participants`
+                        : "Groupe"
+                      : "Message privé"}
                 </p>
               </div>
               {isGroup && (
@@ -569,6 +619,18 @@ function ChatInner() {
                   Ajouter
                 </button>
               </div>
+            )}
+
+            {isAdminChannel && (
+              <AdminPins
+                pins={pins}
+                messages={messages}
+                profiles={profiles}
+                ownerId={adminChat?.ownerId ?? null}
+                isOwner={ownerTools}
+                onUnpin={(id) => pinMessage(id, false)}
+                onJump={jumpTo}
+              />
             )}
 
             <div className="chat-scroll" role="log" aria-label={`Messages : ${activeLabel}`}>
@@ -610,7 +672,7 @@ function ChatInner() {
                 const title = senderTitles.get(m.sender_id);
                 return [
                   day,
-                  <div key={m.id} className={clsx("chat-row group", isMine ? "is-mine" : "is-other", grouped && "is-grouped")}>
+                  <div key={m.id} id={`msg-${m.id}`} className={clsx("chat-row group", isMine ? "is-mine" : "is-other", grouped && "is-grouped")}>
                     {!isMine && (
                       <span className="chat-row-avatar">
                         {!grouped && (
@@ -630,12 +692,22 @@ function ChatInner() {
                       <div className={clsx("chat-bubble", isMine ? "is-mine" : "is-other")}>
                         {isEditing ? (
                           <div className="space-y-2">
-                            <input
-                              value={editContent}
-                              onChange={(e) => setEditContent(e.target.value)}
-                              aria-label="Modifier le message"
-                              className="w-full rounded border border-ink/20 bg-paper px-2 py-1 font-body text-sm text-ink outline-none"
-                            />
+                            {isAdminChannel ? (
+                              <textarea
+                                value={editContent}
+                                onChange={(e) => setEditContent(e.target.value)}
+                                aria-label="Modifier le message"
+                                rows={Math.min(14, Math.max(3, editContent.split("\n").length + 1))}
+                                className="w-full min-w-[min(70vw,420px)] rounded border border-ink/20 bg-paper px-2 py-1 font-body text-sm text-ink outline-none"
+                              />
+                            ) : (
+                              <input
+                                value={editContent}
+                                onChange={(e) => setEditContent(e.target.value)}
+                                aria-label="Modifier le message"
+                                className="w-full rounded border border-ink/20 bg-paper px-2 py-1 font-body text-sm text-ink outline-none"
+                              />
+                            )}
                             <div className="flex flex-wrap items-center gap-2">
                               <button onClick={() => setEditBold((b) => !b)} className={clsx("rounded border px-1.5 font-bold text-xs", editBold ? "border-ink bg-ink/10" : "border-ink/30")}>G</button>
                               <button onClick={() => setEditItalic((it) => !it)} className={clsx("rounded border px-1.5 text-xs italic", editItalic ? "border-ink bg-ink/10" : "border-ink/30")}>I</button>
@@ -658,7 +730,7 @@ function ChatInner() {
                             className={clsx("whitespace-pre-wrap break-words font-body text-[0.95rem] leading-snug", m.is_bold && "font-bold", m.is_italic && "italic")}
                             style={m.color ? { color: m.color } : undefined}
                           >
-                            {m.content}
+                            <AdminContent text={m.content} links={isAdminChannel && m.sender_id === adminChat?.ownerId} />
                             {m.troll_tag?.kind === "flatterie" && (
                               <span className="ml-1 font-bold not-italic" style={{ color: m.troll_tag.color || "#B23B2E" }} title={`Flatterie obligatoire : une farce de ${m.troll_tag.by}`}>
                                 … et {m.troll_tag.by} {m.troll_tag.phrase || "est le meilleur !"} <SidIcon name="masks" />
@@ -668,15 +740,23 @@ function ChatInner() {
                         )}
                         {!isEditing && (
                           <span className="chat-time">
+                            {isAdminChannel && pins.includes(m.id) && (
+                              <>
+                                <SidIcon name="pin" size={11} /> épinglé ·{" "}
+                              </>
+                            )}
                             {m.edited_at && "modifié · "}
                             {time}
                           </span>
                         )}
                       </div>
-                      {isMine && !isEditing && (
+                      {(isMine || ownerTools) && !isEditing && (
                         <div className="chat-tools">
-                          <button onClick={() => startEdit(m)}>Modifier</button>
-                          <button onClick={() => deleteMessage(m.id)}>Supprimer</button>
+                          {ownerTools && (
+                            <button onClick={() => pinMessage(m.id, !pins.includes(m.id))}>{pins.includes(m.id) ? "Désépingler" : "Épingler"}</button>
+                          )}
+                          {isMine && <button onClick={() => startEdit(m)}>Modifier</button>}
+                          <button onClick={() => (isMine ? deleteMessage(m.id) : adminDelete(m.id))}>Supprimer</button>
                         </div>
                       )}
                     </div>
@@ -698,6 +778,17 @@ function ChatInner() {
                 >
                   <span className="font-bold">A</span><span className="italic">a</span>
                 </button>
+                {ownerTools && (
+                  <button
+                    type="button"
+                    onClick={() => setShowPicker((v) => !v)}
+                    aria-pressed={showPicker}
+                    className={clsx("rp-mode", showPicker && "is-on")}
+                    title="Lien vers un lieu du S.I.D."
+                  >
+                    <SidIcon name="link" /> Lien
+                  </button>
+                )}
                 {isAdmin && (
                   <button type="button" onClick={() => setShowCommands((s) => !s)} aria-pressed={showCommands} className={clsx("rp-mode", showCommands && "is-on")} title="Commandes de farce (admins)">
                     <SidIcon name="demon" />
@@ -743,14 +834,41 @@ function ChatInner() {
                   </button>
                 </div>
               )}
-              <div className="chat-input-row">
-                <input
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
-                  placeholder={RP_MODES.find((x) => x.key === rpMode)?.placeholder ?? "Écrire un message…"}
-                  aria-label="Message"
-                  className={clsx("chat-input", `rp-input-${rpMode}`)}
+              {ownerTools && showPicker && (
+                <AdminLinkPicker
+                  onPick={(token) => {
+                    setDraft((d) => (d.trim() ? `${d.replace(/\s+$/, "")} ${token}` : token));
+                    setShowPicker(false);
+                  }}
+                  onClose={() => setShowPicker(false)}
                 />
+              )}
+              <div className="chat-input-row">
+                {isAdminChannel ? (
+                  // Salon Admin : plusieurs lignes (Entrée envoie, Maj + Entrée va à la ligne).
+                  <textarea
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        e.currentTarget.form?.requestSubmit();
+                      }
+                    }}
+                    rows={Math.min(8, Math.max(1, draft.split("\n").length))}
+                    placeholder="Écrire au salon Admin… (Maj + Entrée : nouvelle ligne)"
+                    aria-label="Message"
+                    className="chat-input resize-none"
+                  />
+                ) : (
+                  <input
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    placeholder={RP_MODES.find((x) => x.key === rpMode)?.placeholder ?? "Écrire un message…"}
+                    aria-label="Message"
+                    className={clsx("chat-input", `rp-input-${rpMode}`)}
+                  />
+                )}
                 <button type="submit" className="chat-send" aria-label="Envoyer" disabled={!draft.trim()}>
                   <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden>
                     <path d="M3.4 20.4 21 12 3.4 3.6l.02 6.53L15 12 3.42 13.87z" fill="currentColor" />

@@ -5,8 +5,9 @@ renommer : nom du RP, des trois sites, de la monnaie, adresses, sites et
 rubriques ouverts, adresses des simulations. L'installation elle-même (Supabase, Vercel, compte Fondateur) est
 dans [README.md](README.md).
 
-Prérequis : migrations passées jusqu'à `0095_sites_simulations.sql`
-(Dossier Central), ainsi que celles de la Cartographie et du Wiki.
+Prérequis : migrations passées jusqu'à `0098_election.sql` (Dossier
+Central), ainsi que celles de la Cartographie (jusqu'à `0116_lieu_inconnu.sql`)
+et du Wiki.
 
 ---
 
@@ -394,6 +395,7 @@ Déjà modifiables depuis le site :
 | Annonces, maintenance, décors des fêtes, pages en aperçu | Administration → Modération |
 | Cartographie et Wiki ouverts, rubriques présentes | Administration → Modération → Sites et rubriques |
 | Farces | Administration → Titres & farces |
+| Élection du Dictateur : élu, début, proclamation, fin | Administration → Modération → Affichage événementiel |
 
 Le reste se règle en SQL. Liste complète :
 
@@ -418,3 +420,18 @@ update public.app_config set value = 'Europe/Paris' where key = 'stats_timezone'
 
 Les clés en `*_last_*` (`jobs_last_run`, `economy_last_daily`…) sont tenues
 par les tâches automatiques : ne pas les modifier.
+
+### Salon Admin de la messagerie
+
+Le salon réunit les comptes au grade Fondateur et ceux qui ont « Gérer les
+comptes ». Un seul compte en est le maître : il épingle les messages, pose
+des liens vers les autres pages du S.I.D. et peut supprimer n'importe quel
+message du salon. Ce compte est dans `admin_chat_owner` (identifiant ou
+pseudo ; à l'installation : Kuro).
+
+```sql
+update public.app_config set value = 'Kuro' where key = 'admin_chat_owner';
+```
+
+Lien dans un message du maître : `[[/dashboard/admin/audit|Journal d'audit]]`
+(le bouton « Lien » de la messagerie l'écrit tout seul).

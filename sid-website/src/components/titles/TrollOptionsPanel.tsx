@@ -5,6 +5,7 @@ import { Bells, Bleuet, Egg, PaperFish, Patrouille } from "@/components/seasonal
 import { Brasombre, ClawMarks } from "@/components/seasonal/chasseArt";
 import { VaryexisSign } from "@/components/seasonal/varyexisArt";
 import { BalanceArt } from "@/components/trolls/BalanceEffects";
+import { DecreeSealArt } from "@/components/trolls/ElectionEffects";
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { mentalQuestion } from "@/lib/mentalCalc";
 import type { TrollPower } from "@/lib/titles";
@@ -17,6 +18,7 @@ import {
   BAILIFF_TONES,
   BAILIFF_WORDS,
   BEASTS,
+  DECREE_SEALS,
   DRAGON_FINALES,
   DRAGON_SKINS,
   FANFARE_TEMPOS,
@@ -44,6 +46,7 @@ import {
   type MirrorMode,
   type PartyTheme,
   type RewriteTheme,
+  type DecreeSeal,
   type TrollOptions,
 } from "@/lib/trollOptions";
 import { SidIcon, Glyph } from "@/components/icons/SidIcon";
@@ -519,6 +522,51 @@ function TrucePanel({ value: o, onChange, ctx }: Props<"treve">) {
               <Bleuet />
             </span>
           ))}
+        </div>
+      </Preview>
+    </div>
+  );
+}
+
+function DecretPanel({ value: o, onChange, ctx }: Props<"decret">) {
+  const set = (p: Partial<TrollOptions["decret"]>) => onChange({ ...o, ...p });
+  const accent = "#c8324f";
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <div className="space-y-4">
+        <Field label="Texte du décret (facultatif)" hint={<>{"{cible}"} est remplacé par son pseudo. Vide : un décret tiré au hasard.</>}>
+          <TextInput value={o.decree} onChange={(decree) => set({ decree })} max={80} placeholder="{cible} est nommé Ministre des Confettis." />
+        </Field>
+        <Field label="Sceau">
+          <div className="flex flex-wrap gap-2">
+            {(Object.keys(DECREE_SEALS) as DecreeSeal[]).map((k) => (
+              <button
+                key={k}
+                type="button"
+                onClick={() => set({ seal: k })}
+                aria-pressed={o.seal === k}
+                className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 font-body text-sm ${o.seal === k ? "border-paper/70 bg-white/10" : "border-white/15 text-paper/70"}`}
+              >
+                <DecreeSealArt seal={k} className="h-6 w-6" /> {DECREE_SEALS[k].label}
+              </button>
+            ))}
+          </div>
+        </Field>
+        <Toggle checked={o.confetti} onChange={(confetti) => set({ confetti })} label="Pluie de confettis" accent={accent} />
+        <p className="font-body text-xs text-paper/60">
+          Roulement de tambours, puis un parchemin se déroule sur le site de {ctx.target} avec ton décret et ton sceau. Il faut le contresigner pour
+          le refermer ; un nouveau décret tombe toutes les trois minutes. 10 minutes.
+        </p>
+      </div>
+      <Preview who={ctx.target} className="h-56 bg-ink">
+        <MiniPage />
+        <div className="absolute inset-x-8 top-3 rounded-md border border-[#c9a46a] bg-[#f1deb2] p-2 text-center text-[#3a2414] shadow-lg">
+          <p className="font-body text-[10px] italic text-[#7a4d24]">Par ordre du Dictateur {ctx.me}</p>
+          <p className="font-display text-sm uppercase tracking-[0.2em] text-[#7a1430]">Décret</p>
+          <p className="font-body text-[11px] leading-snug">
+            {`«\u00a0${(o.decree || "{cible} applaudira à chaque annonce officielle.").replaceAll("{cible}", ctx.target)}\u00a0»`}
+          </p>
+          <DecreeSealArt seal={o.seal} className="mx-auto mt-1 h-7 w-7" />
         </div>
       </Preview>
     </div>
@@ -1114,6 +1162,8 @@ export function TrollOptionsEditor({
       return <AssautPanel {...(p as Props<"assaut">)} />;
     case "balance":
       return <BalancePanel {...(p as Props<"balance">)} />;
+    case "decret":
+      return <DecretPanel {...(p as Props<"decret">)} />;
     default:
       return null;
   }

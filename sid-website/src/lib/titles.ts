@@ -35,7 +35,8 @@ export type TitleId =
   | "artificier"
   | "veilleur"
   | "veneur"
-  | "equilibre";
+  | "equilibre"
+  | "dictateur";
 
 export type TrollPower =
   | "defi_dragon"
@@ -60,7 +61,8 @@ export type TrollPower =
   | "artifice"
   | "treve"
   | "assaut"
-  | "balance";
+  | "balance"
+  | "decret";
 
 export interface TitleDef {
   id: TitleId;
@@ -355,6 +357,18 @@ export const TITLES: TitleDef[] = [
     power: "balance",
     event: "grande_chasse",
   },
+  {
+    id: "dictateur",
+    name: "Dictateur",
+    emoji: "👑",
+    icon: "crown",
+    colors: ["#ffe08a", "#7a1430"],
+    maxLevel: 1,
+    riddle: "Le S.I.D. ne se choisit pas de maître : c'est lui qui le désigne, un soir de fête.",
+    how: commentObtenu("dictateur"),
+    power: "decret",
+    event: "election",
+  },
 ];
 
 /** Titres secrets permanents, et titres d'événement. */
@@ -467,6 +481,11 @@ export const POWERS: Record<TrollPower, PowerDef> = {
     key: "balance",
     name: "Balance de Varyexis",
     description: "Tu poses le site de ta cible sur la balance de Varyexis : des étoiles tombent dans ses plateaux, et dès qu'elle penche, toute la page penche avec. Ta cible doit retirer des étoiles pour la rééquilibrer. 10 minutes.",
+  },
+  decret: {
+    key: "decret",
+    name: "Décret du Dictateur",
+    description: "Tu promulgues un décret sur le site de ta cible : roulement de tambours, un parchemin se déroule avec ton texte, ton sceau s'y imprime, et des confettis tombent jusqu'à ce qu'elle le contresigne. 10 minutes.",
   },
   treve: {
     key: "treve",

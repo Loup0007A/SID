@@ -220,7 +220,16 @@ export type TrollOptions = {
   treve: { message: string };
   assaut: { beast: BeastKind; fury: number; repel: boolean; message: string };
   balance: { rythme: number; penchant: number; constellation: boolean; message: string };
+  decret: { decree: string; seal: DecreeSeal; confetti: boolean };
 };
+
+/** Décret du Dictateur (Lot 80) : couleur du sceau de cire. */
+export const DECREE_SEALS = {
+  or: { label: "Or", wax: "#d9a531", rim: "#8a5a10" },
+  pourpre: { label: "Pourpre", wax: "#9c1f45", rim: "#4f0b22" },
+  noir: { label: "Noir", wax: "#2b2630", rim: "#0d0b10" },
+} as const;
+export type DecreeSeal = keyof typeof DECREE_SEALS;
 
 export const LOVE_COLORS = {
   rose: { label: "Rose", colors: ["#ff8ab4", "#ffc2d6", "#ff5c93"] },
@@ -271,6 +280,7 @@ export function defaultOptions<P extends TrollPower>(power: P, level = 1): Troll
     treve: { message: "" },
     assaut: { beast: "braise", fury: 2, repel: true, message: "" },
     balance: { rythme: 2, penchant: 2, constellation: true, message: "" },
+    decret: { decree: "", seal: "or", confetti: true },
   };
   return all[power];
 }
@@ -382,6 +392,9 @@ export function readOptions<P extends TrollPower>(power: P, params: Record<strin
       break;
     case "balance":
       o = { rythme: num(p.rythme, 2, 1, 3), penchant: num(p.penchant, 2, 1, 3), constellation: bool(p.constellation, true), message: txt(p.message, 60) };
+      break;
+    case "decret":
+      o = { decree: txt(p.decree, 80), seal: pick(p.seal, Object.keys(DECREE_SEALS) as DecreeSeal[], "or"), confetti: bool(p.confetti, true) };
       break;
     default:
       o = { ...d, ...p };

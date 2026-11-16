@@ -21,6 +21,8 @@ export interface CityBuilding {
 
 export interface CharacterPosition {
   user_id: string;
+  /** Position brouillée depuis L'Envers de la Cartographie (Lot 80). */
+  glitched?: boolean;
   place_id: string | null;
   building_id: string | null;
   route_id: string | null;

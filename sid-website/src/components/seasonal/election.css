@@ -1,0 +1,89 @@
+/* Élection du Dictateur (Lot 80). Pourpre, or, projecteurs, confettis. */
+
+.el-back { background: radial-gradient(120% 70% at 50% 115%, rgb(122 20 48 / 0.32), transparent 60%); }
+.el-beam {
+  position: absolute; bottom: -10vh; width: 34vw; max-width: 420px; height: 125vh; transform-origin: 50% 100%;
+  background: linear-gradient(to top, rgb(255 233 168 / 0.16), rgb(255 233 168 / 0.04) 60%, transparent);
+  clip-path: polygon(44% 100%, 56% 100%, 100% 0, 0 0); filter: blur(2px);
+  animation: el-sweep 11s ease-in-out infinite alternate;
+}
+.el-beam-l { left: 4vw; --a0: -22deg; --a1: 12deg; }
+.el-beam-r { right: 4vw; --a0: 22deg; --a1: -12deg; animation-delay: -5.5s; }
+.el-beam.is-strong { background: linear-gradient(to top, rgb(255 233 168 / 0.34), rgb(255 233 168 / 0.08) 60%, transparent); }
+@keyframes el-sweep { from { transform: rotate(var(--a0)); } to { transform: rotate(var(--a1)); } }
+
+.el-confetti { position: absolute; inset: -20px 0 0; pointer-events: none; overflow: hidden; }
+.el-confetti > i {
+  position: absolute; top: -16px; display: block; border-radius: 2px;
+  animation-name: el-fall; animation-timing-function: linear; animation-iteration-count: infinite;
+}
+.el-confetti-soft > i { opacity: 0.55; }
+.el-confetti-card { inset: 0; border-radius: inherit; }
+.el-confetti-card > i { opacity: 0.5; }
+.el-confetti-burst { z-index: 1; }
+.el-confetti-burst > i { animation-duration: 3.4s !important; }
+@keyframes el-fall {
+  0% { transform: translate3d(0, -20px, 0) rotate(0deg); }
+  100% { transform: translate3d(var(--sway), 110vh, 0) rotate(var(--spin)); }
+}
+
+/* Fanions */
+.el-wire { fill: none; stroke: #d9c08a; stroke-width: 1; }
+.el-flag-0 { fill: #7a1430; }
+.el-flag-1 { fill: #f0c27a; }
+.el-flag-2 { fill: #f6eedb; }
+
+/* Accueil */
+.el-greeting { color: #f0c27a; }
+.el-board { position: relative; overflow: hidden; padding: 18px 20px; border-color: rgb(240 194 122 / 0.45); background: linear-gradient(135deg, rgb(122 20 48 / 0.35), rgb(20 10 18 / 0.55)); }
+.el-kicker { font: 600 11px/1.2 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: #f0c27a; }
+.el-name { font: 700 1.9rem/1.1 var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; color: #fff3d2; text-shadow: 0 0 18px rgb(240 194 122 / 0.45); }
+.el-board-crown { width: 64px; height: 48px; flex: none; filter: drop-shadow(0 0 10px rgb(255 210 120 / 0.55)); animation: el-bob 3s ease-in-out infinite; }
+@keyframes el-bob { 50% { transform: translateY(-4px) rotate(-3deg); } }
+.el-count { display: flex; gap: 8px; font: 500 11px/1 var(--font-mono); color: rgb(246 238 219 / 0.7); }
+.el-count > span { display: grid; justify-items: center; gap: 4px; min-width: 54px; padding: 8px 6px; border-radius: 10px; background: rgb(0 0 0 / 0.3); border: 1px solid rgb(240 194 122 / 0.3); }
+.el-count b { font: 700 1.6rem/1 var(--font-display); color: #fff3d2; font-variant-numeric: tabular-nums; }
+.el-btn {
+  display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px; border: 1px solid #f0c27a; color: #f6e3b8;
+  font: 600 11px/1 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; background: rgb(122 20 48 / 0.5);
+}
+.el-btn:hover, .el-btn:focus-visible { background: #7a1430; color: #fff3d2; }
+.el-btn-lg { padding: 12px 22px; font-size: 13px; }
+
+/* Portrait couronné */
+.el-portrait { position: relative; display: inline-grid; flex: none; place-items: center; border-radius: 50%; box-shadow: 0 0 0 3px #f0c27a, 0 0 28px rgb(240 194 122 / 0.55); background: #2b1220; }
+.el-portrait-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.el-portrait-initials { font: 700 2rem/1 var(--font-display); color: #fff3d2; }
+.el-portrait-crown { position: absolute; left: 50%; top: -42%; width: 62%; transform: translateX(-50%) rotate(-6deg); filter: drop-shadow(0 4px 6px rgb(0 0 0 / 0.45)); z-index: 1; }
+
+/* Pied de page */
+.el-footer { color: #f0c27a; }
+.el-bubble { border-color: rgb(240 194 122 / 0.6); }
+
+/* Cérémonie */
+.el-ceremony {
+  position: fixed; inset: 0; z-index: 9300; display: grid; place-items: center; overflow: hidden; padding: 24px;
+  background: radial-gradient(120% 80% at 50% 100%, rgb(122 20 48 / 0.97), rgb(8 4 10 / 0.99) 70%);
+  animation: el-fade-in 0.5s ease-out both;
+}
+@keyframes el-fade-in { from { opacity: 0; } }
+.el-stage { position: relative; z-index: 2; text-align: center; }
+.el-line { font: 600 clamp(1.3rem, 4vw, 2.2rem)/1.2 var(--font-display); text-transform: uppercase; letter-spacing: 0.08em; color: #f6e3b8; animation: el-rise 0.7s ease-out both; }
+.el-dots { display: inline-block; animation: el-dots 0.9s steps(4) infinite; overflow: hidden; vertical-align: bottom; }
+@keyframes el-dots { from { width: 0; } to { width: 1.1em; } }
+@keyframes el-rise { from { opacity: 0; transform: translateY(14px); } }
+.el-reveal { display: grid; justify-items: center; gap: 10px; }
+.el-reveal .el-portrait { animation: el-zoom 0.7s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+.el-reveal .el-portrait-crown { animation: el-crown 0.9s 0.5s cubic-bezier(0.3, 1.5, 0.5, 1) both; }
+@keyframes el-zoom { from { opacity: 0; transform: scale(0.3); } }
+@keyframes el-crown { from { opacity: 0; transform: translate(-50%, -120px) rotate(-30deg); } }
+.el-reveal-name { max-width: 90vw; font: 700 clamp(2rem, 8vw, 4rem)/1 var(--font-display); text-transform: uppercase; letter-spacing: 0.05em; color: #fff3d2; text-shadow: 0 0 30px rgb(240 194 122 / 0.7); animation: el-rise 0.6s 0.3s ease-out both; }
+.el-reveal-sub { font: 600 14px/1 var(--font-mono); letter-spacing: 0.3em; text-transform: uppercase; color: #f0c27a; animation: el-rise 0.6s 0.6s ease-out both; }
+.el-reveal .el-btn { margin-top: 12px; animation: el-rise 0.6s 1s ease-out both; }
+.el-skip { position: absolute; right: 16px; bottom: 16px; z-index: 3; font: 500 11px/1 var(--font-mono); text-transform: uppercase; color: rgb(246 227 184 / 0.7); padding: 8px 10px; }
+.el-skip:hover { color: #fff3d2; text-decoration: underline; }
+
+@media (prefers-reduced-motion: reduce) {
+  .el-beam, .el-confetti > i, .el-board-crown, .el-dots, .el-line, .el-reveal *, .el-ceremony { animation: none !important; }
+  .el-confetti { display: none; }
+}

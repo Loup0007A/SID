@@ -1,0 +1,52 @@
+/* Décret du Dictateur (Lot 80). */
+.decree-confetti { position: absolute; inset: -20px 0 0; pointer-events: none; }
+.decree-confetti > i {
+  position: absolute; top: -16px; display: block; border-radius: 2px; opacity: 0.9;
+  animation-name: decree-fall; animation-timing-function: linear; animation-iteration-count: infinite;
+}
+@keyframes decree-fall {
+  0% { transform: translate3d(0, -20px, 0) rotate(0deg); }
+  100% { transform: translate3d(var(--sway), 105vh, 0) rotate(var(--spin)); }
+}
+
+.decree-drums {
+  position: absolute; top: 18vh; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 10px; padding: 10px 18px; border-radius: 999px;
+  background: rgb(20 8 14 / 0.88); border: 1px solid rgb(240 194 122 / 0.5); color: #f6e3b8;
+  font: 600 0.9rem/1 var(--font-display, Georgia, serif); letter-spacing: 0.06em; text-transform: uppercase;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.45);
+}
+.decree-drum { display: inline-grid; place-items: center; color: #f0c27a; animation: decree-drum 0.18s steps(2) infinite; }
+@keyframes decree-drum { 50% { transform: translateY(-2px) rotate(-6deg); } }
+
+.decree-wrap { position: absolute; inset: 0; display: grid; place-items: start center; padding: 9vh 14px 0; pointer-events: none; }
+.decree-scroll { width: min(460px, 100%); pointer-events: auto; filter: drop-shadow(0 18px 40px rgb(0 0 0 / 0.55)); }
+.decree-roll {
+  height: 22px; border-radius: 11px; margin: 0 -10px;
+  background: linear-gradient(to bottom, #b98a4a, #f2deb0 40%, #c99a55 70%, #8a6430);
+  box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.2);
+}
+.decree-paper {
+  position: relative; overflow: hidden; padding: 18px 26px 22px; text-align: center; color: #3a2414;
+  background:
+    radial-gradient(120% 60% at 50% 0%, rgb(255 255 255 / 0.35), transparent 60%),
+    linear-gradient(#f4e4bd, #ead3a0);
+  border-left: 1px solid #c9a46a; border-right: 1px solid #c9a46a;
+  transform-origin: top; animation: decree-unroll 0.9s cubic-bezier(0.2, 0.8, 0.25, 1) both;
+}
+@keyframes decree-unroll { from { max-height: 0; padding-top: 0; padding-bottom: 0; } to { max-height: 520px; } }
+.decree-kicker { font: italic 400 0.82rem/1.3 Georgia, serif; color: #7a4d24; }
+.decree-title { margin-top: 4px; font: 700 1.9rem/1 var(--font-display, Georgia, serif); letter-spacing: 0.18em; text-transform: uppercase; color: #7a1430; }
+.decree-text { margin: 14px auto 0; max-width: 34ch; font: 400 1.08rem/1.45 Georgia, serif; overflow-wrap: anywhere; }
+.decree-seal { width: 70px; height: 70px; margin: 12px auto 0; display: block; animation: decree-stamp 0.5s 0.9s cubic-bezier(0.3, 1.6, 0.5, 1) both; }
+@keyframes decree-stamp { from { opacity: 0; transform: scale(2.4) rotate(-20deg); } to { opacity: 1; transform: scale(1) rotate(-8deg); } }
+.decree-sign {
+  margin-top: 12px; padding: 8px 18px; border-radius: 6px; border: 1px solid #7a1430; color: #7a1430;
+  font: 600 0.78rem/1 var(--font-mono, monospace); letter-spacing: 0.08em; text-transform: uppercase; background: rgb(255 255 255 / 0.35);
+}
+.decree-sign:hover, .decree-sign:focus-visible { background: #7a1430; color: #f6e3b8; }
+
+@media (prefers-reduced-motion: reduce) {
+  .decree-confetti { display: none; }
+  .decree-paper, .decree-seal, .decree-drum { animation: none; }
+}

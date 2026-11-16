@@ -49,6 +49,7 @@ export const ACTION_LABELS: Record<string, string> = {
   inactivity_exempt: "Pénalité d'absence : dispense",
   site_tabs: "Rubriques du site",
   sites: "Cartographie et Wiki",
+  election_set: "Élection du Dictateur",
 };
 
 export const FIELD_LABELS: Record<string, string> = {
@@ -173,6 +174,10 @@ export function describe(row: { action: string; details: Record<string, unknown>
     case "wheel_prize_saved":
     case "wheel_prize_deleted":
       return String(d.label ?? "");
+    case "election_set": {
+      const fmt = (v: unknown) => (typeof v === "string" ? new Date(v).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Paris" }) : "?");
+      return `Élu : ${(d.elu as string) || "à choisir"} · proclamation ${fmt(d.proclamation)} (du ${fmt(d.debut)} au ${fmt(d.fin)})`;
+    }
     case "sites": {
       const a = (d.apres ?? {}) as { carte?: string; wiki?: string };
       const word = (v?: string) => (v === "off" ? "fermé" : "ouvert");

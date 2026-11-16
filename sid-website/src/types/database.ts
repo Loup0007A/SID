@@ -176,7 +176,7 @@ export interface BankAccount {
 
 export interface ChatChannel {
   id: string;
-  type: "dm" | "group" | "application";
+  type: "dm" | "group" | "application" | "admin";
   name: string | null;
   related_application_id: string | null;
   created_by: string | null;

@@ -80,6 +80,7 @@ const PARTICLES: Partial<Record<TitleId, { count: number; glyphs?: string[] }>> 
   veilleur: { count: 10, glyphs: ["❋", "❋", "✿"] },
   veneur: { count: 16 },
   equilibre: { count: 22, glyphs: ["✦", "·", "✧", "·", "·"] },
+  dictateur: { count: 20 },
 };
 
 /**

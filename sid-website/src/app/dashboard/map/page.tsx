@@ -302,6 +302,12 @@ export default function MapPage() {
                 </p>
               )}
               {myPosition.note && <p className="font-body text-sm text-paper/80">{myPosition.note}</p>}
+              {myPosition.glitched && (
+                <p className="font-mono text-xs text-[#7dffb0]">
+                  Pour les autres : <span className="glitch-word" data-text="Lieu inconnu">Lieu inconnu</span> (brouillé depuis L&apos;Envers,
+                  à rétablir dans « Ma position » sur la Cartographie).
+                </p>
+              )}
             </div>
           )}
 

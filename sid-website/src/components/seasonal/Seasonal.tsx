@@ -28,6 +28,12 @@ const ChasseGarland = dynamic(() => import("./GrandeChasse").then((m) => m.Chass
 const ChasseGreeting = dynamic(() => import("./GrandeChasse").then((m) => m.ChasseGreeting), { ssr: false });
 const ChasseFooter = dynamic(() => import("./GrandeChasse").then((m) => m.ChasseFooter), { ssr: false });
 const ChasseBoard = dynamic(() => import("./GrandeChasse").then((m) => m.ChasseBoard), { ssr: false });
+const ElectionDecor = dynamic(() => import("./Election").then((m) => m.ElectionDecor), { ssr: false });
+const ElectionGarland = dynamic(() => import("./Election").then((m) => m.ElectionGarland), { ssr: false });
+const ElectionGreeting = dynamic(() => import("./Election").then((m) => m.ElectionGreeting), { ssr: false });
+const ElectionFooter = dynamic(() => import("./Election").then((m) => m.ElectionFooter), { ssr: false });
+const ElectionBoard = dynamic(() => import("./Election").then((m) => m.ElectionBoard), { ssr: false });
+const ElectionCeremony = dynamic(() => import("./Election").then((m) => m.ElectionCeremony), { ssr: false });
 
 /** Décor de fond (toutes les pages). */
 export function SeasonalDecor() {
@@ -38,6 +44,7 @@ export function SeasonalDecor() {
       {d?.noel && <NoelDecor />}
       {anyHoliday(d) && <HolidayDecor />}
       {d?.grande_chasse && <ChasseDecor />}
+      {d?.election && <ElectionDecor />}
     </>
   );
 }
@@ -50,6 +57,7 @@ export function SeasonalGarland() {
       {d?.noel && <NoelGarland />}
       {anyHoliday(d) && <HolidayGarland />}
       {d?.grande_chasse && <ChasseGarland />}
+      {d?.election && <ElectionGarland />}
     </>
   );
 }
@@ -63,6 +71,7 @@ export function SeasonalGreeting() {
       {d?.noel && <NoelGreeting />}
       {anyHoliday(d) && <HolidayGreeting />}
       {d?.grande_chasse && <ChasseGreeting />}
+      {d?.election && <ElectionGreeting />}
     </>
   );
 }
@@ -76,12 +85,24 @@ export function SeasonalFooter() {
       {d?.noel && <NoelGift />}
       {anyHoliday(d) && <HolidayFooter />}
       {d?.grande_chasse && <ChasseFooter />}
+      {d?.election && <ElectionFooter />}
     </>
   );
 }
 
-/** Tableau de l'événement sur l'accueil du tableau de bord (Grande Chasse). */
+/** Tableau de l'événement sur l'accueil du tableau de bord (Grande Chasse, élection). */
 export function SeasonalBoard() {
   const d = useSiteDecor();
-  return d?.grande_chasse ? <ChasseBoard /> : null;
+  return (
+    <>
+      {d?.grande_chasse && <ChasseBoard />}
+      {d?.election && <ElectionBoard />}
+    </>
+  );
+}
+
+/** Cérémonie d'un événement (élection du Dictateur), sur tout le tableau de bord. */
+export function SeasonalCeremony() {
+  const d = useSiteDecor();
+  return d?.election ? <ElectionCeremony /> : null;
 }
