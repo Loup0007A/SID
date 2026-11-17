@@ -17,7 +17,8 @@
 --   dépasse 100 % est pris aux tirages ratés, puis au rang E, puis aux
 --   rangs les plus courants). Prix : prix × k^(ln 4,8 / ln 5), soit 4,8
 --   fois le prix pour ×5. Au-delà de ×(1 / chance Divin), le Divin est
---   assuré : le bonus s'arrête là.
+--   assuré : le bonus s'arrête là. L'argent des tirages va dans la
+--   cagnotte TVA (tax_pool).
 -- =========================================================
 
 -- ---------------------------------------------------------
@@ -386,6 +387,9 @@ begin
     end if;
     insert into public.transactions (user_id, amount, reason, related_quest_id, created_by)
     values (v_uid, -v_cost, 'Recrutement : ' || q.title, p_quest, v_uid);
+    -- L'argent des tirages va dans la cagnotte TVA.
+    insert into public.tax_pool (id) values (true) on conflict (id) do nothing;
+    update public.tax_pool set balance = balance + v_cost where id = true;
   end if;
 
   -- Du plus rare au plus courant.

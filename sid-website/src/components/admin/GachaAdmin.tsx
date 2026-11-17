@@ -75,7 +75,7 @@ export function GachaAdmin() {
           <h2 className="font-display text-lg uppercase tracking-wide">Recrutement de renforts</h2>
           <p className="font-body text-sm text-paper/70">
             Sur une quête à puissance globale, un participant paie pour tirer un personnage. Les rangs D à S se calculent tout seuls entre
-            le rang E et le rang Divin. Le reste des chances donne un tirage raté, payé quand même. Le joueur choisit librement son bonus de chance : chaque rang de D à Divin devient autant de fois plus probable, et le prix suit (4,8 fois le prix pour ×5).
+            le rang E et le rang Divin. Le reste des chances donne un tirage raté, payé quand même. L'argent des tirages va dans la cagnotte TVA. Le joueur choisit librement son bonus de chance : chaque rang de D à Divin devient autant de fois plus probable, et le prix suit (4,8 fois le prix pour ×5).
           </p>
         </div>
 

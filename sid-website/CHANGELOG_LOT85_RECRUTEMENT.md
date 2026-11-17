@@ -21,7 +21,7 @@
 
 - Réservé aux participants d'une quête à puissance globale.
 - Un tirage coûte le prix fixé par l'administration, payé même si personne
-  ne répond.
+  ne répond. L'argent va dans la **cagnotte TVA**.
 - **Bonus de chance ×k, au choix du joueur** (saisie libre, curseur, ou
   raccourcis ×2, ×5, ×10, ×100, ×1 000) : chaque rang de D à Divin devient
   k fois plus probable. Quand le total dépasse 100 %, les rangs les plus
