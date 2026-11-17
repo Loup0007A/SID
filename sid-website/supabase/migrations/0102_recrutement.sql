@@ -12,8 +12,12 @@
 -- * L'administration règle la chance d'un rang E, celle d'un rang Divin et
 --   le prix d'un tirage. Les rangs D à S suivent une suite géométrique
 --   entre les deux ; le reste des chances donne un tirage raté (payé).
--- * Bonus de chance ×k (1 à 10) : multiplie les chances de D à Divin, et
---   coûte prix × k^(ln 4,8 / ln 5), soit 4,8 fois le prix pour ×5.
+-- * Bonus de chance ×k, sans autre limite que l'argent : chaque rang de D
+--   à Divin devient k fois plus probable (les plus rares d'abord ; ce qui
+--   dépasse 100 % est pris aux tirages ratés, puis au rang E, puis aux
+--   rangs les plus courants). Prix : prix × k^(ln 4,8 / ln 5), soit 4,8
+--   fois le prix pour ×5. Au-delà de ×(1 / chance Divin), le Divin est
+--   assuré : le bonus s'arrête là.
 -- =========================================================
 
 -- ---------------------------------------------------------
@@ -62,12 +66,13 @@ create table if not exists public.quest_gacha_draws (
   id bigserial primary key,
   quest_id uuid references public.quests (id) on delete set null,
   user_id uuid not null references public.profiles (id) on delete cascade,
-  luck numeric(6,2) not null,
+  luck numeric(20,2) not null,
   cost numeric(18,2) not null,
   rank text,                       -- null : tirage raté
   card_id uuid,
   created_at timestamptz not null default now()
 );
+alter table public.quest_gacha_draws alter column luck type numeric(20,2);
 create index if not exists quest_gacha_draws_user_idx on public.quest_gacha_draws (user_id, created_at desc);
 alter table public.quest_gacha_draws enable row level security;
 drop policy if exists "quest_gacha_draws_select" on public.quest_gacha_draws;
@@ -106,8 +111,19 @@ insert into public.app_config (key, value) values
   ('gacha_price', '1000')
 on conflict (key) do nothing;
 
+-- Bonus le plus haut utile : à ce niveau, le rang Divin est assuré.
+create or replace function public._gacha_luck_max(p_divin numeric default null)
+returns numeric
+language sql stable security definer set search_path = public
+as $$
+  select ceil(1 / coalesce(p_divin, public.get_config_numeric('gacha_prob_divin', 0.000001)));
+$$;
+
 -- Chances d'un tirage avec le bonus p_luck (1 = sans bonus).
 -- p_e / p_divin : pour prévisualiser d'autres réglages.
+-- Chaque rang de D à Divin vaut sa chance × p_luck, des plus rares aux plus
+-- courants, tant qu'il reste des chances ; puis le rang E (sans bonus), et
+-- le reste donne un tirage raté.
 create or replace function public._gacha_odds(p_luck numeric, p_e numeric default null, p_divin numeric default null)
 returns jsonb
 language plpgsql stable security definer set search_path = public
@@ -115,31 +131,22 @@ as $$
 declare
   v_e numeric := coalesce(p_e, public.get_config_numeric('gacha_prob_e', 0.5));
   v_div numeric := coalesce(p_divin, public.get_config_numeric('gacha_prob_divin', 0.000001));
-  v_luck numeric := greatest(1, least(coalesce(p_luck, 1), 10));
+  v_luck numeric := greatest(1, least(coalesce(p_luck, 1), public._gacha_luck_max(v_div)));
   v_r numeric;
   v_ranks text[] := array['D', 'C', 'B', 'A', 'S', 'Divin'];
-  v_p numeric[] := '{}';
-  v_sum numeric := 0;
-  v_scale numeric := 1;
-  v_qe numeric;
+  v_left numeric := 1;
+  v_q numeric;
   v_out jsonb := '{}'::jsonb;
   k int;
 begin
   v_r := power(v_div / v_e, 1.0 / 6);
-  for k in 1 .. 6 loop
-    v_p := v_p || (v_e * power(v_r, k) * v_luck);
-    v_sum := v_sum + v_e * power(v_r, k) * v_luck;
+  for k in reverse 6 .. 1 loop
+    v_q := least(v_e * power(v_r, k) * v_luck, v_left);
+    v_out := v_out || jsonb_build_object(v_ranks[k], v_q);
+    v_left := v_left - v_q;
   end loop;
-  if v_sum > 1 then
-    v_scale := 1 / v_sum;
-    v_sum := 1;
-  end if;
-  v_qe := greatest(0, least(v_e, 1 - v_sum));
-  v_out := jsonb_build_object('E', v_qe);
-  for k in 1 .. 6 loop
-    v_out := v_out || jsonb_build_object(v_ranks[k], v_p[k] * v_scale);
-  end loop;
-  return v_out || jsonb_build_object('fail', greatest(0, 1 - v_qe - v_sum));
+  v_q := least(v_e, v_left);
+  return v_out || jsonb_build_object('E', v_q, 'fail', greatest(0, v_left - v_q));
 end;
 $$;
 
@@ -149,7 +156,8 @@ returns numeric
 language sql stable security definer set search_path = public
 as $$
   select round(public.get_config_numeric('gacha_price', 1000)
-               * power(greatest(1, least(coalesce(p_luck, 1), 10))::numeric, ln(4.8::numeric) / ln(5::numeric)), 2);
+               * power(greatest(1, least(coalesce(p_luck, 1), public._gacha_luck_max()))::numeric,
+                       ln(4.8::numeric) / ln(5::numeric)), 2);
 $$;
 
 create or replace function public.gacha_settings()
@@ -160,7 +168,7 @@ as $$
     'prob_e', public.get_config_numeric('gacha_prob_e', 0.5),
     'prob_divin', public.get_config_numeric('gacha_prob_divin', 0.000001),
     'price', public.get_config_numeric('gacha_price', 1000),
-    'luck_max', 10,
+    'luck_max', public._gacha_luck_max(),
     'odds', public._gacha_odds(1));
 $$;
 
@@ -352,7 +360,10 @@ declare
   v_cur text := coalesce((select value from public.app_config where key = 'currency_plural'), 'zénis');
 begin
   if v_uid is null then raise exception 'Connexion requise.'; end if;
-  if v_luck < 1 or v_luck > 10 then raise exception 'Le bonus de chance va de ×1 à ×10.'; end if;
+  if v_luck < 1 then raise exception 'Le bonus de chance commence à ×1.'; end if;
+  if v_luck > public._gacha_luck_max() then
+    raise exception 'Au-delà de ×%, le rang Divin est déjà assuré.', to_char(public._gacha_luck_max(), 'FM999G999G999G999');
+  end if;
 
   select * into q from public.quests where id = p_quest;
   if q.id is null then raise exception 'Quête introuvable.'; end if;
@@ -592,6 +603,7 @@ $$;
 -- ---------------------------------------------------------
 revoke execute on function public._gacha_odds(numeric, numeric, numeric) from public, anon;
 revoke execute on function public._gacha_cost(numeric) from public, anon;
+revoke execute on function public._gacha_luck_max(numeric) from public, anon;
 revoke execute on function public._gacha_name(text) from public, anon, authenticated;
 revoke execute on function public._gacha_stat(text) from public, anon, authenticated;
 revoke execute on function public._quest_power(uuid) from public, anon;

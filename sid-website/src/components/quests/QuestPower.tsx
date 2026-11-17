@@ -8,7 +8,7 @@ import { SidIcon } from "@/components/icons/SidIcon";
 import { formatStat } from "@/lib/questRequirements";
 import {
   GACHA_RANKS,
-  LUCK_MAX,
+  luckMax,
   RANK_LABEL,
   formatOdds,
   gachaCost,
@@ -239,7 +239,14 @@ function RecruitDialog({
   onChange: () => void;
 }) {
   const supabase = useMemo(() => createClient(), []);
-  const [luck, setLuck] = useState(1);
+  const [luck, setLuckRaw] = useState(1);
+  const [luckText, setLuckText] = useState("1");
+  const maxLuck = luckMax(settings.prob_divin);
+  const setLuck = (n: number) => {
+    const v = Math.max(1, Math.min(maxLuck, Math.round(n * 100) / 100));
+    setLuckRaw(v);
+    setLuckText(String(v).replace(".", ","));
+  };
   const [balance, setBalance] = useState(initialBalance);
   const [stage, setStage] = useState<"setup" | "rolling" | "result" | "choose">(cards.some((c) => !c.kept) ? "choose" : "setup");
   const [result, setResult] = useState<DrawResult | null>(null);
@@ -257,7 +264,8 @@ function RecruitDialog({
 
   const odds = gachaOdds(settings.prob_e, settings.prob_divin, luck);
   const base = gachaOdds(settings.prob_e, settings.prob_divin, 1);
-  const cost = gachaCost(settings.price, luck);
+  const cost = gachaCost(settings.price, luck, settings.prob_divin);
+  const presets = [1, 2, 5, 10, 100, 1000].filter((k) => k <= maxLuck);
 
   async function draw() {
     if (started.current) return;
@@ -324,20 +332,42 @@ function RecruitDialog({
         {stage === "setup" && (
           <>
             <div className="rd-luck">
-              <label htmlFor="rd-luck" className="rd-luck-label">
-                <span>Bonus de chance</span>
-                <strong>×{luck.toLocaleString("fr-FR")}</strong>
-              </label>
+              <div className="rd-luck-label">
+                <label htmlFor="rd-luck">Bonus de chance</label>
+                <span className="rd-luck-field">
+                  ×
+                  <input
+                    id="rd-luck"
+                    inputMode="decimal"
+                    value={luckText}
+                    onChange={(e) => {
+                      setLuckText(e.target.value);
+                      const n = Number(e.target.value.replace(/\s/g, "").replace(",", "."));
+                      if (Number.isFinite(n) && n >= 1) setLuckRaw(Math.min(maxLuck, Math.round(n * 100) / 100));
+                    }}
+                    onBlur={() => setLuck(luck)}
+                  />
+                </span>
+              </div>
               <input
-                id="rd-luck"
                 type="range"
-                min={1}
-                max={LUCK_MAX}
-                step={0.5}
-                value={luck}
-                onChange={(e) => setLuck(Number(e.target.value))}
+                aria-label="Bonus de chance (échelle logarithmique)"
+                min={0}
+                max={Math.log10(maxLuck)}
+                step={0.01}
+                value={Math.log10(luck)}
+                onChange={(e) => setLuck(niceLuck(Math.pow(10, Number(e.target.value))))}
               />
-              <p className="rd-luck-hint">Multiplie les chances des rangs D à Divin.</p>
+              <div className="rd-presets">
+                {presets.map((k) => (
+                  <button key={k} type="button" className={luck === k ? "is-on" : ""} onClick={() => setLuck(k)}>
+                    ×{k.toLocaleString("fr-FR")}
+                  </button>
+                ))}
+              </div>
+              <p className="rd-luck-hint">
+                Chaque rang de D à Divin devient {luck.toLocaleString("fr-FR")} fois plus probable. À ×{maxLuck.toLocaleString("fr-FR")}, le rang Divin est assuré.
+              </p>
             </div>
 
             <table className="rd-odds">
@@ -449,6 +479,13 @@ function RecruitDialog({
     </div>,
     document.body,
   );
+}
+
+/** Arrondi lisible pour le curseur : 1,25 · 3,4 · 47 · 1 200 · 35 000. */
+function niceLuck(n: number): number {
+  if (n < 10) return Math.round(n * 4) / 4;
+  const p = Math.pow(10, Math.floor(Math.log10(n)) - 1);
+  return Math.round(n / p) * p;
 }
 
 function topThree(cards: RecruitCard[]): Set<string> {
