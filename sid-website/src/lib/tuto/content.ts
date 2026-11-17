@@ -168,7 +168,7 @@ export const TOUR: TutoStep[] = [
     target: "quete",
     icon: "clipboard",
     title: "Lire une fiche de mission",
-    body: "Le **rang** (E à S) dit la difficulté. Puis viennent la récompense, la renommée, l'échéance et le nombre de places.\n\nCertaines missions exigent un niveau minimum (Intelligence, Puissance, Technique) : le bouton reste grisé tant que tu ne l'as pas. Sinon, **Prendre la mission**, et tu peux même choisir pour qui tu la prends (qui touchera l'argent).",
+    body: "Le **rang** (E à S) dit la difficulté. Puis viennent la récompense, la renommée, l'échéance et le nombre de places.\n\nCertaines missions exigent un niveau minimum (Intelligence, Puissance, Technique) : le bouton reste grisé tant que tu ne l'as pas. Une mission à **puissance globale** se réunit à plusieurs : tout le monde peut la prendre, et chaque participant peut **recruter des renforts** (tirage payant, trois au plus). Sinon, **Prendre la mission**, et tu peux même choisir pour qui tu la prends (qui touchera l'argent).",
     missing: "Aucune quête n'est ouverte en ce moment : elles apparaîtront ici, en fiches de papier. Le rang (E à S) dit la difficulté, puis viennent la récompense, la renommée, l'échéance et les places.\n\n**Prendre la mission** t'y inscrit (le bouton reste grisé si un niveau minimum est exigé).",
   },
   {

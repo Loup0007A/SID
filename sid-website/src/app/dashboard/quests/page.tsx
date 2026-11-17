@@ -14,6 +14,7 @@ import { CONTRACT_TYPES } from "@/lib/contractTypes";
 import { findShortestPath } from "@/lib/pathfinding";
 import { formatStat, unmetRequirements, type MemberCharacteristics } from "@/lib/questRequirements";
 import { SidIcon } from "@/components/icons/SidIcon";
+import { QuestPower } from "@/components/quests/QuestPower";
 
 type RepPreview = { gain?: number; loss?: number; status?: "validated" | "rejected"; delta?: number };
 
@@ -49,6 +50,7 @@ export default function QuestsPage() {
     minStrength: "",
     minTechnique: "",
     minPower: "",
+    globalPower: false,
   });
 
   // Mes caractéristiques, pour griser les quêtes dont je n'atteins pas les prérequis.
@@ -206,6 +208,8 @@ export default function QuestsPage() {
       min_strength: Number(form.minStrength) || 0,
       min_technique: Number(form.minTechnique) || 0,
       min_power: Number(form.minPower) || 0,
+      // Sans la migration 0102, la colonne n'existe pas : on ne l'envoie que si besoin.
+      ...(form.globalPower ? { global_power: true } : {}),
       created_by: userId,
     });
     if (error) {
@@ -213,7 +217,7 @@ export default function QuestsPage() {
       return;
     }
     setShowForm(false);
-    setForm({ title: "", description: "", giver: "", objectives: "", reward: "0", difficulty: "D", contractType: "autres", deadline: "", visibility: "members", maxParticipants: "", fundedByCreator: true, placeId: "", reputationReward: "", minIntelligence: "", minStrength: "", minTechnique: "", minPower: "" });
+    setForm({ title: "", description: "", giver: "", objectives: "", reward: "0", difficulty: "D", contractType: "autres", deadline: "", visibility: "members", maxParticipants: "", fundedByCreator: true, placeId: "", reputationReward: "", minIntelligence: "", minStrength: "", minTechnique: "", minPower: "", globalPower: false });
     await refresh();
   }
 
@@ -229,7 +233,7 @@ export default function QuestsPage() {
       setMessage(`Cette quête se prend sur place : rends-toi d'abord à ${name ?? "son lieu"}.`);
       return;
     }
-    const missing = unmetRequirements(quest, me);
+    const missing = quest.global_power ? [] : unmetRequirements(quest, me);
     if (missing.length > 0) {
       setMessage(`Prérequis non atteints : ${missing.map((r) => `${r.label} ${formatStat(r.min)}`).join(", ")}.`);
       return;
@@ -570,7 +574,21 @@ export default function QuestsPage() {
             </select>
           </div>
           <fieldset className="space-y-2 sm:col-span-2">
-            <legend className={labelClass}>Prérequis pour prendre la quête (vide = aucun, 100 max)</legend>
+            <legend className={labelClass}>
+              {form.globalPower ? "Puissance à réunir à plusieurs (vide = aucune, sans limite)" : "Prérequis pour prendre la quête (vide = aucun, 100 max)"}
+            </legend>
+            <label className="flex items-start gap-2 font-mono text-xs">
+              <input
+                type="checkbox"
+                className="mt-0.5 accent-blue"
+                checked={form.globalPower}
+                onChange={(e) => setForm({ ...form, globalPower: e.target.checked })}
+              />
+              <span>
+                Puissance globale : les prérequis se comparent à la somme des participants et de leurs renforts (peut dépasser 100).
+                Chacun peut s&apos;inscrire et recruter des renforts ; le rapport se rend une fois la puissance réunie.
+              </span>
+            </label>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {(
                 [
@@ -585,7 +603,7 @@ export default function QuestsPage() {
                   <input
                     type="number"
                     min={0}
-                    max={100}
+                    max={form.globalPower ? undefined : 100}
                     step="0.1"
                     className={inputClass}
                     placeholder="0"
@@ -623,7 +641,8 @@ export default function QuestsPage() {
           const questPlace = q.place_id ? places.find((p) => p.id === q.place_id) : null;
           const eta = q.place_id ? etaFor(q) : null;
           const isTravelingToThisQuest = isTraveling && !!q.place_id && q.place_id === travelDestinationPlaceId;
-          const missing = unmetRequirements(q, me);
+          // Puissance globale (Lot 85) : les prérequis se réunissent à plusieurs.
+          const missing = q.global_power ? [] : unmetRequirements(q, me);
           // Une quête liée à un lieu ne se prend qu'une fois arrivé sur place.
           const notHere = !!q.place_id && (myPosition?.place_id !== q.place_id || !!myPosition?.travel_started_at);
 
@@ -746,6 +765,7 @@ export default function QuestsPage() {
                 </p>
               )}
 
+              {q.global_power && <QuestPower quest={q} userId={userId} joined={alreadyIn && myReports.get(q.id)?.status !== "rejected"} />}
               {alreadyIn && myReports.get(q.id)?.status !== "rejected" && (
                 <ReportButton quest={q} mine={myReports.get(q.id) ?? null} onSaved={() => refresh()} />
               )}

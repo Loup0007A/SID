@@ -110,7 +110,7 @@ export function QuestCard({ quest, participantCount, progress }: { quest: Quest;
 
       {requirements.length > 0 && (
         <div className="font-mono text-xs text-paper-text/70">
-          Prérequis : {requirements.map((r) => `${r.label} ${formatStat(r.min)}`).join(" · ")}
+          {quest.global_power ? "À réunir à plusieurs" : "Prérequis"} : {requirements.map((r) => `${r.label} ${formatStat(r.min)}`).join(" · ")}
         </div>
       )}
 

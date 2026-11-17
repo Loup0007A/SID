@@ -27,6 +27,7 @@ const NOTIF_LABELS: Record<string, string> = {
   quest_validated: "Quêtes validées",
   quest_failed: "Quêtes échouées",
   quest_report: "Rapports de mission",
+  quest_gacha: "Renforts recrutés",
   application_decision: "Candidatures",
   quest_confirmation_needed: "Quêtes à confirmer",
   travel_arrived: "Trajets",

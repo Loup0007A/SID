@@ -109,6 +109,8 @@ export interface Quest {
   min_strength: number;
   min_technique: number;
   min_power: number;
+  /** Lot 85 : prérequis comptés sur l'ensemble des participants et leurs renforts. */
+  global_power?: boolean;
   /** Ordre de mission (Lot 62) : qui la confie, et ce qu'il faut accomplir. */
   giver?: string | null;
   objectives?: string[];

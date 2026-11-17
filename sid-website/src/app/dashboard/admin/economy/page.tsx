@@ -12,6 +12,7 @@ import { CentralBankAdmin, DisputesShortcut, ExpenseQueue, TaxesAdmin } from "@/
 import { EconomyMembers } from "@/components/admin/EconomyMembers";
 import { WheelAdmin } from "@/components/admin/WheelAdmin";
 import { InactivityAdmin } from "@/components/admin/InactivityAdmin";
+import { GachaAdmin } from "@/components/admin/GachaAdmin";
 
 /**
  * Administration → Économie, en onglets (Lot 74). Tous les panneaux sont
@@ -19,7 +20,7 @@ import { InactivityAdmin } from "@/components/admin/InactivityAdmin";
  * suite et le changement d'onglet est instantané.
  */
 
-type Tab = "traiter" | "banque" | "impots" | "membres" | "entreprises" | "roue" | "absences";
+type Tab = "traiter" | "banque" | "impots" | "membres" | "entreprises" | "roue" | "recrutement" | "absences";
 const TABS: { key: Tab; label: string; icon: IconName }[] = [
   { key: "traiter", label: "À traiter", icon: "check" },
   { key: "banque", label: "Banque centrale", icon: "zeni" },
@@ -27,6 +28,7 @@ const TABS: { key: Tab; label: string; icon: IconName }[] = [
   { key: "membres", label: "Membres", icon: "people" },
   { key: "entreprises", label: "Entreprises", icon: "office" },
   { key: "roue", label: "Roue du jour", icon: "wheel" },
+  { key: "recrutement", label: "Recrutement", icon: "dice" },
   { key: "absences", label: "Absences", icon: "hourglass" },
 ];
 /** Ancres des notifications et anciens liens → onglet. */
@@ -139,6 +141,10 @@ export default function EconomyAdminPage() {
 
       <Panel id="roue" tab={tab}>
         {tab === "roue" && <WheelAdmin />}
+      </Panel>
+
+      <Panel id="recrutement" tab={tab}>
+        {tab === "recrutement" && <GachaAdmin />}
       </Panel>
 
       <Panel id="absences" tab={tab}>

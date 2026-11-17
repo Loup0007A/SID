@@ -22,6 +22,7 @@ const ERRORS: Record<string, string> = {
   part_too_long: `Une partie ne peut pas dépasser ${PART_MAX} caractères.`,
   rejected: "Ta participation a été rejetée : plus de rapport possible.",
   not_participant: "Tu ne participes pas à cette mission.",
+  power_not_met: "La puissance du groupe n'est pas encore réunie : recrutez des renforts ou attendez d'autres participants.",
 };
 
 const when = (d: string) => new Date(d).toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
