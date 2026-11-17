@@ -6,7 +6,8 @@ import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/client";
 import { currentUserId } from "@/lib/session";
 import { loadCurrentUser, can } from "@/lib/permissions";
-import { SHOP_EFFECT_LABELS, type ShopItem, type ShopItemEffect, type PermissionKey, type Wallet } from "@/types/database";
+import type { ShopItem, ShopItemEffect, PermissionKey, Wallet } from "@/types/database";
+import { SHOP_EFFECTS, SHOP_EFFECT_KEYS, effectSummary, effectValue } from "@/lib/shopEffects";
 import type { ShopItemStats } from "@/types/stats";
 import type { Business } from "@/types/business";
 import { inputClass, labelClass } from "@/lib/ui";
@@ -16,6 +17,8 @@ import { ShopFrame } from "@/components/shop/ShopFrame";
 import { useDeepLink } from "@/lib/deeplink";
 import type { AuctionPreset } from "@/components/shop/Auctions";
 import { WishlistTab, WishButton, GiftPanel, type Member } from "@/components/shop/Wishlist";
+import { BoxEditor, BoxReveal, BoxSellerPanel, LuckyBoxArt, isBox, openersLabel } from "@/components/shop/LuckyBox";
+import { ItemEffectsPanel } from "@/components/shop/ItemEffects";
 
 // La salle des ventes n'est chargée qu'à l'ouverture de son onglet.
 const AuctionsTab = dynamic(() => import("@/components/shop/Auctions").then((m) => m.AuctionsTab), {
@@ -28,10 +31,12 @@ const AuctionsTab = dynamic(() => import("@/components/shop/Auctions").then((m) 
  * mes achats, mes objets en vente, et création avec aperçu en direct.
  * Lot 65 : onglet Enchères (components/shop/Auctions.tsx).
  * Lot 66 : liste de souhaits et cadeaux (components/shop/Wishlist.tsx).
+ * Lot 84 : boîtes chanceuses (components/shop/LuckyBox.tsx) et objets à
+ * effet utilisables depuis « Mes achats » (components/shop/ItemEffects.tsx).
  */
 
 type Tab = "vitrine" | "encheres" | "souhaits" | "achats" | "ventes" | "nouveau";
-type Filter = "tout" | "promo" | "effet" | "rares";
+type Filter = "tout" | "promo" | "effet" | "boites" | "rares";
 type Sort = "recent" | "prix-asc" | "prix-desc" | "nom";
 type Purchase = {
   id: string;
@@ -39,7 +44,9 @@ type Purchase = {
   quantity: number;
   total_price: number;
   created_at: string;
-  shop_items: { name: string; image_url: string | null; effect: ShopItemEffect | null } | null;
+  shop_items: { name: string; image_url: string | null; effect: ShopItemEffect | null; effect_value?: number | null; kind?: "item" | "box" } | null;
+  /** Gagné dans cette boîte chanceuse. */
+  box?: { name: string } | null;
   gift_message?: string | null;
   giver?: { nickname: string } | null;
   payer?: { name: string } | null;
@@ -85,6 +92,8 @@ export default function ShopPage() {
   const [wished, setWished] = useState<Set<string>>(new Set());
   const [members, setMembers] = useState<Member[] | null>(null);
   const [giftTo, setGiftTo] = useState<string | null>(null);
+  const [opening, setOpening] = useState<ShopItem | null>(null);
+  const [effectsKey, setEffectsKey] = useState(0);
 
   const canManage = can(permissions, "manage_shop");
 
@@ -127,11 +136,17 @@ export default function ShopPage() {
 
   async function refreshPurchases(uid = userId) {
     if (!uid) return;
-    const base = "id, status, quantity, total_price, created_at, shop_items(name, image_url, effect)";
+    // Deux liens vers shop_items depuis 0101 (l'objet, la boîte d'origine) :
+    // le lien de l'objet est nommé.
+    const base = "id, status, quantity, total_price, created_at, shop_items!purchases_item_id_fkey(name, image_url, effect)";
     const query = (cols: string) => supabase.from("purchases").select(cols).eq("user_id", uid).order("created_at", { ascending: false }).limit(60);
-    // Sans les migrations 0081 et 0086, les colonnes des cadeaux et des frais n'existent pas encore.
+    // Sans les migrations 0081, 0086 et 0101, certaines colonnes n'existent pas encore.
     const gifts = `${base}, gift_message, giver:profiles!purchases_gift_from_fkey(nickname)`;
-    const first = await query(`${gifts}, payer:businesses!purchases_paid_by_business_fkey(name)`);
+    const full = `${gifts}, payer:businesses!purchases_paid_by_business_fkey(name)`;
+    const boxes = await query(
+      `${full.replace("shop_items!purchases_item_id_fkey(name, image_url, effect)", "shop_items!purchases_item_id_fkey(name, image_url, effect, effect_value, kind)")}, box:shop_items!purchases_box_id_fkey(name)`
+    );
+    const first = boxes.error ? await query(full) : boxes;
     const second = first.error ? await query(gifts) : first;
     const res = second.error ? await query(base) : second;
     setPurchases((res.data ?? []) as unknown as Purchase[]);
@@ -242,6 +257,7 @@ export default function ShopPage() {
     let list = items.filter((i) => !q || i.name.toLowerCase().includes(q) || (i.description ?? "").toLowerCase().includes(q));
     if (filter === "promo") list = list.filter((i) => promoOf(i));
     if (filter === "effet") list = list.filter((i) => i.effect);
+    if (filter === "boites") list = list.filter((i) => isBox(i));
     if (filter === "rares") list = list.filter((i) => i.stock !== null && i.stock <= 5);
     const by = {
       recent: (a: ShopItem, b: ShopItem) => +new Date(b.created_at) - +new Date(a.created_at),
@@ -257,6 +273,7 @@ export default function ShopPage() {
       tout: items?.length ?? 0,
       promo: items?.filter((i) => promoOf(i)).length ?? 0,
       effet: items?.filter((i) => i.effect).length ?? 0,
+      boites: items?.filter((i) => isBox(i)).length ?? 0,
       rares: items?.filter((i) => i.stock !== null && i.stock <= 5).length ?? 0,
     }),
     [items]
@@ -275,6 +292,14 @@ export default function ShopPage() {
     return true;
   }
 
+  const onBoxOpened = useCallback(() => {
+    setPurchases(null);
+    setEffectsKey((k) => k + 1);
+    refresh();
+    refreshWallet();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+
   async function requestExpense(item: ShopItem, businessId: string, qty: number, motive: string) {
     const { error } = await supabase.rpc("expense_request", { p_business: businessId, p_item: item.id, p_quantity: qty, p_motive: motive });
     if (error) {
@@ -287,7 +312,10 @@ export default function ShopPage() {
   }
 
   async function hideItem(item: ShopItem) {
-    if (!confirm(`Supprimer « ${item.name} » ? Il disparaîtra de la vitrine et de ta liste (les achats déjà faits restent).`)) return;
+    const msg = isBox(item)
+      ? `Supprimer la boîte « ${item.name} » ? Les exemplaires restants retournent au stock de leurs objets ; les objets déjà gagnés restent à leurs propriétaires.`
+      : `Supprimer « ${item.name} » ? Il disparaîtra de la vitrine et de ta liste (les achats déjà faits restent).`;
+    if (!confirm(msg)) return;
     const { error } = await supabase.from("shop_items").update({ is_active: false, hidden_at: new Date().toISOString() }).eq("id", item.id);
     if (error) return say(false, `Impossible de supprimer l'objet : ${error.message}`);
     say(true, `« ${item.name} » a été supprimé.`);
@@ -361,6 +389,7 @@ export default function ShopPage() {
                   ["tout", "Tout"],
                   ["promo", "En promo"],
                   ["effet", "Avec un effet"],
+                  ["boites", "Boîtes chanceuses"],
                   ["rares", "Dernières pièces"],
                 ] as [Filter, string][]
               ).map(([k, l]) =>
@@ -446,6 +475,7 @@ export default function ShopPage() {
       {/* ------------------------------------------------------------ Mes achats */}
       {tab === "achats" && (
         <section className="space-y-3">
+          <ItemEffectsPanel say={say} refreshKey={effectsKey} />
           {purchases === null ? (
             <p className="font-body text-paper/60">Chargement…</p>
           ) : purchases.length === 0 ? (
@@ -468,8 +498,14 @@ export default function ShopPage() {
                       <p className="truncate font-display uppercase tracking-wide">{p.shop_items?.name ?? "Objet retiré"}</p>
                       <p className="font-mono text-[11px] text-paper/65">
                         {new Date(p.created_at).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}
-                        {p.shop_items?.effect && " · s'utilise depuis une simulation"}
+                        {p.shop_items?.effect && ` · ${SHOP_EFFECTS[p.shop_items.effect]?.label ?? "objet à effet"}, à utiliser ci-dessus`}
+                        {p.shop_items?.kind === "box" && " · boîte chanceuse ouverte"}
                       </p>
+                      {p.box && (
+                        <p className="mt-0.5 font-body text-xs text-[#f0c27a]">
+                          <SidIcon name="gift" size={13} /> Gagné dans « {p.box.name} »
+                        </p>
+                      )}
                       {p.payer && (
                         <p className="mt-0.5 font-body text-xs text-blue-light">
                           <SidIcon name="office" size={13} /> Payé par {p.payer.name} (frais d&apos;entreprise)
@@ -485,7 +521,7 @@ export default function ShopPage() {
                     <div className="shrink-0 text-right">
                       <p className="font-display text-lg text-blue">{z(Number(p.total_price))}</p>
                       {p.quantity > 1 && <p className="font-mono text-[10px] text-paper/65">× {p.quantity}</p>}
-                      {!p.shop_items?.effect && p.status !== "cancelled" && (
+                      {!p.shop_items?.effect && p.shop_items?.kind !== "box" && p.status !== "cancelled" && (
                         <button
                           onClick={() => {
                             setAuctionPreset({ source: "resale", ref: p.id });
@@ -517,6 +553,7 @@ export default function ShopPage() {
           onDelete={hideItem}
           say={say}
           onCreate={canManage ? () => setTab("nouveau") : undefined}
+          canEffect={can(permissions, "manage_economy")}
         />
       )}
 
@@ -528,6 +565,7 @@ export default function ShopPage() {
           businesses={myBusinesses}
           sellerName={userId ? sellers[userId] ?? "toi" : "toi"}
           say={say}
+          myItems={myItems}
           onCreated={() => {
             refresh();
             refreshMine();
@@ -559,6 +597,27 @@ export default function ShopPage() {
           onWithdraw={withdraw}
           payers={payers}
           onExpense={requestExpense}
+          onOpenBox={(it) => {
+            setOpen(null);
+            setOpening(it);
+          }}
+          onSeeContents={() => {
+            setOpen(null);
+            setTab("ventes");
+          }}
+        />
+      )}
+
+      {opening && (
+        <BoxReveal
+          box={opening}
+          balance={wallet?.balance ?? null}
+          onClose={() => setOpening(null)}
+          onOpened={onBoxOpened}
+          onSeeInventory={() => {
+            setOpening(null);
+            setTab("achats");
+          }}
         />
       )}
 
@@ -577,9 +636,14 @@ function Badges({ item }: { item: ShopItem }) {
   return (
     <div className="pointer-events-none absolute left-3 top-3 z-[2] flex flex-col items-start gap-1.5">
       {promo && <span className="shop-badge is-promo">−{promo.pct} %</span>}
-      {item.effect && (
+      {item.effect && SHOP_EFFECTS[item.effect] && (
         <span className="shop-badge is-effect">
-          <SidIcon name="hourglass" size={11} /> Effet
+          <SidIcon name={SHOP_EFFECTS[item.effect].icon} size={11} /> {SHOP_EFFECTS[item.effect].label}
+        </span>
+      )}
+      {isBox(item) && (
+        <span className="shop-badge is-box">
+          <SidIcon name="gift" size={11} /> Boîte chanceuse
         </span>
       )}
     </div>
@@ -610,12 +674,25 @@ function PriceTag({ item, big = false }: { item: ShopItem; big?: boolean }) {
   );
 }
 
+/** Image d'un objet ; une boîte chanceuse sans photo est dessinée. */
+function ItemImage({ item, className, pad, zoom }: { item: ShopItem; className: string; pad?: string; zoom?: boolean }) {
+  if (isBox(item) && !item.image_url) {
+    return (
+      <div className={`shop-frame lb-cover ${className}`}>
+        <LuckyBoxArt />
+      </div>
+    );
+  }
+  return <ShopFrame src={item.image_url} alt={item.name} className={className} pad={pad} zoom={zoom} />;
+}
+
 function ShopCard({ item, seller, onOpen, wished, onWish }: { item: ShopItem; seller: string; onOpen: () => void; wished: boolean; onWish: () => void }) {
+  const box = isBox(item);
   return (
     <article className="shop-card group">
       <div className="relative">
         <button onClick={onOpen} className="relative block w-full text-left" aria-label={`Voir ${item.name}`}>
-          <ShopFrame src={item.image_url} alt={item.name} className="aspect-[4/3] w-full" />
+          <ItemImage item={item} className="aspect-[4/3] w-full" />
           <Badges item={item} />
           <StockTag item={item} />
         </button>
@@ -627,10 +704,11 @@ function ShopCard({ item, seller, onOpen, wished, onWish }: { item: ShopItem; se
           <p className="font-mono text-[10px] uppercase tracking-wider text-paper/65">par {seller}</p>
         </div>
         {item.description && <p className="line-clamp-2 font-body text-sm text-paper/75">{item.description}</p>}
+        {box && <p className="font-mono text-[11px] text-[#f0c27a]">{openersLabel(item.box_buyers ?? 0)}</p>}
         <div className="mt-auto flex items-end justify-between gap-3 pt-2">
           <PriceTag item={item} />
           <button onClick={onOpen} className="shop-buy">
-            Acheter
+            {box ? "Ouvrir" : "Acheter"}
           </button>
         </div>
       </div>
@@ -658,6 +736,8 @@ function ItemSheet({
   onGift,
   payers,
   onExpense,
+  onOpenBox,
+  onSeeContents,
 }: {
   item: ShopItem;
   seller: string;
@@ -677,7 +757,10 @@ function ItemSheet({
   onGift: (item: ShopItem, to: Member, qty: number, message: string) => Promise<boolean>;
   payers: Payer[];
   onExpense: (item: ShopItem, businessId: string, qty: number, motive: string) => Promise<boolean>;
+  onOpenBox: (item: ShopItem) => void;
+  onSeeContents: () => void;
 }) {
+  const box = isBox(item);
   const [qty, setQty] = useState(1);
   const [busy, setBusy] = useState(false);
   const [giving, setGiving] = useState(!!giftTo);
@@ -706,7 +789,7 @@ function ItemSheet({
           ✕
         </button>
         <div className="relative">
-          <ShopFrame src={item.image_url} alt={item.name} className="aspect-[4/3] max-h-[38dvh] w-full md:h-full md:max-h-none md:aspect-auto md:min-h-[26rem]" pad="p-8" zoom={false} />
+          <ItemImage item={item} className="aspect-[4/3] max-h-[38dvh] w-full md:h-full md:max-h-none md:aspect-auto md:min-h-[26rem]" pad="p-8" zoom={false} />
           <Badges item={item} />
         </div>
         <div className="flex flex-col gap-4 p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] md:max-h-[88vh] md:overflow-y-auto">
@@ -717,14 +800,46 @@ function ItemSheet({
             </div>
             <WishButton on={wished} onClick={onWish} name={item.name} className="mt-1 shrink-0" />
           </div>
-          {item.effect && (
+          {item.effect && SHOP_EFFECTS[item.effect] && (
             <p className="rounded-xl border border-blue/40 bg-blue/10 px-3 py-2 font-body text-sm text-blue-light">
-              <SidIcon name="hourglass" /> <strong>{SHOP_EFFECT_LABELS[item.effect]}.</strong> Chaque exemplaire s&apos;utilise une fois, depuis la page d&apos;une simulation.
+              <SidIcon name={SHOP_EFFECTS[item.effect].icon} /> <strong>{SHOP_EFFECTS[item.effect].label}.</strong> {effectSummary(item.effect, item.effect_value)} Chaque
+              exemplaire s&apos;utilise une fois, depuis « Mes achats ».
+            </p>
+          )}
+          {box && (
+            <p className="rounded-xl border border-[#f0c27a]/50 bg-[#f0c27a]/10 px-3 py-2 font-body text-sm text-[#f6dfb0]">
+              <SidIcon name="gift" /> <strong>Boîte chanceuse.</strong> Tu tombes sur un objet au hasard parmi ceux qui restent dedans. Seul le vendeur sait ce qu&apos;il
+              reste.
             </p>
           )}
           {item.description && <p className="whitespace-pre-line font-body text-[15px] leading-relaxed text-paper/85">{item.description}</p>}
 
           <div className="mt-auto space-y-4 border-t border-white/10 pt-4">
+            {box ? (
+              <>
+                <div className="flex items-end justify-between gap-3">
+                  <PriceTag item={item} big />
+                  <span className="font-mono text-xs text-[#f0c27a]">{openersLabel(item.box_buyers ?? 0)}</span>
+                </div>
+                {after != null && (
+                  <dl className="space-y-1 rounded-xl bg-white/5 px-4 py-3 font-mono text-sm">
+                    <div className="flex justify-between">
+                      <dt className="text-paper/60">Ta bourse après</dt>
+                      <dd className={short ? "text-red" : "text-blue-light"}>{z(after)}</dd>
+                    </div>
+                  </dl>
+                )}
+                <button
+                  onClick={() => onOpenBox(item)}
+                  disabled={short || (balance != null && balance < 0) || item.stock === 0}
+                  className="shop-buy w-full !py-3 !text-base"
+                >
+                  {item.stock === 0 ? "Boîte vide" : short ? "Pas assez de zénis" : `Ouvrir la boîte · ${z(total)}`}
+                </button>
+                <p className="font-mono text-[11px] text-paper/60">Une boîte ne s&apos;offre pas, ne se paie pas en frais d&apos;entreprise et ne se revend pas.</p>
+              </>
+            ) : (
+              <>
             <div className="flex items-end justify-between gap-3">
               <PriceTag item={item} big />
               <span className="font-mono text-xs text-paper/65">{item.stock === null ? "Stock illimité" : `${item.stock} en stock`}</span>
@@ -812,12 +927,19 @@ function ItemSheet({
                   <SidIcon name="office" size={15} /> Faire payer par l&apos;entreprise
                 </button>
               ))}
+              </>
+            )}
 
             {(mine || canManage) && (
               <div className="flex flex-wrap gap-2 border-t border-white/10 pt-3">
+                {box && (mine || canManage) && (
+                  <button onClick={onSeeContents} className="font-mono text-[11px] uppercase text-paper/70 hover:text-blue">
+                    <SidIcon name="clipboard" /> Voir le contenu
+                  </button>
+                )}
                 {mine && (
                   <button onClick={() => onDelete(item)} className="font-mono text-[11px] uppercase text-red/80 hover:text-red">
-                    <SidIcon name="trash" /> Supprimer mon objet
+                    <SidIcon name="trash" /> {box ? "Supprimer ma boîte" : "Supprimer mon objet"}
                   </button>
                 )}
                 {canManage && !mine && (
@@ -889,6 +1011,7 @@ function MyListings({
   onDelete,
   say,
   onCreate,
+  canEffect,
 }: {
   items: ShopItem[];
   businesses: Business[];
@@ -896,9 +1019,12 @@ function MyListings({
   onDelete: (item: ShopItem) => void;
   say: (ok: boolean, text: string) => void;
   onCreate?: () => void;
+  canEffect: boolean;
 }) {
   const supabase = createClient();
   const [edits, setEdits] = useState<Record<string, Partial<ShopItem>>>({});
+  const [editingBox, setEditingBox] = useState<string | null>(null);
+  const [boxKey, setBoxKey] = useState(0);
   const [openStats, setOpenStats] = useState<string | null>(null);
   const [stats, setStats] = useState<ShopItemStats | null>(null);
 
@@ -924,7 +1050,12 @@ function MyListings({
     if (p.price !== undefined) clean.price = Number(p.price) || 0;
     if (p.sale_price !== undefined) clean.sale_price = p.sale_price === null ? null : Number(p.sale_price) || null;
     if (p.sale_ends_at !== undefined) clean.sale_ends_at = p.sale_ends_at || null;
-    if (p.stock !== undefined) clean.stock = p.stock === null ? null : Math.max(0, Math.floor(Number(p.stock)));
+    if (p.stock !== undefined && !isBox(item)) clean.stock = p.stock === null ? null : Math.max(0, Math.floor(Number(p.stock)));
+    if (p.effect !== undefined) clean.effect = p.effect || null;
+    if (p.effect_value !== undefined || p.effect !== undefined) {
+      const eff = (p.effect !== undefined ? p.effect : item.effect) || null;
+      clean.effect_value = eff && SHOP_EFFECTS[eff].value ? effectValue(eff, p.effect_value ?? item.effect_value) : null;
+    }
     const { error } = await supabase.from("shop_items").update(clean).eq("id", item.id);
     if (error) return say(false, `Échec de l'enregistrement : ${error.message}`);
     setEdits((e) => ({ ...e, [item.id]: undefined as unknown as Partial<ShopItem> }));
@@ -972,16 +1103,27 @@ function MyListings({
         return (
           <li key={item.id} className="glass-card overflow-hidden">
             <div className="flex flex-col gap-4 p-4 md:flex-row md:items-start">
-              <ShopFrame src={item.image_url} alt={item.name} className="aspect-[4/3] w-full shrink-0 rounded-xl md:w-40" pad="p-2" zoom={false} />
+              <ItemImage item={item} className="aspect-[4/3] w-full shrink-0 rounded-xl md:w-40" pad="p-2" zoom={false} />
               <div className="min-w-0 flex-1 space-y-3">
                 <div className="flex flex-wrap items-center gap-2">
                   <h2 className="font-display text-lg uppercase tracking-wide">{item.name}</h2>
-                  <span className={`shop-badge !static ${item.is_active ? "" : "is-off"}`}>{item.is_active ? "En vente" : "Retiré"}</span>
+                  {isBox(item) && (
+                    <span className="shop-badge is-box !static">
+                      <SidIcon name="gift" size={11} /> Boîte chanceuse
+                    </span>
+                  )}
+                  <span className={`shop-badge !static ${item.is_active ? "" : "is-off"}`}>{item.is_active ? "En vente" : isBox(item) ? "Retirée" : "Retiré (utilisable en boîte)"}</span>
+                  {item.effect && SHOP_EFFECTS[item.effect] && (
+                    <span className="shop-badge is-effect !static">
+                      <SidIcon name={SHOP_EFFECTS[item.effect].icon} size={11} /> {SHOP_EFFECTS[item.effect].label}
+                      {SHOP_EFFECTS[item.effect].value && ` ${SHOP_EFFECTS[item.effect].value!.unit(effectValue(item.effect, item.effect_value))}`}
+                    </span>
+                  )}
                   {promo && <span className="shop-badge is-promo !static">−{promo.pct} %</span>}
-                  {item.stock === 0 && <span className="shop-badge is-rare !static">Épuisé</span>}
+                  {item.stock === 0 && <span className="shop-badge is-rare !static">{isBox(item) ? "Vide" : "Épuisé"}</span>}
                   {item.business_id && <span className="font-mono text-[10px] uppercase text-blue-light">vendu par {bizName[item.business_id] ?? "une entreprise"}</span>}
                 </div>
-                <div className="grid gap-3 sm:grid-cols-4">
+                <div className={`grid gap-3 ${isBox(item) ? "sm:grid-cols-3" : "sm:grid-cols-4"}`}>
                   <label className="space-y-1">
                     <span className={labelClass}>Prix</span>
                     <input type="number" min={0} className={inputClass} defaultValue={item.price} onChange={(ev) => edit(item.id, { price: Number(ev.target.value) })} />
@@ -1006,18 +1148,53 @@ function MyListings({
                       onChange={(ev) => edit(item.id, { sale_ends_at: ev.target.value ? new Date(ev.target.value).toISOString() : null })}
                     />
                   </label>
-                  <label className="space-y-1">
-                    <span className={labelClass}>Stock</span>
-                    <input
-                      type="number"
-                      min={0}
-                      placeholder="illimité"
-                      className={inputClass}
-                      defaultValue={item.stock ?? ""}
-                      onChange={(ev) => edit(item.id, { stock: ev.target.value === "" ? null : Number(ev.target.value) })}
-                    />
-                  </label>
+                  {!isBox(item) && (
+                    <label className="space-y-1">
+                      <span className={labelClass}>Stock</span>
+                      <input
+                        type="number"
+                        min={0}
+                        placeholder="illimité"
+                        className={inputClass}
+                        defaultValue={item.stock ?? ""}
+                        onChange={(ev) => edit(item.id, { stock: ev.target.value === "" ? null : Number(ev.target.value) })}
+                      />
+                    </label>
+                  )}
                 </div>
+                {canEffect && !isBox(item) && (
+                  <EffectFields
+                    effect={((e?.effect !== undefined ? e.effect : item.effect) ?? "") as "" | ShopItemEffect}
+                    value={String((e?.effect_value !== undefined ? e.effect_value : item.effect_value) ?? "")}
+                    onChange={(effect, value) => edit(item.id, { effect: (effect || null) as ShopItemEffect | null, effect_value: value === "" ? null : Number(value) })}
+                  />
+                )}
+                {isBox(item) &&
+                  (editingBox === item.id ? (
+                    <BoxEditor
+                      box={item}
+                      myItems={items}
+                      businesses={businesses}
+                      say={say}
+                      onCancel={() => setEditingBox(null)}
+                      onSaved={() => {
+                        setEditingBox(null);
+                        setBoxKey((k) => k + 1);
+                        onChanged();
+                      }}
+                    />
+                  ) : (
+                    <div className="space-y-3 rounded-xl border border-[#f0c27a]/30 bg-[#f0c27a]/5 p-3">
+                      <BoxSellerPanel box={item} refreshKey={boxKey} />
+                      <button
+                        type="button"
+                        onClick={() => setEditingBox(item.id)}
+                        className="rounded-lg border border-[#f0c27a]/60 px-3 py-1.5 font-mono text-xs uppercase text-[#f6dfb0] hover:bg-[#f0c27a]/15"
+                      >
+                        <SidIcon name="pen" size={13} /> Modifier la boîte et son contenu
+                      </button>
+                    </div>
+                  ))}
                 <div className="flex flex-wrap gap-2">
                   <button onClick={() => save(item)} disabled={!e} className="rounded-lg bg-blue px-4 py-1.5 font-mono text-xs uppercase text-ink hover:bg-blue-light disabled:opacity-40">
                     Enregistrer
@@ -1032,7 +1209,7 @@ function MyListings({
                     <SidIcon name="trash" /> Supprimer
                   </button>
                 </div>
-                {!item.business_id && businesses.length > 0 && (
+                {!item.business_id && !isBox(item) && businesses.length > 0 && (
                   <div className="flex flex-wrap items-center gap-2 border-t border-white/10 pt-3">
                     <span className="font-mono text-[11px] uppercase text-paper/60">Vendre au nom de</span>
                     {businesses.length > 1 ? (
@@ -1101,6 +1278,52 @@ function NewItemForm({
   sellerName,
   say,
   onCreated,
+  myItems,
+}: {
+  userId: string | null;
+  canEffect: boolean;
+  businesses: Business[];
+  sellerName: string;
+  say: (ok: boolean, text: string) => void;
+  onCreated: () => void;
+  myItems: ShopItem[];
+}) {
+  const [mode, setMode] = useState<"objet" | "boite">("objet");
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-1.5" role="group" aria-label="Que créer ?">
+        <button type="button" aria-pressed={mode === "objet"} onClick={() => setMode("objet")} className={`shop-chip ${mode === "objet" ? "is-on" : ""}`}>
+          <SidIcon name="tag" size={13} /> Objet
+        </button>
+        <button type="button" aria-pressed={mode === "boite"} onClick={() => setMode("boite")} className={`shop-chip ${mode === "boite" ? "is-on" : ""}`}>
+          <SidIcon name="gift" size={13} /> Boîte chanceuse
+        </button>
+      </div>
+      {mode === "objet" ? (
+        <NewSingleItemForm userId={userId} canEffect={canEffect} businesses={businesses} sellerName={sellerName} say={say} onCreated={onCreated} />
+      ) : (
+        <BoxEditor
+          box={null}
+          myItems={myItems}
+          businesses={businesses}
+          say={say}
+          onSaved={onCreated}
+          renderPreview={(sample) => (
+            <ShopCard item={sample} seller={businesses.find((b) => b.id === sample.business_id)?.name ?? sellerName} onOpen={() => undefined} wished={false} onWish={() => undefined} />
+          )}
+        />
+      )}
+    </div>
+  );
+}
+
+function NewSingleItemForm({
+  userId,
+  canEffect,
+  businesses,
+  sellerName,
+  say,
+  onCreated,
 }: {
   userId: string | null;
   canEffect: boolean;
@@ -1110,7 +1333,17 @@ function NewItemForm({
   onCreated: () => void;
 }) {
   const supabase = createClient();
-  const [form, setForm] = useState({ name: "", description: "", price: "", stock: "", visibility: "members" as "public" | "members", businessId: "", effect: "" as "" | ShopItemEffect });
+  const [form, setForm] = useState({
+    name: "",
+    description: "",
+    price: "",
+    stock: "",
+    visibility: "members" as "public" | "members",
+    businessId: "",
+    effect: "" as "" | ShopItemEffect,
+    effectValue: "",
+    boxOnly: false,
+  });
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [drag, setDrag] = useState(false);
@@ -1135,7 +1368,10 @@ function NewItemForm({
         stock: form.stock ? Number(form.stock) : null,
         visibility: form.visibility,
         business_id: form.businessId || null,
-        effect: form.effect || null,
+        ...(form.effect ? { effect: form.effect } : {}),
+        ...(form.effect && SHOP_EFFECTS[form.effect].value ? { effect_value: effectValue(form.effect, Number(form.effectValue) || null) } : {}),
+        // Réservé aux boîtes chanceuses : jamais en vente seul.
+        ...(form.boxOnly ? { is_active: false } : {}),
         created_by: userId,
       })
       .select()
@@ -1155,7 +1391,7 @@ function NewItemForm({
       }
     }
     setBusy(false);
-    say(true, `« ${form.name.trim()} » est en vente.`);
+    say(true, form.boxOnly ? `« ${form.name.trim()} » est prêt à aller dans une boîte chanceuse.` : `« ${form.name.trim()} » est en vente.`);
     onCreated();
   }
 
@@ -1167,6 +1403,7 @@ function NewItemForm({
     stock: form.stock ? Number(form.stock) : null,
     image_url: preview,
     effect: form.effect || null,
+    effect_value: form.effectValue ? Number(form.effectValue) : null,
     sale_price: null,
     sale_ends_at: null,
     created_at: new Date().toISOString(),
@@ -1212,18 +1449,19 @@ function NewItemForm({
           </label>
         )}
         {canEffect && (
-          <label className="space-y-1 sm:col-span-2">
-            <span className={labelClass}>Effet (réservé aux admins)</span>
-            <select className={inputClass} value={form.effect} onChange={(e) => setForm({ ...form, effect: e.target.value as "" | ShopItemEffect })}>
-              <option value="">Aucun (objet simple)</option>
-              {(Object.keys(SHOP_EFFECT_LABELS) as ShopItemEffect[]).map((k) => (
-                <option key={k} value={k}>
-                  {SHOP_EFFECT_LABELS[k]}
-                </option>
-              ))}
-            </select>
-          </label>
+          <EffectFields
+            effect={form.effect}
+            value={form.effectValue}
+            onChange={(effect, effectValue) => setForm({ ...form, effect, effectValue })}
+            className="sm:col-span-2"
+          />
         )}
+        <label className="flex items-start gap-2 sm:col-span-2">
+          <input type="checkbox" className="mt-1" checked={form.boxOnly} onChange={(e) => setForm({ ...form, boxOnly: e.target.checked })} />
+          <span className="font-body text-sm text-paper/80">
+            Réservé aux boîtes chanceuses : l&apos;objet n&apos;est pas en vente seul, il ne s&apos;obtient qu&apos;en ouvrant une de tes boîtes.
+          </span>
+        </label>
         <div className="space-y-1 sm:col-span-2">
           <span className={labelClass}>Image</span>
           <label
@@ -1247,7 +1485,7 @@ function NewItemForm({
           </label>
         </div>
         <button type="submit" disabled={busy} className="rounded-lg bg-red py-2.5 font-display uppercase tracking-wide text-ink hover:bg-red-light disabled:opacity-50 sm:col-span-2">
-          {busy ? "Mise en vente…" : "Mettre en vente"}
+          {busy ? "Enregistrement…" : form.boxOnly ? "Créer l'objet" : "Mettre en vente"}
         </button>
       </div>
       <div className="space-y-2 self-start lg:sticky lg:top-24">
@@ -1257,5 +1495,42 @@ function NewItemForm({
         </div>
       </div>
     </form>
+  );
+}
+
+// ---------------------------------------------------------------- Effet d'un objet (admins)
+function EffectFields({
+  effect,
+  value,
+  onChange,
+  className = "",
+}: {
+  effect: "" | ShopItemEffect;
+  value: string;
+  onChange: (effect: "" | ShopItemEffect, value: string) => void;
+  className?: string;
+}) {
+  const meta = effect ? SHOP_EFFECTS[effect].value : undefined;
+  return (
+    <div className={`grid gap-3 sm:grid-cols-[1fr_11rem] ${className}`}>
+      <label className="space-y-1">
+        <span className={labelClass}>Effet (réservé aux admins)</span>
+        <select className={inputClass} value={effect} onChange={(e) => onChange(e.target.value as "" | ShopItemEffect, "")}>
+          <option value="">Aucun (objet simple)</option>
+          {SHOP_EFFECT_KEYS.map((k) => (
+            <option key={k} value={k}>
+              {SHOP_EFFECTS[k].label}
+            </option>
+          ))}
+        </select>
+        {effect && <span className="block font-body text-xs text-paper/65">{effectSummary(effect, value === "" ? null : Number(value))}</span>}
+      </label>
+      {meta && (
+        <label className="space-y-1">
+          <span className={labelClass}>{meta.label}</span>
+          <input type="number" min={meta.min} max={meta.max} placeholder={String(meta.def)} className={inputClass} value={value} onChange={(e) => onChange(effect, e.target.value)} />
+        </label>
+      )}
+    </div>
   );
 }

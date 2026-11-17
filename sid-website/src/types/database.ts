@@ -150,16 +150,19 @@ export interface ShopItem {
   business_id: string | null;
   /** Effet de l'objet acheté (objets créés par l'administration). */
   effect: ShopItemEffect | null;
+  /** Réglage de l'effet : heures de bouclier, points de renommée (Lot 84). */
+  effect_value?: number | null;
+  /** « box » : boîte chanceuse (Lot 84). */
+  kind?: "item" | "box";
+  /** Boîte chanceuse : nombre de personnes qui l'ont ouverte. */
+  box_buyers?: number;
   /** Supprimé par son vendeur : masqué, gardé pour l'historique des achats. */
   hidden_at: string | null;
   created_at: string;
 }
 
-export type ShopItemEffect = "reset_cooldowns";
-
-export const SHOP_EFFECT_LABELS: Record<ShopItemEffect, string> = {
-  reset_cooldowns: "Réinitialise une fois les délais d'attente de toutes les compétences",
-};
+/** Effets d'objets (Lot 51, élargis au Lot 84) : voir src/lib/shopEffects.ts. */
+export type ShopItemEffect = "reset_cooldowns" | "heal_injury" | "prank_shield" | "fame" | "envers_key";
 
 export interface Wallet {
   user_id: string;

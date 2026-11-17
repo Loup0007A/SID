@@ -188,7 +188,12 @@ function TitlesInner() {
       </div>
 
       {equipped && status.shielded && (
-        <p className="font-mono text-xs text-paper/65"><SidIcon name="shield" /> L&apos;administration t&apos;a mis à l&apos;abri des farces des autres.</p>
+        <p className="font-mono text-xs text-paper/65">
+          <SidIcon name="shield" />{" "}
+          {status.shield_until
+            ? `Ton bouclier anti-farces te protège jusqu'au ${new Date(status.shield_until).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}.`
+            : "L'administration t'a mis à l'abri des farces des autres."}
+        </p>
       )}
 
       {equipped && <TrollPanel status={status} myId={me.id} myName={me.nickname} initialTarget={params.get("target")} onChange={load} />}

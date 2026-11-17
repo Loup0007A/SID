@@ -607,7 +607,7 @@ function CreateAuction({
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const stockItems = myItems.filter((i) => !i.hidden_at && (i.stock === null || i.stock > 0));
+  const stockItems = myItems.filter((i) => !i.hidden_at && i.kind !== "box" && !i.effect && (i.stock === null || i.stock > 0));
 
   useEffect(() => {
     supabase.rpc("auction_resale_candidates").then(({ data }) => setCandidates((data ?? []) as Candidate[]));

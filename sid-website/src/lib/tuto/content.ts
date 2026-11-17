@@ -280,7 +280,7 @@ export const TOUR: TutoStep[] = [
     icon: "cart",
     title: "Le Comptoir",
     body: (n) =>
-      `On y achète ce que l'état-major et ses marchands mettent en vente ; touche un objet pour le voir en entier et choisir la quantité. Le vendeur reverse **${pct(n.vat)} de TVA** à la caisse commune (l'acheteur paie le prix affiché).\n\nCertains objets ont un vrai effet, comme effacer d'un coup les délais d'attente des simulations.`,
+      `On y achète ce que l'état-major et ses marchands mettent en vente ; touche un objet pour le voir en entier et choisir la quantité. Le vendeur reverse **${pct(n.vat)} de TVA** à la caisse commune (l'acheteur paie le prix affiché).\n\nCertains objets ont un vrai effet (soin, bouclier anti-farces, renommée, clé de la faille…) : ils s'utilisent depuis « Mes achats ». Une **boîte chanceuse** donne un objet au hasard parmi ceux qu'elle contient ; seul son vendeur sait ce qu'il reste dedans.`,
     missing: (n) =>
       `La vitrine est vide pour l'instant. On y achète ce que l'état-major et ses marchands mettent en vente ; touche un objet pour le voir en entier et choisir la quantité. Le vendeur reverse **${pct(n.vat)} de TVA** à la caisse commune.`,
   },
@@ -465,6 +465,8 @@ export const PAGE_TIPS: Record<string, PageTip> = {
       (n) => `Le vendeur reverse ${pct(n.vat)} de TVA.`,
       "Enchères : ton offre est bloquée sur ta bourse et rendue si quelqu'un te dépasse.",
       "Le cœur ajoute un objet à tes souhaits ; « Offrir » l'envoie à un autre membre.",
+      "Boîte chanceuse : un objet au hasard parmi ce qu'il reste dedans.",
+      "Objets à effet : à utiliser depuis « Mes achats ».",
       "Solde négatif = achats bloqués jusqu'à ce qu'il remonte.",
     ],
     tourFrom: "boutique",

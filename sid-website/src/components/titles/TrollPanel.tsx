@@ -12,6 +12,8 @@ import { SidIcon, GlyphText } from "@/components/icons/SidIcon";
 export type TrollStatus = {
   enabled: boolean;
   shielded: boolean;
+  /** Bouclier acheté (objet) : fin de la protection. Absent : bouclier de l'administration. */
+  shield_until?: string | null;
   title: string | null;
   power: TrollPower | null;
   level: number | null;
