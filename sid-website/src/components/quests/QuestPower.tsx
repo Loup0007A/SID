@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import type { Quest } from "@/types/database";
@@ -157,6 +158,11 @@ export function QuestPower({ quest, userId, joined, onChange }: { quest: Quest; 
       ) : (
         !joined && userId && <p className="qp-note">Prends la mission pour recruter des renforts.</p>
       )}
+      {canRecruit && (
+        <Link href={`/dashboard/dex?quete=${quest.id}`} className="qp-note underline">
+          Réutiliser une carte de mon dex sur cette quête
+        </Link>
+      )}
 
       {recruiting && data && (
         <RecruitDialog
@@ -221,23 +227,30 @@ export function RecruitCardView({
 
 /* ------------------------------------------------------------------ */
 
-type DrawResult = { rank: GachaRank | null; cost: number; balance: number; choose?: boolean; card?: RecruitCard };
+type DrawResult = { rank: GachaRank | null; cost: number; balance: number; choose?: boolean; dex_new?: boolean; card?: RecruitCard };
 
-function RecruitDialog({
+export function RecruitDialog({
   quest,
+  sim,
+  onEquip,
   settings,
   balance: initialBalance,
   cards,
   onClose,
   onChange,
 }: {
-  quest: Quest;
+  /** Quête à puissance globale (renfort), ou… */
+  quest?: Quest;
+  /** …simulation (allié) : le tirage entre dans le dex, sans limite de trois. */
+  sim?: { kind: "donjons" | "intelligence" | "techniques"; label: string };
+  onEquip?: (cardId: string) => void;
   settings: GachaSettings;
   balance: number;
   cards: RecruitCard[];
   onClose: () => void;
   onChange: () => void;
 }) {
+  const unitPrice = sim ? Number(settings.sim_price ?? settings.price) : settings.price;
   const supabase = useMemo(() => createClient(), []);
   const [luck, setLuckRaw] = useState(1);
   const [luckText, setLuckText] = useState("1");
@@ -264,7 +277,7 @@ function RecruitDialog({
 
   const odds = gachaOdds(settings.prob_e, settings.prob_divin, luck);
   const base = gachaOdds(settings.prob_e, settings.prob_divin, 1);
-  const cost = gachaCost(settings.price, luck, settings.prob_divin);
+  const cost = gachaCost(unitPrice, luck, settings.prob_divin);
   const presets = [1, 2, 5, 10, 100, 1000].filter((k) => k <= maxLuck);
 
   async function draw() {
@@ -273,11 +286,11 @@ function RecruitDialog({
     setError(null);
     setStage("rolling");
     const wait = new Promise((r) => setTimeout(r, window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 150 : 1400));
-    const [{ data, error: e }] = await Promise.all([supabase.rpc("quest_gacha_draw", { p_quest: quest.id, p_luck: luck }), wait]);
+    const [{ data, error: e }] = await Promise.all([sim ? supabase.rpc("sim_gacha_draw", { p_kind: sim.kind, p_luck: luck }) : supabase.rpc("quest_gacha_draw", { p_quest: quest!.id, p_luck: luck }), wait]);
     started.current = false;
     if (e) {
       setStage("setup");
-      return setError(/quest_gacha_draw/.test(e.message) ? "Le recrutement arrive avec la migration 0102." : e.message);
+      return setError(/quest_gacha_draw|sim_gacha_draw/.test(e.message) ? "Le recrutement arrive avec les migrations 0102 et 0104." : e.message);
     }
     const r = data as DrawResult;
     setResult(r);
@@ -294,7 +307,7 @@ function RecruitDialog({
   async function keep() {
     setBusy(true);
     setError(null);
-    const { error: e } = await supabase.rpc("quest_cards_keep", { p_quest: quest.id, p_keep: Array.from(picked) });
+    const { error: e } = await supabase.rpc("quest_cards_keep", { p_quest: quest!.id, p_keep: Array.from(picked) });
     setBusy(false);
     if (e) return setError(e.message);
     setPool((p) => p.filter((c) => picked.has(c.id)).map((c) => ({ ...c, kept: true })));
@@ -317,9 +330,9 @@ function RecruitDialog({
       <div role="dialog" aria-modal="true" aria-labelledby="rd-titre" className="rd-sheet" onMouseDown={(e) => e.stopPropagation()}>
         <div className="rd-top">
           <div className="min-w-0">
-            <p className="rd-kicker">Recrutement · {quest.title}</p>
+            <p className="rd-kicker">Recrutement · {sim ? sim.label : quest?.title}</p>
             <h2 id="rd-titre" className="rd-title">
-              {stage === "choose" ? "Garde trois renforts" : "Recruter un renfort"}
+              {stage === "choose" ? "Garde trois renforts" : sim ? "Recruter un allié" : "Recruter un renfort"}
             </h2>
           </div>
           {stage !== "rolling" && (
@@ -396,11 +409,15 @@ function RecruitDialog({
             <div className="rd-pay">
               <p>
                 Prix du tirage <strong>{money(cost)}</strong>
-                {luck > 1 && <span className="rd-ratio"> · {(cost / settings.price).toLocaleString("fr-FR", { maximumFractionDigits: 2 })}× le prix</span>}
+                {luck > 1 && <span className="rd-ratio"> · {(cost / (unitPrice || 1)).toLocaleString("fr-FR", { maximumFractionDigits: 2 })}× le prix</span>}
               </p>
               <p className="rd-balance">Ton solde : {money(balance)}</p>
             </div>
-            <p className="rd-small">Payé même si personne ne répond. Trois renforts au plus sur cette quête : au-delà, tu choisis lesquels garder.</p>
+            <p className="rd-small">
+              {sim
+                ? "Payé même si personne ne répond. L'allié entre dans ton dex ; équipe-le pour qu'il te protège."
+                : "Payé même si personne ne répond. Trois renforts au plus sur cette quête : au-delà, tu choisis lesquels garder. Chaque carte tirée entre dans ton dex."}
+            </p>
             {error && <p className="rd-error">{error}</p>}
             <button type="button" className="rd-go" onClick={draw} disabled={balance < cost}>
               {balance < cost ? "Solde insuffisant" : `Recruter · ${money(cost)}`}
@@ -428,7 +445,13 @@ function RecruitDialog({
                 </div>
                 <p className="rd-caption">
                   {result.card.name} répond à l&apos;appel · {RANK_LABEL[result.card.rank]}
+                  {result.dex_new ? " · nouveau dans le dex" : ""}
                 </p>
+                {sim && result.card.ally_chance != null && (
+                  <p className="rd-small">
+                    Protège jusqu&apos;à {result.card.ally_charges} fois par jour, avec {result.card.ally_chance} % de réussite.
+                  </p>
+                )}
               </>
             ) : (
               <>
@@ -443,12 +466,17 @@ function RecruitDialog({
             </p>
             {error && <p className="rd-error">{error}</p>}
             <div className="rd-actions">
+              {sim && result.card && onEquip && (
+                <button type="button" className="rd-go" onClick={() => onEquip(result.card!.id)}>
+                  Équiper cet allié
+                </button>
+              )}
               {result.choose ? (
                 <button type="button" className="rd-go" onClick={() => setStage("choose")}>
                   Choisir les trois à garder
                 </button>
               ) : (
-                <button type="button" className="rd-go" onClick={() => setStage("setup")}>
+                <button type="button" className={sim && result.card && onEquip ? "rd-ghost" : "rd-go"} onClick={() => setStage("setup")}>
                   Recruter encore
                 </button>
               )}

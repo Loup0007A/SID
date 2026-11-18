@@ -21,7 +21,8 @@ import {
 } from "@/lib/simulationSites";
 import type { SimulationOverview, SimulationResultResponse, SimulationRunStatus } from "@/types/simulationRuns";
 import type { RealtimeChannel } from "@supabase/supabase-js";
-import { connectRaid, sendRaidEvent, type ActiveRaid, type BossRaid } from "@/lib/bossRaids";
+import { connectRaid, fetchRaidAllies, sendRaidEvent, type ActiveRaid, type BossRaid } from "@/lib/bossRaids";
+import { SimAlly } from "@/components/quests/SimAlly";
 import { BloodLockout } from "@/components/BloodLockout";
 import { announceActivity } from "@/lib/presence";
 import { SidIcon, GlyphText } from "@/components/icons/SidIcon";
@@ -117,7 +118,9 @@ export default function SimulationPage() {
   const refreshRaids = useCallback(async () => {
     if (kind !== "donjons") return;
     const { data } = await supabase.rpc("list_open_boss_raids");
-    setRaids((data ?? []) as BossRaid[]);
+    const list = (data ?? []) as BossRaid[];
+    const allies = await fetchRaidAllies(supabase, list.map((r) => r.id));
+    setRaids(list.map((r) => ({ ...r, allies: allies[r.id] ?? [] })));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [kind]);
 
@@ -179,6 +182,12 @@ export default function SimulationPage() {
   const handleInjury = useCallback(async () => {
     const { data, error } = await supabase.rpc("injure_member", { p_kind: "donjons" });
     if (error) return;
+    // Un allié a protégé le membre : pas de blessure, la partie continue.
+    if (data === null) {
+      postToGame({ type: "sid-injury", protected: true });
+      setNotice({ tone: "info", text: "🛡️ Ton compagnon t'a protégé : pas de blessure." });
+      return;
+    }
     postToGame({ type: "sid-injury", until: data });
     leaveRaidChannel();
     setTimeout(() => {
@@ -666,6 +675,8 @@ export default function SimulationPage() {
         </aside>
       </div>
 
+      <SimAlly kind={site.kind as "donjons" | "intelligence" | "techniques"} reloadKey={recentRuns.length} />
+
       {site.kind === "donjons" && (
         <section className="space-y-2">
           <h2 className="font-mono text-xs uppercase tracking-[0.25em] text-paper/65"><SidIcon name="swords" /> Raids en cours</h2>
@@ -695,6 +706,11 @@ export default function SimulationPage() {
                         {r.dragon ? "Dragon" : r.boss_name} · histoire {r.story}, île {r.chapter} · {r.members} combattant
                         {r.members > 1 ? "s" : ""} · encore {minutes} min
                       </p>
+                      {!!r.allies?.length && (
+                        <p className="text-paper/60">
+                          Compagnons : {r.allies.map((a) => `${a.name} (${a.rank})`).join(", ")}
+                        </p>
+                      )}
                     </div>
                     {!mine && (
                       <button

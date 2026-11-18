@@ -10,7 +10,63 @@ export type GachaRank = (typeof GACHA_RANKS)[number];
 /** 4,8 fois le prix pour une chance ×5. */
 export const COST_EXPONENT = Math.log(4.8) / Math.log(5);
 
-export type GachaSettings = { prob_e: number; prob_divin: number; price: number; luck_max: number };
+export type DexSettings = {
+  cost_e_min: number;
+  cost_e_max: number;
+  cost_divin_min: number;
+  cost_divin_max: number;
+  fail_e: number;
+  fail_divin: number;
+  cooldown_hours: number;
+};
+export type GachaSettings = {
+  prob_e: number;
+  prob_divin: number;
+  price: number;
+  luck_max: number;
+  /** Prix d'un tirage d'allié de simulation (migration 0104). */
+  sim_price?: number;
+  dex?: DexSettings;
+};
+
+export type DexKind = "renfort" | "donjons" | "intelligence" | "techniques";
+export const DEX_KINDS: { key: DexKind; label: string }[] = [
+  { key: "renfort", label: "Renforts de quête" },
+  { key: "donjons", label: "Compagnons" },
+  { key: "intelligence", label: "Sages" },
+  { key: "techniques", label: "Artisans" },
+];
+
+/** Entrée du dex (dex_list, migration 0104). */
+export type DexEntry = {
+  id: string;
+  kind: DexKind;
+  rank: GachaRank;
+  name: string;
+  intelligence: number;
+  strength: number;
+  technique: number;
+  power: number;
+  draws: number;
+  first_at: string;
+  last_at: string;
+  reuse_ready_at: string | null;
+  reuse_cost: number;
+  reuse_fail: number;
+  ally_chance: number;
+  ally_charges: number;
+  equipped: boolean;
+};
+
+/** Allié équipé sur une simulation (sim_ally_status). */
+export type AllyStatus = {
+  ally: (Pick<RecruitCard, "rank" | "name" | "intelligence" | "strength" | "technique" | "power"> & { id: string }) | null;
+  chance?: number;
+  charges?: number;
+  used?: number;
+  left?: number;
+  last_saved_at?: string | null;
+};
 export type GachaOdds = Record<GachaRank, number> & { fail: number };
 
 export type RecruitCard = {
@@ -22,6 +78,9 @@ export type RecruitCard = {
   technique: number;
   power: number;
   kept: boolean;
+  /** Allié de simulation uniquement. */
+  ally_chance?: number;
+  ally_charges?: number;
 };
 
 /** Bonus au-delà duquel le rang Divin est déjà assuré. */

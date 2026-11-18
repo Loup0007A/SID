@@ -14,6 +14,8 @@ import Link from "next/link";
 import { storeReveals } from "@/lib/reveals";
 import type { Reveals } from "@/lib/navigation";
 import { SiteTabs } from "@/components/admin/SiteTabs";
+import { AdminPanel, AdminTabBar, useAdminTab, type AdminTab } from "@/components/admin/AdminTabs";
+import { DatabaseSearch } from "@/components/admin/DatabaseSearch";
 
 const DECOR_MODES: { v: DecorMode; label: string; hint: string }[] = [
   { v: "auto", label: "Automatique", hint: "Pendant la période de l'événement (heure de Paris)." },
@@ -49,6 +51,7 @@ const SEVERITY_LABELS: Record<AnnouncementSeverity, string> = {
 export default function ModerationPage() {
   const supabase = createClient();
   const [message, setMessage] = useState<string | null>(null);
+  const [founder, setFounder] = useState(false);
 
   // Annonces
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -123,6 +126,11 @@ export default function ModerationPage() {
     (async () => {
       const { data: m } = await supabase.from("profiles").select("*").eq("status", "active").order("nickname");
       setMembers(m ?? []);
+      const { data: auth } = await supabase.auth.getUser();
+      if (auth.user) {
+        const { data: me } = await supabase.from("profiles").select("is_founder").eq("id", auth.user.id).maybeSingle();
+        setFounder(!!me?.is_founder);
+      }
       await Promise.all([refreshAnnouncements(), refreshFlags(), refreshSanctions(), refreshDecor(), refreshReveals()]);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -198,11 +206,23 @@ export default function ModerationPage() {
     await refreshSanctions();
   }
 
+  const tabs: AdminTab[] = [
+    { key: "annonces", label: "Annonces", icon: "megaphone", badge: announcements.filter((a) => a.is_active).length || undefined },
+    { key: "sites", label: "Sites et sections", icon: "gear" },
+    { key: "evenements", label: "Événements", icon: "calendar" },
+    { key: "sanctions", label: "Sanctions", icon: "gavel", badge: sanctions.filter((s) => s.is_active && s.type !== "warning" && s.type !== "fine").length || undefined },
+    ...(founder ? [{ key: "base", label: "Base de données", icon: "magnifier" } as AdminTab] : []),
+  ];
+  const [tab, go] = useAdminTab(tabs, "annonces");
+
   return (
-    <div className="space-y-10">
+    <div className="space-y-6">
       <h1 className="font-display text-2xl uppercase tracking-wide text-red">Modération</h1>
       {message && <p className="font-mono text-sm text-red">{message}</p>}
 
+      <AdminTabBar tabs={tabs} tab={tab} onChange={go} label="Sections de la modération" />
+
+      <AdminPanel id="annonces" tab={tab}>
       {/* Annonces */}
       <section className="space-y-4">
         <h2 className="font-display text-lg uppercase text-paper">Annonces à la connexion</h2>
@@ -255,6 +275,9 @@ export default function ModerationPage() {
         </div>
       </section>
 
+      </AdminPanel>
+
+      <AdminPanel id="sites" tab={tab}>
       {/* Maintenance */}
       <section className="space-y-4">
         <h2 className="font-display text-lg uppercase text-paper">Sites et rubriques</h2>
@@ -299,6 +322,9 @@ export default function ModerationPage() {
         </div>
       </section>
 
+      </AdminPanel>
+
+      <AdminPanel id="evenements" tab={tab}>
       {/* Affichage événementiel */}
       <section className="space-y-4">
         <h2 className="font-display text-lg uppercase text-paper">Affichage événementiel</h2>
@@ -395,6 +421,9 @@ export default function ModerationPage() {
         </section>
       )}
 
+      </AdminPanel>
+
+      <AdminPanel id="sanctions" tab={tab}>
       {/* Sanctions */}
       <section className="space-y-4">
         <h2 className="font-display text-lg uppercase text-paper">Sanctions</h2>
@@ -471,6 +500,13 @@ export default function ModerationPage() {
           {sanctions.length === 0 && <p className="font-body text-sm text-paper/60">Aucune sanction émise.</p>}
         </div>
       </section>
+      </AdminPanel>
+
+      {founder && (
+        <AdminPanel id="base" tab={tab}>
+          {tab === "base" && <DatabaseSearch />}
+        </AdminPanel>
+      )}
     </div>
   );
 }

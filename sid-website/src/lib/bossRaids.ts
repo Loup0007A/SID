@@ -12,6 +12,30 @@ export interface BossRaid {
   created_at: string;
   expires_at: string;
   members: number;
+  /** Alliés équipés des combattants (migration 0104). */
+  allies?: RaidAlly[];
+}
+
+export interface RaidAlly {
+  user_id: string;
+  rank: string;
+  name: string;
+  intelligence: number;
+  strength: number;
+  technique: number;
+  power: number;
+}
+
+/** Alliés Donjons des combattants d'un raid (colonne ajoutée par la migration 0104, absente avant). */
+export async function fetchRaidAllies(supabase: SupabaseClient, raidIds: string[]): Promise<Record<string, RaidAlly[]>> {
+  const out: Record<string, RaidAlly[]> = {};
+  if (!raidIds.length) return out;
+  const { data, error } = await supabase.from("boss_raid_members").select("raid_id, user_id, ally").in("raid_id", raidIds).not("ally", "is", null);
+  if (error || !data) return out;
+  for (const m of data as { raid_id: string; user_id: string; ally: Omit<RaidAlly, "user_id"> }[]) {
+    (out[m.raid_id] ??= []).push({ user_id: m.user_id, ...m.ally });
+  }
+  return out;
 }
 
 /** Raid auquel la page participe (hôte ou allié). */
@@ -42,7 +66,9 @@ export function connectRaid(
     })
     .subscribe((status) => {
       if (status === "SUBSCRIBED") {
-        toGame({ type: "sid-raid", action: "joined", raidId: raid.id, isHost: raid.isHost, dragon: raid.dragon, hostName: raid.hostName, me });
+        void fetchRaidAllies(supabase, [raid.id]).then((all) =>
+          toGame({ type: "sid-raid", action: "joined", raidId: raid.id, isHost: raid.isHost, dragon: raid.dragon, hostName: raid.hostName, me, allies: all[raid.id] ?? [] })
+        );
       } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
         toGame({ type: "sid-raid", action: "error", message: "Connexion temps réel impossible." });
       }

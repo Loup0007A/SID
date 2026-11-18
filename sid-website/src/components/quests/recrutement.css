@@ -50,7 +50,7 @@ button.rc:not(.is-selected) { opacity: .7; }
 .rc-name { padding-right: 36px; font: 400 15px/1.1 var(--font-display); text-transform: uppercase; letter-spacing: .03em; color: #fff3d2; overflow-wrap: anywhere; }
 .rc-label { font: 10px/1.2 var(--font-mono); text-transform: uppercase; letter-spacing: .1em; color: var(--rk); }
 .rc-stats { display: grid; gap: 3px; margin-top: 4px; }
-.rc-stat { display: grid; grid-template-columns: 2.6em 1fr 2.8em; align-items: center; gap: 6px; font: 10px/1.2 var(--font-mono); color: rgb(237 230 211 / .7); }
+.rc-stat { display: grid; grid-template-columns: 3.2em 1fr 2.8em; white-space: nowrap; align-items: center; gap: 6px; font: 10px/1.2 var(--font-mono); color: rgb(237 230 211 / .7); }
 .rc-bar { height: 4px; border-radius: 4px; background: rgb(255 255 255 / .08); overflow: hidden; }
 .rc-bar > span { display: block; height: 100%; background: var(--rk); }
 .rc-val { text-align: right; color: #ede6d3; }

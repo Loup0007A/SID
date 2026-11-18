@@ -23,6 +23,10 @@ export function GachaAdmin() {
   const [e, setE] = useState("2");
   const [divin, setDivin] = useState("1000000");
   const [price, setPrice] = useState("1000");
+  // Alliés de simulation et réutilisation du dex (migration 0104).
+  const [rx, setRx] = useState({ sim: "1000", emin: "5000", emax: "25000", dmin: "10000000", dmax: "50000000", fe: "2", fd: "25", cd: "2" });
+  const [rxMsg, setRxMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [rxBusy, setRxBusy] = useState(false);
   const [draws, setDraws] = useState<Draw[]>([]);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -40,6 +44,15 @@ export function GachaAdmin() {
       setE(String(Math.round(1 / Number(s.prob_e) * 1000) / 1000));
       setDivin(String(Math.round(1 / Number(s.prob_divin))));
       setPrice(String(Number(s.price)));
+      if (s.dex) {
+        setRx({
+          sim: String(Number(s.sim_price ?? s.price)),
+          emin: String(s.dex.cost_e_min), emax: String(s.dex.cost_e_max),
+          dmin: String(s.dex.cost_divin_min), dmax: String(s.dex.cost_divin_max),
+          fe: String(Math.round(Number(s.dex.fail_e) * 1000) / 10), fd: String(Math.round(Number(s.dex.fail_divin) * 1000) / 10),
+          cd: String(s.dex.cooldown_hours),
+        });
+      }
       setDraws((d ?? []) as Draw[]);
     })();
   }, [supabase]);
@@ -59,6 +72,18 @@ export function GachaAdmin() {
     if (error) return setMsg({ ok: false, text: error.message });
     setLoaded(data as GachaSettings);
     setMsg({ ok: true, text: "Réglages enregistrés." });
+  }
+
+  async function saveRx() {
+    const n = (v: string) => Number(v.replace(/\s/g, "").replace(",", "."));
+    setRxBusy(true);
+    setRxMsg(null);
+    const { error } = await supabase.rpc("recruit_settings_set", {
+      p_sim_price: n(rx.sim), p_cost_e_min: n(rx.emin), p_cost_e_max: n(rx.emax), p_cost_divin_min: n(rx.dmin), p_cost_divin_max: n(rx.dmax),
+      p_fail_e: n(rx.fe) / 100, p_fail_divin: n(rx.fd) / 100, p_cooldown_hours: n(rx.cd),
+    });
+    setRxBusy(false);
+    setRxMsg(error ? { ok: false, text: /recruit_settings_set/.test(error.message) ? "Réglages disponibles avec la migration 0104." : error.message } : { ok: true, text: "Réglages enregistrés." });
   }
 
   const byRank = useMemo(() => {
@@ -150,6 +175,39 @@ export function GachaAdmin() {
             {busy ? "…" : "Enregistrer"}
           </button>
           {msg && <p className={`font-mono text-xs ${msg.ok ? "text-blue-light" : "text-red-light"}`}>{msg.text}</p>}
+        </div>
+      </section>
+
+      <section className="glass-card space-y-4 p-4">
+        <div>
+          <h3 className="font-display text-base uppercase tracking-wide">Alliés de simulation et dex</h3>
+          <p className="font-body text-sm text-paper/70">
+            Les alliés (Compagnons, Sages, Artisans) se tirent comme les renforts, au prix ci-dessous pour ×1. Réutiliser un renfort du dex coûte entre un minimum et un maximum selon la
+            qualité de la carte ; les rangs intermédiaires suivent une suite géométrique entre le rang E et le rang Divin, comme le risque d&apos;échec. Après un échec, la carte est bloquée.
+          </p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {([
+            ["sim", "Tirage d'allié ×1 (zénis)"],
+            ["emin", "Réutilisation rang E : minimum"],
+            ["emax", "Réutilisation rang E : maximum"],
+            ["dmin", "Réutilisation Divin : minimum"],
+            ["dmax", "Réutilisation Divin : maximum"],
+            ["fe", "Échec rang E (%)"],
+            ["fd", "Échec rang Divin (%)"],
+            ["cd", "Blocage après échec (heures)"],
+          ] as const).map(([k, label]) => (
+            <label key={k} className="space-y-1">
+              <span className={labelClass}>{label}</span>
+              <input className={inputClass} inputMode="decimal" value={rx[k]} onChange={(ev) => setRx((r) => ({ ...r, [k]: ev.target.value }))} />
+            </label>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <button type="button" onClick={saveRx} disabled={rxBusy} className="rounded-lg bg-blue px-4 py-2 font-mono text-xs uppercase text-ink hover:bg-blue-light disabled:opacity-40">
+            {rxBusy ? "…" : "Enregistrer"}
+          </button>
+          {rxMsg && <p className={`font-mono text-xs ${rxMsg.ok ? "text-blue-light" : "text-red-light"}`}>{rxMsg.text}</p>}
         </div>
       </section>
 
