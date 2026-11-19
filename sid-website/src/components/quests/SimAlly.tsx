@@ -57,7 +57,7 @@ export function SimAlly({ kind, reloadKey = 0 }: { kind: Kind; reloadKey?: numbe
     if (st.error || dex.error || cfg.error) return setUnavailable(true);
     setUnavailable(false);
     setStatus(st.data as AllyStatus);
-    setOwned((dex.data ?? []) as DexEntry[]);
+    setOwned(((dex.data ?? []) as DexEntry[]).filter((c) => !c.fused));
     setSettings(cfg.data as GachaSettings);
     setBalance(Number((w.data as { balance?: number } | null)?.balance ?? 0));
   }, [supabase, kind]);
@@ -92,7 +92,8 @@ export function SimAlly({ kind, reloadKey = 0 }: { kind: Kind; reloadKey?: numbe
           <RecruitCardView card={ally} size="sm" />
           <div className="space-y-1 font-mono text-xs text-paper/75">
             <p>
-              {RANK_LABEL[ally.rank]} · {status?.chance} % de réussite
+              {RANK_LABEL[ally.rank]}
+              {ally.level ? ` · éveil ${ally.level}/5` : ""} · {status?.chance} % de réussite
             </p>
             <p>
               Protections aujourd&apos;hui : <strong className="text-paper">{status?.left}</strong> / {status?.charges}

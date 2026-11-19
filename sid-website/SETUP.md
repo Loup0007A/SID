@@ -5,7 +5,7 @@ renommer : nom du RP, des trois sites, de la monnaie, adresses, sites et
 rubriques ouverts, adresses des simulations. L'installation elle-même (Supabase, Vercel, compte Fondateur) est
 dans [README.md](README.md).
 
-Prérequis : migrations passées jusqu'à `0104_dex_allies.sql` (Dossier
+Prérequis : migrations passées jusqu'à `0105_gacha_plus.sql` (Dossier
 Central), ainsi que celles de la Cartographie (jusqu'à `0117_lieu_inconnu_partout.sql`)
 et du Wiki.
 

@@ -27,6 +27,10 @@ export function GachaAdmin() {
   const [rx, setRx] = useState({ sim: "1000", emin: "5000", emax: "25000", dmin: "10000000", dmax: "50000000", fe: "2", fd: "25", cd: "2" });
   const [rxMsg, setRxMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [rxBusy, setRxBusy] = useState(false);
+  // Garantie, tirage ×10 et fusion (migration 0105).
+  const [ex, setEx] = useState({ pity: "50", disc: "10", fusion: "5" });
+  const [exMsg, setExMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [exBusy, setExBusy] = useState(false);
   const [draws, setDraws] = useState<Draw[]>([]);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -44,6 +48,8 @@ export function GachaAdmin() {
       setE(String(Math.round(1 / Number(s.prob_e) * 1000) / 1000));
       setDivin(String(Math.round(1 / Number(s.prob_divin))));
       setPrice(String(Number(s.price)));
+      if (s.pity_draws != null)
+        setEx({ pity: String(s.pity_draws), disc: String(Math.round(Number(s.multi_discount ?? 0) * 1000) / 10), fusion: String(s.fusion_count ?? 5) });
       if (s.dex) {
         setRx({
           sim: String(Number(s.sim_price ?? s.price)),
@@ -84,6 +90,15 @@ export function GachaAdmin() {
     });
     setRxBusy(false);
     setRxMsg(error ? { ok: false, text: /recruit_settings_set/.test(error.message) ? "Réglages disponibles avec la migration 0104." : error.message } : { ok: true, text: "Réglages enregistrés." });
+  }
+
+  async function saveEx() {
+    const n = (v: string) => Number(v.replace(/\s/g, "").replace(",", "."));
+    setExBusy(true);
+    setExMsg(null);
+    const { error } = await supabase.rpc("gacha_extra_set", { p_pity_draws: Math.round(n(ex.pity)), p_multi_discount: n(ex.disc) / 100, p_fusion_count: Math.round(n(ex.fusion)) });
+    setExBusy(false);
+    setExMsg(error ? { ok: false, text: /gacha_extra_set/.test(error.message) ? "Réglages disponibles avec la migration 0105." : error.message } : { ok: true, text: "Réglages enregistrés." });
   }
 
   const byRank = useMemo(() => {
@@ -208,6 +223,34 @@ export function GachaAdmin() {
             {rxBusy ? "…" : "Enregistrer"}
           </button>
           {rxMsg && <p className={`font-mono text-xs ${rxMsg.ok ? "text-blue-light" : "text-red-light"}`}>{rxMsg.text}</p>}
+        </div>
+      </section>
+
+      <section className="glass-card space-y-4 p-4">
+        <div>
+          <h3 className="font-display text-base uppercase tracking-wide">Garantie, tirage ×10 et fusion</h3>
+          <p className="font-body text-sm text-paper/70">
+            Garantie : après ce nombre de tirages sans rang A ou mieux (compté à part pour les renforts et chaque simulation), le suivant donne au moins un rang A. 0 la désactive. La remise
+            s&apos;applique au tirage ×10. La fusion transforme ce nombre de cartes du même rang en une carte du rang au-dessus.
+          </p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-3">
+          {([
+            ["pity", "Garantie après (tirages)"],
+            ["disc", "Remise du tirage ×10 (%)"],
+            ["fusion", "Cartes par fusion"],
+          ] as const).map(([k, label]) => (
+            <label key={k} className="space-y-1">
+              <span className={labelClass}>{label}</span>
+              <input className={inputClass} inputMode="decimal" value={ex[k]} onChange={(ev) => setEx((r) => ({ ...r, [k]: ev.target.value }))} />
+            </label>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <button type="button" onClick={saveEx} disabled={exBusy} className="rounded-lg bg-blue px-4 py-2 font-mono text-xs uppercase text-ink hover:bg-blue-light disabled:opacity-40">
+            {exBusy ? "…" : "Enregistrer"}
+          </button>
+          {exMsg && <p className={`font-mono text-xs ${exMsg.ok ? "text-blue-light" : "text-red-light"}`}>{exMsg.text}</p>}
         </div>
       </section>
 

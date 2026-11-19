@@ -26,6 +26,10 @@ export type GachaSettings = {
   luck_max: number;
   /** Prix d'un tirage d'allié de simulation (migration 0104). */
   sim_price?: number;
+  /** Migration 0105. */
+  pity_draws?: number;
+  multi_discount?: number;
+  fusion_count?: number;
   dex?: DexSettings;
 };
 
@@ -56,11 +60,15 @@ export type DexEntry = {
   ally_chance: number;
   ally_charges: number;
   equipped: boolean;
+  /** Migration 0105. */
+  level?: number;
+  base_power?: number;
+  fused?: boolean;
 };
 
 /** Allié équipé sur une simulation (sim_ally_status). */
 export type AllyStatus = {
-  ally: (Pick<RecruitCard, "rank" | "name" | "intelligence" | "strength" | "technique" | "power"> & { id: string }) | null;
+  ally: (Pick<RecruitCard, "rank" | "name" | "intelligence" | "strength" | "technique" | "power" | "level"> & { id: string }) | null;
   chance?: number;
   charges?: number;
   used?: number;
@@ -81,6 +89,8 @@ export type RecruitCard = {
   /** Allié de simulation uniquement. */
   ally_chance?: number;
   ally_charges?: number;
+  /** Éveil (0 à 5), migration 0105. */
+  level?: number;
 };
 
 /** Bonus au-delà duquel le rang Divin est déjà assuré. */

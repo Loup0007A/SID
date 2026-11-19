@@ -189,7 +189,7 @@ export function RecruitCardView({
   selected,
   onClick,
 }: {
-  card: Pick<RecruitCard, "rank" | "name" | "intelligence" | "strength" | "technique" | "power">;
+  card: Pick<RecruitCard, "rank" | "name" | "intelligence" | "strength" | "technique" | "power"> & { level?: number };
   size?: "sm" | "md" | "lg";
   selected?: boolean;
   onClick?: () => void;
@@ -199,6 +199,12 @@ export function RecruitCardView({
       <span className="rc-rank">{card.rank === "Divin" ? "✦" : card.rank}</span>
       <span className="rc-name">{card.name}</span>
       <span className="rc-label">{RANK_LABEL[card.rank]}</span>
+      {!!card.level && (
+        <span className="rc-level" title={`Éveil ${card.level} sur 5`} aria-label={`Éveil ${card.level} sur 5`}>
+          {"★".repeat(card.level)}
+          <span aria-hidden>{"☆".repeat(Math.max(0, 5 - card.level))}</span>
+        </span>
+      )}
       <span className="rc-stats">
         {STATS.slice(0, 3).map((s) => (
           <span key={s.key} className="rc-stat">
@@ -227,7 +233,10 @@ export function RecruitCardView({
 
 /* ------------------------------------------------------------------ */
 
-type DrawResult = { rank: GachaRank | null; cost: number; balance: number; choose?: boolean; dex_new?: boolean; card?: RecruitCard };
+type DrawOne = { rank: GachaRank | null; pity?: boolean; dex_new?: boolean; awakened?: boolean; level?: number; card?: RecruitCard };
+type DrawResult = { cost: number; balance: number; choose?: boolean; pity_left?: number | null; results: DrawOne[] };
+
+const RANK_ORDER: Record<string, number> = { E: 0, D: 1, C: 2, B: 3, A: 4, S: 5, Divin: 6 };
 
 export function RecruitDialog({
   quest,
@@ -267,7 +276,15 @@ export function RecruitDialog({
   const [pool, setPool] = useState<RecruitCard[]>(cards);
   const [picked, setPicked] = useState<Set<string>>(() => topThree(cards));
   const [busy, setBusy] = useState(false);
+  const [count, setCount] = useState<1 | 10>(1);
+  const [pityLeft, setPityLeft] = useState<number | null>(null);
   const started = useRef(false);
+  const pityPool = sim ? sim.kind : "renfort";
+  const discount = Number(settings.multi_discount ?? 0);
+
+  useEffect(() => {
+    supabase.rpc("gacha_pity_left", { p_pool: pityPool }).then(({ data, error: e }) => !e && setPityLeft(data as number | null));
+  }, [supabase, pityPool]);
 
   useEffect(() => {
     const esc = (e: KeyboardEvent) => e.key === "Escape" && stage !== "rolling" && onClose();
@@ -277,7 +294,8 @@ export function RecruitDialog({
 
   const odds = gachaOdds(settings.prob_e, settings.prob_divin, luck);
   const base = gachaOdds(settings.prob_e, settings.prob_divin, 1);
-  const cost = gachaCost(unitPrice, luck, settings.prob_divin);
+  const unitCost = gachaCost(unitPrice, luck, settings.prob_divin);
+  const cost = Math.round(unitCost * count * (count === 10 ? 1 - discount : 1) * 100) / 100;
   const presets = [1, 2, 5, 10, 100, 1000].filter((k) => k <= maxLuck);
 
   async function draw() {
@@ -286,17 +304,24 @@ export function RecruitDialog({
     setError(null);
     setStage("rolling");
     const wait = new Promise((r) => setTimeout(r, window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 150 : 1400));
-    const [{ data, error: e }] = await Promise.all([sim ? supabase.rpc("sim_gacha_draw", { p_kind: sim.kind, p_luck: luck }) : supabase.rpc("quest_gacha_draw", { p_quest: quest!.id, p_luck: luck }), wait]);
+    const [{ data, error: e }] = await Promise.all([
+      sim
+        ? supabase.rpc("sim_gacha_draw_n", { p_kind: sim.kind, p_luck: luck, p_count: count })
+        : supabase.rpc("quest_gacha_draw_n", { p_quest: quest!.id, p_luck: luck, p_count: count }),
+      wait,
+    ]);
     started.current = false;
     if (e) {
       setStage("setup");
-      return setError(/quest_gacha_draw|sim_gacha_draw/.test(e.message) ? "Le recrutement arrive avec les migrations 0102 et 0104." : e.message);
+      return setError(/gacha_draw_n/.test(e.message) ? "Le tirage ×10 et la garantie arrivent avec la migration 0105." : e.message);
     }
     const r = data as DrawResult;
     setResult(r);
     setBalance(Number(r.balance));
-    if (r.card) {
-      const next = [...pool, r.card];
+    if (r.pity_left !== undefined) setPityLeft(r.pity_left);
+    const got = r.results.flatMap((x) => (x.card ? [x.card] : []));
+    if (got.length && !sim) {
+      const next = [...pool, ...got];
       setPool(next);
       if (r.choose) setPicked(topThree(next));
     }
@@ -406,12 +431,26 @@ export function RecruitDialog({
               </tbody>
             </table>
 
+            <div className="rd-count" role="group" aria-label="Nombre de tirages">
+              <button type="button" className={count === 1 ? "is-on" : ""} aria-pressed={count === 1} onClick={() => setCount(1)}>
+                1 tirage
+              </button>
+              <button type="button" className={count === 10 ? "is-on" : ""} aria-pressed={count === 10} onClick={() => setCount(10)}>
+                10 tirages{discount > 0 ? ` · −${Math.round(discount * 100)} %` : ""}
+              </button>
+            </div>
+
             <div className="rd-pay">
               <p>
-                Prix du tirage <strong>{money(cost)}</strong>
-                {luck > 1 && <span className="rd-ratio"> · {(cost / (unitPrice || 1)).toLocaleString("fr-FR", { maximumFractionDigits: 2 })}× le prix</span>}
+                {count === 10 ? "Prix des 10 tirages" : "Prix du tirage"} <strong>{money(cost)}</strong>
+                {luck > 1 && <span className="rd-ratio"> · {(unitCost / (unitPrice || 1)).toLocaleString("fr-FR", { maximumFractionDigits: 2 })}× le prix par tirage</span>}
               </p>
               <p className="rd-balance">Ton solde : {money(balance)}</p>
+              {pityLeft != null && (
+                <p className="rd-balance">
+                  Garantie : rang A ou mieux {pityLeft <= 1 ? "au prochain tirage" : `dans ${pityLeft} tirages au plus`}
+                </p>
+              )}
             </div>
             <p className="rd-small">
               {sim
@@ -420,7 +459,7 @@ export function RecruitDialog({
             </p>
             {error && <p className="rd-error">{error}</p>}
             <button type="button" className="rd-go" onClick={draw} disabled={balance < cost}>
-              {balance < cost ? "Solde insuffisant" : `Recruter · ${money(cost)}`}
+              {balance < cost ? "Solde insuffisant" : `${count === 10 ? "Recruter ×10" : "Recruter"} · ${money(cost)}`}
             </button>
           </>
         )}
@@ -438,36 +477,14 @@ export function RecruitDialog({
 
         {stage === "result" && result && (
           <div className="rd-result" aria-live="polite">
-            {result.card ? (
-              <>
-                <div className={`rd-reveal rank-${result.card.rank}`}>
-                  <RecruitCardView card={result.card} size="lg" />
-                </div>
-                <p className="rd-caption">
-                  {result.card.name} répond à l&apos;appel · {RANK_LABEL[result.card.rank]}
-                  {result.dex_new ? " · nouveau dans le dex" : ""}
-                </p>
-                {sim && result.card.ally_chance != null && (
-                  <p className="rd-small">
-                    Protège jusqu&apos;à {result.card.ally_charges} fois par jour, avec {result.card.ally_chance} % de réussite.
-                  </p>
-                )}
-              </>
-            ) : (
-              <>
-                <div className="rd-empty" aria-hidden>
-                  ?
-                </div>
-                <p className="rd-caption">Personne n&apos;a répondu à l&apos;appel.</p>
-              </>
-            )}
+            {result.results.length === 1 ? <SingleResult one={result.results[0]} sim={!!sim} /> : <MultiResult results={result.results} onPick={sim && onEquip ? onEquip : undefined} />}
             <p className="rd-small">
               {money(result.cost)} payés · solde {money(balance)}
             </p>
             {error && <p className="rd-error">{error}</p>}
             <div className="rd-actions">
-              {sim && result.card && onEquip && (
-                <button type="button" className="rd-go" onClick={() => onEquip(result.card!.id)}>
+              {sim && onEquip && result.results.length === 1 && result.results[0].card && (
+                <button type="button" className="rd-go" onClick={() => onEquip(result.results[0].card!.id)}>
                   Équiper cet allié
                 </button>
               )}
@@ -476,7 +493,11 @@ export function RecruitDialog({
                   Choisir les trois à garder
                 </button>
               ) : (
-                <button type="button" className={sim && result.card && onEquip ? "rd-ghost" : "rd-go"} onClick={() => setStage("setup")}>
+                <button
+                  type="button"
+                  className={sim && onEquip && result.results.length === 1 && result.results[0].card ? "rd-ghost" : "rd-go"}
+                  onClick={() => setStage("setup")}
+                >
                   Recruter encore
                 </button>
               )}
@@ -506,6 +527,78 @@ export function RecruitDialog({
       </div>
     </div>,
     document.body,
+  );
+}
+
+function DrawBadges({ one }: { one: DrawOne }) {
+  if (!one.card) return null;
+  return (
+    <>
+      {one.dex_new && <span className="rd-badge is-new">Nouveau</span>}
+      {one.awakened && <span className="rd-badge is-awake">Éveil {one.level}</span>}
+      {one.pity && <span className="rd-badge is-pity">Garantie</span>}
+    </>
+  );
+}
+
+function SingleResult({ one, sim }: { one: DrawOne; sim: boolean }) {
+  if (!one.card)
+    return (
+      <>
+        <div className="rd-empty" aria-hidden>
+          ?
+        </div>
+        <p className="rd-caption">Personne n&apos;a répondu à l&apos;appel.</p>
+      </>
+    );
+  return (
+    <>
+      <div className={`rd-reveal rank-${one.card.rank}`}>
+        <RecruitCardView card={{ ...one.card, level: one.level ?? one.card.level }} size="lg" />
+      </div>
+      <p className="rd-caption">
+        {one.card.name} répond à l&apos;appel · {RANK_LABEL[one.card.rank]}
+      </p>
+      <p className="rd-badges">
+        <DrawBadges one={one} />
+      </p>
+      {one.awakened && <p className="rd-small">Déjà dans ton dex : la carte s&apos;éveille (+5 % par niveau).</p>}
+      {sim && one.card.ally_chance != null && (
+        <p className="rd-small">
+          Protège jusqu&apos;à {one.card.ally_charges} fois par jour, avec {one.card.ally_chance} % de réussite.
+        </p>
+      )}
+    </>
+  );
+}
+
+function MultiResult({ results, onPick }: { results: DrawOne[]; onPick?: (cardId: string) => void }) {
+  const got = results.filter((r) => r.card).sort((a, b) => RANK_ORDER[b.rank!] - RANK_ORDER[a.rank!] || Number(b.card!.power) - Number(a.card!.power));
+  const fails = results.length - got.length;
+  const best = got[0];
+  return (
+    <>
+      <p className="rd-caption">
+        {got.length} sur {results.length} ont répondu
+        {best ? ` · meilleur : ${RANK_LABEL[best.rank!]}` : ""}
+      </p>
+      <div className="rd-multi">
+        {got.map((r, i) => (
+          <div key={r.card!.id} className={`rd-multi-item rank-${r.rank}`} style={{ animationDelay: `${i * 70}ms` }}>
+            <RecruitCardView card={{ ...r.card!, level: r.level ?? r.card!.level }} size="sm" onClick={onPick ? () => onPick(r.card!.id) : undefined} />
+            <span className="rd-badges">
+              <DrawBadges one={r} />
+            </span>
+          </div>
+        ))}
+        {Array.from({ length: fails }).map((_, i) => (
+          <div key={`f${i}`} className="rd-multi-item is-fail" aria-label="Personne n'a répondu">
+            <span className="rd-multi-empty">?</span>
+          </div>
+        ))}
+      </div>
+      {onPick && got.length > 0 && <p className="rd-small">Touche une carte pour équiper cet allié.</p>}
+    </>
   );
 }
 
