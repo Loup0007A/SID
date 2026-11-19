@@ -77,3 +77,11 @@ Toutes peuvent être relancées.
   texte.
 - La collection devient un cabinet à tiroirs (porte-étiquette de laiton et
   poignée). Miniatures montées dans « Dernières découvertes ».
+
+## Ajout : proposer une nouvelle fiche (Wiki, migration 0212)
+- « Proposer une fiche » dans chaque catégorie et en haut de Propositions :
+  catégorie, nom, résumé, texte (quelques phrases au moins), tags, fiche
+  technique, rareté suggérée. Pas d'image : l'équipe l'ajoute ensuite.
+- Refus d'un nom déjà pris dans la catégorie, ou déjà proposé et en attente.
+- Acceptée : la fiche est créée avec le numéro suivant de sa catégorie,
+  découverte, l'auteur en est le découvreur et gagne la renommée habituelle.
