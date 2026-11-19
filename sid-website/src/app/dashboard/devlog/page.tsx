@@ -6,14 +6,23 @@ import { createClient } from "@/lib/supabase/client";
 import { loadCurrentUser } from "@/lib/permissions";
 import { inputClass, labelClass } from "@/lib/ui";
 import { Rich } from "@/components/tuto/Rich";
+import { AdminTabBar, useAdminTab, type AdminTab } from "@/components/admin/AdminTabs";
 
 /**
  * Devlog (Lot 86) : les nouveautés du site. Lu par tous les membres ;
  * le fondateur ajoute, modifie et supprime les entrées (migration 0103).
+ * Un onglet par site : Dossier Central, Cartographie, Wiki (migration 0107).
  */
 
 type Tag = "nouveau" | "amelioration" | "correctif" | "economie" | "admin";
-type Entry = { id: string; title: string; body: string; tag: Tag; published_at: string };
+type Site = "central" | "carto" | "wiki";
+type Entry = { id: string; title: string; body: string; tag: Tag; published_at: string; site?: Site };
+
+const SITES: (AdminTab & { key: Site })[] = [
+  { key: "central", label: "Dossier Central", icon: "home" },
+  { key: "carto", label: "Cartographie", icon: "map" },
+  { key: "wiki", label: "Wiki", icon: "book" },
+];
 
 const TAGS: Record<Tag, { label: string; color: string }> = {
   nouveau: { label: "Nouveauté", color: "#8fb3d9" },
@@ -30,8 +39,8 @@ const inputDate = (iso: string) => {
   return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 };
 
-type Draft = { id: string | null; title: string; body: string; tag: Tag; date: string };
-const emptyDraft = (): Draft => ({ id: null, title: "", body: "", tag: "nouveau", date: inputDate(new Date().toISOString()) });
+type Draft = { id: string | null; title: string; body: string; tag: Tag; date: string; site: Site };
+const emptyDraft = (site: Site): Draft => ({ id: null, title: "", body: "", tag: "nouveau", date: inputDate(new Date().toISOString()), site });
 
 export default function DevlogPage() {
   const supabase = useMemo(() => createClient(), []);
@@ -41,9 +50,15 @@ export default function DevlogPage() {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [filter, setFilter] = useState<Tag | "all">("all");
   const [busy, setBusy] = useState(false);
+  const [site, setSite] = useAdminTab(SITES, "central");
 
   const load = useCallback(async () => {
-    const { data, error: e } = await supabase.from("devlog_entries").select("id, title, body, tag, published_at").order("published_at", { ascending: false }).limit(300);
+    const { data, error: e } = await supabase.from("devlog_entries").select("id, title, body, tag, published_at, site").order("published_at", { ascending: false }).limit(600);
+    if (e && /site/.test(e.message)) {
+      // Migration 0107 pas encore passée : un seul journal.
+      const r = await supabase.from("devlog_entries").select("id, title, body, tag, published_at").order("published_at", { ascending: false }).limit(300);
+      if (!r.error) return setEntries((r.data ?? []) as Entry[]);
+    }
     if (e) return setError(/devlog_entries/.test(e.message) ? "Le devlog arrive avec la migration 0103." : e.message);
     setError(null);
     setEntries((data ?? []) as Entry[]);
@@ -65,6 +80,7 @@ export default function DevlogPage() {
       p_body: draft.body,
       p_tag: draft.tag,
       p_published_at: new Date(`${draft.date}T12:00:00`).toISOString(),
+      ...(draft.site !== "central" ? { p_site: draft.site } : {}),
     });
     setBusy(false);
     if (er) return setError(er.message);
@@ -79,7 +95,8 @@ export default function DevlogPage() {
     await load();
   }
 
-  const shown = (entries ?? []).filter((e) => filter === "all" || e.tag === filter);
+  const inSite = (entries ?? []).filter((e) => (e.site ?? "central") === site);
+  const shown = inSite.filter((e) => filter === "all" || e.tag === filter);
   const months = new Map<string, Entry[]>();
   shown.forEach((e) => {
     const k = new Date(e.published_at).toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
@@ -91,14 +108,16 @@ export default function DevlogPage() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="font-display text-2xl uppercase tracking-wide text-red">Devlog</h1>
-          <p className="font-body text-sm text-paper/65">Ce qui change sur le site, du plus récent au plus ancien.</p>
+          <p className="font-body text-sm text-paper/65">Ce qui change sur les trois sites, du plus récent au plus ancien.</p>
         </div>
         {founder && !draft && (
-          <button onClick={() => setDraft(emptyDraft())} className="rounded-lg bg-red px-4 py-2 font-display text-sm uppercase text-ink hover:bg-red-light">
+          <button onClick={() => setDraft(emptyDraft(site as Site))} className="rounded-lg bg-red px-4 py-2 font-display text-sm uppercase text-ink hover:bg-red-light">
             Nouvelle entrée
           </button>
         )}
       </div>
+
+      <AdminTabBar tabs={SITES} tab={site} onChange={(k) => { setSite(k); setFilter("all"); }} label="Site" />
 
       {error && <p className="font-mono text-sm text-red">{error}</p>}
 
@@ -112,7 +131,17 @@ export default function DevlogPage() {
             <span className={labelClass}>Texte (ligne vide = nouveau paragraphe, **gras**)</span>
             <textarea rows={6} className={inputClass} value={draft.body} onChange={(e) => setDraft({ ...draft, body: e.target.value })} />
           </label>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-3">
+            <label className="block space-y-1">
+              <span className={labelClass}>Site</span>
+              <select className={inputClass} value={draft.site} onChange={(e) => setDraft({ ...draft, site: e.target.value as Site })}>
+                {SITES.map((s) => (
+                  <option key={s.key} value={s.key}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
+            </label>
             <label className="block space-y-1">
               <span className={labelClass}>Type</span>
               <select className={inputClass} value={draft.tag} onChange={(e) => setDraft({ ...draft, tag: e.target.value as Tag })}>
@@ -183,7 +212,7 @@ export default function DevlogPage() {
                     <div className="flex gap-2 pt-1">
                       <button
                         onClick={() => {
-                          setDraft({ id: e.id, title: e.title, body: e.body, tag: e.tag, date: inputDate(e.published_at) });
+                          setDraft({ id: e.id, title: e.title, body: e.body, tag: e.tag, date: inputDate(e.published_at), site: e.site ?? "central" });
                           window.scrollTo({ top: 0, behavior: "smooth" });
                         }}
                         className="rounded-lg border border-white/20 px-3 py-1 font-mono text-xs uppercase text-paper/80 hover:bg-white/10"
