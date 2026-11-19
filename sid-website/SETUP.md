@@ -5,7 +5,7 @@ renommer : nom du RP, des trois sites, de la monnaie, adresses, sites et
 rubriques ouverts, adresses des simulations. L'installation elle-même (Supabase, Vercel, compte Fondateur) est
 dans [README.md](README.md).
 
-Prérequis : migrations passées jusqu'à `0107_devlog_sites.sql` (Dossier
+Prérequis : migrations passées jusqu'à `0108_devlog_carto_wiki_complet.sql` (Dossier
 Central), celles du Wiki (jusqu'à `0211_wiki_propositions.sql`), puis celles de
 la Cartographie (jusqu'à `0119_meteo_incursions.sql`). La 0118 de la
 Cartographie utilise les tables du Wiki : passer le Wiki avant.
