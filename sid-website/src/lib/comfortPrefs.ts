@@ -1,7 +1,9 @@
 /**
- * Affichage et confort (Réglages, Lot 93) : propres à chaque navigateur.
- * Posés sur <html> dès le premier affichage (script de layout.tsx), puis à
- * chaque changement.
+ * Affichage et confort (Réglages, Lots 93-94). Fichier identique sur le
+ * Dossier Central, la Cartographie et le Wiki. Gardés sur le compte
+ * (profiles.display_prefs, migration 0116 du Dossier Central) et recopiés
+ * dans chaque navigateur, pour être posés sur <html> dès le premier
+ * affichage (script COMFORT_BOOT du layout) ; ComfortSync relit le compte.
  *  - theme : clair (le site tel quel), sombre, ou selon l'appareil ;
  *  - epure : fond uni, ni motif ni particules, ni contours épais ni ombres
  *    pleines, ni décors des fêtes ; un site plus simple à regarder ;
@@ -17,18 +19,24 @@ export const COMFORT_KEY = "sid-confort-v1";
 export const COMFORT_EVENT = "sid:comfort-changed";
 export const DEFAULT_COMFORT: ComfortPrefs = { theme: "clair", epure: false, motion: "full", text: "normal", decor: true };
 
+/** Réglages complets à partir de valeurs partielles (compte ou navigateur). */
+export function normalizeComfort(p: Partial<ComfortPrefs> | null | undefined): ComfortPrefs {
+  const v = p ?? {};
+  return {
+    theme: v.theme === "sombre" || v.theme === "auto" ? v.theme : "clair",
+    epure: v.epure === true,
+    motion: v.motion === "calm" ? "calm" : "full",
+    text: v.text === "large" || v.text === "xlarge" ? v.text : "normal",
+    decor: v.decor !== false,
+  };
+}
+
+export const sameComfort = (a: ComfortPrefs, b: ComfortPrefs) => JSON.stringify(normalizeComfort(a)) === JSON.stringify(normalizeComfort(b));
+
 export function readComfort(): ComfortPrefs {
   try {
     const raw = localStorage.getItem(COMFORT_KEY);
-    if (!raw) return DEFAULT_COMFORT;
-    const p = JSON.parse(raw) as Partial<ComfortPrefs>;
-    return {
-      theme: p.theme === "sombre" || p.theme === "auto" ? p.theme : "clair",
-      epure: p.epure === true,
-      motion: p.motion === "calm" ? "calm" : "full",
-      text: p.text === "large" || p.text === "xlarge" ? p.text : "normal",
-      decor: p.decor !== false,
-    };
+    return raw ? normalizeComfort(JSON.parse(raw) as Partial<ComfortPrefs>) : DEFAULT_COMFORT;
   } catch {
     return DEFAULT_COMFORT;
   }

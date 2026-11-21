@@ -2,26 +2,39 @@
 
 import { useEffect, useState } from "react";
 import { readCursorMode, writeCursorMode, type CursorMode } from "@/lib/cursorPrefs";
-import { DEFAULT_COMFORT, readComfort, writeComfort, type ComfortPrefs, type MotionPref, type TextPref, type ThemePref } from "@/lib/comfortPrefs";
-import { Choices, SettingCard, Toggle } from "./ui";
+import { COMFORT_EVENT, DEFAULT_COMFORT, readComfort, writeComfort, type ComfortPrefs, type MotionPref, type TextPref, type ThemePref } from "@/lib/comfortPrefs";
+import { saveComfortToAccount } from "@/components/ComfortSync";
+import { Choices, SettingCard, Status, Toggle } from "./ui";
 
-/** Réglages → Affichage et confort (Lot 93) : propres à ce navigateur. */
+/** Réglages → Affichage et confort (Lots 93-94) : gardés sur le compte, valent sur les trois sites. */
 export function ComfortSettings() {
   const [cursor, setCursor] = useState<CursorMode | null>(null);
   const [comfort, setComfort] = useState<ComfortPrefs>(DEFAULT_COMFORT);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   useEffect(() => {
     setCursor(readCursorMode());
     setComfort(readComfort());
+    // ComfortSync peut recopier les réglages du compte après l'ouverture.
+    const sync = () => setComfort(readComfort());
+    window.addEventListener(COMFORT_EVENT, sync);
+    return () => window.removeEventListener(COMFORT_EVENT, sync);
   }, []);
   const set = (patch: Partial<ComfortPrefs>) => {
     const next = { ...comfort, ...patch };
     setComfort(next);
     writeComfort(next);
+    setMsg(null);
+    void saveComfortToAccount(next).then((err) =>
+      setMsg(err ? { ok: false, text: err.includes("display_prefs") ? "Gardé sur cet appareil seulement : la migration 0116 doit être lancée." : err } : { ok: true, text: "Enregistré sur ton compte." })
+    );
   };
 
   return (
     <div className="space-y-5">
-      <p className="note-appareil">Ces réglages ne valent que pour ce navigateur : ton téléphone et ton ordinateur peuvent être réglés différemment.</p>
+      <p className="note-appareil">
+        Ces réglages suivent ton compte : ils valent ici, sur la Cartographie et sur le Wiki. Pour qu&apos;un appareil reste différent, choisis « Selon l&apos;appareil ».
+      </p>
+      <Status msg={msg} />
 
       <SettingCard icon="palette" title="Apparence du site" intro="Clair comme d'habitude, sombre pour le soir, ou au choix de ton appareil.">
         <Choices<ThemePref>

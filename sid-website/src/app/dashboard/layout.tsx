@@ -13,6 +13,7 @@ import { loadCurrentUser, can } from "@/lib/permissions";
 import type { PermissionKey, Profile } from "@/types/database";
 import { NotificationBell } from "@/components/NotificationBell";
 import { SettingsButton } from "@/components/SettingsButton";
+import ComfortSync from "@/components/ComfortSync";
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import { ScrollMemory } from "@/components/ScrollMemory";
 import { entryForPath } from "@/lib/navigation";
@@ -298,6 +299,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <header className="site-bar sticky top-0 z-20 pt-[env(safe-area-inset-top)]">
         <SeasonalGarland />
         <SeasonalCeremony />
+        <ComfortSync />
         <div className="mx-auto flex max-w-6xl items-center gap-2 px-3 py-3 sm:gap-3 sm:px-6">
           <Link href="/dashboard" scroll={false} className={`shrink-0 items-center gap-2 ${isHome ? "flex" : "hidden sm:flex"}`} aria-label="Accueil du S.I.D.">
             {/* eslint-disable-next-line @next/next/no-img-element */}
