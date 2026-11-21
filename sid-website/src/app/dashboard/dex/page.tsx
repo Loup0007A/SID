@@ -9,6 +9,7 @@ import { RecruitCardView } from "@/components/quests/QuestPower";
 import { AdminPanel, AdminTabBar, useAdminTab, type AdminTab } from "@/components/admin/AdminTabs";
 import { DEX_KINDS, RANK_LABEL, GACHA_RANKS, type DexEntry, type DexKind, type GachaRank, type GachaSettings, type RecruitCard } from "@/lib/gacha";
 import "@/components/quests/recrutement.css";
+import { allyPowers, type AllyKind } from "@/lib/allyPowers";
 
 /**
  * Dex (Lots 86 et 87, migrations 0104 et 0105).
@@ -271,9 +272,26 @@ function DexInner() {
                     </button>
                   </div>
                 ) : (
-                  <p className="font-mono text-xs text-paper/75">
-                    Protège {e.ally_charges} fois par jour, {e.ally_chance} % de réussite{e.equipped ? " · équipé" : ""}.
-                  </p>
+                  <div className="w-full space-y-1">
+                    {(() => {
+                      const pw = allyPowers(e.kind as AllyKind, e);
+                      return pw.specs.map((x) => (
+                        <details key={x.spec} className="font-body text-xs text-paper/70">
+                          <summary className="cursor-pointer font-mono text-xs text-paper">
+                            {x.label} · force {String(pw.force).replace(".", ",")}
+                          </summary>
+                          <ul className="mt-1 list-disc space-y-0.5 pl-4">
+                            {x.lines.map((l) => (
+                              <li key={l}>{l}</li>
+                            ))}
+                          </ul>
+                        </details>
+                      ));
+                    })()}
+                    <p className="font-mono text-xs text-paper/75">
+                      Protège {e.ally_charges} fois par jour, {e.ally_chance} % de réussite{e.equipped ? " · équipé" : ""}.
+                    </p>
+                  </div>
                 )}
               </article>
             );

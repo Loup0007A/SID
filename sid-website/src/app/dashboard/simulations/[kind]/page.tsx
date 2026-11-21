@@ -23,6 +23,8 @@ import type { SimulationOverview, SimulationResultResponse, SimulationRunStatus 
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { connectRaid, fetchRaidAllies, sendRaidEvent, type ActiveRaid, type BossRaid } from "@/lib/bossRaids";
 import { SimAlly } from "@/components/quests/SimAlly";
+import { allyParam, type AllyKind } from "@/lib/allyPowers";
+import type { AllyStatus } from "@/lib/gacha";
 import { BloodLockout } from "@/components/BloodLockout";
 import { announceActivity } from "@/lib/presence";
 import { SidIcon, GlyphText } from "@/components/icons/SidIcon";
@@ -401,6 +403,15 @@ export default function SimulationPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [Boolean(session), origin, submitResult, handleRaidMessage, handleInjury]);
 
+  // Allié équipé : ses pouvoirs partent dans l'adresse du jeu (sid_allie).
+  async function addAllyParam(url: URL) {
+    if (!site) return;
+    const k = site.kind as AllyKind;
+    const { data } = await supabase.rpc("sim_ally_status", { p_kind: k });
+    const ally = (data as AllyStatus | null)?.ally;
+    if (ally) url.searchParams.set("sid_allie", allyParam(k, ally));
+  }
+
   async function start(extraParams?: Record<string, string>) {
     if (!site) return;
     setStarting(true);
@@ -414,6 +425,7 @@ export default function SimulationPage() {
     const url = new URL(run.iframeUrl);
     // Donjons : la Puissance décide du dragon (à partir de 90).
     if (site.kind === "donjons" && overview) url.searchParams.set("sid_puissance", String(overview.strength));
+    await addAllyParam(url);
     for (const [k, v] of Object.entries(extraParams ?? {})) url.searchParams.set(k, v);
     setSession({ token: run.token, iframeUrl: url.toString(), startedAt: Date.now(), issued: [run.token] });
   }
@@ -437,6 +449,7 @@ export default function SimulationPage() {
     url.searchParams.set("raid", j.id);
     url.searchParams.set("raid_chapter", String(j.chapter));
     if (j.dragon) url.searchParams.set("raid_dragon", "1");
+    await addAllyParam(url);
     exitFullscreen();
     setSession({ token: null, iframeUrl: url.toString(), startedAt: Date.now(), issued: [], raid: true });
     setNotice({ tone: "info", text: `⚔️ Tu rejoins le raid de ${j.host_nickname ?? "ce membre"}. Clique sur « Rejoindre le combat » dans le jeu.` });

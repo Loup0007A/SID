@@ -6,12 +6,14 @@ import { currentUserId } from "@/lib/session";
 import { SidIcon } from "@/components/icons/SidIcon";
 import { RecruitCardView, RecruitDialog } from "@/components/quests/QuestPower";
 import { RANK_LABEL, type AllyStatus, type DexEntry, type GachaSettings } from "@/lib/gacha";
+import { allyPowers } from "@/lib/allyPowers";
 import "@/components/quests/recrutement.css";
 
 /**
  * Allié d'une simulation (Lot 86, migration 0104) : on le recrute avec le
  * même système de chances que les renforts de quête, on l'équipe, et il
  * protège le membre un nombre de fois par jour qui dépend de son rang.
+ * Lot 89 : il agit aussi pendant les parties, selon sa spécialité.
  */
 
 type Kind = "donjons" | "intelligence" | "techniques";
@@ -20,17 +22,17 @@ const COPY: Record<Kind, { label: string; noun: string; effect: string }> = {
   donjons: {
     label: "Compagnons",
     noun: "compagnon",
-    effect: "Quand tu perds un membre, il peut te protéger de la blessure. Il rejoint aussi les raids de boss que tu rejoins.",
+    effect: "Il t'accompagne dans chaque histoire, 101 compris, selon sa spécialité. Quand tu perds un membre, il peut aussi te protéger de la blessure, et il rejoint les raids de boss.",
   },
   intelligence: {
     label: "Sages",
     noun: "sage",
-    effect: "Après un échec, il peut l'annuler : il ne compte pas dans la limite du jour.",
+    effect: "Il t'aide pendant chaque partie, 101 compris, selon sa spécialité. Après un échec, il peut aussi l'annuler : il ne compte pas dans la limite du jour.",
   },
   techniques: {
     label: "Artisans",
     noun: "artisan",
-    effect: "Après un échec, il peut l'annuler : il ne compte pas dans la limite du jour.",
+    effect: "Il t'aide pendant chaque partie, 101 compris, selon sa spécialité. Après un échec, il peut aussi l'annuler : il ne compte pas dans la limite du jour.",
   },
 };
 
@@ -77,6 +79,7 @@ export function SimAlly({ kind, reloadKey = 0 }: { kind: Kind; reloadKey?: numbe
 
   if (unavailable || !settings) return null;
   const ally = status?.ally ?? null;
+  const powers = ally ? allyPowers(kind, ally) : null;
 
   return (
     <section className="glass-card space-y-3 p-4" aria-label={`Allié : ${copy.label}`}>
@@ -99,6 +102,23 @@ export function SimAlly({ kind, reloadKey = 0 }: { kind: Kind; reloadKey?: numbe
               Protections aujourd&apos;hui : <strong className="text-paper">{status?.left}</strong> / {status?.charges}
             </p>
           </div>
+          {powers && (
+            <div className="min-w-[14rem] flex-1 space-y-2">
+              <p className="font-mono text-xs text-paper/75">
+                En partie · force <strong className="text-paper">{String(powers.force).replace(".", ",")}</strong> / 10
+              </p>
+              {powers.specs.map((p) => (
+                <div key={p.spec}>
+                  <p className="font-display text-sm text-paper">{p.label}</p>
+                  <ul className="list-disc space-y-0.5 pl-4 font-body text-xs text-paper/70">
+                    {p.lines.map((l) => (
+                      <li key={l}>{l}</li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       ) : (
         <p className="font-body text-sm text-paper/60">Aucun {copy.noun} équipé.</p>
@@ -126,6 +146,9 @@ export function SimAlly({ kind, reloadKey = 0 }: { kind: Kind; reloadKey?: numbe
             <div key={c.id} className="space-y-1">
               <RecruitCardView card={c} size="sm" selected={c.equipped} onClick={() => equip(c.id)} />
               <p className="font-mono text-[10px] text-paper/60">
+                {allyPowers(kind, c).specs.map((p) => p.label).join(" + ")} · force {String(allyPowers(kind, c).force).replace(".", ",")}
+              </p>
+              <p className="font-mono text-[10px] text-paper/50">
                 {c.ally_chance} % · {c.ally_charges}/jour
               </p>
             </div>

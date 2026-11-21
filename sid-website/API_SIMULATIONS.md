@@ -295,3 +295,42 @@ dragon renvoie à tous, au plus 3 fois par seconde, un paquet commun sur
 `arena:<id>` (sa position, celles des joueurs, les événements). La tribune
 écoute seulement. Essai sans S.I.D. : `arena.html?local=1&role=…&me=…` dans
 plusieurs onglets.
+
+## 9. Allié équipé (`sid_allie`)
+
+Quand un membre a équipé un allié pour la simulation (Sage, Artisan ou
+Compagnon), la page du S.I.D. ajoute à l'adresse du jeu le paramètre
+`sid_allie` : un JSON encodé en base64url (`src/lib/allyPowers.ts`).
+
+```json
+{ "k": "intelligence", "n": "Ysolde", "r": "Divin", "l": 3, "f": 9.2,
+  "s": ["clairvoyant", "mentor"],
+  "v": { "clairvoyant": { "indices": 4 }, "mentor": { "pardons": 3 } } }
+```
+
+- `k` : la simulation ; le jeu ignore un allié d'une autre simulation.
+- `s` : la spécialité, tirée du nom de l'allié (toujours la même pour un
+  même nom) ; un allié Divin en a deux.
+- `f` : la force, de 1 à 10 : rang (E = 1 … Divin = 7), +0,5 par niveau
+  d'éveil, +0 à 0,5 selon la place de ses facteurs dans la fourchette du rang.
+- `v` : les valeurs de chaque spécialité, calculées par le S.I.D. Le jeu les
+  applique telles quelles et les borne (l'adresse peut être modifiée à la main).
+
+| Simulation | Spécialité | Valeurs |
+|---|---|---|
+| Intelligence | `clairvoyant` | `indices` = 1 + ⌊f / 2,5⌋ |
+| | `sablier` | `minutes` = 3 f, `secondes` (par énigme) = 2,5 f |
+| | `mentor` | `pardons` = 1 + ⌊f / 3,5⌋ |
+| | `erudit` | `pages` = min(1 ; 0,25 f), `brouillard` si f ≥ 6, `chiffres` si f ≥ 4 |
+| Techniques | `horloger` | `temps` = 1 + 0,05 f, `minutes` = 2 f |
+| | `gabarit` | `taille` = 1 + 0,05 f, `allege` = 0,035 f |
+| | `contremaitre` | `pardons` = 1 + ⌊f / 3,5⌋, `seuil` = 80 − 3 f |
+| | `second` | `ateliers` = 1 + ⌊f / 4⌋ |
+| Donjons | `lame` | `cadence` = max(0,6 ; 2,1 − 0,14 f) s, `degats` = 1 + ⌊f / 3⌋, `attaque` = 0,03 f |
+| | `bouclier` | `gardes` = 1 + ⌊f / 2,5⌋, `recharge` = 75 − 4,5 f s, `reduction` = 0,03 f |
+| | `soigneur` | `soin` = 0,3 f vie/s, `releve` = 60 − 4,5 f s, `relances` = ⌊f / 4⌋ par île |
+| | `eclaireur` | `vitesse` = `butin` = 0,03 f, `buffs` = 0,05 f, `flair` = 40 − 2,5 f s |
+
+Les jeux ajoutent `;allie=<spécialités>,f<force>,aides<n>` aux `details` du
+résultat. La protection quotidienne de l'allié (annuler un échec, éviter une
+blessure) ne change pas : elle reste gérée par la base.
