@@ -316,3 +316,35 @@ pour rester sur une base stable et connue).
   Un élément aux couleurs choisies par un membre peut porter
   `data-contraste-libre`.
 - **Migrations** : `scripts/rejouer-migrations.sh` rejoue celles des trois sites sur une base jetable et écrit `supabase/ORDRE_MIGRATIONS.txt` (voir section 3).
+
+## Lot 96 — Sécurité, recherche commune, appareils, Carto hors ligne
+
+- **Droits de la base** : `scripts/audit-securite.sh` (`AUDIT_URL=…`) vérifie
+  les règles d'accès (RLS), les fonctions ouvertes sans session (liste dans
+  `_fonctions_sans_session()`, migration 0120), les champs privés des fiches
+  et fait des essais avec un vrai membre dans une transaction annulée.
+- **Fiches** : les champs que le membre peut masquer et ses réglages ne sont
+  plus lisibles dans `profiles`. Lire les fiches des autres avec
+  `PROFILE_PUBLIC_COLUMNS` (`src/lib/profileColumns.ts`), la sienne avec
+  `myProfile()`, les fiches complètes (gestion) avec `fullProfiles()`. Une
+  nouvelle colonne lisible par tous : `grant select (colonne) on public.profiles to authenticated`.
+- **Nouvelles fonctions** : plus ouvertes sans session par défaut (droits par
+  défaut changés en 0120). Pour une page publique, l'ajouter à
+  `_fonctions_sans_session()` et `grant execute … to anon`.
+- **Limite de débit** : `_limite_debit(clé, max, secondes)` dans une fonction
+  SECURITY DEFINER (recherche, appareils, export).
+- **Secrets** : `npm run secrets` (identique sur les trois sites) lit tout
+  l'historique git et `.next/static` ; avec `SCELLE_CLE`, cherche aussi la
+  phrase du sceau.
+- **En-têtes** : `en-tetes-securite.js` (identique sur les trois sites) : CSP,
+  HSTS, Permissions-Policy, nosniff, SAMEORIGIN, COOP.
+- **Recherche commune** : `recherche_commune_limitee(q)` (0121) et
+  `src/components/RechercheCommune.tsx` (identique sur les trois sites). Le
+  Dossier Central l'ajoute à sa palette (Ctrl+K) ; Wiki et Carto ont la
+  fenêtre et le bouton « Trois sites ».
+- **Appareils connectés** : `mes_appareils()` / `appareil_deconnecter(id)`
+  (sessions de `auth.sessions`), page « Mes données ».
+- **Export** : `export_my_data()` ajoute toute table liée à un membre par une
+  clé étrangère.
+- **Dépendances** : `npm audit` signale des failles de Next 14 corrigées
+  seulement en Next 15 ou 16 (voir le CHANGELOG du lot).

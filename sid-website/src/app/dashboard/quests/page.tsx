@@ -15,6 +15,7 @@ import { findShortestPath } from "@/lib/pathfinding";
 import { formatStat, unmetRequirements, type MemberCharacteristics } from "@/lib/questRequirements";
 import { SidIcon } from "@/components/icons/SidIcon";
 import { QuestPower } from "@/components/quests/QuestPower";
+import { PROFILE_PUBLIC_COLUMNS } from "@/lib/profileColumns";
 
 type RepPreview = { gain?: number; loss?: number; status?: "validated" | "rejected"; delta?: number };
 
@@ -165,7 +166,7 @@ export default function QuestsPage() {
       // peut arriver à destination ou passer à l'étape suivante).
       const [{ profile, permissions }, { data: m }, { data: p }, { data: r }] = await Promise.all([
         loadCurrentUser(),
-        supabase.from("profiles").select("*").eq("status", "active"),
+        supabase.from("profiles").select(PROFILE_PUBLIC_COLUMNS).eq("status", "active"),
         supabase.from("map_places").select("id, name, type"),
         supabase.from("map_routes").select("*"),
         // Silencieux : sans effet si la migration correspondante manque.

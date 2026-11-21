@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { loadCurrentUser, can } from "@/lib/permissions";
 import type { Role, Group, Profile, PermissionKey, MemberRank } from "@/types/database";
 import { inputClass, labelClass } from "@/lib/ui";
+import { PROFILE_PUBLIC_COLUMNS } from "@/lib/profileColumns";
 
 const ALL_PERMISSIONS: PermissionKey[] = [
   "manage_roles",
@@ -38,7 +39,7 @@ export default function RolesAdminPage() {
       supabase.from("roles").select("*").order("rank", { ascending: false }),
       supabase.from("role_permissions").select("*"),
       supabase.from("groups").select("*"),
-      supabase.from("profiles").select("*").eq("status", "active"),
+      supabase.from("profiles").select(PROFILE_PUBLIC_COLUMNS).eq("status", "active"),
     ]);
     setRoles(r ?? []);
     setGroups(g ?? []);

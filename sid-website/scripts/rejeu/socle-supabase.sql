@@ -19,6 +19,13 @@ create table auth.users (
   created_at timestamptz default now(), updated_at timestamptz default now(),
   is_anonymous boolean default false, banned_until timestamptz, deleted_at timestamptz
 );
+create table auth.sessions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users (id) on delete cascade,
+  created_at timestamptz default now(), updated_at timestamptz default now(),
+  factor_id uuid, aal text, not_after timestamptz, refreshed_at timestamp,
+  user_agent text, ip inet, tag text
+);
 create function auth.uid() returns uuid language sql stable as $$
   select coalesce(nullif(current_setting('request.jwt.claim.sub', true), ''),
                   (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub'))::uuid $$;

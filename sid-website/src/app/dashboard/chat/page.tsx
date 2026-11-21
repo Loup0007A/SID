@@ -16,6 +16,7 @@ import { TitleBadge } from "@/components/titles/TitleVisuals";
 import { SidIcon, GlyphText } from "@/components/icons/SidIcon";
 import { RpBar, RpMessage, RP_MODES, ROLL_ERRORS, parseRp, type RpMode } from "@/components/chat/RpChat";
 import { AdminContent, AdminLinkPicker, AdminPins, useAdminPins, type AdminChatInfo } from "@/components/chat/AdminChat";
+import { PROFILE_PUBLIC_COLUMNS } from "@/lib/profileColumns";
 
 /** Avatar : la photo, sinon l'initiale sur une couleur tirée du pseudo. */
 function Avatar({ name, url, size = 32 }: { name: string; url: string | null | undefined; size?: number }) {
@@ -107,7 +108,7 @@ function ChatInner() {
       const adminP = supabase.rpc("admin_chat_open");
       const channelsP = refreshChannels(user.id);
       const [{ data: m }, { permissions }] = await Promise.all([
-        supabase.from("profiles").select("*").eq("status", "active"),
+        supabase.from("profiles").select(PROFILE_PUBLIC_COLUMNS).eq("status", "active"),
         loadCurrentUser(),
       ]);
       setProfiles(new Map((m ?? []).map((p) => [p.id, p])));

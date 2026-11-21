@@ -84,7 +84,8 @@ export function applyComfort(p: ComfortPrefs) {
 /** Cookie lu par le script du <head> quand la mémoire locale est vide. */
 export function writeComfortCookie(p: ComfortPrefs) {
   try {
-    document.cookie = `${COMFORT_COOKIE}=${encodeURIComponent(JSON.stringify(normalizeComfort(p)))}; path=/; max-age=31536000; samesite=lax`;
+    const secure = location.protocol === "https:" ? "; secure" : "";
+    document.cookie = `${COMFORT_COOKIE}=${encodeURIComponent(JSON.stringify(normalizeComfort(p)))}; path=/; max-age=31536000; samesite=lax${secure}`;
   } catch {
     /* cookies bloqués */
   }

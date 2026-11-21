@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/client";
 import type { PermissionKey, Profile } from "@/types/database";
 import { currentUserId } from "@/lib/session";
+import { myProfile } from "@/lib/profileColumns";
 
 export type CurrentUser = { profile: Profile | null; permissions: Set<PermissionKey> };
 
@@ -51,7 +52,7 @@ async function fetchCurrentUser(uid: string): Promise<CurrentUser> {
   // Tout part en même temps (un seul aller-retour) : profil, rôles avec leurs
   // permissions, et droits du compte de test le cas échéant.
   const [{ data: profile }, roles, { data: sb }] = await Promise.all([
-    supabase.from("profiles").select("*").eq("id", uid).single(),
+    myProfile(supabase, uid),
     supabase.from("user_roles").select("role_id, roles(role_permissions(permission))").eq("user_id", uid),
     supabase.from("sandbox_accounts").select("permissions").eq("user_id", uid).maybeSingle(),
   ]);

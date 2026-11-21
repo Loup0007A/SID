@@ -185,7 +185,8 @@ export function Privacy({ site }: { site: LegalSite }) {
       <ul>
         <li>
           <strong>Compte :</strong> ton adresse email et ton mot de passe (chiffré, géré par notre fournisseur
-          d&apos;authentification : personne ne peut le lire).
+          d&apos;authentification : personne ne peut le lire). Tes sessions ouvertes (navigateur, date de connexion,
+          dernière activité), que tu vois et peux fermer dans « Mes données ».
         </li>
         <li>
           <strong>Dossier :</strong> surnom, prénom et nom, âge, photo, description, armes, équipement, rôle souhaité,

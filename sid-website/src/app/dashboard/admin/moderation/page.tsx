@@ -16,6 +16,7 @@ import type { Reveals } from "@/lib/navigation";
 import { SiteTabs } from "@/components/admin/SiteTabs";
 import { AdminPanel, AdminTabBar, useAdminTab, type AdminTab } from "@/components/admin/AdminTabs";
 import { DatabaseSearch } from "@/components/admin/DatabaseSearch";
+import { PROFILE_PUBLIC_COLUMNS } from "@/lib/profileColumns";
 
 const DECOR_MODES: { v: DecorMode; label: string; hint: string }[] = [
   { v: "auto", label: "Automatique", hint: "Pendant la période de l'événement (heure de Paris)." },
@@ -124,7 +125,7 @@ export default function ModerationPage() {
 
   useEffect(() => {
     (async () => {
-      const { data: m } = await supabase.from("profiles").select("*").eq("status", "active").order("nickname");
+      const { data: m } = await supabase.from("profiles").select(PROFILE_PUBLIC_COLUMNS).eq("status", "active").order("nickname");
       setMembers(m ?? []);
       const { data: auth } = await supabase.auth.getUser();
       if (auth.user) {

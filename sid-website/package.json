@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "communs": "node scripts/fichiers-communs.mjs",
-    "test:affichage": "playwright test"
+    "test:affichage": "playwright test",
+    "secrets": "node scripts/controle-secrets.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",

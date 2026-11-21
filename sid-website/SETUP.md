@@ -5,11 +5,22 @@ renommer : nom du RP, des trois sites, de la monnaie, adresses, sites et
 rubriques ouverts, adresses des simulations. L'installation elle-même (Supabase, Vercel, compte Fondateur) est
 dans [README.md](README.md).
 
-Prérequis : migrations passées jusqu'à `0119_devlog_lisibilite.sql` (Dossier
+Prérequis : migrations passées jusqu'à `0122_devlog_securite_recherche.sql` (Dossier
 Central), celles du Wiki (jusqu'à `0212_wiki_nouvelles_fiches.sql`), puis celles de
-la Cartographie (jusqu'à `0120_creatures_meteo_lieux_proprietes.sql`). La 0118 de la
+la Cartographie (jusqu'à `0121_batiments_proprietaire.sql`). Sur une base déjà en
+service, lancer les 0120 à 0122 du Dossier Central **après** toutes les autres. La 0118 de la
 Cartographie utilise les tables du Wiki : passer le Wiki avant. Installation neuve des trois sites :
 suivre `supabase/ORDRE_MIGRATIONS.txt` (vérifié par `scripts/rejouer-migrations.sh`).
+
+Sécurité (Lot 96), après chaque lot qui touche la base ou les secrets :
+
+- `AUDIT_URL=<chaîne de connexion> bash scripts/audit-securite.sh` : droits de
+  la base (doit finir par « BILAN 0 échec(s) ») ;
+- `SCELLE_CLE=<phrase du sceau> npm run secrets` dans chaque dépôt : aucun
+  secret dans l'historique git ni dans le build ;
+- Supabase → Authentication → Rate Limits : garder des limites basses pour les
+  connexions et les inscriptions (la page de connexion passe directement par
+  Supabase, pas par le site).
 
 ---
 

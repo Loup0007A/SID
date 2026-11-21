@@ -14,6 +14,7 @@ import { WeekRevenue, type BusinessWeek } from "@/components/business/WeekRevenu
 import { Expenses } from "@/components/business/Expenses";
 import { Taxes } from "@/components/bank/Taxes";
 import Link from "next/link";
+import { PROFILE_PUBLIC_COLUMNS } from "@/lib/profileColumns";
 
 const FREQUENCY_LABELS: Record<SalaryFrequency, string> = {
   daily: "Quotidien",
@@ -60,7 +61,7 @@ export default function BusinessPage() {
     // Tout part en même temps (un seul aller-retour).
     const [{ data }, { data: m }, { permissions }, { data: emp }, { data: settings }, { data: wk }] = await Promise.all([
       supabase.rpc("list_my_businesses"),
-      supabase.from("profiles").select("*").eq("status", "active"),
+      supabase.from("profiles").select(PROFILE_PUBLIC_COLUMNS).eq("status", "active"),
       loadCurrentUser(),
       supabase.rpc("get_my_employments"),
       supabase.rpc("get_market_settings"),

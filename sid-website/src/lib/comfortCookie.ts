@@ -63,7 +63,7 @@ export async function withComfortCookie(request: NextRequest, response: NextResp
     if (!res.ok) return response;
     const prefs = await res.json();
     if (!prefs || typeof prefs !== "object" || Array.isArray(prefs)) return response;
-    response.cookies.set(COMFORT_COOKIE, JSON.stringify(prefs), { path: "/", maxAge: 31536000, sameSite: "lax", httpOnly: false });
+    response.cookies.set(COMFORT_COOKIE, JSON.stringify(prefs), { path: "/", maxAge: 31536000, sameSite: "lax", httpOnly: false, secure: request.nextUrl.protocol === "https:" });
   } catch {
     /* base lente ou injoignable : ComfortSync rattrapera */
   }

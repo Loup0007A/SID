@@ -14,6 +14,7 @@ import type { TitleId } from "@/lib/titles";
 import { SidIcon } from "@/components/icons/SidIcon";
 import { ReputationCard } from "@/components/ReputationCard";
 import { AgentCardButton } from "@/components/AgentCard";
+import { myProfile } from "@/lib/profileColumns";
 
 
 
@@ -39,7 +40,7 @@ export default function ProfilePage() {
       setMyId(user.id);
       // Dossier et achats : en même temps.
       const [{ data }, { data: purchasesData }] = await Promise.all([
-        supabase.from("profiles").select("*").eq("id", user.id).single(),
+        myProfile(supabase, user.id),
         supabase.rpc("list_my_purchases"),
       ]);
       setProfile(data);

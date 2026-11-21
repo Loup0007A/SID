@@ -13,15 +13,18 @@ import type { IconName } from "@/components/icons/sidIcons";
 import { useTuto } from "@/components/tuto/TutoProvider";
 import { announceDeepLink } from "@/lib/deeplink";
 import { BRAND, isTabHidden } from "@/lib/brand";
+import { useRechercheCommune } from "@/components/RechercheCommune";
 
 /**
  * Palette de recherche (Lot 59) : Ctrl+K (ou ⌘K, ou « / ») depuis n'importe
  * quelle page du Dossier Central. On y tape quelques lettres pour aller à une
  * page, au dossier d'un membre, à une quête, à un objet du Comptoir, ou pour
  * lancer une action. Les accents et l'ordre des lettres comptent peu.
+ * Lot 96 : les fiches du Wiki et les lieux de la Cartographie aussi
+ * (recherche commune aux trois sites, en base).
  */
 
-type Kind = "page" | "action" | "membre" | "quete" | "objet";
+type Kind = "page" | "action" | "membre" | "quete" | "objet" | "wiki" | "carto";
 type Item = {
   id: string;
   kind: Kind;
@@ -42,6 +45,8 @@ const GROUPS: { kind: Kind; label: string; max: number }[] = [
   { kind: "membre", label: "Membres", max: 5 },
   { kind: "quete", label: "Quêtes", max: 5 },
   { kind: "objet", label: "Comptoir", max: 5 },
+  { kind: "wiki", label: "Wiki", max: 5 },
+  { kind: "carto", label: "Cartographie", max: 5 },
 ];
 
 const RECENT_KEY = "sid-palette-recent";
@@ -211,7 +216,26 @@ export function CommandPalette({ perms, onLogout }: { perms: Set<PermissionKey>;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [perms, tuto, onLogout, reveals, brandKey]);
 
-  const all = useMemo(() => [...staticItems, ...(data ?? [])], [staticItems, data]);
+  // Wiki et Cartographie : cherchés en base pendant la frappe (déjà triés et filtrés).
+  const commune = useRechercheCommune(query, "main", open);
+  const remote = useMemo<Item[]>(
+    () =>
+      commune.resultats
+        .filter((r) => r.site !== "main")
+        .map((r) => ({
+          id: `${r.site}:${r.kind}:${r.id}`,
+          kind: r.site === "wiki" ? "wiki" : "carto",
+          label: r.label,
+          hint: r.hint,
+          icon: r.site === "wiki" ? "book" : "compass",
+          keywords: r.hint,
+          href: r.href,
+          external: true,
+          avatar: r.site === "wiki" ? r.image ?? null : null,
+        })),
+    [commune.resultats],
+  );
+  const all = useMemo(() => [...staticItems, ...(data ?? []), ...remote], [staticItems, data, remote]);
 
   // Résultats regroupés ; sans recherche : les récents puis les pages.
   const sections = useMemo(() => {
@@ -229,7 +253,8 @@ export function CommandPalette({ perms, onLogout }: { perms: Set<PermissionKey>;
     return GROUPS.map((g, order) => {
       const scored = all
         .filter((i) => i.kind === g.kind)
-        .map((i) => [i, score(q, i)] as const)
+        // Wiki, Cartographie : la base a déjà trouvé (parfois dans le texte de la fiche).
+        .map((i) => [i, i.kind === "wiki" || i.kind === "carto" ? Math.max(score(q, i), 1) : score(q, i)] as const)
         .filter(([, s]) => s > 0)
         .sort((a, b) => b[1] - a[1])
         .slice(0, g.max);
@@ -295,7 +320,7 @@ export function CommandPalette({ perms, onLogout }: { perms: Set<PermissionKey>;
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder="Une page, un membre, une quête, un objet…"
+            placeholder="Une page, un membre, une quête, une fiche, un lieu…"
             role="combobox"
             aria-expanded="true"
             aria-controls="palette-list"
@@ -348,7 +373,7 @@ export function CommandPalette({ perms, onLogout }: { perms: Set<PermissionKey>;
           ))}
           {query.trim() && flat.length === 0 && (
             <p className="px-4 py-8 text-center font-body text-sm text-paper/70">
-              {data ? <>Rien ne correspond à « {query.trim()} ».</> : "Recherche en cours…"}
+              {data && !commune.chargement ? <>Rien ne correspond à « {query.trim()} ».</> : "Recherche en cours…"}
             </p>
           )}
         </div>

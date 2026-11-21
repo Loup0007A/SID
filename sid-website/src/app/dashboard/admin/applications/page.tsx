@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { currentUser } from "@/lib/session";
 import type { Profile } from "@/types/database";
 import { inputClass, labelClass } from "@/lib/ui";
+import { fullProfiles } from "@/lib/profileColumns";
 
 
 export default function ApplicationsPage() {
@@ -16,8 +17,9 @@ export default function ApplicationsPage() {
   const [message, setMessage] = useState<string | null>(null);
 
   async function refresh() {
-    const { data } = await supabase.from("profiles").select("*").eq("status", "pending").order("created_at", { ascending: true });
-    setApplications(data ?? []);
+    const { data } = await fullProfiles(supabase, "pending");
+    // Les plus anciennes candidatures d'abord.
+    setApplications(((data ?? []) as Profile[]).sort((a, b) => a.created_at.localeCompare(b.created_at)));
   }
 
   useEffect(() => {

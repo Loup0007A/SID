@@ -7,6 +7,8 @@ import { currentUser } from "@/lib/session";
 import type { Profile } from "@/types/database";
 import { inputClass, buttonPrimary, buttonOutline, buttonGhostRed } from "@/lib/ui";
 import { TERMS_VERSION, TERMS_DATE } from "@/components/legal/LegalContent";
+import { ConnectedDevices } from "@/components/settings/ConnectedDevices";
+import { myProfile } from "@/lib/profileColumns";
 
 type PrivacyRequest = { id: number; status: string; created_at: string; reason: string | null; note: string | null; handled_at: string | null };
 
@@ -37,7 +39,7 @@ export default function PrivacyPage() {
     } = await currentUser();
     if (!user) return;
     const [{ data }, { data: req }] = await Promise.all([
-      supabase.from("profiles").select("*").eq("id", user.id).single(),
+      myProfile(supabase, user.id),
       supabase.from("privacy_requests").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
     ]);
     setProfile(data as Profile);
@@ -128,13 +130,16 @@ export default function PrivacyPage() {
           <li>Ton anniversaire si tu l&apos;as renseigné (jour et mois seulement, jamais montré aux autres).</li>
           <li>Tes messages, tes salons, tes notifications.</li>
           <li>Ta position et tes trajets sur la carte ; tes commentaires, favoris et notes du wiki.</li>
-          <li>Ta dernière visite et ton nombre de visites par jour (pas les pages vues, pas d&apos;adresse IP).</li>
+          <li>Ta dernière visite et ton nombre de visites par jour (pas les pages vues).</li>
+          <li>Tes appareils connectés : navigateur, date de connexion et dernière activité (pour pouvoir les déconnecter).</li>
         </ul>
         <button onClick={download} disabled={busy !== null} className={buttonPrimary}>
           {busy === "export" ? "Préparation…" : "Télécharger toutes mes données"}
         </button>
         <p className="font-mono text-[11px] text-paper/65">Fichier JSON lisible, à garder pour toi ou à emporter ailleurs.</p>
       </section>
+
+      <ConnectedDevices />
 
       <section className="glass-card space-y-3 p-6">
         <h2 className="font-display text-lg uppercase">Qui voit quoi</h2>

@@ -27,6 +27,7 @@ const COMMUNS = {
   "lib/comfortPrefs.ts": ALL,
   "lib/comfortCookie.ts": ALL,
   "components/ComfortSync.tsx": ALL,
+  "components/RechercheCommune.tsx": ALL,
   "lib/brand.ts": ALL,
   "lib/glitch.ts": ALL,
   "brand/glitch.ts": ALL,
@@ -45,7 +46,7 @@ const COMMUNS = {
   "lib/supabase/sessionCookie.ts": PAGES,
 };
 const SCRIPT = "scripts/fichiers-communs.mjs";
-const AUTRES = ["tests/affichage.spec.ts", "playwright.config.ts"];
+const AUTRES = ["tests/affichage.spec.ts", "playwright.config.ts", "en-tetes-securite.js", "scripts/controle-secrets.mjs"];
 
 const here = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const self = Object.keys(SITES).find((k) => here.endsWith(SITES[k].dir.split("/")[1])) ?? "main";
