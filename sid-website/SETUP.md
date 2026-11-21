@@ -5,9 +5,9 @@ renommer : nom du RP, des trois sites, de la monnaie, adresses, sites et
 rubriques ouverts, adresses des simulations. L'installation elle-même (Supabase, Vercel, compte Fondateur) est
 dans [README.md](README.md).
 
-Prérequis : migrations passées jusqu'à `0112_devlog_force_wiki.sql` (Dossier
+Prérequis : migrations passées jusqu'à `0113_devlog_cartographie.sql` (Dossier
 Central), celles du Wiki (jusqu'à `0212_wiki_nouvelles_fiches.sql`), puis celles de
-la Cartographie (jusqu'à `0119_meteo_incursions.sql`). La 0118 de la
+la Cartographie (jusqu'à `0120_creatures_meteo_lieux_proprietes.sql`). La 0118 de la
 Cartographie utilise les tables du Wiki : passer le Wiki avant.
 
 ---
@@ -355,8 +355,8 @@ update public.app_config set value = 'https://mes-donjons.vercel.app/' where key
 Les couleurs du site, le motif du fond et les particules qui tombent sont
 générés par `scripts/fonds.mjs`, une entrée par thème : `sid` (hors évents)
 puis un thème par évent (`noel`, `halloween`…) et `election_force`
-(élection prise par la force). Le Wiki a son propre `scripts/fonds.mjs`,
-mêmes champs, thème de base `wiki`.
+(élection prise par la force). Le Wiki et la Cartographie ont chacun leur
+`scripts/fonds.mjs`, mêmes champs, thème de base `wiki` et `carto`.
 
 | Champ | Rôle |
 | --- | --- |
@@ -426,6 +426,7 @@ Déjà modifiables depuis le site :
 | Cartographie et Wiki ouverts, rubriques présentes | Administration → Modération → Sites et rubriques |
 | Farces | Administration → Titres & farces |
 | Élection du Dictateur : élu, manière (proclamé ou par la force), début, proclamation, fin | Administration → Modération → Affichage événementiel |
+| Créatures de la carte (lesquelles, où, fréquence, apparition), météo d'un lieu, propriétaire d'un bâtiment | Cartographie : Météo → Gérer les créatures ; fiche du lieu |
 
 Le reste se règle en SQL. Liste complète :
 

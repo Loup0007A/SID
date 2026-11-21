@@ -35,6 +35,9 @@ const TYPE_ICON: Record<string, IconName> = {
   dispute: "scales",
   market: "candles",
   absence: "hourglass",
+  propriete: "home",
+  incursion: "swords",
+  exploration: "compass",
 };
 
 /** Icône d'une notification : celle de son type, sinon celle de l'émoji de son titre (anciens textes). */

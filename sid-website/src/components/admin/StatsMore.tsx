@@ -49,6 +49,10 @@ const NOTIF_LABELS: Record<string, string> = {
   dispute: "Litiges",
   market: "Bourse",
   push_test: "Tests push",
+  propriete: "Propriétés",
+  incursion: "Créatures",
+  exploration: "Exploration",
+  wiki: "Wiki",
 };
 
 const n = (v: number | null | undefined) => (v == null ? "—" : Number(v).toLocaleString("fr-FR", { maximumFractionDigits: 1 }));
