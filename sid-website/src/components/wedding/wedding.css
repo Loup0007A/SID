@@ -301,7 +301,7 @@
 .registre-line:focus-visible { outline: 2px solid var(--wed-gold); outline-offset: 2px; }
 .registre-num { font-family: var(--font-mono); font-size: 0.8rem; color: var(--wed-gold); }
 .registre-names { font-family: var(--font-body); font-style: italic; font-size: 1.15rem; color: rgb(var(--c-paper)); }
-.registre-date { font-family: var(--font-body); font-size: 0.85rem; color: rgb(var(--c-paper) / 0.6); }
+.registre-date { font-family: var(--font-body); font-size: 0.85rem; color: rgb(var(--c-paper) / 0.92); }
 @media (max-width: 640px) {
   .registre-line { grid-template-columns: 3.5rem auto 1fr; }
   .registre-line .registre-date { grid-column: 3; }

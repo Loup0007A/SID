@@ -334,7 +334,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 href="/dashboard/admin/alerts"
                 scroll={false}
                 title={`${openAlerts} alerte${openAlerts > 1 ? "s" : ""} d'activité à traiter`}
-                className="hidden h-9 shrink-0 items-center gap-1 rounded-lg border border-red/60 bg-red/15 px-2.5 font-mono text-xs text-red hover:bg-red hover:text-ink sm:flex"
+                className="hidden h-9 shrink-0 items-center gap-1 rounded-lg border border-red/60 bg-encre/30 px-2.5 font-mono text-xs text-red hover:bg-red hover:text-ink sm:flex"
               >
                 <SidIcon name="warning" /> {openAlerts}
               </Link>

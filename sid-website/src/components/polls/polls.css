@@ -8,6 +8,9 @@
   padding: 1.1rem 1.2rem;
   scroll-margin-top: 6rem;
   transition: box-shadow 0.4s, border-color 0.4s;
+  /* Un mot très long (titre, option) passe à la ligne au lieu de déborder (Lot 95). */
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .poll-card.is-closed { background: rgba(0, 0, 0, 0.18); }
 .poll-card.is-highlight { border-color: rgb(var(--c-blue)); box-shadow: 0 0 0 3px rgb(var(--c-blue) / 0.25); }
@@ -19,7 +22,7 @@
   font-size: 0.62rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: rgb(var(--c-paper) / 0.75);
+  color: rgb(var(--c-paper) / 0.95);
   background: rgb(var(--c-white) / 0.07);
 }
 .poll-tag.is-open { color: rgb(var(--c-ink)); background: #b9e3c6; }

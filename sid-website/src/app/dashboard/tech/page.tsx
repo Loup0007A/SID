@@ -125,7 +125,7 @@ export default function TechTreePage() {
                     <div
                       className={clsx(
                         "glass-card w-full space-y-2 p-4 transition",
-                        locked && "opacity-50",
+                        locked && "opacity-80 grayscale",
                         maxed && "border-blue/60"
                       )}
                     >

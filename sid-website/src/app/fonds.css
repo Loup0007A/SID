@@ -3,7 +3,7 @@
 :root {
   --fond: 47 91 216; --fond-haut: 122 160 255; --fond-bas: 14 30 120;
   --encre: 20 22 63; --creme: 255 248 236; --creme-2: 236 240 255;
-  --accent: 232 71 91; --accent-2: 242 201 76; --accent-on-card: 196 42 67;
+  --accent: 232 71 91; --accent-2: 242 201 76; --accent-on-card: 180 39 62;
   --motif: url(/fonds/sid.svg); --particule: url(/fonds/p-eclat.svg); 
   --p1: 242 201 76; --p2: 232 71 91; --p3: 255 248 236; --p4: 20 22 63;
 }
@@ -15,35 +15,35 @@ html[data-theme="noel"] {
   --p1: 255 248 236; --p2: 255 255 255; --p3: 242 201 76; --p4: 255 248 236;
 }
 html[data-theme="halloween"] {
-  --fond: 232 102 30; --fond-haut: 255 179 92; --fond-bas: 74 22 6;
+  --fond: 183 81 24; --fond-haut: 255 179 92; --fond-bas: 74 22 6;
   --encre: 30 15 46; --creme: 255 246 232; --creme-2: 243 236 255;
   --accent: 110 59 166; --accent-2: 242 209 75; --accent-on-card: 168 54 26;
   --motif: url(/fonds/halloween.svg); --particule: url(/fonds/p-bat.svg); 
   --p1: 30 15 46; --p2: 110 59 166; --p3: 30 15 46; --p4: 242 209 75;
 }
 html[data-theme="saint_valentin"] {
-  --fond: 232 80 138; --fond-haut: 255 166 198; --fond-bas: 110 16 56;
+  --fond: 190 66 113; --fond-haut: 255 166 198; --fond-bas: 110 16 56;
   --encre: 58 10 36; --creme: 255 246 244; --creme-2: 255 233 240;
   --accent: 194 29 82; --accent-2: 255 209 102; --accent-on-card: 176 23 74;
   --motif: url(/fonds/saint_valentin.svg); --particule: url(/fonds/p-heart.svg); 
   --p1: 255 246 244; --p2: 194 29 82; --p3: 255 209 102; --p4: 58 10 36;
 }
 html[data-theme="poisson_avril"] {
-  --fond: 22 159 178; --fond-haut: 127 227 238; --fond-bas: 5 62 75;
+  --fond: 17 124 139; --fond-haut: 127 227 238; --fond-bas: 5 62 75;
   --encre: 11 46 58; --creme: 244 252 251; --creme-2: 225 245 246;
-  --accent: 255 122 89; --accent-2: 255 209 102; --accent-on-card: 194 65 42;
+  --accent: 255 122 89; --accent-2: 255 209 102; --accent-on-card: 171 57 37;
   --motif: url(/fonds/poisson_avril.svg); --particule: url(/fonds/p-bubble.svg); 
   --p1: 244 252 251; --p2: 244 252 251; --p3: 255 209 102; --p4: 255 122 89;
 }
 html[data-theme="paques"] {
-  --fond: 109 179 63; --fond-haut: 210 242 138; --fond-bas: 42 82 20;
+  --fond: 77 127 45; --fond-haut: 210 242 138; --fond-bas: 42 82 20;
   --encre: 34 48 26; --creme: 255 251 238; --creme-2: 245 240 255;
-  --accent: 230 111 162; --accent-2: 245 200 66; --accent-on-card: 184 58 111;
+  --accent: 230 111 162; --accent-2: 245 200 66; --accent-on-card: 167 53 101;
   --motif: url(/fonds/paques.svg); --particule: url(/fonds/p-leaf.svg); 
   --p1: 255 251 238; --p2: 230 111 162; --p3: 245 200 66; --p4: 159 208 255;
 }
 html[data-theme="premier_mai"] {
-  --fond: 46 158 99; --fond-haut: 142 227 168; --fond-bas: 11 63 37;
+  --fond: 38 131 82; --fond-haut: 142 227 168; --fond-bas: 11 63 37;
   --encre: 14 42 28; --creme: 251 255 246; --creme-2: 232 246 235;
   --accent: 244 241 225; --accent-2: 242 201 76; --accent-on-card: 31 107 67;
   --motif: url(/fonds/premier_mai.svg); --particule: url(/fonds/p-bell.svg); 
@@ -52,21 +52,21 @@ html[data-theme="premier_mai"] {
 html[data-theme="fete_musique"] {
   --fond: 116 64 222; --fond-haut: 194 155 255; --fond-bas: 37 12 99;
   --encre: 26 11 59; --creme: 255 248 255; --creme-2: 240 233 255;
-  --accent: 255 95 162; --accent-2: 255 216 74; --accent-on-card: 194 39 106;
+  --accent: 255 95 162; --accent-2: 255 216 74; --accent-on-card: 178 36 98;
   --motif: url(/fonds/fete_musique.svg); --particule: url(/fonds/p-note.svg); 
   --p1: 255 248 255; --p2: 255 216 74; --p3: 255 95 162; --p4: 26 11 59;
 }
 html[data-theme="quatorze_juillet"] {
   --fond: 30 58 158; --fond-haut: 90 123 255; --fond-bas: 6 13 58;
   --encre: 10 15 51; --creme: 255 249 240; --creme-2: 238 242 255;
-  --accent: 230 57 70; --accent-2: 255 209 102; --accent-on-card: 196 37 49;
+  --accent: 230 57 70; --accent-2: 255 209 102; --accent-on-card: 184 35 46;
   --motif: url(/fonds/quatorze_juillet.svg); --particule: url(/fonds/p-star4.svg); 
   --p1: 255 249 240; --p2: 230 57 70; --p3: 255 209 102; --p4: 255 249 240;
 }
 html[data-theme="armistice"] {
   --fond: 78 93 69; --fond-haut: 147 162 122; --fond-bas: 28 36 22;
   --encre: 26 31 22; --creme: 247 243 232; --creme-2: 236 235 224;
-  --accent: 110 143 203; --accent-2: 200 16 46; --accent-on-card: 63 94 156;
+  --accent: 110 143 203; --accent-2: 200 16 46; --accent-on-card: 61 91 151;
   --motif: url(/fonds/armistice.svg); --particule: url(/fonds/p-leaf.svg); 
   --p1: 110 143 203; --p2: 247 243 232; --p3: 110 143 203; --p4: 200 16 46;
 }

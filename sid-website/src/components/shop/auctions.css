@@ -75,7 +75,7 @@
 }
 .auction-input input::-webkit-outer-spin-button,
 .auction-input input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-.auction-input span { font-family: var(--font-display); font-size: 1.2rem; color: rgb(var(--c-paper) / 0.6); }
+.auction-input span { font-family: var(--font-display); font-size: 1.2rem; color: rgb(var(--c-paper) / 0.92); }
 
 .auction-bids { display: grid; gap: 0.25rem; }
 .auction-bids li {
@@ -87,7 +87,7 @@
   padding: 0.3rem 0.6rem;
   font-family: var(--font-body);
   font-size: 0.85rem;
-  color: rgb(var(--c-paper) / 0.75);
+  color: rgb(var(--c-paper) / 0.95);
 }
 .auction-bids li:nth-child(odd) { background: rgb(var(--c-white) / 0.03); }
 .auction-bids li.is-top { color: rgb(var(--c-paper)); background: rgb(var(--c-blue) / 0.14); }

@@ -73,10 +73,10 @@ export function ComfortSettings() {
           label="Animations"
           value={comfort.motion}
           onChange={(v) => set({ motion: v })}
-          cols={2}
           options={[
             { v: "full", title: "Vivantes", hint: "Le site bouge comme prévu.", visual: <span className="mini-anim is-vif" /> },
             { v: "calm", title: "Calmes", hint: "Plus de particules ni d'animations.", visual: <span className="mini-anim" /> },
+            { v: "auto", title: "Selon l'appareil", hint: "Calmes si ton système demande de réduire les animations.", visual: <span className="mini-anim is-auto" /> },
           ]}
         />
         <Toggle

@@ -395,7 +395,7 @@ export default function ShopPage() {
               ).map(([k, l]) =>
                 k === "tout" || counts[k] > 0 ? (
                   <button key={k} onClick={() => setFilter(k)} className={`shop-chip ${filter === k ? "is-on" : ""}`}>
-                    {l} <span className="opacity-60">{counts[k]}</span>
+                    {l} <span className="font-semibold">{counts[k]}</span>
                   </button>
                 ) : null
               )}

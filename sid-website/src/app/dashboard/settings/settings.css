@@ -102,6 +102,8 @@
 .mini-anim.is-vif, .mini-anim.is-vif::before, .mini-anim.is-vif::after { animation: reglage-flotte 2.2s ease-in-out infinite; }
 .mini-anim.is-vif::before { animation-delay: -0.7s; }
 .mini-anim.is-vif::after { animation-delay: -1.4s; }
+/* Selon l'appareil : un point bouge, les autres restent. */
+.mini-anim.is-auto::after { animation: reglage-flotte 2.2s ease-in-out infinite; }
 @keyframes reglage-flotte { 50% { transform: translateY(-0.7rem); } }
 .mini-curseur { position: relative; width: 1rem; height: 1.3rem; background: rgb(var(--creme)); clip-path: polygon(0 0, 100% 70%, 55% 72%, 40% 100%, 28% 96%, 38% 70%, 0 82%); filter: drop-shadow(1px 1px 0 rgb(var(--encre))); }
 .mini-curseur.is-trainee { box-shadow: -14px -10px 0 -4px rgb(var(--accent-2) / 0.9), -26px -18px 0 -5px rgb(var(--accent-2) / 0.6), -36px -24px 0 -6px rgb(var(--accent-2) / 0.35); }
@@ -128,7 +130,7 @@
 .place-icone { display: grid; place-items: center; width: 2.2rem; height: 2.2rem; border-radius: 12px; background: rgb(var(--creme)); color: rgb(var(--encre)); border: 2px solid rgb(var(--encre)); font-size: 1.1rem; }
 .place-nom { margin-top: 0.25rem; font-family: var(--font-display); font-variation-settings: "wght" 800, "wdth" 82; text-transform: uppercase; }
 .place-aide { font-size: 0.78rem; line-height: 1.3; opacity: 0.75; }
-.place-etat { margin-top: auto; padding-top: 0.35rem; font: 600 0.68rem/1 var(--font-mono); text-transform: uppercase; opacity: 0.6; }
+.place-etat { margin-top: auto; padding-top: 0.35rem; font: 600 0.68rem/1 var(--font-mono); text-transform: uppercase; opacity: 0.85; }
 .place-etat.is-perso { opacity: 1; color: rgb(var(--c-ok)); }
 .place-etat.is-perso::before { content: "● "; }
 
@@ -218,7 +220,7 @@
 .lien-carte:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 rgb(var(--encre)); }
 
 @media (prefers-reduced-motion: reduce) {
-  .mini-anim.is-vif, .mini-anim.is-vif::before, .mini-anim.is-vif::after, .point-modif { animation: none; }
+  .mini-anim.is-vif, .mini-anim.is-vif::before, .mini-anim.is-vif::after, .mini-anim.is-auto::after, .point-modif { animation: none; }
 }
 
 /* Éditeur visuel (CssBuilderPanel) */

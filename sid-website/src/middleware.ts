@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { withComfortCookie } from "@/lib/comfortCookie";
 
 /**
  * Garde du tableau de bord : un visiteur sans session est renvoyé vers
@@ -17,7 +18,7 @@ import { NextResponse, type NextRequest } from "next/server";
  */
 const SESSION_COOKIE = /^sb-.+-auth-token(\.\d+)?$/;
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const hasSession = request.cookies.getAll().some((c) => SESSION_COOKIE.test(c.name) && c.value.length > 0);
 
   // La page d'accueil publique : un membre connecté va directement à son
@@ -37,7 +38,8 @@ export function middleware(request: NextRequest) {
     loginUrl.search = "";
     return NextResponse.redirect(loginUrl);
   }
-  return NextResponse.next();
+  // Appareil neuf : réglages d'affichage du compte posés avant la page.
+  return withComfortCookie(request, NextResponse.next());
 }
 
 export const config = {

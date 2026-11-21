@@ -226,7 +226,7 @@ export function StockChart({ businessId, index = false, height = 340, defaultRan
               {!index && <span className="ml-1 text-base text-paper/55">z</span>}
             </span>
             {ref > 0 && (
-              <span className="font-mono text-sm" style={{ color, fontVariantNumeric: "tabular-nums" }}>
+              <span className={`font-mono text-sm ${up ? "text-hausse" : "text-baisse"}`} style={{ fontVariantNumeric: "tabular-nums" }}>
                 {absTxt(diff)} ({pctTxt(diff / ref)})
               </span>
             )}

@@ -217,7 +217,7 @@ export function PollCard({
                   Clore
                 </button>
               )}
-              <button type="button" onClick={() => admin_("poll_delete")} disabled={busy} className="font-mono text-[11px] uppercase text-red/80 hover:text-red">
+              <button type="button" onClick={() => admin_("poll_delete")} disabled={busy} className="py-1 font-mono text-[11px] uppercase text-red hover:text-red-dark">
                 Supprimer
               </button>
             </span>

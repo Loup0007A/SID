@@ -51,21 +51,23 @@
   --c-ink-border: 70 78 150;
   --c-white: var(--creme);
   --c-black: 6 7 30;
-  --c-blue: 199 216 255;
-  --c-blue-light: 226 234 255;
+  --c-blue: 222 232 255;
+  --c-blue-light: 232 238 255;
   --c-blue-dark: 150 182 250;
-  --c-red: 255 182 193;
-  --c-red-light: 255 214 220;
+  --c-red: 255 222 226;
+  --c-red-light: 255 236 238;
   --c-red-dark: 255 140 158;
   --c-green-200: 187 247 208;
-  --c-green-300: 134 239 172;
+  --c-green-300: 160 244 190;
   --c-green-400: 74 222 128;
   --c-yellow-200: 254 240 138;
-  --c-yellow-300: 253 224 71;
+  --c-yellow-300: 254 232 120;
   --c-yellow-400: 250 204 21;
   --c-gold: 240 194 122;
   --c-ok: 150 230 170;
   --c-ko: 255 168 168;
+  --c-hausse: 110 225 205;
+  --c-baisse: 255 175 172;
 }
 /* La couleur du texte se transmet déjà calculée : chaque niveau la
    redonne, sinon un texte sans couleur garderait celle du niveau du dessus. */
@@ -79,7 +81,7 @@
   --titre-ombre: none;
   --titre-trait: 0;
   --c-paper: var(--encre);
-  --c-paper-dark: 150 150 175;
+  --c-paper-dark: 92 96 140;
   --c-paper-text: var(--encre);
   --c-ink: var(--creme);
   --c-ink-soft: var(--creme-2);
@@ -95,12 +97,14 @@
   --c-green-200: 22 101 52;
   --c-green-300: 21 128 61;
   --c-green-400: 22 140 70;
-  --c-yellow-200: 133 77 14;
-  --c-yellow-300: 161 98 7;
-  --c-yellow-400: 180 110 4;
+  --c-yellow-200: 120 68 10;
+  --c-yellow-300: 133 80 5;
+  --c-yellow-400: 150 92 4;
   --c-gold: 138 90 11;
   --c-ok: 22 128 61;
   --c-ko: 185 38 50;
+  --c-hausse: 0 121 107;
+  --c-baisse: 190 38 38;
 }
 
 html { scrollbar-color: rgb(var(--encre)) rgb(var(--fond)); }
@@ -369,7 +373,7 @@ h1.font-display { -webkit-text-stroke: var(--titre-trait) rgb(var(--encre)); pai
 .legal li { margin: 0.3rem 0; }
 .legal a { text-decoration: underline; }
 .legal .legal-h2 { font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; font-size: 1.15rem; margin: 1.6rem 0 0.4rem; }
-.legal .legal-meta { font-family: var(--font-mono); font-size: 0.75rem; opacity: 0.7; }
+.legal .legal-meta { font-family: var(--font-mono); font-size: 0.75rem; opacity: 0.85; }
 
 @keyframes title-unlock-in { from { opacity: 0; } to { opacity: 1; } }
 
@@ -605,11 +609,23 @@ html.calme *::after {
   --c-gold: 240 194 122;
   --c-ok: 150 230 170;
   --c-ko: 255 168 168;
+  --c-hausse: 90 210 195;
+  --c-baisse: 255 140 138;
   color: rgb(var(--c-paper));
   background: linear-gradient(180deg, rgb(var(--surface)) 55%, rgb(var(--surface-2)));
   border-color: rgb(2 3 12);
 }
 :root.sombre select option { background: rgb(24 27 60); color: rgb(var(--creme)); }
+/* Champs (inputClass, bg-creme) : sombres eux aussi, plus de bandes crème (Lot 95). */
+:root.sombre :is(input, select, textarea).bg-creme { background-color: rgb(var(--surface-2)); color: rgb(var(--creme)); border-color: rgb(var(--creme) / 0.35); }
+:root.sombre :is(input, textarea).bg-creme::placeholder { color: rgb(var(--creme) / 0.55); }
+/* Bouton posé dans un champ (« Voir » le mot de passe) : couleur du champ. */
+.champ-bouton { color: rgb(var(--encre) / 0.8); }
+.champ-bouton:hover { color: rgb(var(--encre)); }
+:root.sombre .champ-bouton { color: rgb(var(--creme) / 0.85); }
+:root.sombre .champ-bouton:hover { color: rgb(var(--creme)); }
+/* Feuilles de papier (quêtes, faire-part) : gardées, baissées comme sous une lampe. */
+:root.sombre :is(.quest-card, .wed-slip) { filter: brightness(0.86); }
 
 /* =========================================================
    Réglages → Affichage : mode épuré (Lot 93). Fond uni, ni motif ni
@@ -635,3 +651,7 @@ html.calme *::after {
 :root.epure :is(button, a)[class~="bg-ink"]:not(:disabled):hover { transform: none; box-shadow: none; filter: brightness(1.06); }
 /* Coup d'État en mode sombre : la nuit reste rouge sang. */
 :root.sombre[data-theme="election_force"] { --fond: 40 3 8; --fond-haut: 150 14 26; --surface: 52 10 18; --surface-2: 40 7 13; }
+
+/* Un mot très long (pseudo, titre, lien) passe à la ligne plutôt que de
+   faire déborder la page sur téléphone (Lot 95). */
+body { overflow-wrap: break-word; } /* Lot 95 */

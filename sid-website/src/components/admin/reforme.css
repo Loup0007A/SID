@@ -100,7 +100,7 @@
   width: 1.2rem;
   height: 1.2rem;
   border-radius: 999px;
-  color: rgb(var(--c-paper) / 0.6);
+  color: rgb(var(--c-paper) / 0.92);
 }
 .ref-chip button:hover {
   background: rgb(var(--c-red) / 0.25);

@@ -16,3 +16,4 @@ next-env.d.ts
 
 # Sources lisibles des titres (déchiffrées depuis scripts/scelle/coffre.bin) : jamais sur GitHub
 .scelle/
+/test-results/

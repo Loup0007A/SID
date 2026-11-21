@@ -133,16 +133,16 @@
   font-family: var(--font-display);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: rgb(var(--c-paper) / 0.7);
+  color: rgb(var(--c-paper) / 0.94);
   transition: background-color 0.15s, color 0.15s;
 }
 .bourse-side button.is-buy {
   background: #26a69a;
-  color: rgb(var(--c-ink));
+  color: rgb(var(--encre));
 }
 .bourse-side button.is-sell {
   background: #ef5350;
-  color: rgb(var(--c-ink));
+  color: rgb(var(--encre));
 }
 .bourse-chip {
   border-radius: 999px;
@@ -151,7 +151,7 @@
   font-family: var(--font-mono);
   font-size: 11px;
   text-transform: uppercase;
-  color: rgb(var(--c-paper) / 0.7);
+  color: rgb(var(--c-paper) / 0.94);
 }
 .bourse-chip.is-on {
   border-color: rgb(var(--c-blue));

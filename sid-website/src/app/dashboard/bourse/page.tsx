@@ -15,7 +15,7 @@ import "@/components/market/bourse.css";
 
 
 /** Hausse en vert, baisse en rouge, comme sur les sites boursiers. */
-const tone = (x: number | null | undefined) => (x == null || Math.abs(x) < 1e-9 ? "text-paper/60" : x > 0 ? "text-[#26a69a]" : "text-[#ef5350]");
+const tone = (x: number | null | undefined) => (x == null || Math.abs(x) < 1e-9 ? "text-paper/60" : x > 0 ? "text-hausse" : "text-baisse");
 
 function valuation(r: MarketRow) {
   const ratio = r.price / Math.max(r.fair_value, 0.0001);
@@ -350,7 +350,7 @@ function ValuePanel({ row, detail, balance, say, onDone }: { row: MarketRow; det
       <dl className="grid grid-cols-2 gap-x-4 gap-y-2 border-y border-white/10 py-3 font-mono text-[11px] sm:grid-cols-4">
         {[
           ["Valeur des fondamentaux", px(row.fair_value), "text-paper"],
-          ["Bénéfice 7 j", z(row.profit_7d, 0), Number(row.profit_7d) >= 0 ? "text-[#26a69a]" : "text-[#ef5350]"],
+          ["Bénéfice 7 j", z(row.profit_7d, 0), Number(row.profit_7d) >= 0 ? "text-hausse" : "text-baisse"],
           ["Dividendes 30 j", z(row.dividends_30d, 0), "text-paper"],
           ["Fonds propres", z(row.equity, 0), Number(row.equity) >= 0 ? "text-paper" : "text-red"],
           ["Capitalisation", z(row.cap, 0), "text-paper"],
@@ -384,7 +384,7 @@ function ValuePanel({ row, detail, balance, say, onDone }: { row: MarketRow; det
               {detail.trades.map((t, i) => (
                 <li key={`${t.at}-${i}`} className={`bourse-num grid grid-cols-[3.2rem_1fr_auto] gap-2 rounded px-1.5 py-0.5 ${t.mine ? "bg-[#f0c27a]/10" : ""}`}>
                   <span className="text-paper/50">{time(t.at)}</span>
-                  <span className={t.side === "sell" ? "text-[#ef5350]" : "text-[#26a69a]"}>{px(t.price)}</span>
+                  <span className={t.side === "sell" ? "text-baisse" : "text-hausse"}>{px(t.price)}</span>
                   <span className="text-paper/70">{t.qty}</span>
                 </li>
               ))}
@@ -513,7 +513,7 @@ function Book({ bids, asks, onPick }: { bids: BookLevel[]; asks: BookLevel[]; on
             className={`bourse-level bourse-num w-full is-${kind} ${l.mine ? "is-mine" : ""}`}
             style={{ "--depth": `${(Number(l.qty) / max) * 100}%` } as React.CSSProperties}
           >
-            <span className={`text-left ${kind === "bid" ? "text-[#26a69a]" : "text-[#ef5350]"}`}>{px(l.price)}</span>
+            <span className={`text-left ${kind === "bid" ? "text-hausse" : "text-baisse"}`}>{px(l.price)}</span>
             <span className="text-paper/80">{Number(l.qty).toLocaleString("fr-FR")}</span>
           </button>
         ))
@@ -541,7 +541,7 @@ function OrderLine({ o, name, onCancel, onOpen }: { o: MarketOrder; name?: strin
   const label: Record<MarketOrder["status"], string> = { open: "Ouvert", filled: "Exécuté", cancelled: "Annulé", expired: "Échu" };
   return (
     <li className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2 font-mono text-xs">
-      <span className={`rounded-full border px-2 py-0.5 text-[10px] uppercase ${o.side === "buy" ? "border-[#26a69a]/60 text-[#26a69a]" : "border-[#ef5350]/60 text-[#ef5350]"}`}>{o.side === "buy" ? "Achat" : "Vente"}</span>
+      <span className={`rounded-full border px-2 py-0.5 text-[10px] uppercase ${o.side === "buy" ? "border-[#26a69a]/60 text-hausse" : "border-[#ef5350]/60 text-baisse"}`}>{o.side === "buy" ? "Achat" : "Vente"}</span>
       {name && (
         <button type="button" onClick={onOpen} className="font-display uppercase text-paper hover:text-blue-light">
           {name}

@@ -137,7 +137,7 @@ export function SinceLastVisit({ userId }: { userId: string }) {
             Ta semaine <span className="text-paper/65">· du {dayFmt(report.start)} au {dayFmt(report.end)}</span>
           </h2>
         </div>
-        <button type="button" onClick={file} className="font-mono text-[11px] uppercase tracking-wide text-paper/70 hover:text-paper hover:underline">
+        <button type="button" onClick={file} className="py-1 font-mono text-[11px] uppercase tracking-wide text-paper/70 hover:text-paper hover:underline">
           Classer le rapport
         </button>
       </div>

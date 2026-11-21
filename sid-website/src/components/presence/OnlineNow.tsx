@@ -81,7 +81,7 @@ export function OnlineNow() {
             {active < rows.length ? `, dont ${rows.length - active} absent${rows.length - active > 1 ? "s" : ""}` : ""}
           </span>
         </div>
-        <Link href="/dashboard/settings#confidentialite" scroll={false} className="font-mono text-[11px] text-paper/65 underline-offset-2 hover:text-paper hover:underline">
+        <Link href="/dashboard/settings#confidentialite" scroll={false} className="inline-block py-1 font-mono text-[11px] text-paper/65 underline-offset-2 hover:text-paper hover:underline">
           Ce que les autres voient de toi
         </Link>
       </div>

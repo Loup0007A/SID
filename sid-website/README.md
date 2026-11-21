@@ -56,6 +56,19 @@ Tu peux vérifier que tout s'est bien passé dans **Table Editor** : tu dois
 voir les tables `profiles`, `roles`, `quests`, `shop_items`, `chat_messages`,
 `salaries`, etc.
 
+Installation neuve des **trois sites** (Dossier Central, Wiki, Cartographie)
+sur le même projet Supabase : suis l'ordre de
+[`supabase/ORDRE_MIGRATIONS.txt`](supabase/ORDRE_MIGRATIONS.txt). Quelques
+migrations du Dossier Central ont besoin de tables de la Cartographie ou du
+Wiki : les trois listes y sont entremêlées. Cet ordre est vérifié par
+`scripts/rejouer-migrations.sh`, qui rejoue tout sur une base jetable (une
+fois sur base vide, puis une seconde fois pour les migrations marquées
+« Peut être relancée ») et réécrit le fichier :
+
+```bash
+REJEU_URL=postgres://postgres@localhost:5432/rejeu SID_DIRS=../.. bash scripts/rejouer-migrations.sh
+```
+
 > Alternative pour les habitués : avec la [Supabase CLI](https://supabase.com/docs/guides/cli)
 > installée, `supabase link` puis `supabase db push` appliquent les mêmes
 > fichiers automatiquement.
@@ -282,3 +295,24 @@ alertes larges couvrant de nombreuses versions ; le projet utilise la
 dernière version corrigée de la branche 14.x. Une migration vers Next 15/16
 est possible plus tard mais implique de retester l'App Router (non fait ici
 pour rester sur une base stable et connue).
+
+## Lot 95 — Lisibilité, outils de contrôle
+
+- **Contrastes** : `scripts/fonds.mjs` assombrit le fond de chaque thème juste
+  assez pour un texte crème à 4,5:1 (`lisible()`), et l'accent « sur carte » à
+  6:1. Les textes estompés (`text-paper/60`…) gardent au moins 80 % d'opacité.
+- **Appareil neuf** : `src/lib/comfortCookie.ts` (identique sur les trois
+  sites), appelé par le middleware, pose les réglages d'affichage du compte
+  dans le cookie `sid-confort` avant la première page ; le script du `<head>`
+  le lit si la mémoire locale est vide.
+- **Fichiers communs** : `npm run communs` compare les fichiers partagés avec
+  les deux autres sites (GitHub, ou `SID_DIRS=<dossier des trois dépôts>`) ;
+  `npm run communs -- --copier` recopie ceux de ce site chez les autres.
+- **Tests d'affichage** : `SID_TEST_URL=<adresse> npm run test:affichage`
+  (Playwright ; pages dans `tests/pages.ts`, pages de membre avec
+  `SID_TEST_COOKIE` et `SID_TEST_COOKIE_NAME`). Vérifie les classes posées
+  avant React, les contrastes (échec sous 3:1), les surfaces claires en mode
+  sombre et le défilement horizontal à 360 px. Captures dans `test-results/`.
+  Un élément aux couleurs choisies par un membre peut porter
+  `data-contraste-libre`.
+- **Migrations** : `scripts/rejouer-migrations.sh` rejoue celles des trois sites sur une base jetable et écrit `supabase/ORDRE_MIGRATIONS.txt` (voir section 3).

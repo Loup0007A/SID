@@ -25,11 +25,12 @@ const SITES: (AdminTab & { key: Site })[] = [
 ];
 
 const TAGS: Record<Tag, { label: string; color: string }> = {
-  nouveau: { label: "Nouveauté", color: "rgb(var(--c-blue))" },
-  amelioration: { label: "Amélioration", color: "rgb(var(--c-ok))" },
-  correctif: { label: "Correctif", color: "#f0b46e" },
-  economie: { label: "Économie", color: "rgb(var(--c-gold))" },
-  admin: { label: "Administration", color: "#b49be0" },
+  // Pastilles claires fixes, texte encre : lisibles en clair comme en sombre.
+  nouveau: { label: "Nouveauté", color: "#c7d8ff" },
+  amelioration: { label: "Amélioration", color: "#bdf0cc" },
+  correctif: { label: "Correctif", color: "#f3c08a" },
+  economie: { label: "Économie", color: "#f2d27a" },
+  admin: { label: "Administration", color: "#d6c6f5" },
 };
 const NEW_DAYS = 7;
 
@@ -198,7 +199,7 @@ export default function DevlogPage() {
                 <li key={e.id} className="glass-card relative space-y-2 p-4">
                   <span className="absolute -left-[1.4rem] top-5 h-2.5 w-2.5 rounded-full" style={{ background: tag.color }} aria-hidden />
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full px-2 py-0.5 font-mono text-[10px] uppercase text-ink" style={{ background: tag.color }}>
+                    <span className="rounded-full px-2 py-0.5 font-mono text-[10px] uppercase text-encre" style={{ background: tag.color }}>
                       {tag.label}
                     </span>
                     {fresh && <span className="rounded-full bg-red/20 px-2 py-0.5 font-mono text-[10px] uppercase text-red">Nouveau</span>}

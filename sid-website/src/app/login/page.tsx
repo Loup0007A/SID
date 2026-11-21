@@ -79,7 +79,7 @@ export default function LoginPage() {
         <div className="space-y-1">
           <div className="flex items-center justify-between">
             <label className="font-mono text-xs uppercase tracking-wide">Mot de passe</label>
-            <Link href="/forgot-password" className="font-mono text-[10px] uppercase text-blue underline">
+            <Link href="/forgot-password" className="inline-block py-1 font-mono text-[10px] uppercase text-blue underline">
               Mot de passe oublié ?
             </Link>
           </div>
@@ -95,7 +95,7 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => setShowPassword((s) => !s)}
-              className="absolute inset-y-0 right-2 font-mono text-[10px] uppercase text-ink/75 hover:text-ink"
+              className="champ-bouton absolute inset-y-0 right-2 font-mono text-[10px] uppercase"
               aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
             >
               {showPassword ? "Masquer" : "Voir"}

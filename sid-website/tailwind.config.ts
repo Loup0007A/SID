@@ -20,11 +20,19 @@ const config: Config = {
         gold: v("gold"),
         ok: v("ok"),
         ko: v("ko"),
+        hausse: v("hausse"),
+        baisse: v("baisse"),
         encre: "rgb(var(--encre) / <alpha-value>)",
         creme: "rgb(var(--creme) / <alpha-value>)",
         fond: "rgb(var(--fond) / <alpha-value>)",
         accent: "rgb(var(--accent) / <alpha-value>)",
         "accent-2": "rgb(var(--accent-2) / <alpha-value>)",
+      },
+      // Lisibilité (Lot 95) : un texte « paper » estompé (text-paper/60…)
+      // garde au moins 80 % d'opacité, pour rester à 4,5:1 sur le fond et
+      // sur les cartes. Les fonds et bordures gardent leur transparence.
+      textColor: {
+        paper: { DEFAULT: "rgb(var(--c-paper) / calc(0.8 + <alpha-value> * 0.2))" },
       },
       fontFamily: {
         display: ["var(--font-display)", "Impact", "sans-serif"],

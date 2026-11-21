@@ -167,7 +167,7 @@ export default function AdminTitlesPage() {
             const list = byTitle.get(t.id) ?? [];
             return (
               <div key={t.id} className="glass-card space-y-2 p-4">
-                <p className="font-display uppercase" style={{ color: t.colors[0] }}>
+                <p className="font-display uppercase" style={{ color: t.colors[0] }} data-contraste-libre>
                   <SidIcon name={t.icon} /> {t.name} <span className="font-mono text-xs text-paper/65">({list.length})</span>
                 </p>
                 <p className="font-mono text-[10px] text-paper/65">{t.how}</p>

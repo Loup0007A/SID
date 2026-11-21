@@ -30,6 +30,19 @@ function rng(seed) {
 const f1 = (x) => Math.round(x * 10) / 10;
 const hexRgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)).join(" ");
 
+// Lisibilité (Lot 95) : le fond est assombri, teinte gardée, juste assez
+// pour que le texte crème posé dessus atteigne 4,6:1 (WCAG AA : 4,5:1).
+const lin = (c) => { c /= 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+const lum = (h) => { const [r, g, b] = [1, 3, 5].map((i) => lin(parseInt(h.slice(i, i + 2), 16))); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+const contraste = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+function lisible(fond, creme, cible = 4.6) {
+  let h = fond;
+  for (let k = 1; contraste(h, creme) < cible && k < 100; k++) {
+    h = "#" + [1, 3, 5].map((i) => Math.round(parseInt(fond.slice(i, i + 2), 16) * (1 - k / 100)).toString(16).padStart(2, "0")).join("");
+  }
+  return h;
+}
+
 // ─── Formes (unité : environ -50…50, centrées) ────────────────────────
 // Chaque forme rend du SVG pour une couleur donnée.
 const P = (d, c, extra = "") => `<path d="${d}" fill="${c}"${extra}/>`;
@@ -289,9 +302,9 @@ for (const [key, t] of Object.entries(THEMES)) {
   particles.add(t.particle);
   const sel = key === "sid" ? ":root" : `html[data-theme="${key}"]`;
   css += `${sel} {
-  --fond: ${hexRgb(t.fond)}; --fond-haut: ${hexRgb(t.haut)}; --fond-bas: ${hexRgb(t.bas)};
+  --fond: ${hexRgb(lisible(t.fond, t.creme))}; --fond-haut: ${hexRgb(t.haut)}; --fond-bas: ${hexRgb(t.bas)};
   --encre: ${hexRgb(t.encre)}; --creme: ${hexRgb(t.creme)}; --creme-2: ${hexRgb(t.creme2)};
-  --accent: ${hexRgb(t.accent)}; --accent-2: ${hexRgb(t.accent2)}; --accent-on-card: ${hexRgb(t.accentCarte)};
+  --accent: ${hexRgb(t.accent)}; --accent-2: ${hexRgb(t.accent2)}; --accent-on-card: ${hexRgb(lisible(t.accentCarte, t.creme, 6))};
   --motif: url(/fonds/${key}.svg); --particule: url(/fonds/p-${t.particle}.svg); 
   --p1: ${hexRgb(t.pcolors[0])}; --p2: ${hexRgb(t.pcolors[1])}; --p3: ${hexRgb(t.pcolors[2])}; --p4: ${hexRgb(t.pcolors[3])};
 }\n`;

@@ -305,7 +305,7 @@ export function AppearanceSettings({ userId, nickname }: { userId: string; nickn
 
         <aside className="apercu" aria-label="Aperçu en direct">
           <p className="etiquette-collee">Aperçu en direct</p>
-          <div className="apercu-scene">
+          <div className="apercu-scene" data-contraste-libre>
             <SectionPreview section={place} userId={userId} nickname={nickname} css={current} />
           </div>
           <p className="apercu-note">Tel que les autres membres te verront, sur le fond du site.</p>
