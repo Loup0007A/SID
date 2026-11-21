@@ -2,11 +2,15 @@ import type { Metadata, Viewport } from "next";
 // Polices servies par le site lui-même (public/fonts, déclarées dans
 // globals.css) : rien n'est envoyé à Google quand on ouvre une page.
 import "./globals.css";
+// Couleurs et motifs de fond du S.I.D. et des évents (scripts/fonds.mjs).
+import "./fonds.css";
 import { SeasonalDecor } from "@/components/seasonal/Seasonal";
 import { LazyCursorTrail } from "@/components/lazy/LazyCursorTrail";
 import { LabelLinker } from "@/components/a11y/LabelLinker";
 import { getSupabaseEnv } from "@/lib/supabase/env";
-import { getBrand, getGlitched } from "@/lib/brand-server";
+import { getBrand, getFondTheme, getGlitched } from "@/lib/brand-server";
+import { FondParticules } from "@/components/fond/FondParticules";
+import { FondThemeSync } from "@/components/fond/FondThemeSync";
 import { GlitchSync } from "@/components/glitch/GlitchSync";
 import { brandify } from "@/lib/brand";
 import { BrandProvider } from "@/components/BrandProvider";
@@ -34,7 +38,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#1b1e27",
+  themeColor: "#2F5BD8",
 };
 
 export default async function RootLayout({
@@ -42,15 +46,14 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [brand, glitched] = await Promise.all([getBrand(), getGlitched()]);
+  const [brand, glitched, fondTheme] = await Promise.all([getBrand(), getGlitched(), getFondTheme()]);
   return (
-    <html lang="fr">
+    <html lang="fr" data-theme={fondTheme === "sid" ? undefined : fondTheme}>
       <head>
         {/* PageSpeed (Lot 65) : les polices du premier affichage arrivent en
             même temps que la feuille de style au lieu d'après elle, et la
             connexion à Supabase est ouverte d'avance. */}
-        <link rel="preload" href="/fonts/source-serif-4-latin-400-normal.woff2" as="font" type="font/woff2" crossOrigin="" />
-        <link rel="preload" href="/fonts/oswald-latin-400-normal.woff2" as="font" type="font/woff2" crossOrigin="" />
+        <link rel="preload" href="/fonts/archivo-latin-wdth-normal.woff2" as="font" type="font/woff2" crossOrigin="" />
         <link rel="preload" href="/fonts/jetbrains-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossOrigin="" />
         <link rel="preconnect" href={getSupabaseEnv().url} crossOrigin="" />
         {/* Nécessaires pour qu'iOS propose "Sur l'écran d'accueil" et
@@ -63,6 +66,8 @@ export default async function RootLayout({
         <meta name="apple-mobile-web-app-title" content={brand.name} />
       </head>
       <body className="font-body">
+        <FondParticules />
+        <FondThemeSync />
         <BrandProvider brand={brand} glitched={glitched}>
           {children}
           <SeasonalDecor />

@@ -15,22 +15,218 @@
 @font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 400; font-display: swap; src: url(/fonts/jetbrains-mono-latin-400-normal.woff2) format('woff2'); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
 @font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 500; font-display: swap; src: url(/fonts/jetbrains-mono-latin-500-normal.woff2) format('woff2'); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
 
+@font-face { font-family: 'Archivo'; font-style: normal; font-weight: 100 900; font-stretch: 62% 125%; font-display: swap; src: url(/fonts/archivo-latin-wdth-normal.woff2) format('woff2'); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: 'Archivo'; font-style: italic; font-weight: 100 900; font-stretch: 62% 125%; font-display: swap; src: url(/fonts/archivo-latin-wdth-italic.woff2) format('woff2'); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+
+/* =========================================================
+   Refonte (Lot 90) : couleurs en variables, à deux niveaux.
+   - « Sur le fond » (:root, .nuit) : texte crème posé sur le bleu du fond
+     ou sur une surface marine.
+   - « Sur carte » (.glass-card, .jour…) : texte marine sur carte crème.
+   Les noms Tailwind (paper, ink, blue, red, white, black…) lisent ces
+   variables : une même classe s'adapte à l'endroit où elle est posée.
+   Les évents changent le fond, le motif et les accents (fond-theme.css).
+   ========================================================= */
 :root {
-  --font-display: "Oswald", "Arial Narrow", sans-serif;
+  --font-display: "Archivo", "Arial Narrow", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
-  --font-body: "Source Serif 4", Georgia, serif;
+  --font-body: "Archivo", system-ui, sans-serif;
+
+  /* Palette du thème : src/app/fonds.css (scripts/fonds.mjs). */
+  --trait: 3px;
+  --ombre: 5px 5px 0 rgb(var(--encre));
+  --ombre-petite: 3px 3px 0 rgb(var(--encre));
+  --rayon: 22px;
 }
 
+/* Jetons « sur le fond » */
+:root, .nuit, .shop-frame, .quest-hero, .rc, .chat-main {
+  --titre-ombre: 0.06em 0.06em 0 rgb(var(--encre));
+  --titre-trait: 0.045em;
+  --c-paper: var(--creme);
+  --c-paper-dark: 232 221 200;
+  --c-paper-text: var(--encre);
+  --c-ink: var(--encre);
+  --c-ink-soft: 34 38 96;
+  --c-ink-border: 70 78 150;
+  --c-white: var(--creme);
+  --c-black: 6 7 30;
+  --c-blue: 199 216 255;
+  --c-blue-light: 226 234 255;
+  --c-blue-dark: 150 182 250;
+  --c-red: 255 182 193;
+  --c-red-light: 255 214 220;
+  --c-red-dark: 255 140 158;
+  --c-green-200: 187 247 208;
+  --c-green-300: 134 239 172;
+  --c-green-400: 74 222 128;
+  --c-yellow-200: 254 240 138;
+  --c-yellow-300: 253 224 71;
+  --c-yellow-400: 250 204 21;
+  --c-gold: 240 194 122;
+  --c-ok: 150 230 170;
+  --c-ko: 255 168 168;
+}
+/* La couleur du texte se transmet déjà calculée : chaque niveau la
+   redonne, sinon un texte sans couleur garderait celle du niveau du dessus. */
+.nuit, .shop-frame, .quest-hero, .rc, .chat-main,
+.jour, .glass-card, .glass-panel, .grain-panel, .quest-card, .rank-card, .dossier-card, .tuto-tip, .tuto-sheet,
+.tuto-card, .shop-card, .shop-tabs, .shop-search, .shop-sort, .quest-search, .quest-seg, .poll-card { color: rgb(var(--c-paper)); }
+
+/* Jetons « sur carte » */
+.jour, .glass-card, .glass-panel, .grain-panel, .quest-card, .rank-card, .dossier-card, .tuto-tip, .tuto-sheet,
+.tuto-card, .shop-card, .shop-tabs, .shop-search, .shop-sort, .quest-search, .quest-seg, .poll-card {
+  --titre-ombre: none;
+  --titre-trait: 0;
+  --c-paper: var(--encre);
+  --c-paper-dark: 150 150 175;
+  --c-paper-text: var(--encre);
+  --c-ink: var(--creme);
+  --c-ink-soft: var(--creme-2);
+  --c-ink-border: var(--encre);
+  --c-white: var(--encre);
+  --c-black: var(--encre);
+  --c-blue: 43 85 204;
+  --c-blue-light: 30 63 168;
+  --c-blue-dark: 24 48 130;
+  --c-red: var(--accent-on-card);
+  --c-red-light: 163 32 58;
+  --c-red-dark: 130 20 45;
+  --c-green-200: 22 101 52;
+  --c-green-300: 21 128 61;
+  --c-green-400: 22 140 70;
+  --c-yellow-200: 133 77 14;
+  --c-yellow-300: 161 98 7;
+  --c-yellow-400: 180 110 4;
+  --c-gold: 138 90 11;
+  --c-ok: 22 128 61;
+  --c-ko: 185 38 50;
+}
+
+html { scrollbar-color: rgb(var(--encre)) rgb(var(--fond)); }
 body {
-  background-color: #262a38; /* un ton plus clair que l'ancien quasi-noir */
-  background-image:
-    radial-gradient(ellipse 70% 55% at 10% -10%, rgba(143, 179, 217, 0.38), transparent 60%),
-    radial-gradient(ellipse 65% 50% at 105% 15%, rgba(217, 154, 154, 0.34), transparent 60%),
-    radial-gradient(ellipse 60% 50% at 15% 105%, rgba(143, 179, 217, 0.28), transparent 60%),
-    radial-gradient(ellipse 55% 45% at 100% 100%, rgba(217, 154, 154, 0.22), transparent 60%);
-  background-attachment: fixed;
-  color: #ede6d3;
+  background-color: rgb(var(--fond));
+  color: rgb(var(--c-paper));
+  font-weight: 500;
   min-height: 100vh;
+}
+/* Le fond : couleur, deux halos et le motif du thème (fixe). Les éclats
+   qui tombent sont dans <FondParticules />. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(55% 45% at 10% 6%, rgb(var(--fond-haut) / 0.42), transparent 70%),
+    radial-gradient(50% 50% at 94% 92%, rgb(var(--fond-bas) / 0.45), transparent 72%),
+    var(--motif) center / cover no-repeat;
+}
+@media (orientation: portrait) {
+  body::before {
+    background-size: 100% 100%, 100% 100%, auto 120vh;
+    background-position: center, center, 70% 0;
+  }
+}
+
+/* Particules du fond (FondParticules) */
+.fond-particules { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; contain: strict; }
+.fond-particules i {
+  position: absolute;
+  top: -40px;
+  width: var(--s);
+  height: var(--s);
+  background: rgb(var(--k));
+  opacity: 0.85;
+  -webkit-mask: var(--particule) center / contain no-repeat;
+  mask: var(--particule) center / contain no-repeat;
+  animation: fond-tombe var(--t) linear var(--dl) infinite;
+  will-change: transform;
+}
+@keyframes fond-tombe {
+  0% { transform: translate3d(0, -40px, 0) rotate(0deg); }
+  50% { transform: translate3d(var(--dx), 55vh, 0) rotate(160deg); }
+  100% { transform: translate3d(0, 112vh, 0) rotate(330deg); }
+}
+@keyframes fond-monte {
+  0% { transform: translate3d(0, 40px, 0) rotate(0deg); }
+  50% { transform: translate3d(var(--dx), -55vh, 0) rotate(-20deg); }
+  100% { transform: translate3d(0, -112vh, 0) rotate(10deg); }
+}
+@media (max-width: 640px) { .fond-particules i:nth-child(2n) { display: none; } }
+@media (prefers-reduced-motion: reduce) { .fond-particules { display: none; } }
+
+/* Titres : un peu plus gras et serrés que le texte. */
+.font-display { font-variation-settings: "wght" 780, "wdth" 82; letter-spacing: 0.01em; text-shadow: var(--titre-ombre); }
+/* Grands titres de page, posés sur le fond : un contour en plus. */
+h1.font-display { -webkit-text-stroke: var(--titre-trait) rgb(var(--encre)); paint-order: stroke fill; text-shadow: 0.07em 0.07em 0 rgb(var(--encre)); }
+:is(.jour, .glass-card, .glass-panel, .grain-panel, .quest-card, .dossier-card, .tuto-tip, .tuto-sheet, .tuto-card, .shop-card, .poll-card) h1.font-display { text-shadow: none; }
+
+/* Grand titre posé sur le fond : crème, contour et ombre pleine marine. */
+.titre-sticker {
+  font-family: var(--font-display);
+  font-variation-settings: "wght" 860, "wdth" 88;
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+  color: rgb(var(--creme));
+  -webkit-text-stroke: 0.06em rgb(var(--encre));
+  paint-order: stroke fill;
+  text-shadow: 0.07em 0.07em 0 rgb(var(--encre));
+}
+/* Petite étiquette jaune, collée de travers. */
+.etiquette-collee {
+  display: inline-block;
+  transform: rotate(-2.5deg);
+  border: 2px solid rgb(var(--encre));
+  border-radius: 8px;
+  background: rgb(var(--accent-2));
+  color: rgb(var(--encre));
+  padding: 3px 10px;
+  font: 600 0.72rem/1.2 var(--font-mono);
+  letter-spacing: 0.04em;
+  box-shadow: var(--ombre-petite);
+}
+/* Le logo dans son sceau : anneau marine, ombre pleine. */
+.sceau-logo { border: var(--trait) solid rgb(var(--encre)); box-shadow: var(--ombre); }
+
+/* Barre du haut : la couleur du fond, floutée, posée sur un trait. */
+.site-bar {
+  background: rgb(var(--fond) / 0.82);
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  border-bottom: var(--trait) solid rgb(var(--encre));
+}
+.site-bar :is(a, button)[class*="border-white"] {
+  border: 2px solid rgb(var(--encre));
+  background: rgb(var(--creme));
+  color: rgb(var(--encre));
+  box-shadow: var(--ombre-petite);
+}
+.site-bar :is(a, button)[class*="border-white"]:hover { background: rgb(var(--creme-2)); }
+
+/* Boutons pleins : contour marine et ombre pleine ; ils s'enfoncent au clic. */
+:is(button, a)[class~="bg-blue"],
+:is(button, a)[class~="bg-red"],
+:is(button, a)[class~="bg-paper"],
+:is(button, a)[class~="bg-ink"] {
+  border: 2px solid rgb(var(--encre));
+  box-shadow: var(--ombre-petite);
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.15s, color 0.15s;
+}
+:is(button, a)[class~="bg-blue"]:not(:disabled):hover,
+:is(button, a)[class~="bg-red"]:not(:disabled):hover,
+:is(button, a)[class~="bg-paper"]:not(:disabled):hover,
+:is(button, a)[class~="bg-ink"]:not(:disabled):hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 rgb(var(--encre));
+}
+:is(button, a)[class~="bg-blue"]:not(:disabled):active,
+:is(button, a)[class~="bg-red"]:not(:disabled):active,
+:is(button, a)[class~="bg-paper"]:not(:disabled):active,
+:is(button, a)[class~="bg-ink"]:not(:disabled):active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 rgb(var(--encre));
 }
 
 /* Tampon encre - utilisé sur les statuts de quêtes / rôles */
@@ -41,26 +237,26 @@ body {
   border-radius: 8px;
   padding: 0.15rem 0.6rem;
   font-family: var(--font-display);
+  font-variation-settings: "wght" 780, "wdth" 82;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   transform: rotate(-1.5deg);
   font-size: 0.7rem;
 }
 
-/* Variante "vieux papier" pour les fiches de quêtes : vignette sépia,
-   coin légèrement corné, texture plus marquée */
+/* Fiches de quêtes : papier kraft, mais avec le contour et l'ombre pleine
+   des autres cartes. */
 .quest-card {
   position: relative;
-  background-color: #ecdfc0;
-  color: #2b2f28;
+  background-color: #f3e6c6;
+  color: rgb(var(--encre));
   background-image:
-    radial-gradient(circle at 1px 1px, rgba(90, 70, 40, 0.12) 1px, transparent 0),
-    radial-gradient(ellipse at top left, rgba(255, 250, 230, 0.5), transparent 60%),
-    radial-gradient(ellipse at bottom right, rgba(90, 60, 30, 0.25), transparent 65%);
-  background-size: 4px 4px, 100% 100%, 100% 100%;
-  border: 1px solid #b8a878;
-  border-radius: 0.5rem 1rem 0.5rem 1rem;
-  box-shadow: 0 10px 18px -8px rgba(40, 25, 10, 0.5), inset 0 0 30px rgba(120, 90, 50, 0.12);
+    radial-gradient(circle at 1px 1px, rgba(90, 70, 40, 0.1) 1px, transparent 0),
+    radial-gradient(ellipse at top left, rgba(255, 250, 230, 0.6), transparent 60%);
+  background-size: 4px 4px, 100% 100%;
+  border: var(--trait) solid rgb(var(--encre));
+  border-radius: 0.6rem 1.2rem 0.6rem 1.2rem;
+  box-shadow: var(--ombre);
 }
 
 .quest-card::after {
@@ -72,43 +268,29 @@ body {
   height: 0;
   border-style: solid;
   border-width: 0 22px 22px 0;
-  border-color: transparent #d8c69a transparent transparent;
-  border-radius: 0 1rem 0 0.5rem;
-  opacity: 0.8;
+  border-color: transparent #e0cc98 transparent transparent;
+  border-radius: 0 0.9rem 0 0.4rem;
 }
 
+/* Cartes et panneaux : crème, contour marine, ombre pleine décalée. */
+.glass-card,
 .grain-panel {
-  background-color: rgba(38, 42, 56, 0.45);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 1rem;
-  backdrop-filter: blur(20px) saturate(140%);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
-}
-
-.glass-panel {
-  background-color: rgba(38, 42, 56, 0.45);
-  backdrop-filter: blur(20px) saturate(140%);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* Carte "verre" générique : tout le site SAUF les quêtes (qui restent en
-   "vieux papier", voir .quest-card). Texte clair par défaut car le fond
-   est sombre et translucide. */
-.glass-card {
   position: relative;
-  background: linear-gradient(165deg, rgba(255, 255, 255, 0.09), rgba(36, 40, 53, 0.4) 40%);
-  color: #ede6d3;
-  backdrop-filter: blur(22px) saturate(150%);
-  -webkit-backdrop-filter: blur(22px) saturate(150%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 1rem;
-  box-shadow: 0 12px 32px -10px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  background: linear-gradient(180deg, rgb(var(--creme)) 55%, rgb(var(--creme-2)));
+  color: rgb(var(--c-paper));
+  border: var(--trait) solid rgb(var(--encre));
+  border-radius: var(--rayon);
+  box-shadow: var(--ombre);
+}
+.glass-panel {
+  background-color: rgb(var(--creme));
+  color: rgb(var(--c-paper));
+  border: var(--trait) solid rgb(var(--encre));
 }
 
 ::selection {
-  background-color: #d99a9a;
-  color: #2b2f28;
+  background-color: rgb(var(--accent-2));
+  color: rgb(var(--encre));
 }
 
 /* =========================================================
@@ -220,8 +402,8 @@ body {
    ========================================================= */
 .login-intro {
   background:
-    radial-gradient(ellipse 60% 50% at 50% 45%, rgba(143, 179, 217, 0.22), transparent 70%),
-    #1c1f2b;
+    radial-gradient(ellipse 60% 50% at 50% 45%, rgb(var(--c-blue) / 0.22), transparent 70%),
+    rgb(var(--c-ink));
   animation: login-fade 0.35s ease-out both;
 }
 @keyframes login-fade { from { opacity: 0; } }
@@ -231,7 +413,7 @@ body {
   position: absolute;
   inset: 0;
   border-radius: 999px;
-  background: conic-gradient(from 0deg, transparent 0 70%, #8fb3d9 85%, #d99a9a 100%);
+  background: conic-gradient(from 0deg, transparent 0 70%, rgb(var(--c-blue)) 85%, rgb(var(--c-red)) 100%);
   -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px));
   mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2px));
   animation: login-spin 0.9s linear 0.1s 2 both;
@@ -244,16 +426,16 @@ body {
   z-index: 2;
   height: 2px;
   border-radius: 2px;
-  background: #8fb3d9;
-  box-shadow: 0 0 12px 3px rgba(143, 179, 217, 0.7);
+  background: rgb(var(--c-blue));
+  box-shadow: 0 0 12px 3px rgb(var(--c-blue) / 0.7);
   animation: login-scan 0.7s ease-in-out 0.35s 2 alternate both;
 }
 @keyframes login-scan { from { top: 22%; opacity: 0.2; } 15% { opacity: 1; } to { top: 78%; opacity: 1; } }
 .login-intro-stamp {
-  border: 3px double #d99a9a;
+  border: 3px double rgb(var(--c-red));
   border-radius: 10px;
   padding: 0.2rem 1rem;
-  color: #d99a9a;
+  color: rgb(var(--c-red));
   font-family: var(--font-display);
   font-size: 1.6rem;
   letter-spacing: 0.14em;
@@ -283,17 +465,17 @@ input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus-visib
 /* Lien « Aller au contenu » : invisible jusqu'à ce qu'on appuie sur Tab. */
 .skip-link {
   position: fixed; left: 12px; top: -60px; z-index: 10000;
-  padding: 10px 16px; border-radius: 10px; background: #f2b54a; color: #1b1e27;
+  padding: 10px 16px; border-radius: 10px; background: #f2b54a; color: rgb(var(--c-ink));
   font: 600 13px/1 "JetBrains Mono", ui-monospace, monospace; text-transform: uppercase; letter-spacing: .08em;
   box-shadow: 0 6px 20px rgb(0 0 0 / .4); transition: top .15s;
 }
-.skip-link:focus { top: calc(env(safe-area-inset-top) + 12px); outline: 2px solid #1b1e27; outline-offset: 2px; }
+.skip-link:focus { top: calc(env(safe-area-inset-top) + 12px); outline: 2px solid rgb(var(--c-ink)); outline-offset: 2px; }
 
 .palette {
   width: min(640px, 100%); max-height: min(72vh, 620px); display: flex; flex-direction: column; overflow: hidden;
-  border-radius: 16px; border: 1px solid rgb(255 255 255 / 0.16); color: #ede6d3;
-  background: linear-gradient(170deg, rgb(52 57 74 / 0.97), rgb(30 33 44 / 0.98));
-  box-shadow: 0 30px 80px rgb(0 0 0 / 0.55), inset 0 1px 0 rgb(255 255 255 / 0.08);
+  border-radius: 18px; border: var(--trait) solid rgb(var(--c-white) / 0.9); color: rgb(var(--c-paper));
+  background: rgb(var(--encre));
+  box-shadow: 8px 8px 0 rgb(0 0 0 / 0.35);
   animation: palette-pop .18s cubic-bezier(.2,.9,.3,1.2);
 }
 
@@ -305,9 +487,9 @@ input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus-visib
 /* Raccourcis clavier : rien à proposer sur un écran tactile (Lot 60). */
 
 /* Quêtes RP (Lot 62) : objectifs, rapport de mission, Chroniques */
-.quest-objectives { display: grid; gap: 2px; margin-top: 2px; font: 400 .8rem/1.35 var(--font-body); color: rgb(43 47 40 / .85); }
+.quest-objectives { display: grid; gap: 2px; margin-top: 2px; font: 400 .8rem/1.35 var(--font-body); color: rgb(var(--c-paper-text) / .85); }
 .quest-objectives li { position: relative; padding-left: 18px; }
-.quest-objectives li::before { content: ""; position: absolute; left: 2px; top: .3em; width: 10px; height: 10px; border: 1.5px solid rgb(43 47 40 / .55); border-radius: 2px; }
+.quest-objectives li::before { content: ""; position: absolute; left: 2px; top: .3em; width: 10px; height: 10px; border: 1.5px solid rgb(var(--c-paper-text) / .55); border-radius: 2px; }
 .quest-objectives li.is-more { padding-left: 18px; font-style: italic; opacity: .75; }
 .quest-objectives li.is-more::before { display: none; }
 /* Missions à cocher par le participant (Lot 68) */

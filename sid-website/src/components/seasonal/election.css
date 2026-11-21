@@ -34,9 +34,9 @@
 .el-flag-2 { fill: #f6eedb; }
 
 /* Accueil */
-.el-greeting { color: #f0c27a; }
+.el-greeting { color: rgb(var(--c-gold)); }
 .el-board { position: relative; overflow: hidden; padding: 18px 20px; border-color: rgb(240 194 122 / 0.45); background: linear-gradient(135deg, rgb(122 20 48 / 0.35), rgb(20 10 18 / 0.55)); }
-.el-kicker { font: 600 11px/1.2 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: #f0c27a; }
+.el-kicker { font: 600 11px/1.2 var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: rgb(var(--c-gold)); }
 .el-name { font: 700 1.9rem/1.1 var(--font-display); text-transform: uppercase; letter-spacing: 0.04em; color: #fff3d2; text-shadow: 0 0 18px rgb(240 194 122 / 0.45); }
 .el-board-crown { width: 64px; height: 48px; flex: none; filter: drop-shadow(0 0 10px rgb(255 210 120 / 0.55)); animation: el-bob 3s ease-in-out infinite; }
 @keyframes el-bob { 50% { transform: translateY(-4px) rotate(-3deg); } }
@@ -58,7 +58,7 @@
 .el-portrait-crown { position: absolute; left: 50%; top: -42%; width: 62%; transform: translateX(-50%) rotate(-6deg); filter: drop-shadow(0 4px 6px rgb(0 0 0 / 0.45)); z-index: 1; }
 
 /* Pied de page */
-.el-footer { color: #f0c27a; }
+.el-footer { color: rgb(var(--c-gold)); }
 .el-bubble { border-color: rgb(240 194 122 / 0.6); }
 
 /* Cérémonie */
@@ -79,7 +79,7 @@
 @keyframes el-zoom { from { opacity: 0; transform: scale(0.3); } }
 @keyframes el-crown { from { opacity: 0; transform: translate(-50%, -120px) rotate(-30deg); } }
 .el-reveal-name { max-width: 90vw; font: 700 clamp(2rem, 8vw, 4rem)/1 var(--font-display); text-transform: uppercase; letter-spacing: 0.05em; color: #fff3d2; text-shadow: 0 0 30px rgb(240 194 122 / 0.7); animation: el-rise 0.6s 0.3s ease-out both; }
-.el-reveal-sub { font: 600 14px/1 var(--font-mono); letter-spacing: 0.3em; text-transform: uppercase; color: #f0c27a; animation: el-rise 0.6s 0.6s ease-out both; }
+.el-reveal-sub { font: 600 14px/1 var(--font-mono); letter-spacing: 0.3em; text-transform: uppercase; color: rgb(var(--c-gold)); animation: el-rise 0.6s 0.6s ease-out both; }
 .el-reveal .el-btn { margin-top: 12px; animation: el-rise 0.6s 1s ease-out both; }
 .el-skip { position: absolute; right: 16px; bottom: 16px; z-index: 3; font: 500 11px/1 var(--font-mono); text-transform: uppercase; color: rgb(246 227 184 / 0.7); padding: 8px 10px; }
 .el-skip:hover { color: #fff3d2; text-decoration: underline; }

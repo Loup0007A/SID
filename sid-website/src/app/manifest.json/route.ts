@@ -10,8 +10,8 @@ const REST = {
   "start_url": "/dashboard",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#1b1e27",
-  "theme_color": "#1b1e27",
+  "background_color": "#2F5BD8",
+  "theme_color": "#2F5BD8",
   "icons": [
     {
       "src": "/icons/app-192.png",

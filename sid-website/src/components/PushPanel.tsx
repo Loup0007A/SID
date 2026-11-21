@@ -218,7 +218,7 @@ export function PushPanel() {
         )}
       </div>
 
-      {msg && <p className={`font-body text-sm ${msg.ok ? "text-[#b9e3c6]" : "text-red"}`}>{msg.text}</p>}
+      {msg && <p className={`font-body text-sm ${msg.ok ? "text-ok" : "text-red"}`}>{msg.text}</p>}
 
       {test && (
         <div className="space-y-1.5 rounded-lg bg-black/20 p-3 font-body text-sm" aria-live="polite">
@@ -229,7 +229,7 @@ export function PushPanel() {
           {test.results.map((r, i) => (
             <p key={i}>
               <SidIcon name={r.ok ? "check" : "cross"} /> {SERVICE[r.host] ?? r.host} :{" "}
-              {r.ok ? <span className="text-[#b9e3c6]">envoyé — la notification doit apparaître.</span> : <span className="text-red">{explainStatus(r.status, r.message)}</span>}
+              {r.ok ? <span className="text-ok">envoyé — la notification doit apparaître.</span> : <span className="text-red">{explainStatus(r.status, r.message)}</span>}
             </p>
           ))}
           {configIssues.length > 0 && <p className="text-paper/75">Réglages Vercel à compléter : {configIssues.join(" · ")}.</p>}
@@ -261,7 +261,7 @@ export function PushPanel() {
                     {diag.recent.map((r, i) => (
                       <li key={i}>
                         <span className="font-mono text-paper/65">{new Date(r.at).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" })}</span> ·{" "}
-                        <span className={r.status === 200 ? "text-[#b9e3c6]" : "text-red"}>{explainWebhook(r.status, r.body, r.error, r.timed_out)}</span>
+                        <span className={r.status === 200 ? "text-ok" : "text-red"}>{explainWebhook(r.status, r.body, r.error, r.timed_out)}</span>
                       </li>
                     ))}
                   </ul>

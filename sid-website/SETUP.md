@@ -5,7 +5,7 @@ renommer : nom du RP, des trois sites, de la monnaie, adresses, sites et
 rubriques ouverts, adresses des simulations. L'installation elle-même (Supabase, Vercel, compte Fondateur) est
 dans [README.md](README.md).
 
-Prérequis : migrations passées jusqu'à `0109_devlog_allies_simulations.sql` (Dossier
+Prérequis : migrations passées jusqu'à `0110_devlog_refonte.sql` (Dossier
 Central), celles du Wiki (jusqu'à `0212_wiki_nouvelles_fiches.sql`), puis celles de
 la Cartographie (jusqu'à `0119_meteo_incursions.sql`). La 0118 de la
 Cartographie utilise les tables du Wiki : passer le Wiki avant.
@@ -349,6 +349,33 @@ update public.app_config set value = 'https://mes-donjons.vercel.app/' where key
 | Dossier Central | `src/app/favicon.ico`, `public/logo.png`, `public/logo.webp`, `public/icons/app-192.png`, `public/icons/app-512.png`, `public/icons/apple-touch-180.png` (voir `public/icons/LISEZMOI.md`) |
 | Cartographie | `public/icon-192.png`, `public/icon-512.png`, `public/icon-maskable-512.png`, `public/apple-touch-icon.png` |
 | Wiki | `public/icons/icon-192.png`, `public/icons/icon-512.png`, `public/icons/icon-maskable-512.png`, `public/icons/apple-touch-icon.png` (voir `public/icons/LISEZ-MOI.txt`) |
+
+### 6.1 Couleurs et fonds du Dossier Central
+
+Les couleurs du site, le motif du fond et les particules qui tombent sont
+générés par `scripts/fonds.mjs`, une entrée par thème : `sid` (hors évents)
+puis un thème par évent (`noel`, `halloween`…).
+
+| Champ | Rôle |
+| --- | --- |
+| `fond` | couleur du fond |
+| `haut`, `bas` | halo clair (en haut à gauche) et halo sombre (en bas à droite) |
+| `encre` | traits, ombres pleines, texte des cartes |
+| `creme`, `creme2` | cartes et leur dégradé |
+| `accent`, `accent2` | rouge et jaune du thème ; `accentCarte` : le rouge lisible sur une carte |
+| `colors`, `shapes` | couleurs et formes du motif |
+| `particle`, `sens`, `pcolors` | forme, sens (1 : tombent, -1 : montent) et couleurs des particules |
+
+Après un changement :
+
+```bash
+node scripts/fonds.mjs
+```
+
+Le script réécrit `public/fonds/*.svg` et `src/app/fonds.css`, à mettre en
+ligne avec le reste. Le thème affiché suit l'affichage événementiel
+(Modération → Événements) ; si plusieurs évents sont affichés en même temps,
+l'ordre de `src/lib/fondTheme.ts` décide.
 
 ---
 

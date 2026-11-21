@@ -209,7 +209,7 @@ export default function SimulationPage() {
       {activeShocks.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {activeShocks.map((k) => (
-            <span key={k.id} className="rounded-full border border-[#f0c27a]/60 bg-[#f0c27a]/10 px-3 py-1 font-mono text-[11px] text-[#f0c27a]">
+            <span key={k.id} className="rounded-full border border-gold/60 bg-[#f0c27a]/10 px-3 py-1 font-mono text-[11px] text-gold">
               {k.label} jusqu&apos;au {fmtDay(k.ends_on)} · dépenses {fx(k.spend_mult)} · bourse {fx(k.share_mult)}
             </span>
           ))}
@@ -256,9 +256,9 @@ export default function SimulationPage() {
                 <LineChart
                   labels={ov.series.map((d) => fmtDay(d.day))}
                   series={[
-                    { name: "Salaires reçus", color: "#5fdc8a", values: ov.series.map((d) => Number(d.salaries)) },
-                    { name: "Achats d'objets", color: "#8FB3D9", values: ov.series.map((d) => Number(d.spent_items)) },
-                    { name: "Ordres de bourse", color: "#f0c27a", values: ov.series.map((d) => Number(d.spent_shares)) },
+                    { name: "Salaires reçus", color: "rgb(var(--c-ok))", values: ov.series.map((d) => Number(d.salaries)) },
+                    { name: "Achats d'objets", color: "rgb(var(--c-blue))", values: ov.series.map((d) => Number(d.spent_items)) },
+                    { name: "Ordres de bourse", color: "rgb(var(--c-gold))", values: ov.series.map((d) => Number(d.spent_shares)) },
                   ]}
                   zeroBased
                   fill={false}
@@ -272,15 +272,15 @@ export default function SimulationPage() {
                 </h2>
                 <LineChart
                   labels={ov.series.map((d) => fmtDay(d.day))}
-                  series={[{ name: "Argent détenu", color: "#8FB3D9", values: ov.series.map((d) => Number(d.money)) }]}
+                  series={[{ name: "Argent détenu", color: "rgb(var(--c-blue))", values: ov.series.map((d) => Number(d.money)) }]}
                   height={150}
                   formatValue={(n) => z(n)}
                 />
                 <LineChart
                   labels={ov.series.map((d) => fmtDay(d.day))}
                   series={[
-                    { name: "Gini (%)", color: "#D99A9A", values: ov.series.map((d) => Math.round(Number(d.gini ?? 0) * 1000) / 10) },
-                    { name: "Part des 10 % les plus riches (%)", color: "#f0c27a", values: ov.series.map((d) => Math.round(Number(d.top10_share ?? 0) * 1000) / 10) },
+                    { name: "Gini (%)", color: "rgb(var(--c-red))", values: ov.series.map((d) => Math.round(Number(d.gini ?? 0) * 1000) / 10) },
+                    { name: "Part des 10 % les plus riches (%)", color: "rgb(var(--c-gold))", values: ov.series.map((d) => Math.round(Number(d.top10_share ?? 0) * 1000) / 10) },
                   ]}
                   height={150}
                   fill={false}
@@ -703,7 +703,7 @@ function Controls({ ov, busy, call }: { ov: Overview; busy: boolean; call: (fn: 
         <div className="space-y-1">
           <div className="flex justify-between font-body text-sm">
             <span>Envie de dépenser</span>
-            <span className="font-mono text-[#f0c27a]">{fx(spend)}</span>
+            <span className="font-mono text-gold">{fx(spend)}</span>
           </div>
           {slider(spend, setSpend, 0.2, 3, 0.05, "Envie de dépenser")}
           <p className="font-body text-xs text-paper/55">Chance d&apos;acheter chaque jour. À × 1, environ un habitant sur trois achète.</p>
@@ -711,7 +711,7 @@ function Controls({ ov, busy, call }: { ov: Overview; busy: boolean; call: (fn: 
         <div className="space-y-1">
           <div className="flex justify-between font-body text-sm">
             <span>Appétit pour la bourse</span>
-            <span className="font-mono text-[#f0c27a]">{fx(shares)}</span>
+            <span className="font-mono text-gold">{fx(shares)}</span>
           </div>
           {slider(shares, setShares, 0.2, 3, 0.05, "Appétit pour la bourse")}
           <p className="font-body text-xs text-paper/55">Part des achats qui vont en actions, et montant engagé.</p>
@@ -742,7 +742,7 @@ function Controls({ ov, busy, call }: { ov: Overview; busy: boolean; call: (fn: 
               type="button"
               aria-pressed={kind === p.kind}
               onClick={() => setKind(p.kind)}
-              className={clsx("rounded-xl border p-3 text-left", kind === p.kind ? "border-[#f0c27a] bg-[#f0c27a]/10" : "border-white/10 hover:border-white/25")}
+              className={clsx("rounded-xl border p-3 text-left", kind === p.kind ? "border-gold bg-[#f0c27a]/10" : "border-white/10 hover:border-white/25")}
             >
               <span className="block font-display uppercase text-paper">{p.label}</span>
               <span className="block font-body text-xs text-paper/60">{p.text}</span>

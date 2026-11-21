@@ -304,7 +304,7 @@ export default function MapPage() {
               )}
               {myPosition.note && <p className="font-body text-sm text-paper/80">{myPosition.note}</p>}
               {myPosition.glitched && (
-                <p className="font-mono text-xs text-[#7dffb0]">
+                <p className="font-mono text-xs text-ok">
                   Pour les autres : <GlitchText tone="matrix" />. Tu n&apos;es plus sur leur carte, et ton pseudo comme ton avatar buguent sur
                   les trois sites (à rétablir dans « Ma position » sur la Cartographie).
                 </p>

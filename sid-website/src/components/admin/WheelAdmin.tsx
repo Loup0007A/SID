@@ -210,7 +210,7 @@ export function WheelAdmin() {
                   {Number(p.weight_start).toLocaleString("fr-FR")} → {Number(p.weight_max).toLocaleString("fr-FR")}
                 </span>
                 {[p.p1, p.p7, p.pcap].map((v, i) => (
-                  <span key={i} className={clsx("text-right font-mono text-xs", i === 0 ? "text-paper/70" : "hidden text-paper/70 sm:block", i === 2 && "text-[#f0c27a]")}>
+                  <span key={i} className={clsx("text-right font-mono text-xs", i === 0 ? "text-paper/70" : "hidden text-paper/70 sm:block", i === 2 && "text-gold")}>
                     <span className="text-paper/45 lg:hidden">{i === 0 ? "J1 " : i === 1 ? "J7 " : `J${d.cap} `}</span>
                     {pct(v)}
                   </span>
@@ -242,7 +242,7 @@ export function WheelAdmin() {
       {edit && (
         <form
           ref={formRef}
-          className="glass-card scroll-mt-24 space-y-4 border-[#f0c27a]/40 p-4"
+          className="glass-card scroll-mt-24 space-y-4 border-gold/40 p-4"
           onSubmit={async (e) => {
             e.preventDefault();
             const ok = await call("wheel_prize_save", { p: edit }, edit.id ? "Gain modifié." : "Gain ajouté.");
@@ -345,7 +345,7 @@ export function WheelAdmin() {
           {preview && (
             <p className="font-mono text-xs text-paper/70">
               Chance estimée : <b className="text-paper">{pct(preview[0])}</b> au 1er jour · <b className="text-paper">{pct(preview[1])}</b> à 7 jours ·{" "}
-              <b className="text-[#f0c27a]">{pct(preview[2])}</b> à {cap} jours
+              <b className="text-gold">{pct(preview[2])}</b> à {cap} jours
             </p>
           )}
           <div className="flex flex-wrap gap-3">
@@ -390,7 +390,7 @@ export function WheelAdmin() {
                   <span className="font-display uppercase text-paper">
                     {i + 1}. {t.nickname}
                   </span>
-                  <span className="font-mono text-xs text-[#f0c27a]">{t.streak} j</span>
+                  <span className="font-mono text-xs text-gold">{t.streak} j</span>
                 </li>
               ))}
             </ol>

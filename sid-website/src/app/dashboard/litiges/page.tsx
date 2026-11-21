@@ -156,7 +156,7 @@ export default function LitigesPage() {
                 </p>
                 <p className="mt-0.5 font-mono text-[10px] text-paper/45">
                   {d.messages_count} message{d.messages_count > 1 ? "s" : ""} · {when(d.last_activity_at)}
-                  {d.role !== "juge" && <span className="text-[#f0c27a]"> · tu es {d.role === "demandeur" ? "demandeur" : "défendeur"}</span>}
+                  {d.role !== "juge" && <span className="text-gold"> · tu es {d.role === "demandeur" ? "demandeur" : "défendeur"}</span>}
                 </p>
               </button>
             ))
@@ -458,14 +458,14 @@ function Verdict({ d, busy, onDecide }: { d: Dispute; busy: boolean; onDecide: (
   const [text, setText] = useState("");
   return (
     <form
-      className="space-y-3 rounded-xl border border-[#f0c27a]/40 bg-[#f0c27a]/5 p-4"
+      className="space-y-3 rounded-xl border border-gold/40 bg-[#f0c27a]/5 p-4"
       onSubmit={(e) => {
         e.preventDefault();
         if (!confirm(upheld ? `Plainte fondée : ${z(Number(award) || 0)} pris au défendeur, même s'il passe en négatif. Confirmer ?` : "Rejeter la plainte ?")) return;
         onDecide({ p_dispute: d.id, p_upheld: upheld, p_award: upheld ? Number(award) || 0 : 0, p_fine: Number(fine) || 0, p_fine_target: Number(fine) > 0 ? target : null, p_decision: text });
       }}
     >
-      <p className="font-display uppercase text-[#f0c27a]">
+      <p className="font-display uppercase text-gold">
         <SidIcon name="gavel" size={16} /> Trancher
       </p>
       <div className="flex flex-wrap gap-2">
@@ -481,7 +481,7 @@ function Verdict({ d, busy, onDecide }: { d: Dispute; busy: boolean; onDecide: (
               setUpheld(v as boolean);
               setTarget(v ? "defendeur" : "demandeur");
             }}
-            className={`rounded-full border px-3 py-1 font-mono text-[11px] uppercase ${upheld === v ? "border-[#f0c27a] text-[#f0c27a]" : "border-white/15 text-paper/60"}`}
+            className={`rounded-full border px-3 py-1 font-mono text-[11px] uppercase ${upheld === v ? "border-gold text-gold" : "border-white/15 text-paper/60"}`}
           >
             {l as string}
           </button>

@@ -109,13 +109,13 @@ export function WalletHistory({ userId, balance }: { userId: string; balance: nu
         <>
           <p className="font-body text-sm text-paper/75">
             Sur {days} jours :{" "}
-            <strong className={view.net >= 0 ? "text-[#b9e3c6]" : "text-red"}>
+            <strong className={view.net >= 0 ? "text-ok" : "text-red"}>
               {view.net >= 0 ? "+" : "−"}
               {z(Math.abs(view.net))}
             </strong>{" "}
             ({view.count} mouvement{view.count > 1 ? "s" : ""}).
           </p>
-          <LineChart labels={view.labels} series={[{ name: "Solde", color: "#8FB3D9", values: view.closing }]} height={200} formatValue={z} formatAxis={axis} />
+          <LineChart labels={view.labels} series={[{ name: "Solde", color: "rgb(var(--c-blue))", values: view.closing }]} height={200} formatValue={z} formatAxis={axis} />
           <div className="grid gap-4 sm:grid-cols-2">
             {(
               [

@@ -83,7 +83,7 @@
 .hunt-hp i { background: #fff1c8; transition: width 0.6s ease-in 0.45s; }
 .hunt-hp b { background: linear-gradient(180deg, #ff9a3c, #c6361a 70%, #8e1f10); box-shadow: 0 0 12px rgb(255 100 30 / 0.7); transition: width 0.12s ease-out; }
 .hunt-hearts { grid-area: hearts; display: flex; gap: 4px; font-size: 22px; line-height: 1; }
-.hunt-hearts span { color: rgb(255 255 255 / 0.18); transition: color 0.2s, transform 0.2s; }
+.hunt-hearts span { color: rgb(var(--c-white) / 0.18); transition: color 0.2s, transform 0.2s; }
 .hunt-hearts span.is-full { color: #ff4f5e; text-shadow: 0 0 10px rgb(255 60 80 / 0.6); }
 
 /* Arène et créature. */

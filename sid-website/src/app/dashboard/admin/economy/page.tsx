@@ -205,7 +205,7 @@ function TaxPool() {
               Part des fondateurs ({t.founders.length}) : {t.founders.join(", ")}. Ils touchent aussi la part admin des frais de courtage.
             </>
           ) : (
-            <span className="text-[#f0c27a]">Aucun fondateur actif : la part des fondateurs reste dans la caisse.</span>
+            <span className="text-gold">Aucun fondateur actif : la part des fondateurs reste dans la caisse.</span>
           )}
         </p>
       )}
@@ -399,7 +399,7 @@ function BusinessWeeks() {
                     </td>
                     <td className="p-2 text-right text-paper/80">
                       {zz(w.treasury)}
-                      {Number(w.pending_withdrawals) > 0 && <span className="block text-[11px] text-[#f0c27a]">{zz(w.pending_withdrawals)} en retrait</span>}
+                      {Number(w.pending_withdrawals) > 0 && <span className="block text-[11px] text-gold">{zz(w.pending_withdrawals)} en retrait</span>}
                     </td>
                   </tr>
                 );

@@ -179,10 +179,6 @@ export function ElectionDecor() {
   if (!mounted) return null;
   return createPortal(
     <>
-      <div className="hd-back el-back" aria-hidden>
-        <span className="el-beam el-beam-l" />
-        <span className="el-beam el-beam-r" />
-      </div>
       <div className="hd-front" aria-hidden>
         <Confetti count={22} className="el-confetti-soft" />
       </div>

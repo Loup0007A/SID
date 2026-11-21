@@ -502,7 +502,7 @@ export default function ShopPage() {
                         {p.shop_items?.kind === "box" && " · boîte chanceuse ouverte"}
                       </p>
                       {p.box && (
-                        <p className="mt-0.5 font-body text-xs text-[#f0c27a]">
+                        <p className="mt-0.5 font-body text-xs text-gold">
                           <SidIcon name="gift" size={13} /> Gagné dans « {p.box.name} »
                         </p>
                       )}
@@ -704,7 +704,7 @@ function ShopCard({ item, seller, onOpen, wished, onWish }: { item: ShopItem; se
           <p className="font-mono text-[10px] uppercase tracking-wider text-paper/65">par {seller}</p>
         </div>
         {item.description && <p className="line-clamp-2 font-body text-sm text-paper/75">{item.description}</p>}
-        {box && <p className="font-mono text-[11px] text-[#f0c27a]">{openersLabel(item.box_buyers ?? 0)}</p>}
+        {box && <p className="font-mono text-[11px] text-gold">{openersLabel(item.box_buyers ?? 0)}</p>}
         <div className="mt-auto flex items-end justify-between gap-3 pt-2">
           <PriceTag item={item} />
           <button onClick={onOpen} className="shop-buy">
@@ -807,7 +807,7 @@ function ItemSheet({
             </p>
           )}
           {box && (
-            <p className="rounded-xl border border-[#f0c27a]/50 bg-[#f0c27a]/10 px-3 py-2 font-body text-sm text-[#f6dfb0]">
+            <p className="rounded-xl border border-gold/50 bg-[#f0c27a]/10 px-3 py-2 font-body text-sm text-[#f6dfb0]">
               <SidIcon name="gift" /> <strong>Boîte chanceuse.</strong> Tu tombes sur un objet au hasard parmi ceux qui restent dedans. Seul le vendeur sait ce qu&apos;il
               reste.
             </p>
@@ -819,7 +819,7 @@ function ItemSheet({
               <>
                 <div className="flex items-end justify-between gap-3">
                   <PriceTag item={item} big />
-                  <span className="font-mono text-xs text-[#f0c27a]">{openersLabel(item.box_buyers ?? 0)}</span>
+                  <span className="font-mono text-xs text-gold">{openersLabel(item.box_buyers ?? 0)}</span>
                 </div>
                 {after != null && (
                   <dl className="space-y-1 rounded-xl bg-white/5 px-4 py-3 font-mono text-sm">
@@ -1184,12 +1184,12 @@ function MyListings({
                       }}
                     />
                   ) : (
-                    <div className="space-y-3 rounded-xl border border-[#f0c27a]/30 bg-[#f0c27a]/5 p-3">
+                    <div className="space-y-3 rounded-xl border border-gold/30 bg-[#f0c27a]/5 p-3">
                       <BoxSellerPanel box={item} refreshKey={boxKey} />
                       <button
                         type="button"
                         onClick={() => setEditingBox(item.id)}
-                        className="rounded-lg border border-[#f0c27a]/60 px-3 py-1.5 font-mono text-xs uppercase text-[#f6dfb0] hover:bg-[#f0c27a]/15"
+                        className="rounded-lg border border-gold/60 px-3 py-1.5 font-mono text-xs uppercase text-[#f6dfb0] hover:bg-[#f0c27a]/15"
                       >
                         <SidIcon name="pen" size={13} /> Modifier la boîte et son contenu
                       </button>
@@ -1253,7 +1253,7 @@ function MyListings({
                     ) : (
                       <LineChart
                         labels={stats.weekly_sales.map((w) => `${w.week_start.slice(8, 10)}/${w.week_start.slice(5, 7)}`)}
-                        series={[{ name: "Vendus", color: "#8FB3D9", values: stats.weekly_sales.map((w) => w.quantity) }]}
+                        series={[{ name: "Vendus", color: "rgb(var(--c-blue))", values: stats.weekly_sales.map((w) => w.quantity) }]}
                         zeroBased
                         height={160}
                         formatValue={(n) => `${n} vendu(s)`}

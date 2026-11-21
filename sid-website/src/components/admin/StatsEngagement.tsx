@@ -167,8 +167,8 @@ export function StatsEngagement() {
         <LineChart
           labels={e.daily.map((d) => fmtDay(d.day))}
           series={[
-            { name: "Membres venus", color: "#8FB3D9", values: e.daily.map((d) => d.active) },
-            { name: "Inscriptions", color: "#f0c27a", values: e.daily.map((d) => d.new) },
+            { name: "Membres venus", color: "rgb(var(--c-blue))", values: e.daily.map((d) => d.active) },
+            { name: "Inscriptions", color: "rgb(var(--c-gold))", values: e.daily.map((d) => d.new) },
           ]}
           zeroBased
           height={200}
@@ -187,7 +187,7 @@ export function StatsEngagement() {
             return (
               <div key={label as string} className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3">
                 <p className="font-mono text-[10px] uppercase tracking-wide text-paper/60">{label as string}</p>
-                <p className="font-display text-4xl text-[#f0c27a]">{pct(rate.ok, rate.n)}</p>
+                <p className="font-display text-4xl text-gold">{pct(rate.ok, rate.n)}</p>
                 <p className="font-mono text-[10px] text-paper/50">
                   {rate.n > 0 ? `${rate.ok} sur ${rate.n} membres` : "pas encore assez d'inscrits"} · {hint as string}
                 </p>
@@ -289,7 +289,7 @@ export function StatsEngagement() {
             <Sub>Minutes par membre venu, chaque jour</Sub>
             <LineChart
               labels={timed.map((d) => fmtDay(d.day))}
-              series={[{ name: "Minutes par membre", color: "#f0c27a", values: timed.map((d) => Number(d.minutes_member)) }]}
+              series={[{ name: "Minutes par membre", color: "rgb(var(--c-gold))", values: timed.map((d) => Number(d.minutes_member)) }]}
               zeroBased
               height={180}
               formatValue={(n) => `${n.toLocaleString("fr-FR")} min`}

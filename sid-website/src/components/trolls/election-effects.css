@@ -16,7 +16,7 @@
   font: 600 0.9rem/1 var(--font-display, Georgia, serif); letter-spacing: 0.06em; text-transform: uppercase;
   box-shadow: 0 10px 30px rgb(0 0 0 / 0.45);
 }
-.decree-drum { display: inline-grid; place-items: center; color: #f0c27a; animation: decree-drum 0.18s steps(2) infinite; }
+.decree-drum { display: inline-grid; place-items: center; color: rgb(var(--c-gold)); animation: decree-drum 0.18s steps(2) infinite; }
 @keyframes decree-drum { 50% { transform: translateY(-2px) rotate(-6deg); } }
 
 .decree-wrap { position: absolute; inset: 0; display: grid; place-items: start center; padding: 9vh 14px 0; pointer-events: none; }
@@ -29,7 +29,7 @@
 .decree-paper {
   position: relative; overflow: hidden; padding: 18px 26px 22px; text-align: center; color: #3a2414;
   background:
-    radial-gradient(120% 60% at 50% 0%, rgb(255 255 255 / 0.35), transparent 60%),
+    radial-gradient(120% 60% at 50% 0%, rgb(var(--c-white) / 0.35), transparent 60%),
     linear-gradient(#f4e4bd, #ead3a0);
   border-left: 1px solid #c9a46a; border-right: 1px solid #c9a46a;
   transform-origin: top; animation: decree-unroll 0.9s cubic-bezier(0.2, 0.8, 0.25, 1) both;
@@ -42,7 +42,7 @@
 @keyframes decree-stamp { from { opacity: 0; transform: scale(2.4) rotate(-20deg); } to { opacity: 1; transform: scale(1) rotate(-8deg); } }
 .decree-sign {
   margin-top: 12px; padding: 8px 18px; border-radius: 6px; border: 1px solid #7a1430; color: #7a1430;
-  font: 600 0.78rem/1 var(--font-mono, monospace); letter-spacing: 0.08em; text-transform: uppercase; background: rgb(255 255 255 / 0.35);
+  font: 600 0.78rem/1 var(--font-mono, monospace); letter-spacing: 0.08em; text-transform: uppercase; background: rgb(var(--c-white) / 0.35);
 }
 .decree-sign:hover, .decree-sign:focus-visible { background: #7a1430; color: #f6e3b8; }
 

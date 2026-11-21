@@ -192,7 +192,7 @@ export function TrollPanel({
         </div>
         <div className="text-right font-mono text-xs text-paper/60">
           {status.minutes && <p>Durée : {status.minutes} min</p>}
-          {waitOne > 0 ? <p className="text-red">Recharge : {fmtDuration(waitOne)}</p> : <p className="text-[#7dffb0]">Prêt</p>}
+          {waitOne > 0 ? <p className="text-red">Recharge : {fmtDuration(waitOne)}</p> : <p className="text-ok">Prêt</p>}
           {canEveryone && waitAll > 0 && <p className="text-red">Tout le S.I.D. : {fmtDuration(waitAll)}</p>}
         </div>
       </div>
@@ -257,7 +257,7 @@ export function TrollPanel({
         >
           {busy ? "…" : power.key === "defi_dragon" ? <><SidIcon name="dragon" /> Me transformer et provoquer</> : <><SidIcon name="masks" /> Lancer la farce</>}
         </button>
-        {message && <p className={`font-mono text-xs ${message.ok ? "text-[#7dffb0]" : "text-red"}`}><GlyphText text={message.text} /></p>}
+        {message && <p className={`font-mono text-xs ${message.ok ? "text-ok" : "text-red"}`}><GlyphText text={message.text} /></p>}
       </div>
 
       <p className="font-mono text-[10px] text-paper/65">
@@ -275,7 +275,7 @@ export function TrollPanel({
                 <span className="text-paper/65">→</span>
                 <span className="text-paper">{r.target}</span>
                 <span className="text-paper/65">{new Date(r.created_at).toLocaleString("fr-FR", { weekday: "short", hour: "2-digit", minute: "2-digit" })}</span>
-                {active && <span className="rounded-full bg-[#7dffb0]/15 px-2 text-[#7dffb0]">en cours</span>}
+                {active && <span className="rounded-full bg-[#7dffb0]/15 px-2 text-ok">en cours</span>}
                 {r.cancelled && <span className="text-paper/65">annulée</span>}
                 {r.result?.winner && (
                   <span className="text-paper/60">

@@ -1,30 +1,30 @@
 import type { Config } from "tailwindcss";
 
+const v = (name: string) => `rgb(var(--c-${name}) / <alpha-value>)`;
+
 const config: Config = {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
   theme: {
     extend: {
+      // Refonte (Lot 90) : chaque couleur lit une variable de globals.css,
+      // qui change selon qu'on est sur le fond bleu ou sur une carte crème.
       colors: {
-        ink: {
-          DEFAULT: "#262A38", // fond sombre bleuté, plus clair et plus "glass"
-          soft: "#2F3444",
-          border: "#414759",
-        },
-        paper: {
-          DEFAULT: "#EDE6D3", // papier kraft / dossier vieilli — pour les quêtes
-          dark: "#DCD2B6",
-          text: "#2B2F28",
-        },
-        blue: {
-          DEFAULT: "#8FB3D9", // bleu pastel (inspiré du "S" du logo)
-          light: "#BBD3EA",
-          dark: "#6D93BC",
-        },
-        red: {
-          DEFAULT: "#D99A9A", // rouge pastel / rose poudré (inspiré du "D" du logo)
-          light: "#E8C0C0",
-          dark: "#B97575",
-        },
+        ink: { DEFAULT: v("ink"), soft: v("ink-soft"), border: v("ink-border") },
+        paper: { DEFAULT: v("paper"), dark: v("paper-dark"), text: v("paper-text") },
+        blue: { DEFAULT: v("blue"), light: v("blue-light"), dark: v("blue-dark") },
+        red: { DEFAULT: v("red"), light: v("red-light"), dark: v("red-dark") },
+        white: v("white"),
+        black: v("black"),
+        green: { 200: v("green-200"), 300: v("green-300"), 400: v("green-400") },
+        yellow: { 200: v("yellow-200"), 300: v("yellow-300"), 400: v("yellow-400") },
+        gold: v("gold"),
+        ok: v("ok"),
+        ko: v("ko"),
+        encre: "rgb(var(--encre) / <alpha-value>)",
+        creme: "rgb(var(--creme) / <alpha-value>)",
+        fond: "rgb(var(--fond) / <alpha-value>)",
+        accent: "rgb(var(--accent) / <alpha-value>)",
+        "accent-2": "rgb(var(--accent-2) / <alpha-value>)",
       },
       fontFamily: {
         display: ["var(--font-display)", "Impact", "sans-serif"],
@@ -33,6 +33,10 @@ const config: Config = {
       },
       backgroundImage: {
         grain: "radial-gradient(circle at 1px 1px, rgba(0,0,0,0.08) 1px, transparent 0)",
+      },
+      boxShadow: {
+        dur: "var(--ombre)",
+        "dur-sm": "var(--ombre-petite)",
       },
       backgroundSize: {
         grain: "4px 4px",

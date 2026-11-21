@@ -139,7 +139,7 @@ export function SiteTabs() {
                     </span>
                     <span className="block font-body text-xs text-paper/55">{x.description}</span>
                     {off && (
-                      <span className="block font-mono text-[10px] text-[#f0c27a]">
+                      <span className="block font-mono text-[10px] text-gold">
                         Les membres y voient « Site fermé », l&apos;équipe y entre encore. Plus de lien depuis le Dossier Central.
                       </span>
                     )}
@@ -174,7 +174,7 @@ export function SiteTabs() {
                           <span className={clsx("ml-auto shrink-0 font-mono text-[10px]", off ? "text-red-light" : "text-green-300")}>{off ? "masquée" : "présente"}</span>
                         </span>
                         <span className="block font-body text-xs text-paper/55">{e.description}</span>
-                        {ALSO[e.key] && off && <span className="block font-mono text-[10px] text-[#f0c27a]">Aussi : {ALSO[e.key]}.</span>}
+                        {ALSO[e.key] && off && <span className="block font-mono text-[10px] text-gold">Aussi : {ALSO[e.key]}.</span>}
                       </span>
                     </label>
                   </li>

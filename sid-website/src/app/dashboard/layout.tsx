@@ -295,7 +295,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {profile && <AnnouncementBanner />}
 
       <SkipLink />
-      <header className="glass-panel sticky top-0 z-20 border-x-0 border-t-0 pt-[env(safe-area-inset-top)]">
+      <header className="site-bar sticky top-0 z-20 pt-[env(safe-area-inset-top)]">
         <SeasonalGarland />
         <SeasonalCeremony />
         <div className="mx-auto flex max-w-6xl items-center gap-2 px-3 py-3 sm:gap-3 sm:px-6">

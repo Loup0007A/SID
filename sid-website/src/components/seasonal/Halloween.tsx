@@ -147,11 +147,6 @@ export function HalloweenDecor() {
 
   return createPortal(
     <>
-      <div className="hw-back" aria-hidden>
-        <Moon />
-        <HalloweenScene />
-        <div className="hw-fog" />
-      </div>
       <div className="hw-front" aria-hidden>
         <Cobweb />
         {flock &&

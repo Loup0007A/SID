@@ -3,14 +3,14 @@
   display: grid;
   gap: 0.9rem;
   border-radius: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: linear-gradient(160deg, rgba(143, 179, 217, 0.07), rgba(0, 0, 0, 0.18));
+  border: 1px solid rgb(var(--c-white) / 0.1);
+  background: linear-gradient(160deg, rgb(var(--c-blue) / 0.07), rgba(0, 0, 0, 0.18));
   padding: 1.1rem 1.2rem;
   scroll-margin-top: 6rem;
   transition: box-shadow 0.4s, border-color 0.4s;
 }
 .poll-card.is-closed { background: rgba(0, 0, 0, 0.18); }
-.poll-card.is-highlight { border-color: #8fb3d9; box-shadow: 0 0 0 3px rgba(143, 179, 217, 0.25); }
+.poll-card.is-highlight { border-color: rgb(var(--c-blue)); box-shadow: 0 0 0 3px rgb(var(--c-blue) / 0.25); }
 
 .poll-tag {
   border-radius: 99px;
@@ -19,10 +19,10 @@
   font-size: 0.62rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: rgba(237, 230, 211, 0.75);
-  background: rgba(255, 255, 255, 0.07);
+  color: rgb(var(--c-paper) / 0.75);
+  background: rgb(var(--c-white) / 0.07);
 }
-.poll-tag.is-open { color: #262a38; background: #b9e3c6; }
+.poll-tag.is-open { color: rgb(var(--c-ink)); background: #b9e3c6; }
 
 .poll-choice {
   display: flex;
@@ -30,16 +30,16 @@
   align-items: center;
   gap: 0.7rem;
   border-radius: 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgb(var(--c-white) / 0.14);
+  background: rgb(var(--c-white) / 0.03);
   padding: 0.6rem 0.8rem;
   font-family: var(--font-body);
   font-size: 0.95rem;
-  color: #ede6d3;
+  color: rgb(var(--c-paper));
   transition: border-color 0.15s, background 0.15s;
 }
-.poll-choice:hover { border-color: rgba(143, 179, 217, 0.55); }
-.poll-choice.is-on { border-color: #8fb3d9; background: rgba(143, 179, 217, 0.14); }
+.poll-choice:hover { border-color: rgb(var(--c-blue) / 0.55); }
+.poll-choice.is-on { border-color: rgb(var(--c-blue)); background: rgb(var(--c-blue) / 0.14); }
 .poll-mark {
   display: inline-flex;
   height: 1.15rem;
@@ -48,10 +48,10 @@
   align-items: center;
   justify-content: center;
   border-radius: 99px;
-  border: 2px solid rgba(237, 230, 211, 0.45);
+  border: 2px solid rgb(var(--c-paper) / 0.45);
 }
 .poll-mark.is-square { border-radius: 0.3rem; }
-.poll-choice.is-on .poll-mark { border-color: #8fb3d9; background: #8fb3d9; }
+.poll-choice.is-on .poll-mark { border-color: rgb(var(--c-blue)); background: rgb(var(--c-blue)); }
 
 .poll-bar {
   position: relative;
@@ -60,21 +60,21 @@
   gap: 0.75rem;
   overflow: hidden;
   border-radius: 0.65rem;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgb(var(--c-white) / 0.05);
   padding: 0.5rem 0.75rem;
   font-family: var(--font-body);
   font-size: 0.92rem;
-  color: rgba(237, 230, 211, 0.85);
+  color: rgb(var(--c-paper) / 0.85);
 }
 .poll-fill {
   position: absolute;
   inset: 0 auto 0 0;
   border-radius: inherit;
-  background: rgba(143, 179, 217, 0.22);
+  background: rgb(var(--c-blue) / 0.22);
   transition: width 0.6s ease;
 }
-.poll-bar.is-mine { color: #ede6d3; }
-.poll-bar.is-mine .poll-fill { background: rgba(143, 179, 217, 0.38); }
+.poll-bar.is-mine { color: rgb(var(--c-paper)); }
+.poll-bar.is-mine .poll-fill { background: rgb(var(--c-blue) / 0.38); }
 .poll-bar.is-top { font-weight: 600; }
 .poll-bar.is-top .poll-fill { background: rgba(240, 194, 122, 0.35); }
 @media (prefers-reduced-motion: reduce) {
@@ -83,4 +83,8 @@
 
 /* Lot 66 : sondage programmé (admins). */
 .poll-card.is-scheduled { border-style: dashed; }
-.poll-tag.is-scheduled { color: #262a38; background: #f0c27a; border-color: #f0c27a; }
+.poll-tag.is-scheduled { color: rgb(var(--c-ink)); background: #f0c27a; border-color: #f0c27a; }
+
+/* Refonte (Lot 90) : carte crème. */
+.poll-card { border: var(--trait) solid rgb(var(--encre)); box-shadow: var(--ombre); background: rgb(var(--creme)); }
+.poll-card.is-closed { background: rgb(var(--creme-2)); }

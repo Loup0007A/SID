@@ -169,8 +169,8 @@ export default function BoursePage() {
                         <span className="block truncate font-display uppercase text-blue-light">{r.name}</span>
                         <span className="block truncate font-mono text-[10px] text-paper/50">
                           cap. {zk(r.cap)}
-                          {r.my_qty > 0 && <span className="text-[#f0c27a]"> · {r.my_qty} à moi</span>}
-                          {r.halted_until && <span className="text-[#f0c27a]"> · suspendue</span>}
+                          {r.my_qty > 0 && <span className="text-gold"> · {r.my_qty} à moi</span>}
+                          {r.halted_until && <span className="text-gold"> · suspendue</span>}
                         </span>
                       </span>
                       <Spark values={r.spark.map(Number)} width={64} height={22} />
@@ -340,7 +340,7 @@ function ValuePanel({ row, detail, balance, say, onDone }: { row: MarketRow; det
       </div>
 
       {halted && (
-        <p className="bourse-halt rounded-lg px-4 py-2 font-body text-sm text-[#f0c27a]">
+        <p className="bourse-halt rounded-lg px-4 py-2 font-body text-sm text-gold">
           <SidIcon name="warning" size={15} /> Cotation suspendue jusqu&apos;à {time(row.halted_until!)} : le cours a bougé de plus de {Math.round(fees.band * 100)} % dans la journée.
         </p>
       )}
@@ -449,10 +449,10 @@ function ValuePanel({ row, detail, balance, say, onDone }: { row: MarketRow; det
                 {side === "buy" ? "Coût" : "Produit"}
                 {mode === "limit" ? " au plus" : " estimé"} : <b className="bourse-num text-paper">{z(est.net)}</b>
                 <span className="text-paper/50"> (frais {z(est.fee)}{est.admin > 0 ? ` + ${z(est.admin)} administration` : ""})</span>
-                {mode === "market" && est.filled < q && <span className="text-[#f0c27a]"> · le carnet n&apos;affiche que {est.filled} action(s)</span>}
+                {mode === "market" && est.filled < q && <span className="text-gold"> · le carnet n&apos;affiche que {est.filled} action(s)</span>}
               </p>
             )}
-            {crosses && <p className="text-[#f0c27a]">Ce prix croise le carnet : exécution immédiate, au prix des ordres en face.</p>}
+            {crosses && <p className="text-gold">Ce prix croise le carnet : exécution immédiate, au prix des ordres en face.</p>}
             {tooFar && <p className="text-red">Prix refusé : entre la moitié et le double du cours.</p>}
             {cantAfford && <p className="text-red">Solde insuffisant pour cette quantité.</p>}
             {cantSell && <p className="text-red">Pas assez d&apos;actions vendables.</p>}

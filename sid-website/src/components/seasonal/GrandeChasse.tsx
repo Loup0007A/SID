@@ -227,9 +227,6 @@ export function ChasseDecor() {
   if (!mounted || !on) return null;
   return createPortal(
     <>
-      <div className="gc-back" aria-hidden>
-        <ChasseBack />
-      </div>
       <div className="gc-front" aria-hidden>
         {fly > 0 && (
           <div key={fly}>

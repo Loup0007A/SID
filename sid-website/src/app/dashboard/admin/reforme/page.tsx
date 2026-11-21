@@ -170,7 +170,7 @@ export default function ReformePage() {
       ) : (
         <button type="button" onClick={() => setOpen("new")} className="glass-card flex w-full items-center justify-between gap-4 p-5 text-left transition hover:-translate-y-0.5">
           <span>
-            <span className="block font-display text-xl uppercase text-[#f0c27a]">Préparer une réforme</span>
+            <span className="block font-display text-xl uppercase text-gold">Préparer une réforme</span>
             <span className="block font-body text-sm text-paper/65">Choisir l&apos;ampleur, ce qui change, les exceptions. Rien n&apos;est appliqué avant la vérification.</span>
           </span>
           <span className="font-mono text-xs uppercase text-blue">Commencer →</span>
@@ -190,7 +190,7 @@ export default function ReformePage() {
                 <button
                   type="button"
                   onClick={() => setOpen(r.id)}
-                  className={`glass-card flex w-full flex-wrap items-center gap-x-4 gap-y-1 p-4 text-left transition hover:border-[#f0c27a]/50 ${open === r.id ? "ring-1 ring-[#f0c27a]/60" : ""}`}
+                  className={`glass-card flex w-full flex-wrap items-center gap-x-4 gap-y-1 p-4 text-left transition hover:border-gold/50 ${open === r.id ? "ring-1 ring-[#f0c27a]/60" : ""}`}
                 >
                   <span className="font-mono text-[11px] text-paper/50">N° {r.number}</span>
                   <span className={`rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase ${STATUS[r.status].className}`}>{STATUS[r.status].label}</span>
@@ -281,7 +281,7 @@ function Editor({ reform, index, say, onClose, onSaved }: { reform: Reform | nul
   return (
     <section className="glass-card space-y-2 p-6" aria-label="Préparer une réforme">
       <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="font-display text-xl uppercase text-[#f0c27a]">{reform ? `Réforme n° ${reform.number}` : "Nouvelle réforme"}</h2>
+        <h2 className="font-display text-xl uppercase text-gold">{reform ? `Réforme n° ${reform.number}` : "Nouvelle réforme"}</h2>
         <button type="button" onClick={onClose} className="font-mono text-xs uppercase text-paper/60 hover:text-paper">
           Fermer
         </button>
@@ -324,7 +324,7 @@ function Editor({ reform, index, say, onClose, onSaved }: { reform: Reform | nul
                 setDown(backTo100 < 1);
                 setPct(String(Math.round(Math.abs(backTo100 - 1) * 1000) / 10));
               }}
-              className="rounded-full border border-[#f0c27a]/60 px-3 py-1 font-mono text-[11px] uppercase text-[#f0c27a] hover:bg-[#f0c27a]/10"
+              className="rounded-full border border-gold/60 px-3 py-1 font-mono text-[11px] uppercase text-gold hover:bg-[#f0c27a]/10"
             >
               Ramener le zéni à 100 ({pctOf(backTo100)})
             </button>
@@ -347,7 +347,7 @@ function Editor({ reform, index, say, onClose, onSaved }: { reform: Reform | nul
             {index && scopes.objets && (
               <span className="text-paper/65">
                 {" "}
-                Cours du zéni : {px(10000 / index)} → <b className="text-[#f0c27a]">{px(10000 / (index * factor))}</b> environ.
+                Cours du zéni : {px(10000 / index)} → <b className="text-gold">{px(10000 / (index * factor))}</b> environ.
               </span>
             )}
           </p>
@@ -491,7 +491,7 @@ function ExceptionPicker({ ex, onAdd, onRemove }: { ex: Ex[]; onAdd: (e: Ex) => 
             role="tab"
             aria-selected={kind === k.kind}
             onClick={() => setKind(k.kind)}
-            className={`rounded-full border px-3 py-1 font-mono text-[11px] uppercase ${kind === k.kind ? "border-[#f0c27a] text-[#f0c27a]" : "border-white/15 text-paper/60 hover:text-paper"}`}
+            className={`rounded-full border px-3 py-1 font-mono text-[11px] uppercase ${kind === k.kind ? "border-gold text-gold" : "border-white/15 text-paper/60 hover:text-paper"}`}
           >
             <SidIcon name={k.icon} size={13} /> {k.label}
           </button>
@@ -634,8 +634,8 @@ function Detail({ r, say, onClose, onChanged, onEdit }: { r: Reform; say: (ok: b
       </div>
 
       {r.can_review && (
-        <div className="space-y-3 rounded-xl border border-[#f0c27a]/40 bg-[#f0c27a]/5 p-4">
-          <p className="font-display uppercase text-[#f0c27a]">Vérifier</p>
+        <div className="space-y-3 rounded-xl border border-gold/40 bg-[#f0c27a]/5 p-4">
+          <p className="font-display uppercase text-gold">Vérifier</p>
           {[
             `L'ampleur est la bonne : ${pctOf(r.factor)}, soit × ${fx(r.factor)}.`,
             "Les catégories cochées et les exceptions sont les bonnes.",

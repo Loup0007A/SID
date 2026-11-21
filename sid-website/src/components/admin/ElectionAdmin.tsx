@@ -100,7 +100,7 @@ export function ElectionAdmin({ onSaved }: { onSaved?: () => void }) {
   const revealed = !!cfg.reveal_at && new Date(cfg.reveal_at) <= new Date(cfg.now);
   const input = "w-full rounded-lg border border-white/15 bg-black/25 px-3 py-2 font-body text-sm text-paper outline-none focus:border-blue";
   return (
-    <div className="basis-full space-y-3 rounded-xl border border-[#f0c27a]/30 bg-[#7a1430]/15 p-3">
+    <div className="basis-full space-y-3 rounded-xl border border-gold/30 bg-[#7a1430]/15 p-3">
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="space-y-1 sm:col-span-2">
           <span className="font-mono text-[11px] uppercase text-paper/60">Élu (secret jusqu&apos;à la proclamation)</span>

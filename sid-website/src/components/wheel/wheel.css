@@ -56,7 +56,7 @@
   cursor: pointer;
 }
 .wheel-hub:focus-visible circle:first-child {
-  stroke: #8fb3d9;
+  stroke: rgb(var(--c-blue));
   stroke-width: 3;
 }
 .wheel-hub[aria-disabled="true"] {
@@ -105,7 +105,7 @@
 .wheel-streak span {
   height: 0.5rem;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgb(var(--c-white) / 0.1);
 }
 .wheel-streak span.is-on {
   background: linear-gradient(90deg, #f0c27a, #ff7a59);

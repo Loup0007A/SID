@@ -131,7 +131,7 @@ export default function DashboardHome() {
 
       <section aria-label="À faire" data-tuto="a-faire" className="flex flex-wrap gap-2">
         {wheelReady && (
-          <Link href="/dashboard/roue" scroll={false} className="glass-card border-[#f0c27a]/50 px-3 py-2 font-mono text-xs text-[#f0c27a] hover:border-[#f0c27a]">
+          <Link href="/dashboard/roue" scroll={false} className="glass-card border-gold/50 px-3 py-2 font-mono text-xs text-gold hover:border-gold">
             <SidIcon name="wheel" /> Roue du jour à tourner · série {wheel?.streak}
           </Link>
         )}

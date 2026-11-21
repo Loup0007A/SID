@@ -140,7 +140,7 @@ export function InactivityAdmin() {
                 <li key={m.id} className={clsx("glass-card space-y-2 p-3", late && !m.exempt_until && "border-red/50")}>
                   <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                     <span className="font-display uppercase text-paper">{m.nickname}</span>
-                    <span className={clsx("font-mono text-xs", late ? "text-red-light" : "text-[#f0c27a]")}>
+                    <span className={clsx("font-mono text-xs", late ? "text-red-light" : "text-gold")}>
                       {m.days} jour{m.days > 1 ? "s" : ""} sans visite (dernière : {day(m.last_day)})
                       {m.exempt_until
                         ? ` · dispensé jusqu'au ${day(m.exempt_until)}`

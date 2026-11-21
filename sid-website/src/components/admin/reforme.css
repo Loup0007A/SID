@@ -15,7 +15,7 @@
   height: 2rem;
   border-radius: 999px;
   border: 1px solid rgba(240, 194, 122, 0.6);
-  color: #f0c27a;
+  color: rgb(var(--c-gold));
   font-family: var(--font-display);
   font-size: 1rem;
 }
@@ -34,8 +34,8 @@
   flex-direction: column;
   gap: 0.35rem;
   border-radius: 0.8rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgb(var(--c-white) / 0.1);
+  background: rgb(var(--c-white) / 0.03);
   padding: 0.8rem 0.9rem;
   text-align: left;
   transition: border-color 0.15s, background-color 0.15s, opacity 0.15s;
@@ -60,7 +60,7 @@
   width: 2.2rem;
   height: 1.25rem;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgb(var(--c-white) / 0.15);
   transition: background-color 0.15s;
 }
 .ref-switch::after {
@@ -71,7 +71,7 @@
   width: 0.95rem;
   height: 0.95rem;
   border-radius: 999px;
-  background: #ede6d3;
+  background: rgb(var(--c-paper));
   transition: transform 0.15s;
 }
 .is-on > div > .ref-switch,
@@ -81,7 +81,7 @@
 .is-on > div > .ref-switch::after,
 .ref-switch.is-on::after {
   transform: translateX(0.95rem);
-  background: #262a38;
+  background: rgb(var(--c-ink));
 }
 
 .ref-chip {
@@ -89,7 +89,7 @@
   align-items: center;
   gap: 0.4rem;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 1px solid rgb(var(--c-white) / 0.18);
   padding: 0.2rem 0.4rem 0.2rem 0.7rem;
   font-family: var(--font-body);
   font-size: 0.85rem;
@@ -100,11 +100,11 @@
   width: 1.2rem;
   height: 1.2rem;
   border-radius: 999px;
-  color: rgba(237, 230, 211, 0.6);
+  color: rgb(var(--c-paper) / 0.6);
 }
 .ref-chip button:hover {
-  background: rgba(217, 154, 154, 0.25);
-  color: #e8c0c0;
+  background: rgb(var(--c-red) / 0.25);
+  color: rgb(var(--c-red-light));
 }
 
 .ref-bar {

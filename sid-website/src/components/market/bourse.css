@@ -9,8 +9,8 @@
 .bourse-tape {
   position: relative;
   overflow: hidden;
-  border-block: 1px solid rgba(143, 179, 217, 0.22);
-  background: linear-gradient(90deg, rgba(20, 23, 34, 0.9), rgba(38, 42, 56, 0.55) 18%, rgba(38, 42, 56, 0.55) 82%, rgba(20, 23, 34, 0.9));
+  border-block: 1px solid rgb(var(--c-blue) / 0.22);
+  background: linear-gradient(90deg, rgba(20, 23, 34, 0.9), rgb(var(--c-ink) / 0.55) 18%, rgb(var(--c-ink) / 0.55) 82%, rgba(20, 23, 34, 0.9));
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
   mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
 }
@@ -49,14 +49,14 @@
   transition: background-color 0.15s, border-color 0.15s;
 }
 .bourse-row:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgb(var(--c-white) / 0.04);
 }
 .bourse-row.is-on {
-  border-color: rgba(143, 179, 217, 0.5);
-  background: rgba(143, 179, 217, 0.08);
+  border-color: rgb(var(--c-blue) / 0.5);
+  background: rgb(var(--c-blue) / 0.08);
 }
 .bourse-row:focus-visible {
-  outline: 2px solid #8fb3d9;
+  outline: 2px solid rgb(var(--c-blue));
   outline-offset: 1px;
 }
 .bourse-flash-up {
@@ -112,7 +112,7 @@
   background: rgba(239, 83, 80, 0.16);
 }
 .bourse-level:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgb(var(--c-white) / 0.05);
 }
 .bourse-level.is-mine {
   box-shadow: inset 2px 0 0 #f0c27a;
@@ -123,7 +123,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   border-radius: 0.6rem;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgb(var(--c-white) / 0.12);
   padding: 3px;
   gap: 3px;
 }
@@ -133,30 +133,30 @@
   font-family: var(--font-display);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: rgba(237, 230, 211, 0.7);
+  color: rgb(var(--c-paper) / 0.7);
   transition: background-color 0.15s, color 0.15s;
 }
 .bourse-side button.is-buy {
   background: #26a69a;
-  color: #262a38;
+  color: rgb(var(--c-ink));
 }
 .bourse-side button.is-sell {
   background: #ef5350;
-  color: #262a38;
+  color: rgb(var(--c-ink));
 }
 .bourse-chip {
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgb(var(--c-white) / 0.15);
   padding: 0.2rem 0.65rem;
   font-family: var(--font-mono);
   font-size: 11px;
   text-transform: uppercase;
-  color: rgba(237, 230, 211, 0.7);
+  color: rgb(var(--c-paper) / 0.7);
 }
 .bourse-chip.is-on {
-  border-color: #8fb3d9;
-  color: #bbd3ea;
-  background: rgba(143, 179, 217, 0.1);
+  border-color: rgb(var(--c-blue));
+  color: rgb(var(--c-blue-light));
+  background: rgb(var(--c-blue) / 0.1);
 }
 
 .bourse-halt {

@@ -39,7 +39,7 @@ export const EVENT_LIST: EventInfo[] = [
     period: "du 10 au 14 février",
     color: "#ff7aa8",
     description:
-      "Dossier : nuit rose, cœurs qui montent, pont des amoureux, guirlande de cœurs, Cupidon qui passe, lettre d'amour du pied de page. Carte et wiki : guirlande de cœurs, Cupidon, cœurs sur les vagues.",
+      "Dossier : fond rose à cœurs, cœurs qui montent, guirlande de cœurs, Cupidon qui passe, lettre d'amour du pied de page. Carte et wiki : guirlande de cœurs, Cupidon, cœurs sur les vagues.",
   },
   {
     key: "poisson_avril",
@@ -49,7 +49,7 @@ export const EVENT_LIST: EventInfo[] = [
     period: "le 1er avril",
     color: "#7fd8ff",
     description:
-      "Dossier : poissons en papier qui nagent, algues, guirlande de poissons, un poisson collé sur le « S.I.D. », blagues du pied de page. Carte et wiki : poissons en papier, sceau-poisson.",
+      "Dossier : fond turquoise à poissons et bulles, bulles qui montent, poissons en papier qui nagent, guirlande de poissons, un poisson collé sur le « S.I.D. », blagues du pied de page. Carte et wiki : poissons en papier, sceau-poisson.",
   },
   {
     key: "paques",
@@ -59,7 +59,7 @@ export const EVENT_LIST: EventInfo[] = [
     period: "du Vendredi saint au lundi de Pâques",
     color: "#ffd86b",
     description:
-      "Dossier : aube de printemps, cloches qui reviennent de Rome, prairie fleurie et œufs, guirlande d'œufs, œuf qui éclot au pied de page. Carte et wiki : cloches, œufs sur les vagues.",
+      "Dossier : fond vert à œufs et fleurs, feuilles qui tombent, cloches qui reviennent de Rome, guirlande d'œufs, œuf qui éclot au pied de page. Carte et wiki : cloches, œufs sur les vagues.",
   },
   {
     key: "premier_mai",
@@ -69,7 +69,7 @@ export const EVENT_LIST: EventInfo[] = [
     period: "le 1er mai",
     color: "#b7f5c9",
     description:
-      "Dossier : muguet, pétales blancs, guirlande de clochettes, pigeon porte-bonheur, brin de muguet au pied de page. Carte et wiki : guirlande de muguet, brins sur les vagues.",
+      "Dossier : fond vert à muguet, clochettes qui tombent, guirlande de clochettes, pigeon porte-bonheur, brin de muguet au pied de page. Carte et wiki : guirlande de muguet, brins sur les vagues.",
   },
   {
     key: "fete_musique",
@@ -79,7 +79,7 @@ export const EVENT_LIST: EventInfo[] = [
     period: "le 21 juin",
     color: "#c9a6ff",
     description:
-      "Dossier : projecteurs, notes qui s'envolent, foule et égaliseur, guirlande de notes, guitare au pied de page. Carte et wiki : notes, guirlande, projecteurs.",
+      "Dossier : fond violet à notes et disques, notes qui montent, guirlande de notes, guitare au pied de page. Carte et wiki : notes, guirlande, projecteurs.",
   },
   {
     key: "quatorze_juillet",
@@ -89,7 +89,7 @@ export const EVENT_LIST: EventInfo[] = [
     period: "les 13 et 14 juillet",
     color: "#7fb2ff",
     description:
-      "Dossier : feux d'artifice, Paris et la tour Eiffel, fanions bleu-blanc-rouge, Patrouille de France, fusée au pied de page. Carte et wiki : fanions, Patrouille de France, feux d'artifice.",
+      "Dossier : fond bleu nuit à feux d'artifice, étincelles qui tombent, fanions bleu-blanc-rouge, Patrouille de France, fusée au pied de page. Carte et wiki : fanions, Patrouille de France, feux d'artifice.",
   },
   {
     key: "armistice",
@@ -99,7 +99,7 @@ export const EVENT_LIST: EventInfo[] = [
     period: "le 11 novembre",
     color: "#9db7e8",
     description:
-      "Sobre : bleuets, brume du matin, colombe, bleuet du souvenir au pied de page (un court texte). Carte et wiki : bleuets et colombe.",
+      "Sobre : fond kaki à bleuets et coquelicots, pétales qui tombent, colombe, bleuet du souvenir au pied de page (un court texte). Carte et wiki : bleuets et colombe.",
   },
   {
     key: "grande_chasse",
@@ -109,7 +109,7 @@ export const EVENT_LIST: EventInfo[] = [
     period: "du 9 au 15 mars",
     color: "#ffb35c",
     description:
-      "Semaine des chasseurs : crépuscule sur la vallée, campement et feu de camp, Brasombre (la wyverne des cendres) perchée au loin puis qui survole la page avec son ombre, fanions de chasse, cor au pied de page, tableau de chasse sur l'accueil. Carte et wiki : fanions, survol, braises, « proie du jour » sur le wiki.",
+      "Semaine des chasseurs : fond rouge braise à griffures et flammes, braises qui montent, Brasombre (la wyverne des cendres) qui survole la page avec son ombre, fanions de chasse, cor au pied de page, tableau de chasse sur l'accueil. Carte et wiki : fanions, survol, braises, « proie du jour » sur le wiki.",
   },
   {
     key: "election",
@@ -119,7 +119,7 @@ export const EVENT_LIST: EventInfo[] = [
     period: "du début à la fin réglés ci-dessous",
     color: "#f0c27a",
     description:
-      "Dossier : projecteurs, confettis, fanions pourpre et or, compte à rebours sur l'accueil, puis la cérémonie de proclamation (une fois pour chaque membre) et le portrait du nouveau Dictateur. Carte et wiki : fanions et confettis. L'élu reçoit le titre « Dictateur », aucun grade.",
+      "Dossier : fond pourpre à étoiles, cocardes et bulletins, confettis, fanions pourpre et or, compte à rebours sur l'accueil, puis la cérémonie de proclamation (une fois pour chaque membre) et le portrait du nouveau Dictateur. Carte et wiki : fanions et confettis. L'élu reçoit le titre « Dictateur », aucun grade.",
   },
   {
     key: "halloween",
@@ -129,7 +129,7 @@ export const EVENT_LIST: EventInfo[] = [
     period: "du 15 octobre au 2 novembre",
     color: "#ff9a3c",
     description:
-      "Dossier : lune, cimetière, chauves-souris, toile d'araignée, citrouille du pied de page. Carte : toile, chauves-souris, sceau en citrouille, bords teintés. Wiki : lune, citrouilles sur les vagues, mer orangée.",
+      "Dossier : fond orange à chauves-souris, lunes et citrouilles, chauves-souris qui tombent et qui passent, toile d'araignée, citrouille du pied de page. Carte : toile, chauves-souris, sceau en citrouille, bords teintés. Wiki : lune, citrouilles sur les vagues, mer orangée.",
   },
   {
     key: "noel",
@@ -139,7 +139,7 @@ export const EVENT_LIST: EventInfo[] = [
     period: "du 1er décembre au 6 janvier",
     color: "#9fe3cf",
     description:
-      "Dossier : neige, aurore, étoile, collines et chalet, guirlande sous la barre du haut, traîneau, cadeau du pied de page. Carte : guirlande, givre sur les bords, sceau en sapin, traîneau. Wiki : neige, étoile, mer givrée, cadeaux sur les vagues.",
+      "Dossier : fond rouge à flocons, étoiles et boules, neige qui tombe, guirlande sous la barre du haut, traîneau, cadeau du pied de page. Carte : guirlande, givre sur les bords, sceau en sapin, traîneau. Wiki : neige, étoile, mer givrée, cadeaux sur les vagues.",
   },
 ];
 

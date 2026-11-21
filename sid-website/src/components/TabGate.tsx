@@ -14,7 +14,7 @@ export function TabGate({ tab, bypass, children }: { tab?: string; bypass: boole
   if (bypass) {
     return (
       <div className="space-y-4">
-        <p className="glass-card border-[#f0c27a]/50 px-4 py-2 font-mono text-[11px] text-[#f0c27a]">
+        <p className="glass-card border-gold/50 px-4 py-2 font-mono text-[11px] text-gold">
           <SidIcon name="eye" /> Rubrique masquée aux membres (Modération → Sites et rubriques). Tu la vois grâce à tes droits d&apos;administration.
         </p>
         {children}

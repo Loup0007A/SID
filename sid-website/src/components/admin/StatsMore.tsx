@@ -139,8 +139,8 @@ export function StatsMore() {
           <LineChart
             labels={data.semaines.map((s) => `Sem. ${fmtDay(s.week_start)}`)}
             series={[
-              { name: "Visiteurs", color: "#8FB3D9", values: data.semaines.map((s) => s.visiteurs) },
-              { name: "Nouveaux", color: "#D99A9A", values: data.semaines.map((s) => s.nouveaux) },
+              { name: "Visiteurs", color: "rgb(var(--c-blue))", values: data.semaines.map((s) => s.visiteurs) },
+              { name: "Nouveaux", color: "rgb(var(--c-red))", values: data.semaines.map((s) => s.nouveaux) },
             ]}
             zeroBased
             height={180}

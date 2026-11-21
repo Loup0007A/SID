@@ -521,7 +521,7 @@ function AuctionSheet({
                   <button
                     onClick={() => setConfirmBuy(true)}
                     disabled={busy || (balance != null && balance < Number(a.buy_now_price) - (lead ? Number(a.current_price ?? 0) : 0))}
-                    className="w-full rounded-lg border border-[#f0c27a]/60 px-4 py-2 font-display text-sm uppercase tracking-wide text-[#f0c27a] transition hover:bg-[#f0c27a]/10 disabled:opacity-40"
+                    className="w-full rounded-lg border border-gold/60 px-4 py-2 font-display text-sm uppercase tracking-wide text-gold transition hover:bg-[#f0c27a]/10 disabled:opacity-40"
                   >
                     Achat immédiat · {z(a.buy_now_price)}
                   </button>

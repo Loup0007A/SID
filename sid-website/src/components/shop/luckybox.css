@@ -16,8 +16,8 @@
 /* Vitrine : boîte sans photo */
 .lb-cover { display: grid; place-items: center; background:
   radial-gradient(circle at 50% 40%, rgba(240, 194, 122, .22), transparent 60%),
-  radial-gradient(circle at 1px 1px, rgba(255, 255, 255, .07) 1px, transparent 0) 0 0 / 14px 14px,
-  linear-gradient(160deg, #3b3550, #262a38); }
+  radial-gradient(circle at 1px 1px, rgb(var(--c-white) / .07) 1px, transparent 0) 0 0 / 14px 14px,
+  linear-gradient(160deg, #3b3550, rgb(var(--c-ink))); }
 .lb-cover .lb-art { width: 46%; max-width: 180px; }
 .shop-badge.is-box { background: #f0c27a; }
 
@@ -30,24 +30,24 @@
 .lb-shaking { display: grid; justify-items: center; gap: 1rem; }
 .lb-art-xl { width: min(60vw, 220px); }
 .lb-art-md { width: 120px; margin: 0 auto; }
-.lb-caption { font: 500 .8rem/1.3 var(--font-mono); text-transform: uppercase; letter-spacing: .12em; color: rgba(237, 230, 211, .75); }
+.lb-caption { font: 500 .8rem/1.3 var(--font-mono); text-transform: uppercase; letter-spacing: .12em; color: rgb(var(--c-paper) / .75); }
 .lb-result { position: relative; display: grid; justify-items: center; gap: .75rem; animation: lb-pop .45s cubic-bezier(.2, 1.4, .4, 1) both; }
 @keyframes lb-pop { from { opacity: 0; transform: scale(.85); } }
-.lb-kicker { font: 600 .75rem/1 var(--font-mono); text-transform: uppercase; letter-spacing: .3em; color: #f0c27a; }
-.lb-prize { position: relative; z-index: 1; width: 100%; padding: 1rem; border-radius: 1.2rem; background: #262a38; border: 1px solid rgba(240, 194, 122, .5);
+.lb-kicker { font: 600 .75rem/1 var(--font-mono); text-transform: uppercase; letter-spacing: .3em; color: rgb(var(--c-gold)); }
+.lb-prize { position: relative; z-index: 1; width: 100%; padding: 1rem; border-radius: 1.2rem; background: rgb(var(--c-ink)); border: 1px solid rgba(240, 194, 122, .5);
   box-shadow: 0 0 0 4px rgba(240, 194, 122, .12), 0 24px 60px -20px rgba(0, 0, 0, .8); display: grid; gap: .5rem; }
 .lb-prize-img { aspect-ratio: 4 / 3; width: 100%; border-radius: .8rem; }
 .lb-prize-name { font: 400 1.6rem/1.1 var(--font-display); text-transform: uppercase; letter-spacing: .04em; color: #fff3d2; overflow-wrap: anywhere; }
-.lb-prize-effect { font: .8rem/1.35 var(--font-body); color: #bbd3ea; }
-.lb-prize-desc { font: .85rem/1.4 var(--font-body); color: rgba(237, 230, 211, .75); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.lb-note { font: .75rem/1.3 var(--font-mono); color: rgba(237, 230, 211, .6); }
-.lb-error { max-width: 22rem; font: .95rem/1.4 var(--font-body); color: #e8c0c0; }
+.lb-prize-effect { font: .8rem/1.35 var(--font-body); color: rgb(var(--c-blue-light)); }
+.lb-prize-desc { font: .85rem/1.4 var(--font-body); color: rgb(var(--c-paper) / .75); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.lb-note { font: .75rem/1.3 var(--font-mono); color: rgb(var(--c-paper) / .6); }
+.lb-error { max-width: 22rem; font: .95rem/1.4 var(--font-body); color: rgb(var(--c-red-light)); }
 .lb-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; }
-.lb-btn { padding: .6rem 1rem; border-radius: .75rem; border: 1px solid rgba(255, 255, 255, .2); font: 600 .72rem/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: #ede6d3; }
-.lb-btn:hover, .lb-btn:focus-visible { background: rgba(255, 255, 255, .1); }
-.lb-btn.is-main { background: #d99a9a; border-color: #d99a9a; color: #262a38; }
-.lb-btn.is-main:hover, .lb-btn.is-main:focus-visible { background: #e8c0c0; }
-.lb-btn.is-ghost { border-color: transparent; color: rgba(237, 230, 211, .7); }
+.lb-btn { padding: .6rem 1rem; border-radius: .75rem; border: 1px solid rgb(var(--c-white) / .2); font: 600 .72rem/1 var(--font-mono); text-transform: uppercase; letter-spacing: .06em; color: rgb(var(--c-paper)); }
+.lb-btn:hover, .lb-btn:focus-visible { background: rgb(var(--c-white) / .1); }
+.lb-btn.is-main { background: rgb(var(--c-red)); border-color: rgb(var(--c-red)); color: rgb(var(--c-ink)); }
+.lb-btn.is-main:hover, .lb-btn.is-main:focus-visible { background: rgb(var(--c-red-light)); }
+.lb-btn.is-ghost { border-color: transparent; color: rgb(var(--c-paper) / .7); }
 
 /* Rayons au moment où la boîte s'ouvre */
 .lb-burst { position: absolute; left: 50%; top: 42%; width: 0; height: 0; z-index: 0; }
@@ -58,15 +58,15 @@
 
 /* Confection */
 .lb-pick { display: grid; gap: .4rem; max-height: 22rem; overflow-y: auto; padding-right: .2rem; }
-.lb-pick > li { display: flex; align-items: center; gap: .65rem; padding: .45rem .55rem; border-radius: .75rem; border: 1px solid rgba(255, 255, 255, .08); background: rgba(255, 255, 255, .03); }
+.lb-pick > li { display: flex; align-items: center; gap: .65rem; padding: .45rem .55rem; border-radius: .75rem; border: 1px solid rgb(var(--c-white) / .08); background: rgb(var(--c-white) / .03); }
 .lb-pick > li.is-in { border-color: rgba(240, 194, 122, .5); background: rgba(240, 194, 122, .08); }
 
 /* Vue du vendeur */
 .lb-table { width: 100%; border-collapse: collapse; font: .8rem/1.3 var(--font-mono); }
-.lb-table th { text-align: left; font-weight: 500; font-size: .65rem; text-transform: uppercase; letter-spacing: .08em; color: rgba(237, 230, 211, .55); padding: .3rem .4rem; border-bottom: 1px solid rgba(255, 255, 255, .1); }
-.lb-table td { padding: .4rem; border-bottom: 1px solid rgba(255, 255, 255, .06); color: #ede6d3; }
+.lb-table th { text-align: left; font-weight: 500; font-size: .65rem; text-transform: uppercase; letter-spacing: .08em; color: rgb(var(--c-paper) / .55); padding: .3rem .4rem; border-bottom: 1px solid rgb(var(--c-white) / .1); }
+.lb-table td { padding: .4rem; border-bottom: 1px solid rgb(var(--c-white) / .06); color: rgb(var(--c-paper)); }
 .lb-table th:not(:first-child), .lb-table td:not(:first-child) { text-align: right; white-space: nowrap; }
-.lb-table tr.is-empty td { color: rgba(237, 230, 211, .45); }
+.lb-table tr.is-empty td { color: rgb(var(--c-paper) / .45); }
 
 @media (prefers-reduced-motion: reduce) {
   .lb-art.is-shaking, .lb-art.is-shaking .lb-lid, .lb-burst > i, .lb-result, .lb-overlay { animation: none; }

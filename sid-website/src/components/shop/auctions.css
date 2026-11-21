@@ -1,6 +1,6 @@
 /* Salle des ventes (Lot 65) — chargé seulement avec l'onglet Enchères. */
 
-.shop-badge.is-dark { background: rgba(20, 22, 32, 0.82); color: #ede6d3; border: 1px solid rgba(255, 255, 255, 0.16); }
+.shop-badge.is-dark { background: rgba(20, 22, 32, 0.82); color: rgb(var(--c-paper)); border: 1px solid rgb(var(--c-white) / 0.16); }
 
 .auction-clock {
   display: inline-flex;
@@ -11,19 +11,19 @@
   font-family: var(--font-mono);
   font-size: 0.7rem;
   font-variant-numeric: tabular-nums;
-  color: #ede6d3;
+  color: rgb(var(--c-paper));
   background: rgba(20, 22, 32, 0.78);
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid rgb(var(--c-white) / 0.14);
   backdrop-filter: blur(4px);
 }
 .auction-clock.is-urgent {
-  color: #262a38;
-  background: #d99a9a;
-  border-color: #d99a9a;
+  color: rgb(var(--c-ink));
+  background: rgb(var(--c-red));
+  border-color: rgb(var(--c-red));
   animation: auction-pulse 1.2s ease-in-out infinite;
 }
 @keyframes auction-pulse {
-  50% { box-shadow: 0 0 0 4px rgba(217, 154, 154, 0.25); }
+  50% { box-shadow: 0 0 0 4px rgb(var(--c-red) / 0.25); }
 }
 @media (prefers-reduced-motion: reduce) {
   .auction-clock.is-urgent { animation: none; }
@@ -37,7 +37,7 @@
   font-family: var(--font-body);
   font-style: italic;
   font-size: 0.92rem;
-  color: rgba(237, 230, 211, 0.9);
+  color: rgb(var(--c-paper) / 0.9);
 }
 
 .auction-board {
@@ -48,9 +48,9 @@
   border-radius: 0.9rem;
   padding: 0.9rem 1rem;
   background:
-    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.025) 0 8px, transparent 8px 16px),
+    repeating-linear-gradient(135deg, rgb(var(--c-white) / 0.025) 0 8px, transparent 8px 16px),
     rgba(0, 0, 0, 0.22);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgb(var(--c-white) / 0.1);
   font-variant-numeric: tabular-nums;
 }
 
@@ -59,23 +59,23 @@
   align-items: center;
   gap: 0.5rem;
   border-radius: 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgb(var(--c-white) / 0.2);
+  background: rgb(var(--c-white) / 0.05);
   padding: 0.35rem 0.9rem;
 }
-.auction-input:focus-within { border-color: #8fb3d9; box-shadow: 0 0 0 3px rgba(143, 179, 217, 0.2); }
+.auction-input:focus-within { border-color: rgb(var(--c-blue)); box-shadow: 0 0 0 3px rgb(var(--c-blue) / 0.2); }
 .auction-input input {
   width: 100%;
   background: transparent;
   outline: none;
   font-family: var(--font-display);
   font-size: 1.6rem;
-  color: #ede6d3;
+  color: rgb(var(--c-paper));
   -moz-appearance: textfield;
 }
 .auction-input input::-webkit-outer-spin-button,
 .auction-input input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-.auction-input span { font-family: var(--font-display); font-size: 1.2rem; color: rgba(237, 230, 211, 0.6); }
+.auction-input span { font-family: var(--font-display); font-size: 1.2rem; color: rgb(var(--c-paper) / 0.6); }
 
 .auction-bids { display: grid; gap: 0.25rem; }
 .auction-bids li {
@@ -87,10 +87,10 @@
   padding: 0.3rem 0.6rem;
   font-family: var(--font-body);
   font-size: 0.85rem;
-  color: rgba(237, 230, 211, 0.75);
+  color: rgb(var(--c-paper) / 0.75);
 }
-.auction-bids li:nth-child(odd) { background: rgba(255, 255, 255, 0.03); }
-.auction-bids li.is-top { color: #ede6d3; background: rgba(143, 179, 217, 0.14); }
+.auction-bids li:nth-child(odd) { background: rgb(var(--c-white) / 0.03); }
+.auction-bids li.is-top { color: rgb(var(--c-paper)); background: rgb(var(--c-blue) / 0.14); }
 
 .auction-pick {
   display: flex;
@@ -98,11 +98,11 @@
   gap: 0.7rem;
   width: 100%;
   border-radius: 0.8rem;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgb(var(--c-white) / 0.12);
+  background: rgb(var(--c-white) / 0.03);
   padding: 0.45rem 0.6rem;
-  color: #ede6d3;
+  color: rgb(var(--c-paper));
   transition: border-color 0.15s, background 0.15s;
 }
-.auction-pick:hover { border-color: rgba(143, 179, 217, 0.5); }
-.auction-pick.is-on { border-color: #8fb3d9; background: rgba(143, 179, 217, 0.14); }
+.auction-pick:hover { border-color: rgb(var(--c-blue) / 0.5); }
+.auction-pick.is-on { border-color: rgb(var(--c-blue)); background: rgb(var(--c-blue) / 0.14); }

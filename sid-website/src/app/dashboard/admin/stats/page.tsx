@@ -123,8 +123,8 @@ export default function AdminStatsPage() {
         <LineChart
           labels={stats.daily_activity.map((d) => fmtDay(d.day))}
           series={[
-            { name: "Messages", color: "#8FB3D9", values: stats.daily_activity.map((d) => d.messages) },
-            { name: "Visites", color: "#D99A9A", values: stats.daily_activity.map((d) => d.visits) },
+            { name: "Messages", color: "rgb(var(--c-blue))", values: stats.daily_activity.map((d) => d.messages) },
+            { name: "Visites", color: "rgb(var(--c-red))", values: stats.daily_activity.map((d) => d.visits) },
           ]}
           zeroBased
           fill={false}
@@ -136,7 +136,7 @@ export default function AdminStatsPage() {
           <h2 className="font-display text-lg uppercase"><SidIcon name="chat" /> Messages (8 semaines)</h2>
           <LineChart
             labels={stats.weekly_activity.map((w) => `Sem. ${fmtDay(w.week_start)}`)}
-            series={[{ name: "Messages", color: "#8FB3D9", values: stats.weekly_activity.map((w) => w.message_count) }]}
+            series={[{ name: "Messages", color: "rgb(var(--c-blue))", values: stats.weekly_activity.map((w) => w.message_count) }]}
             zeroBased
             height={200}
           />
@@ -145,7 +145,7 @@ export default function AdminStatsPage() {
           <h2 className="font-display text-lg uppercase"><SidIcon name="cart" /> Achats (8 semaines)</h2>
           <LineChart
             labels={stats.purchases_weekly.map((w) => `Sem. ${fmtDay(w.week_start)}`)}
-            series={[{ name: "Achats", color: "#D99A9A", values: stats.purchases_weekly.map((w) => w.purchases_count) }]}
+            series={[{ name: "Achats", color: "rgb(var(--c-red))", values: stats.purchases_weekly.map((w) => w.purchases_count) }]}
             zeroBased
             height={200}
           />
@@ -156,7 +156,7 @@ export default function AdminStatsPage() {
         <h2 className="font-display text-lg uppercase"><SidIcon name="clock" /> Activité selon l&apos;heure de la journée</h2>
         <LineChart
           labels={hourly.map((_, h) => `${h}h`)}
-          series={[{ name: "Messages", color: "#8FB3D9", values: hourly }]}
+          series={[{ name: "Messages", color: "rgb(var(--c-blue))", values: hourly }]}
           zeroBased
           formatValue={(n) => `${n} message${n > 1 ? "s" : ""}`}
         />

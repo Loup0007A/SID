@@ -11,11 +11,11 @@ import type { EconomyOverview } from "@/types/economy";
 import "@/components/market/bourse.css";
 
 const MONEY = [
-  { key: "money_wallets", label: "Portefeuilles", color: "#8FB3D9" },
-  { key: "money_bank", label: "Épargne", color: "#BBD3EA" },
-  { key: "money_treasuries", label: "Trésoreries", color: "#f0c27a" },
+  { key: "money_wallets", label: "Portefeuilles", color: "rgb(var(--c-blue))" },
+  { key: "money_bank", label: "Épargne", color: "rgb(var(--c-blue-light))" },
+  { key: "money_treasuries", label: "Trésoreries", color: "rgb(var(--c-gold))" },
   { key: "money_population", label: "Population", color: "#b9a6e8" },
-  { key: "money_pool", label: "Caisse commune", color: "#D99A9A" },
+  { key: "money_pool", label: "Caisse commune", color: "rgb(var(--c-red))" },
 ] as const;
 
 export default function EconomiePage() {
@@ -112,8 +112,8 @@ export default function EconomiePage() {
             <LineChart
               labels={series.map((p) => day(p.day))}
               series={[
-                { name: "Indice des prix", color: "#D99A9A", values: series.map((p) => Number(p.index)) },
-                { name: "Cours du zéni", color: "#f0c27a", values: series.map((p) => Number(p.zeni)) },
+                { name: "Indice des prix", color: "rgb(var(--c-red))", values: series.map((p) => Number(p.index)) },
+                { name: "Cours du zéni", color: "rgb(var(--c-gold))", values: series.map((p) => Number(p.zeni)) },
               ]}
               refLine={{ value: 100, label: "départ" }}
               formatValue={(n) => px(n)}
@@ -129,8 +129,8 @@ export default function EconomiePage() {
             <LineChart
               labels={measured.map((p) => day(p.day))}
               series={[
-                { name: "Inflation 30 j (%)", color: "#D99A9A", values: measured.map((p) => Number(p.inflation) * 100) },
-                { name: "Taux directeur hebdo (%)", color: "#8FB3D9", values: measured.map((p) => Number(p.policy ?? 0) * 100) },
+                { name: "Inflation 30 j (%)", color: "rgb(var(--c-red))", values: measured.map((p) => Number(p.inflation) * 100) },
+                { name: "Taux directeur hebdo (%)", color: "rgb(var(--c-blue))", values: measured.map((p) => Number(p.policy ?? 0) * 100) },
               ]}
               refLine={{ value: target * 100, label: "cible" }}
               formatValue={(n) => `${n.toLocaleString("fr-FR", { maximumFractionDigits: 2 })} %`}

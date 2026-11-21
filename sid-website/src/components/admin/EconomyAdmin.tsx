@@ -146,10 +146,10 @@ export function ExpenseQueue({ onCount }: { onCount?: (n: number) => void } = {}
                 <p className="font-body text-sm italic text-paper/70">« {e.motive} »</p>
                 <p className="font-mono text-[11px] text-paper/55">
                   {day(e.created_at)} · trésorerie restante {z(e.treasury ?? 0, 0)}
-                  {Math.abs(diff) >= 0.01 && <span className="text-[#f0c27a]"> · prix du jour {z(e.current_price ?? 0)} ({diff > 0 ? "+" : "−"}{z(Math.abs(diff))})</span>}
+                  {Math.abs(diff) >= 0.01 && <span className="text-gold"> · prix du jour {z(e.current_price ?? 0)} ({diff > 0 ? "+" : "−"}{z(Math.abs(diff))})</span>}
                 </p>
                 {e.related && (
-                  <p className="rounded-md border border-[#f0c27a]/50 bg-[#f0c27a]/10 px-2 py-1 font-body text-xs text-[#f0c27a]">
+                  <p className="rounded-md border border-gold/50 bg-[#f0c27a]/10 px-2 py-1 font-body text-xs text-gold">
                     <SidIcon name="warning" size={13} /> Le vendeur est lié à l&apos;entreprise (fondateur, employé ou une de ses entreprises) : cet achat ferait sortir de
                     l&apos;argent de la trésorerie vers lui.
                   </p>

@@ -429,13 +429,9 @@ export function HolidayDecor() {
 
   if (!mounted || !key) return null;
   const scene = SCENES[key];
-  const Back = scene.back;
   const Fly = scene.fly;
   return createPortal(
     <>
-      <div className={`hd-back hd-back-${key}`} aria-hidden>
-        <Back />
-      </div>
       <div className="hd-front" aria-hidden>
         {fly && (
           <div className={`hd-fly hd-fly-${key}`}>

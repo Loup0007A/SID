@@ -186,12 +186,6 @@ export function NoelDecor() {
 
   return createPortal(
     <>
-      <div className="nl-back" aria-hidden>
-        <div className="nl-aurora" />
-        <NorthStar />
-        <Snowfall />
-        <NoelScene />
-      </div>
       <div className="nl-front" aria-hidden>
         {sleigh > 0 && <Sleigh className="nl-fly" />}
         {cometOn && <span key={comet} className="nl-comet" />}

@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { getSupabaseEnv } from "@/lib/supabase/env";
 import { DEFAULT_BRAND, brandFromConfig, setBrand, type Brand } from "@/lib/brand";
 import { primeGlitched, type GlitchedMember } from "@/lib/glitch";
+import { themeFromDecor, type FondTheme } from "@/lib/fondTheme";
 
 /**
  * Identité du jeu côté serveur (Lot 77) : public_config (migration 0094),
@@ -55,4 +56,27 @@ export async function getBrand(): Promise<Brand> {
   const [b] = await Promise.all([load(), getGlitched()]);
   setBrand(b);
   return b;
+}
+
+// Évent affiché (Lot 90) : décide du thème du fond dès le rendu serveur,
+// sans attendre le navigateur. Gardé 5 minutes ; le navigateur corrige
+// ensuite (FondThemeSync) si l'affichage a changé entre-temps.
+const loadDecor = unstable_cache(
+  async (): Promise<FondTheme> => {
+    const { url, anonKey } = getSupabaseEnv();
+    if (url.includes("placeholder")) return "sid";
+    try {
+      const sb = createClient(url, anonKey, { auth: { persistSession: false } });
+      const { data, error } = await sb.rpc("site_decor");
+      return error ? "sid" : themeFromDecor(data as Record<string, unknown> | null);
+    } catch {
+      return "sid";
+    }
+  },
+  ["site-decor-theme"],
+  { revalidate: 300, tags: ["site-decor"] },
+);
+
+export async function getFondTheme(): Promise<FondTheme> {
+  return loadDecor();
 }

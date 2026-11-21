@@ -323,7 +323,7 @@ export default function BusinessPage() {
                     de ce qui a été acheté depuis la dernière émission, entre {pct(marketSettings?.issue_min_pct ?? 0.02)} % et{" "}
                     {pct(marketSettings?.issue_max_pct ?? 0.2)} % du capital), toutes les {marketSettings?.issue_interval_hours ?? 8} h au plus.
                     {b.shares_in_treasury < (marketSettings?.issue_float_target_pct ?? 0.25) * b.share_count && (
-                      <span className="text-[#7dffb0]"> Stock bas en ce moment : une émission arrive.</span>
+                      <span className="text-ok"> Stock bas en ce moment : une émission arrive.</span>
                     )}
                   </p>
                   <p>

@@ -5,53 +5,6 @@
    ========================================================= */
 
 /* Fond de chaque fête (comme Halloween et Noël). */
-html.decor-saint_valentin:not(.troll-abyss) body {
-  background-color: #241526;
-  background-image:
-    radial-gradient(ellipse 70% 50% at 10% -10%, rgb(255 90 150 / 0.24), transparent 62%),
-    radial-gradient(ellipse 55% 45% at 92% 0%, rgb(255 170 200 / 0.12), transparent 58%),
-    radial-gradient(ellipse 60% 45% at 80% 108%, rgb(180 40 90 / 0.24), transparent 62%);
-}
-html.decor-poisson_avril:not(.troll-abyss) body {
-  background-color: #0f2130;
-  background-image:
-    radial-gradient(ellipse 70% 50% at 15% -10%, rgb(80 200 255 / 0.2), transparent 62%),
-    radial-gradient(ellipse 60% 45% at 85% 105%, rgb(255 154 118 / 0.14), transparent 62%),
-    linear-gradient(to bottom, transparent 60%, rgb(10 60 90 / 0.25));
-}
-html.decor-paques:not(.troll-abyss) body {
-  background-color: #1e2537;
-  background-image:
-    radial-gradient(ellipse 60% 45% at 92% -8%, rgb(255 214 120 / 0.28), transparent 62%),
-    radial-gradient(ellipse 70% 50% at 10% 105%, rgb(150 230 160 / 0.16), transparent 62%),
-    radial-gradient(ellipse 50% 40% at 40% -10%, rgb(255 179 199 / 0.12), transparent 60%);
-}
-html.decor-premier_mai:not(.troll-abyss) body {
-  background-color: #12231e;
-  background-image:
-    radial-gradient(ellipse 70% 50% at 12% -8%, rgb(140 230 170 / 0.18), transparent 62%),
-    radial-gradient(ellipse 60% 45% at 88% 105%, rgb(240 255 240 / 0.08), transparent 62%);
-}
-html.decor-fete_musique:not(.troll-abyss) body {
-  background-color: #171533;
-  background-image:
-    radial-gradient(ellipse 60% 45% at 15% 105%, rgb(201 166 255 / 0.22), transparent 62%),
-    radial-gradient(ellipse 60% 45% at 85% 105%, rgb(255 138 92 / 0.18), transparent 62%),
-    radial-gradient(ellipse 70% 40% at 50% -10%, rgb(110 140 255 / 0.12), transparent 60%);
-}
-html.decor-quatorze_juillet:not(.troll-abyss) body {
-  background-color: #0e1630;
-  background-image:
-    radial-gradient(ellipse 60% 45% at 10% -10%, rgb(60 110 255 / 0.22), transparent 62%),
-    radial-gradient(ellipse 60% 45% at 90% -10%, rgb(255 80 80 / 0.14), transparent 62%),
-    radial-gradient(ellipse 80% 40% at 50% 110%, rgb(255 210 120 / 0.12), transparent 62%);
-}
-html.decor-armistice:not(.troll-abyss) body {
-  background-color: #1b2029;
-  background-image:
-    radial-gradient(ellipse 70% 45% at 85% -10%, rgb(220 228 240 / 0.12), transparent 62%),
-    radial-gradient(ellipse 80% 40% at 50% 110%, rgb(63 111 224 / 0.12), transparent 62%);
-}
 
 .hd-back { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
 .hd-front { position: fixed; inset: 0; z-index: 21; pointer-events: none; overflow: hidden; }
@@ -185,7 +138,7 @@ html.decor-armistice:not(.troll-abyss) body {
 .hd-ribbon { fill: none; stroke: #ff7aa8; stroke-width: 2.4; stroke-linecap: round; }
 .hd-drop-eggs { animation: hd-drop 1.8s ease-in infinite; }
 @keyframes hd-drop { from { transform: translateY(-18px); opacity: 0; } 20% { opacity: 1; } to { transform: translateY(26px); opacity: 0; } }
-.hd-pigeon, .hd-dove { fill: #e9edf4; filter: drop-shadow(0 0 3px rgb(255 255 255 / 0.5)); }
+.hd-pigeon, .hd-dove { fill: #e9edf4; filter: drop-shadow(0 0 3px rgb(var(--c-white) / 0.5)); }
 .hd-pigeon { fill: #9aa3b5; }
 .hd-pigeon .hd-wing, .hd-dove .hd-wing { transform-box: fill-box; transform-origin: 50% 100%; animation: hd-flap 0.35s ease-in-out infinite alternate; }
 .hd-dove .hd-wing { animation-duration: 0.6s; }
@@ -209,7 +162,7 @@ g:nth-child(3n) > .hd-flying-note { color: #6ec8ff; }
 .hd-g-heart { filter: drop-shadow(0 0 3px rgb(255 90 150 / 0.6)); }
 .hd-g-fish.hd-g-c0 { fill: #ff9a76; } .hd-g-fish.hd-g-c1 { fill: #7fd8ff; } .hd-g-fish.hd-g-c2 { fill: #ffd86b; } .hd-g-fish.hd-g-c3 { fill: #8ef0b8; }
 .hd-g-egg.hd-g-c0 { fill: #ffb3c7; } .hd-g-egg.hd-g-c1 { fill: #b8e0ff; } .hd-g-egg.hd-g-c2 { fill: #ffe08a; } .hd-g-egg.hd-g-c3 { fill: #c7f0b8; } .hd-g-egg.hd-g-c4 { fill: #d9c2ff; }
-.hd-g-bell { filter: drop-shadow(0 0 2px rgb(255 255 255 / 0.6)); }
+.hd-g-bell { filter: drop-shadow(0 0 2px rgb(var(--c-white) / 0.6)); }
 .hd-g-note.hd-g-c0 { color: #c9a6ff; } .hd-g-note.hd-g-c1 { color: #ff9c6e; } .hd-g-note.hd-g-c2 { color: #6ec8ff; }
 .hd-g-flag.hd-g-f0 { fill: #2f5bd8; } .hd-g-flag.hd-g-f1 { fill: #f2f2f2; } .hd-g-flag.hd-g-f2 { fill: #e23a3a; }
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
@@ -237,7 +190,7 @@ g:nth-child(3n) > .hd-flying-note { color: #6ec8ff; }
 .hd-bubble {
   position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%); z-index: 5;
   width: max-content; max-width: min(78vw, 300px); padding: 6px 10px; border-radius: 10px; text-align: center;
-  background: #1c1a2c; border: 1px solid rgb(255 255 255 / 0.25); color: #f4f1e8;
+  background: #1c1a2c; border: 1px solid rgb(var(--c-white) / 0.25); color: #f4f1e8;
   font: italic 13px/1.4 var(--font-body); box-shadow: 0 6px 20px -6px rgb(0 0 0 / 0.6);
   animation: title-unlock-in 0.2s ease-out;
 }

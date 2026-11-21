@@ -89,7 +89,7 @@ export default function AdminTitlesPage() {
         <div className="divide-y divide-white/10">
           {data.trolls.slice(0, 40).map((t) => (
             <div key={t.id} className="flex flex-wrap items-center gap-2 py-2 font-mono text-xs">
-              <span className={t.active ? "text-[#7dffb0]" : "text-paper/65"}>{t.active ? "●" : "○"}</span>
+              <span className={t.active ? "text-ok" : "text-paper/65"}>{t.active ? "●" : "○"}</span>
               <span className="text-paper">{t.actor}</span>
               <span className="text-paper/65">→ {POWERS[t.power]?.name ?? t.power} →</span>
               <span className="text-paper">{t.target}</span>
@@ -176,7 +176,7 @@ export default function AdminTitlesPage() {
                   <div key={h.user_id} className="flex flex-wrap items-center gap-2 font-mono text-[11px]">
                     <Link href={`/dashboard/admin/members/${h.user_id}`} className="text-paper hover:underline">{h.nickname}</Link>
                     {isTitleId(h.title_id) && TITLE_BY_ID[h.title_id].maxLevel > 1 && <span className="text-paper/60">niv. {roman(h.level)}</span>}
-                    {h.equipped && <span className="text-[#7dffb0]">équipé</span>}
+                    {h.equipped && <span className="text-ok">équipé</span>}
                     <span className="text-paper/65">{sourceObtention(h.source)}</span>
                     <button
                       onClick={() => confirm(`Retirer « ${t.name} » à ${h.nickname} ?`) && run(() => supabase.rpc("admin_revoke_title", { p_user: h.user_id, p_title: t.id }), "Titre retiré.")}

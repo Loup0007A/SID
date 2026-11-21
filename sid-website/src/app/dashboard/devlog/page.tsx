@@ -25,10 +25,10 @@ const SITES: (AdminTab & { key: Site })[] = [
 ];
 
 const TAGS: Record<Tag, { label: string; color: string }> = {
-  nouveau: { label: "Nouveauté", color: "#8fb3d9" },
-  amelioration: { label: "Amélioration", color: "#8fc9a0" },
+  nouveau: { label: "Nouveauté", color: "rgb(var(--c-blue))" },
+  amelioration: { label: "Amélioration", color: "rgb(var(--c-ok))" },
   correctif: { label: "Correctif", color: "#f0b46e" },
-  economie: { label: "Économie", color: "#f0c27a" },
+  economie: { label: "Économie", color: "rgb(var(--c-gold))" },
   admin: { label: "Administration", color: "#b49be0" },
 };
 const NEW_DAYS = 7;
