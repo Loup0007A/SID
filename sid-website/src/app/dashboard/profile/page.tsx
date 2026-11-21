@@ -11,20 +11,10 @@ import { BirthdaySetting } from "@/components/lazy/Seals";
 import { TitleAuraLayer, TitleBadge } from "@/components/titles/TitleVisuals";
 import { useEquippedTitles } from "@/lib/useEquippedTitles";
 import type { TitleId } from "@/lib/titles";
-import { PushPanel } from "@/components/PushPanel";
 import { SidIcon } from "@/components/icons/SidIcon";
 import { ReputationCard } from "@/components/ReputationCard";
 import { AgentCardButton } from "@/components/AgentCard";
 
-const HIDEABLE_FIELDS: { key: keyof Profile; label: string }[] = [
-  { key: "first_name", label: "Prénom IRL" },
-  { key: "last_name", label: "Nom IRL" },
-  { key: "age", label: "Âge" },
-  { key: "weapons", label: "Armes" },
-  { key: "equipment", label: "Équipement" },
-  { key: "description", label: "Description" },
-  { key: "desired_role", label: "Rôle voulu" },
-];
 
 
 export default function ProfilePage() {
@@ -32,20 +22,11 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [purchases, setPurchases] = useState<{ item_name: string; quantity: number; last_purchase: string }[]>([]);
   const [saved, setSaved] = useState(false);
-  const [invisibleSaving, setInvisibleSaving] = useState(false);
-  const [invisibleMessage, setInvisibleMessage] = useState<string | null>(null);
-  const [presenceMessage, setPresenceMessage] = useState<string | null>(null);
 
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarMessage, setAvatarMessage] = useState<string | null>(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
 
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
-  const [passwordSaving, setPasswordSaving] = useState(false);
-
-  // Notifications push
   const [myId, setMyId] = useState<string>("");
   const myTitle = useEquippedTitles(myId ? [myId] : []).get(myId);
 
@@ -68,28 +49,10 @@ export default function ProfilePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Lien « Ce que les autres voient de toi » (accueil) : on descend jusqu'au réglage.
-  const loaded = !!profile;
-  useEffect(() => {
-    if (loaded && window.location.hash === "#presence") {
-      setTimeout(() => document.getElementById("presence")?.scrollIntoView({ behavior: "smooth", block: "start" }), 150);
-    }
-  }, [loaded]);
-
   if (!profile) return <p className="font-body text-paper/60">Chargement du dossier…</p>;
 
   function update<K extends keyof Profile>(key: K, value: Profile[K]) {
     setProfile((p) => (p ? { ...p, [key]: value } : p));
-  }
-
-  function toggleHidden(field: string, hide: boolean) {
-    setProfile((p) => {
-      if (!p) return p;
-      const set = new Set(p.hidden_fields);
-      if (hide) set.add(field);
-      else set.delete(field);
-      return { ...p, hidden_fields: Array.from(set) };
-    });
   }
 
   async function save() {
@@ -102,45 +65,13 @@ export default function ProfilePage() {
         equipment: profile.equipment,
         description: profile.description,
         age: profile.age,
-        hidden_fields: profile.hidden_fields,
       })
       .eq("id", profile.id);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }
 
-  // Compte invisible : enregistré tout de suite (sans passer par « Enregistrer »).
-  async function toggleInvisible(next: boolean) {
-    if (!profile) return;
-    setInvisibleSaving(true);
-    setInvisibleMessage(null);
-    const { error } = await supabase.from("profiles").update({ is_invisible: next }).eq("id", profile.id);
-    setInvisibleSaving(false);
-    if (error) {
-      setInvisibleMessage(
-        error.message.includes("is_invisible")
-          ? "Fonction pas encore activée : la migration 0058 doit être lancée sur la base."
-          : `Échec : ${error.message}`
-      );
-      return;
-    }
-    update("is_invisible", next);
-    setInvisibleMessage(next ? "Ton compte est maintenant invisible." : "Ton compte est de nouveau visible.");
-  }
 
-  async function setPresence(field: "presence_visible" | "activity_visible", next: boolean) {
-    if (!profile) return;
-    setPresenceMessage(null);
-    const { error } = await supabase.rpc("set_presence_privacy", {
-      p_visible: field === "presence_visible" ? next : null,
-      p_activity: field === "activity_visible" ? next : null,
-    });
-    if (error) {
-      setPresenceMessage(error.message.includes("set_presence_privacy") ? "Fonction pas encore activée : la migration 0063 doit être lancée sur la base." : `Échec : ${error.message}`);
-      return;
-    }
-    update(field, next);
-  }
 
   async function uploadAvatar() {
     if (!profile || !avatarFile) return;
@@ -171,27 +102,6 @@ export default function ProfilePage() {
     setAvatarMessage("Photo de profil mise à jour.");
   }
 
-  async function changePassword() {
-    setPasswordMessage(null);
-    if (newPassword.length < 8) {
-      setPasswordMessage("Le mot de passe doit contenir au moins 8 caractères.");
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      setPasswordMessage("Les deux mots de passe ne correspondent pas.");
-      return;
-    }
-    setPasswordSaving(true);
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
-    setPasswordSaving(false);
-    if (error) {
-      setPasswordMessage(`Échec : ${error.message}`);
-      return;
-    }
-    setNewPassword("");
-    setConfirmPassword("");
-    setPasswordMessage("Mot de passe modifié.");
-  }
 
   return (
     <div className="max-w-2xl space-y-8">
@@ -275,95 +185,18 @@ export default function ProfilePage() {
 
       {myId && <BirthdaySetting userId={myId} />}
 
-      <PushPanel />
-
-      <div className="glass-card space-y-3 p-6">
-        <h2 className="font-display text-lg uppercase">Confidentialité</h2>
-        <p className="font-body text-sm text-paper/70">
-          Les informations cochées sont masquées aux autres membres (pas à l&apos;administration).
-        </p>
-        <div className="grid grid-cols-2 gap-2">
-          {HIDEABLE_FIELDS.map((f) => (
-            <label key={String(f.key)} className="flex items-center gap-2 font-mono text-xs">
-              <input
-                type="checkbox" className="accent-blue"
-                checked={profile.hidden_fields.includes(f.key as string)}
-                onChange={(e) => toggleHidden(f.key as string, e.target.checked)}
-              />
-              {f.label}
-            </label>
-          ))}
-        </div>
-      </div>
-
-      <div className="glass-card space-y-3 p-6">
-        <h2 className="font-display text-lg uppercase">Compte invisible</h2>
-        <p className="font-body text-sm text-paper/70">
-          Un compte invisible n&apos;apparaît plus aux autres membres : trombinoscope, classement, carte,
-          organigramme, profil public, et listes de choix (nouvelle conversation, quêtes, embauche). Ce que tu
-          écris ou fais reste signé de ton nom. L&apos;administration (gestion des comptes) te voit toujours.
-        </p>
-        <label className="flex items-center gap-3 font-mono text-sm">
-          <input
-            type="checkbox"
-            className="h-4 w-4 accent-blue"
-            checked={!!profile.is_invisible}
-            disabled={invisibleSaving}
-            onChange={(e) => toggleInvisible(e.target.checked)}
-          />
-          {profile.is_invisible ? <><SidIcon name="ghost" /> Mon compte est invisible</> : "Rendre mon compte invisible"}
-        </label>
-        {invisibleMessage && <p className="font-mono text-xs text-red">{invisibleMessage}</p>}
-      </div>
-
-      <div id="presence" className="glass-card scroll-mt-24 space-y-3 p-6">
-        <h2 className="font-display text-lg uppercase">Présence en ligne</h2>
-        <p className="font-body text-sm text-paper/70">
-          L&apos;accueil montre qui est sur le site en ce moment et ce qu&apos;il y fait (« À la banque », « En plein
-          donjon »…). Seule la page en cours est gardée, jamais l&apos;historique, et elle est effacée au bout
-          d&apos;un jour. L&apos;administration (gestion des comptes) voit tout le monde.
-        </p>
-        <label className="flex items-center gap-3 font-mono text-sm">
-          <input
-            type="checkbox"
-            className="h-4 w-4 accent-blue"
-            checked={profile.presence_visible !== false}
-            onChange={(e) => setPresence("presence_visible", e.target.checked)}
-          />
-          Apparaître en ligne aux autres membres
-        </label>
-        <label className={`flex items-center gap-3 font-mono text-sm ${profile.presence_visible === false ? "opacity-50" : ""}`}>
-          <input
-            type="checkbox"
-            className="h-4 w-4 accent-blue"
-            checked={profile.activity_visible !== false}
-            disabled={profile.presence_visible === false}
-            onChange={(e) => setPresence("activity_visible", e.target.checked)}
-          />
-          Montrer ce que je fais (sinon : « Activité masquée »)
-        </label>
-        {presenceMessage && <p className="font-mono text-xs text-red">{presenceMessage}</p>}
-      </div>
-
-      <div className="glass-card space-y-3 p-6">
-        <h2 className="font-display text-lg uppercase">Mot de passe</h2>
-        <div className="space-y-1">
-          <label className={labelClass}>Nouveau mot de passe</label>
-          <input type="password" minLength={8} className={inputClass} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-        </div>
-        <div className="space-y-1">
-          <label className={labelClass}>Confirmation</label>
-          <input type="password" minLength={8} className={inputClass} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
-        </div>
-        {passwordMessage && <p className="font-mono text-xs text-red">{passwordMessage}</p>}
-        <button
-          onClick={changePassword}
-          disabled={passwordSaving || !newPassword}
-          className="rounded-lg bg-red px-4 py-2 font-display text-sm uppercase text-ink hover:bg-red-light disabled:opacity-40"
-        >
-          {passwordSaving ? "Enregistrement…" : "Changer le mot de passe"}
-        </button>
-      </div>
+      <Link href="/dashboard/settings#confidentialite" className="glass-card flex items-center gap-4 p-5 transition hover:-translate-y-0.5">
+        <span aria-hidden className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-encre bg-accent-2 text-xl">
+          <SidIcon name="gear" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-display text-lg uppercase">Réglages</span>
+          <span className="block font-body text-sm text-paper/75">
+            Notifications, confidentialité (présence, compte invisible, champs masqués), mot de passe et apparence de ta fiche.
+          </span>
+        </span>
+        <span aria-hidden className="text-2xl">→</span>
+      </Link>
 
       <div className="glass-card space-y-3 p-6">
         <h2 className="font-display text-lg uppercase">Mes achats</h2>

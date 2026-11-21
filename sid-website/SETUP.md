@@ -5,7 +5,7 @@ renommer : nom du RP, des trois sites, de la monnaie, adresses, sites et
 rubriques ouverts, adresses des simulations. L'installation elle-même (Supabase, Vercel, compte Fondateur) est
 dans [README.md](README.md).
 
-Prérequis : migrations passées jusqu'à `0113_devlog_cartographie.sql` (Dossier
+Prérequis : migrations passées jusqu'à `0115_devlog_reglages.sql` (Dossier
 Central), celles du Wiki (jusqu'à `0212_wiki_nouvelles_fiches.sql`), puis celles de
 la Cartographie (jusqu'à `0120_creatures_meteo_lieux_proprietes.sql`). La 0118 de la
 Cartographie utilise les tables du Wiki : passer le Wiki avant.
@@ -427,6 +427,8 @@ Déjà modifiables depuis le site :
 | Farces | Administration → Titres & farces |
 | Élection du Dictateur : élu, manière (proclamé ou par la force), début, proclamation, fin | Administration → Modération → Affichage événementiel |
 | Créatures de la carte (lesquelles, où, fréquence, apparition), météo d'un lieu, propriétaire d'un bâtiment | Cartographie : Météo → Gérer les créatures ; fiche du lieu |
+
+Chaque membre règle lui-même, dans **Réglages** : les notifications qu'il reçoit (partout, sur le site seulement, jamais ; heures calmes sans push), sa confidentialité, son mot de passe, l'apparence de sa fiche, et pour son appareil le mode sombre, le mode épuré, la taille du texte et les animations. Toujours reçues, quoi qu'il choisisse : quêtes, candidatures, appels de raid, annonces, sanctions, impôts, litiges, absences (`_notif_mutable`, migration 0114).
 
 Le reste se règle en SQL. Liste complète :
 

@@ -543,3 +543,95 @@ input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus-visib
 @media (prefers-reduced-motion: reduce) {
   .gl::before, .gl::after, .gl-avatar { animation: none; }
 }
+
+/* =========================================================
+   Réglages → Affichage et confort (Lot 93), propres à l'appareil
+   (src/lib/comfortPrefs.ts). Classes posées sur <html>.
+   ========================================================= */
+html.texte-grand { font-size: 112.5%; }
+html.texte-tres-grand { font-size: 125%; }
+/* Calme : ni particules ni animations ; les changements restent instantanés. */
+html.calme .fond-particules { display: none; }
+html.calme *,
+html.calme *::before,
+html.calme *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* =========================================================
+   Réglages → Affichage : mode sombre (Lot 93). Le fond passe à la nuit
+   (les couleurs d'accent des évents restent), les cartes deviennent des
+   plaques sombres à texte clair. Fiches de quête et cartes de rang
+   gardent leur papier.
+   ========================================================= */
+:root.sombre {
+  color-scheme: dark;
+  --fond: 15 18 44;
+  --fond-haut: 52 74 170;
+  --fond-bas: 2 3 12;
+  --surface: 30 34 74;
+  --surface-2: 24 27 60;
+  --ombre: 5px 5px 0 rgb(2 3 12 / 0.75);
+  --ombre-petite: 3px 3px 0 rgb(2 3 12 / 0.75);
+}
+:root.sombre body::before { opacity: 0.22; }
+:root.sombre .fond-particules { opacity: 0.45; }
+:root.sombre :is(.jour, .glass-card, .glass-panel, .grain-panel, .dossier-card, .tuto-tip, .tuto-sheet, .tuto-card, .shop-card, .shop-tabs, .shop-search, .shop-sort, .quest-search, .quest-seg, .poll-card):not(.nuit) {
+  --titre-ombre: none;
+  --titre-trait: 0;
+  --c-paper: var(--creme);
+  --c-paper-dark: 160 165 200;
+  --c-paper-text: var(--encre);
+  --c-ink: 12 14 36;
+  --c-ink-soft: 34 38 96;
+  --c-ink-border: 70 78 150;
+  --c-white: var(--creme);
+  --c-black: 6 7 30;
+  --c-blue: 170 196 255;
+  --c-blue-light: 208 222 255;
+  --c-blue-dark: 140 170 250;
+  --c-red: 255 160 175;
+  --c-red-light: 255 205 213;
+  --c-red-dark: 255 130 150;
+  --c-green-200: 187 247 208;
+  --c-green-300: 134 239 172;
+  --c-green-400: 74 222 128;
+  --c-yellow-200: 254 240 138;
+  --c-yellow-300: 253 224 71;
+  --c-yellow-400: 250 204 21;
+  --c-gold: 240 194 122;
+  --c-ok: 150 230 170;
+  --c-ko: 255 168 168;
+  color: rgb(var(--c-paper));
+  background: linear-gradient(180deg, rgb(var(--surface)) 55%, rgb(var(--surface-2)));
+  border-color: rgb(2 3 12);
+}
+:root.sombre select option { background: rgb(24 27 60); color: rgb(var(--creme)); }
+
+/* =========================================================
+   Réglages → Affichage : mode épuré (Lot 93). Fond uni, ni motif ni
+   particules, contours fins sans ombre pleine, titres sans contour,
+   décors des fêtes coupés (voir Seasonal.tsx).
+   ========================================================= */
+:root.epure {
+  --ombre: none;
+  --ombre-petite: none;
+  --trait: 2px;
+  --rayon: 14px;
+}
+:root.epure body::before, :root.epure .fond-particules { display: none; }
+:root.epure .font-display { text-shadow: none; }
+:root.epure :is(h1.font-display, .titre-sticker) { -webkit-text-stroke: 0; text-shadow: none; }
+:root.epure .etiquette-collee { transform: none; box-shadow: none; }
+:root.epure:not(.sombre) :is(.glass-card, .grain-panel) { background: rgb(var(--creme)); }
+:root.epure.sombre :is(.glass-card, .grain-panel):not(.nuit) { background: rgb(var(--surface)); }
+:root.epure .site-bar { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgb(var(--fond)); }
+:root.epure :is(button, a)[class~="bg-blue"]:not(:disabled):hover,
+:root.epure :is(button, a)[class~="bg-red"]:not(:disabled):hover,
+:root.epure :is(button, a)[class~="bg-paper"]:not(:disabled):hover,
+:root.epure :is(button, a)[class~="bg-ink"]:not(:disabled):hover { transform: none; box-shadow: none; filter: brightness(1.06); }
+/* Coup d'État en mode sombre : la nuit reste rouge sang. */
+:root.sombre[data-theme="election_force"] { --fond: 40 3 8; --fond-haut: 150 14 26; --surface: 52 10 18; --surface-2: 40 7 13; }

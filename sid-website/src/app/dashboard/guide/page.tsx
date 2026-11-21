@@ -115,7 +115,7 @@ const CHAPTERS: Chapter[] = [
     icon: "palette",
     href: "/dashboard/settings",
     body: () =>
-      "Dans **Réglages**, habille ta carte de trombinoscope, ta ligne de classement et ta fiche : couleurs, bordure, lueur, animations, avec un éditeur visuel (ou en CSS pour les curieux). Ton style ne touche que tes propres éléments.\n\nSur ordinateur, tu peux aussi laisser une traînée derrière ton curseur, aux couleurs de la fête du moment.",
+      "Dans **Réglages → Apparence**, habille ta carte de trombinoscope, ta ligne de classement et ta fiche : un style prêt en un clic (Or impérial, Néon, Braise…), puis couleurs, bordure, lueur et animation, avec un aperçu en direct (ou en CSS pour les curieux). Ton style ne touche que tes propres éléments.\n\n**Réglages → Affichage** règle la taille du texte, calme les animations et, sur ordinateur, laisse une traînée derrière ton curseur aux couleurs de la fête du moment.",
   },
   {
     id: "donnees",

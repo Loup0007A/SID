@@ -1,7 +1,9 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
 import { useSiteDecor, type SiteDecor } from "@/components/seasonal/siteDecor";
+import { COMFORT_EVENT, decorAllowed, readComfort } from "@/lib/comfortPrefs";
 
 /**
  * Points d'entrée légers des décors d'événement : le code (et les dessins)
@@ -35,9 +37,24 @@ const ElectionFooter = dynamic(() => import("./Election").then((m) => m.Election
 const ElectionBoard = dynamic(() => import("./Election").then((m) => m.ElectionBoard), { ssr: false });
 const ElectionCeremony = dynamic(() => import("./Election").then((m) => m.ElectionCeremony), { ssr: false });
 
+/** Réglages → Affichage : décors des fêtes sur cet appareil (coupés en mode épuré). */
+function useDecorAllowed() {
+  const [on, setOn] = useState(true);
+  useEffect(() => {
+    const sync = () => setOn(decorAllowed(readComfort()));
+    sync();
+    window.addEventListener(COMFORT_EVENT, sync);
+    return () => window.removeEventListener(COMFORT_EVENT, sync);
+  }, []);
+  return on;
+}
+
 /** Décor de fond (toutes les pages). */
 export function SeasonalDecor() {
   const d = useSiteDecor();
+  const allowed = useDecorAllowed();
+  // L'élection garde le sien : il pose le thème du coup d'État.
+  if (!allowed) return d?.election ? <ElectionDecor /> : null;
   return (
     <>
       {d?.halloween && <HalloweenDecor />}
@@ -52,6 +69,8 @@ export function SeasonalDecor() {
 /** Guirlande sous la barre du haut du tableau de bord. */
 export function SeasonalGarland() {
   const d = useSiteDecor();
+  const allowed = useDecorAllowed();
+  if (!allowed) return null;
   return (
     <>
       {d?.noel && <NoelGarland />}

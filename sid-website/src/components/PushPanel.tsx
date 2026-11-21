@@ -162,11 +162,16 @@ export function PushPanel() {
     : [];
 
   return (
-    <div data-tuto="profil-notifs" className="glass-card space-y-4 p-6">
-      <div>
-        <h2 className="font-display text-lg uppercase">Notifications push</h2>
-        <p className="font-body text-sm text-paper/70">Message, quête validée, arrivée à destination… même site fermé.</p>
-      </div>
+    <div className="glass-card reglage-card space-y-4">
+      <header className="reglage-head">
+        <span className="reglage-pastille" aria-hidden>
+          <SidIcon name="phone" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <h2 className="reglage-titre">Notifications push sur cet appareil</h2>
+          <p className="reglage-intro">Message, quête validée, arrivée à destination… même site fermé.</p>
+        </div>
+      </header>
 
       <ul className="space-y-1.5" aria-label="État de cet appareil">
         <Row

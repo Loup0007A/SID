@@ -144,11 +144,11 @@ export const TOUR: TutoStep[] = [
   {
     id: "notifs",
     chapter: 2,
-    route: "/dashboard/profile",
-    target: "profil-notifs",
+    route: "/dashboard/settings",
+    target: "reglages-notifs",
     icon: "bell",
     title: "Être prévenu partout",
-    body: "La cloche en haut du site garde tout ce qui t'arrive. Active ici les **notifications push** pour être prévenu même onglet fermé : message reçu, quête validée, appel à l'aide, arrivée à destination…\n\nSur iPhone, il faut d'abord ajouter le site à l'écran d'accueil (la marche à suivre est juste là).",
+    body: "La cloche en haut du site garde tout ce qui t'arrive. Dans **Réglages → Notifications**, active les **notifications push** pour être prévenu même onglet fermé : message reçu, quête validée, appel à l'aide, arrivée à destination… Tu y choisis aussi, sujet par sujet, ce que tu reçois, et tes heures calmes.\n\nSur iPhone, il faut d'abord ajouter le site à l'écran d'accueil (la marche à suivre est juste là).",
   },
 
   // ------------------------------------------------------------ 3. Quêtes
@@ -380,7 +380,7 @@ export const PAGE_TIPS: Record<string, PageTip> = {
     key: "settings",
     title: "Réglages",
     icon: "gear",
-    points: ["Habille ta carte, ta ligne de classement et ta fiche, sans écrire de code (ou en CSS, si tu préfères).", "Ton style ne s'applique qu'à toi, jamais au reste de la page."],
+    points: ["Apparence : habille ta carte, ta ligne de classement et ta fiche, avec des styles prêts et un aperçu en direct.", "Notifications : choisis sujet par sujet ce que tu reçois, et des heures calmes sans push.", "Affichage : taille du texte, animations calmes, curseur ; propres à cet appareil."],
   },
   "/dashboard/privacy": {
     key: "privacy",

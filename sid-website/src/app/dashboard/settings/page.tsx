@@ -1,66 +1,40 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import clsx from "clsx";
 import { createClient } from "@/lib/supabase/client";
 import { currentUser } from "@/lib/session";
-import { PROFILE_CSS_SECTIONS } from "@/types/profileStyle";
-import type { ProfileCssSection, ProfileStyleRow } from "@/types/profileStyle";
-import { OrgCard } from "@/components/org/OrgCard";
-import { ProfileStyle, profileSkinClass } from "@/components/ProfileStyle";
-import { CssBuilderPanel } from "@/components/CssBuilderPanel";
-import { RankCard } from "@/components/RankCard";
-import { labelClass } from "@/lib/ui";
-import {
-  buildCss,
-  parseBuilderOptions,
-  defaultBuilderOptions,
-  accentSelectorFor,
-  type CssBuilderOptions,
-} from "@/lib/profileCssBuilder";
-import clsx from "clsx";
-import { readCursorMode, writeCursorMode, type CursorMode } from "@/lib/cursorPrefs";
+import { SidIcon } from "@/components/icons/SidIcon";
+import type { IconName } from "@/components/icons/sidIcons";
+import { useTuto } from "@/components/tuto/TutoProvider";
+import { TOUR } from "@/lib/tuto/content";
+import { AppearanceSettings } from "@/components/settings/AppearanceSettings";
+import { NotificationSettings } from "@/components/settings/NotificationSettings";
+import { ComfortSettings } from "@/components/settings/ComfortSettings";
+import { PrivacySettings } from "@/components/settings/PrivacySettings";
+import { AccountSettings } from "@/components/settings/AccountSettings";
+import { GuideSettings } from "@/components/settings/GuideSettings";
+import "./settings.css";
 
-const ACCENT_LABEL: Record<ProfileCssSection, string> = {
-  org_chart: "titre du poste",
-  roster: "ton pseudo",
-  leaderboard: "ton pseudo",
-  profile: "la grande lettre de rang",
-};
+type Key = "apparence" | "notifications" | "confort" | "confidentialite" | "compte" | "guide";
+const SECTIONS: { key: Key; icon: IconName; label: string; hint: string }[] = [
+  { key: "apparence", icon: "palette", label: "Apparence", hint: "Ta carte, ta ligne, ta fiche" },
+  { key: "notifications", icon: "bell", label: "Notifications", hint: "Push, sujets, heures calmes" },
+  { key: "confort", icon: "eye", label: "Affichage", hint: "Sombre, épuré, texte, animations" },
+  { key: "confidentialite", icon: "ghost", label: "Confidentialité", hint: "Présence, invisibilité" },
+  { key: "compte", icon: "padlock", label: "Compte", hint: "Mot de passe, sessions, données" },
+  { key: "guide", icon: "bulb", label: "Guide", hint: "Astuces et visite" },
+];
+const isKey = (v: string): v is Key => SECTIONS.some((s) => s.key === v);
 
-type Mode = "visual" | "advanced";
-
+/**
+ * Réglages (Lot 93) : tout ce qui concerne le membre, rangé par sujet.
+ * L'adresse garde le sujet ouvert (#notifications…), pour y renvoyer.
+ */
 export default function SettingsPage() {
-  const supabase = createClient();
-  const [userId, setUserId] = useState<string | null>(null);
-  const [nickname, setNickname] = useState("Ton pseudo");
-
-  const [mode, setMode] = useState<Record<ProfileCssSection, Mode>>({
-    org_chart: "visual",
-    roster: "visual",
-    leaderboard: "visual",
-    profile: "visual",
-  });
-  const [options, setOptions] = useState<Record<ProfileCssSection, CssBuilderOptions>>({
-    org_chart: defaultBuilderOptions("#8fb3d9"),
-    roster: defaultBuilderOptions("#d99a9a"),
-    leaderboard: defaultBuilderOptions("#8fb3d9"),
-    profile: defaultBuilderOptions("#d4af37"),
-  });
-  const [rawDrafts, setRawDrafts] = useState<Record<ProfileCssSection, string>>({
-    org_chart: "",
-    roster: "",
-    leaderboard: "",
-    profile: "",
-  });
-  const [saved, setSaved] = useState<Record<ProfileCssSection, string>>({
-    org_chart: "",
-    roster: "",
-    leaderboard: "",
-    profile: "",
-  });
-
-  const [message, setMessage] = useState<string | null>(null);
-  const [savingSection, setSavingSection] = useState<ProfileCssSection | null>(null);
+  const tuto = useTuto();
+  const [me, setMe] = useState<{ id: string; email: string | null; nickname: string } | null>(null);
+  const [section, setSection] = useState<Key>("apparence");
 
   useEffect(() => {
     (async () => {
@@ -68,283 +42,75 @@ export default function SettingsPage() {
         data: { user },
       } = await currentUser();
       if (!user) return;
-      setUserId(user.id);
-
-      const [{ data: profileRow }, { data }] = await Promise.all([
-        supabase.from("profiles").select("nickname").eq("id", user.id).single(),
-        supabase.rpc("get_my_profile_css"),
-      ]);
-      if (profileRow?.nickname) setNickname(profileRow.nickname);
-
-      const rows = (data ?? []) as ProfileStyleRow[];
-      const savedNext = { org_chart: "", roster: "", leaderboard: "", profile: "" } as Record<ProfileCssSection, string>;
-      rows.forEach((r) => {
-        savedNext[r.section] = r.css;
-      });
-      setSaved(savedNext);
-
-      setOptions((o) => {
-        const next = { ...o };
-        (Object.keys(next) as ProfileCssSection[]).forEach((s) => {
-          const parsed = parseBuilderOptions(savedNext[s]);
-          if (parsed) next[s] = parsed;
-        });
-        return next;
-      });
-      setMode((m) => {
-        const next = { ...m };
-        (Object.keys(next) as ProfileCssSection[]).forEach((s) => {
-          // Si du CSS existe mais qu'il n'a pas été généré par l'éditeur
-          // visuel (pas de commentaire BUILDER reconnu), on ouvre plutôt le
-          // mode avancé pour ne rien écraser par surprise.
-          if (savedNext[s] && !parseBuilderOptions(savedNext[s])) next[s] = "advanced";
-        });
-        return next;
-      });
-      setRawDrafts(savedNext);
+      const { data } = await createClient().from("profiles").select("nickname").eq("id", user.id).single();
+      setMe({ id: user.id, email: user.email ?? null, nickname: data?.nickname ?? "Ton pseudo" });
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const fromHash = () => {
+      const h = window.location.hash.slice(1);
+      // Ancien lien vers la présence (accueil) : rangée dans Confidentialité.
+      if (h === "presence") return setSection("confidentialite");
+      if (isKey(h)) setSection(h);
+    };
+    fromHash();
+    window.addEventListener("hashchange", fromHash);
+    return () => window.removeEventListener("hashchange", fromHash);
   }, []);
 
-  function switchMode(section: ProfileCssSection, next: Mode) {
-    if (next === "visual" && mode[section] === "advanced" && rawDrafts[section] && !parseBuilderOptions(rawDrafts[section])) {
-      if (!confirm("Passer à l'éditeur visuel remplacera ton CSS avancé actuel par les réglages ci-dessous. Continuer ?")) return;
-    }
-    setMode((m) => ({ ...m, [section]: next }));
+  // Visite guidée : l'étape « notifications » montre le bon sujet.
+  const tourTarget = tuto?.tour ? TOUR[tuto.tour.index]?.target : null;
+  useEffect(() => {
+    if (tourTarget === "reglages-notifs") setSection("notifications");
+    if (tourTarget === "reglages-apparence") setSection("apparence");
+  }, [tourTarget]);
+
+  function open(k: Key) {
+    setSection(k);
+    history.replaceState(null, "", `#${k}`);
+    if (window.innerWidth < 900) document.getElementById("reglages-contenu")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  async function saveVisual(section: ProfileCssSection) {
-    const css = buildCss(section, options[section]);
-    setSavingSection(section);
-    setMessage(null);
-    const { error } = await supabase.rpc("set_profile_css", { p_section: section, p_css: css });
-    setSavingSection(null);
-    if (error) {
-      setMessage(`Échec (${PROFILE_CSS_SECTIONS.find((s) => s.key === section)?.label}) : ${error.message}`);
-      return;
-    }
-    setSaved((s) => ({ ...s, [section]: css }));
-    setRawDrafts((d) => ({ ...d, [section]: css }));
-    setMessage(`Enregistré pour « ${PROFILE_CSS_SECTIONS.find((s) => s.key === section)?.label} ».`);
-  }
-
-  async function saveAdvanced(section: ProfileCssSection) {
-    setSavingSection(section);
-    setMessage(null);
-    const { error } = await supabase.rpc("set_profile_css", { p_section: section, p_css: rawDrafts[section] });
-    setSavingSection(null);
-    if (error) {
-      setMessage(`Échec (${PROFILE_CSS_SECTIONS.find((s) => s.key === section)?.label}) : ${error.message}`);
-      return;
-    }
-    setSaved((s) => ({ ...s, [section]: rawDrafts[section] }));
-    setMessage(`Enregistré pour « ${PROFILE_CSS_SECTIONS.find((s) => s.key === section)?.label} ».`);
-  }
-
-  async function resetSection(section: ProfileCssSection) {
-    if (!confirm("Retirer complètement le style personnalisé de cette section ?")) return;
-    setSavingSection(section);
-    const { error } = await supabase.rpc("reset_profile_css", { p_section: section });
-    setSavingSection(null);
-    if (error) {
-      setMessage(`Échec : ${error.message}`);
-      return;
-    }
-    setSaved((s) => ({ ...s, [section]: "" }));
-    setRawDrafts((d) => ({ ...d, [section]: "" }));
-  }
-
-  if (!userId) return <p className="font-body text-paper/60">Chargement…</p>;
+  const current = SECTIONS.find((s) => s.key === section)!;
 
   return (
-    <div className="max-w-3xl space-y-8">
-      <h1 className="font-display text-2xl uppercase tracking-wide text-red">Réglages</h1>
+    <div className="reglages">
+      <header className="reglages-entete">
+        <h1 className="titre-sticker reglages-h1">Réglages</h1>
+        <p className="etiquette-collee">Tout ce qui te concerne, rangé au même endroit</p>
+      </header>
 
-      <section data-tuto="reglages-apparence" className="glass-card space-y-3 p-6">
-        <h2 className="font-display text-lg uppercase">Apparence personnalisée</h2>
-        <p className="font-body text-sm text-paper/70">
-          Couleurs, bordure, lueur et animations de ta carte, ta ligne et ta fiche, telles que les autres les voient.
-        </p>
-        {message && <p className="font-mono text-sm text-red">{message}</p>}
-      </section>
+      <div className="reglages-grille">
+        <nav aria-label="Sujets des réglages" className="reglages-nav">
+          {SECTIONS.map((s) => (
+            <button key={s.key} onClick={() => open(s.key)} aria-current={section === s.key ? "page" : undefined} className={clsx("reglages-onglet", section === s.key && "is-on")}>
+              <span className="reglages-onglet-icone" aria-hidden>
+                <SidIcon name={s.icon} />
+              </span>
+              <span className="min-w-0">
+                <span className="reglages-onglet-nom">{s.label}</span>
+                <span className="reglages-onglet-aide">{s.hint}</span>
+              </span>
+            </button>
+          ))}
+        </nav>
 
-      <CursorSettings />
-
-      {PROFILE_CSS_SECTIONS.map(({ key, label, hint }) => {
-        const currentMode = mode[key];
-        const previewCss = currentMode === "visual" ? buildCss(key, options[key]) : rawDrafts[key];
-        return (
-          <section key={key} className="glass-card space-y-4 p-6">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <h3 className="font-display text-base uppercase text-blue-light">{label}</h3>
-                <p className="font-mono text-xs text-paper/65">{hint}</p>
-              </div>
-              <div className="flex overflow-hidden rounded-lg border border-white/15">
-                <button
-                  onClick={() => switchMode(key, "visual")}
-                  className={clsx("px-3 py-1.5 font-mono text-[10px] uppercase", currentMode === "visual" ? "bg-blue text-ink" : "text-paper/60 hover:text-paper")}
-                >
-                  Éditeur visuel
-                </button>
-                <button
-                  onClick={() => switchMode(key, "advanced")}
-                  className={clsx("px-3 py-1.5 font-mono text-[10px] uppercase", currentMode === "advanced" ? "bg-blue text-ink" : "text-paper/60 hover:text-paper")}
-                >
-                  CSS avancé
-                </button>
-              </div>
-            </div>
-
-            {currentMode === "visual" ? (
-              <>
-                <CssBuilderPanel
-                  accentLabel={ACCENT_LABEL[key]}
-                  options={options[key]}
-                  onChange={(next) => setOptions((o) => ({ ...o, [key]: next }))}
-                />
-                <button
-                  onClick={() => saveVisual(key)}
-                  disabled={savingSection === key}
-                  className="rounded-lg bg-blue px-4 py-2 font-mono text-xs uppercase text-ink hover:bg-blue-light disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  {savingSection === key ? "Enregistrement…" : "Enregistrer"}
-                </button>
-              </>
-            ) : (
-              <>
-                <p className="font-mono text-[10px] text-paper/65">
-                  Pour celles et ceux qui préfèrent écrire le CSS eux-mêmes. Les propriétés tapées sans sélecteur
-                  s&apos;appliquent à la carte elle-même ; ajoute <code>{accentSelectorFor(key)} {"{"} ... {"}"}</code>{" "}
-                  pour cibler {ACCENT_LABEL[key]}. 8000 caractères max, <code>url()</code>/<code>@import</code>/
-                  <code>position: fixed</code> sont retirés automatiquement.
-                </p>
-                <textarea
-                  rows={9}
-                  spellCheck={false}
-                  className={`${labelClass} w-full rounded-lg border border-paper-dark bg-ink-soft px-3 py-2 font-mono text-xs text-paper outline-none transition focus:border-blue`}
-                  value={rawDrafts[key]}
-                  maxLength={8000}
-                  onChange={(e) => setRawDrafts((d) => ({ ...d, [key]: e.target.value }))}
-                />
-                <button
-                  onClick={() => saveAdvanced(key)}
-                  disabled={savingSection === key}
-                  className="rounded-lg bg-blue px-4 py-2 font-mono text-xs uppercase text-ink hover:bg-blue-light disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  {savingSection === key ? "Enregistrement…" : "Enregistrer"}
-                </button>
-              </>
-            )}
-
-            {saved[key] && (
-              <button
-                onClick={() => resetSection(key)}
-                disabled={savingSection === key}
-                className="rounded-lg border border-red px-4 py-2 font-mono text-xs uppercase text-red hover:bg-red hover:text-ink disabled:opacity-40"
-              >
-                Retirer le style personnalisé
-              </button>
-            )}
-
-            <div>
-              <p className="mb-1 font-mono text-[10px] uppercase text-paper/65">Aperçu</p>
-              <SectionPreview section={key} userId={userId} nickname={nickname} css={previewCss} />
-            </div>
-          </section>
-        );
-      })}
-    </div>
-  );
-}
-
-const CURSOR_CHOICES: { v: CursorMode; label: string; hint: string }[] = [
-  { v: "full", label: "Traînée + clic", hint: "Une petite traînée suit la souris, un éclat à chaque clic." },
-  { v: "click", label: "Clic seulement", hint: "Juste l'éclat au clic." },
-  { v: "off", label: "Désactivé", hint: "Curseur normal." },
-];
-
-/** Réglé sur cet appareil (navigateur), pas sur le compte. */
-function CursorSettings() {
-  const [mode, setMode] = useState<CursorMode | null>(null);
-  useEffect(() => setMode(readCursorMode()), []);
-  return (
-    <section className="glass-card space-y-3 p-6">
-      <div>
-        <h2 className="font-display text-lg uppercase">Curseur</h2>
-        <p className="font-body text-sm text-paper/70">
-          Sur ordinateur, avec une souris. Les couleurs suivent la fête du moment.
-        </p>
-      </div>
-      <div className="flex flex-wrap gap-2">
-        {CURSOR_CHOICES.map((c) => (
-          <button
-            key={c.v}
-            type="button"
-            onClick={() => {
-              writeCursorMode(c.v);
-              setMode(c.v);
-            }}
-            title={c.hint}
-            className={clsx(
-              "rounded-lg border px-3 py-1.5 font-mono text-xs uppercase transition",
-              mode === c.v ? "border-blue bg-blue text-ink" : "border-white/15 text-paper/70 hover:border-white/30 hover:text-paper",
-            )}
-          >
-            {c.label}
-          </button>
-        ))}
-      </div>
-      {mode && <p className="font-mono text-[10px] text-paper/65">{CURSOR_CHOICES.find((c) => c.v === mode)?.hint}</p>}
-    </section>
-  );
-}
-
-function SectionPreview({ section, userId, nickname, css }: { section: ProfileCssSection; userId: string; nickname: string; css: string }) {
-  const skin = profileSkinClass(userId);
-
-  if (section === "org_chart") {
-    return (
-      <OrgCard
-        label="Poste occupé"
-        description="La mission du poste s'affiche ici."
-        holder={{ id: userId, nickname, avatar_url: null }}
-        team={{ id: "apercu", name: "Équipe rattachée", independent: false }}
-        css={css}
-        linkHolder={false}
-      />
-    );
-  }
-
-  if (section === "roster") {
-    return (
-      <div className={`glass-card max-w-xs space-y-1 p-4 ${skin}`}>
-        <ProfileStyle userId={userId} css={css} />
-        <span className="font-display text-lg uppercase">{nickname}</span>
-        <p className="font-mono text-xs text-paper/60">Agent de terrain</p>
-        <p className="font-body text-sm text-paper/80">Un aperçu de ta carte du trombinoscope.</p>
-      </div>
-    );
-  }
-
-  if (section === "leaderboard") {
-    return (
-      <div className={`glass-card flex items-center gap-4 px-4 py-3 ${skin}`}>
-        <ProfileStyle userId={userId} css={css} />
-        <span className="w-8 shrink-0 text-center font-display text-lg text-blue-light">1</span>
-        <span className="flex-1 font-display uppercase">{nickname}</span>
-        <span className="font-mono text-sm text-blue-light">1 234 pts</span>
-      </div>
-    );
-  }
-
-  return (
-    <div className={`glass-card flex flex-wrap items-center gap-4 p-6 ${skin}`}>
-      <ProfileStyle userId={userId} css={css} />
-      <RankCard rank="B" />
-      <div>
-        <p className="font-display text-2xl uppercase tracking-wide text-red">{nickname}</p>
-        <p className="font-mono text-xs text-paper/60">Aperçu de ta fiche de profil</p>
+        <div id="reglages-contenu" className="min-w-0 scroll-mt-24">
+          <h2 className="sr-only">{current.label}</h2>
+          {!me ? (
+            <p className="glass-card reglage-card text-sm">Chargement…</p>
+          ) : section === "apparence" ? (
+            <AppearanceSettings userId={me.id} nickname={me.nickname} />
+          ) : section === "notifications" ? (
+            <NotificationSettings />
+          ) : section === "confort" ? (
+            <ComfortSettings />
+          ) : section === "confidentialite" ? (
+            <PrivacySettings userId={me.id} />
+          ) : section === "compte" ? (
+            <AccountSettings email={me.email} />
+          ) : (
+            <GuideSettings />
+          )}
+        </div>
       </div>
     </div>
   );

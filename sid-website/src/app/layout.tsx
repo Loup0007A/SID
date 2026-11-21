@@ -14,6 +14,7 @@ import { FondThemeSync } from "@/components/fond/FondThemeSync";
 import { GlitchSync } from "@/components/glitch/GlitchSync";
 import { brandify } from "@/lib/brand";
 import { BrandProvider } from "@/components/BrandProvider";
+import { COMFORT_BOOT } from "@/lib/comfortPrefs";
 
 // Les pages prêtes à l'avance (accueil, connexion, CGU…) sont refaites toutes
 // les 5 minutes : un changement de nom dans app_config y arrive sans redéployer.
@@ -48,8 +49,10 @@ export default async function RootLayout({
 }) {
   const [brand, glitched, fondTheme] = await Promise.all([getBrand(), getGlitched(), getFondTheme()]);
   return (
-    <html lang="fr" data-theme={fondTheme === "sid" ? undefined : fondTheme}>
+    <html lang="fr" data-theme={fondTheme === "sid" ? undefined : fondTheme} suppressHydrationWarning>
       <head>
+        {/* Réglages → Affichage et confort (Lot 93) : posés avant le premier affichage. */}
+        <script dangerouslySetInnerHTML={{ __html: COMFORT_BOOT }} />
         {/* PageSpeed (Lot 65) : les polices du premier affichage arrivent en
             même temps que la feuille de style au lieu d'après elle, et la
             connexion à Supabase est ouverte d'avance. */}

@@ -86,98 +86,116 @@ export function CssBuilderPanel({
   }
 
   return (
-    <div className="space-y-5">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="space-y-1">
-          <label className={labelClass}>Bordure</label>
-          <select className={inputClass} value={options.borderStyle} onChange={(e) => set("borderStyle", e.target.value as BorderStyle)}>
-            {BORDER_STYLES.map((b) => (
-              <option key={b.value} value={b.value}>{b.label}</option>
-            ))}
-          </select>
+    <div className="editeur-style">
+      <fieldset className="editeur-groupe">
+        <legend className="reglage-sous-titre">Bordure</legend>
+        <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Bordure">
+          {BORDER_STYLES.map((b) => (
+            <button
+              key={b.value}
+              type="button"
+              role="radio"
+              aria-checked={options.borderStyle === b.value}
+              onClick={() => set("borderStyle", b.value)}
+              className={`puce-choix ${options.borderStyle === b.value ? "is-on" : ""}`}
+            >
+              <span className={`puce-bord is-${b.value}`} aria-hidden />
+              {b.label}
+            </button>
+          ))}
         </div>
-        {options.borderStyle !== "none" && (
-          <>
-            <ColorField label="Couleur de la bordure" value={options.borderColor} onChange={(v) => set("borderColor", v)} />
-            <SliderField label="Épaisseur" value={options.borderWidth} min={0} max={6} unit="px" onChange={(v) => set("borderWidth", v)} />
-          </>
-        )}
-        <SliderField label="Arrondi des coins" value={options.borderRadius} min={0} max={32} unit="px" onChange={(v) => set("borderRadius", v)} />
-      </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {options.borderStyle !== "none" && (
+            <>
+              <ColorField label="Couleur" value={options.borderColor} onChange={(v) => set("borderColor", v)} />
+              <SliderField label="Épaisseur" value={options.borderWidth} min={0} max={6} unit="px" onChange={(v) => set("borderWidth", v)} />
+            </>
+          )}
+          <SliderField label="Arrondi des coins" value={options.borderRadius} min={0} max={32} unit="px" onChange={(v) => set("borderRadius", v)} />
+        </div>
+      </fieldset>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="space-y-1 sm:col-span-2">
-          <label className={labelClass}>Fond</label>
-          <select className={inputClass} value={options.backgroundMode} onChange={(e) => set("backgroundMode", e.target.value as BackgroundMode)}>
-            {BACKGROUND_MODES.map((b) => (
-              <option key={b.value} value={b.value}>{b.label}</option>
-            ))}
-          </select>
+      <fieldset className="editeur-groupe">
+        <legend className="reglage-sous-titre">Fond</legend>
+        <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Fond">
+          {BACKGROUND_MODES.map((b) => (
+            <button
+              key={b.value}
+              type="button"
+              role="radio"
+              aria-checked={options.backgroundMode === b.value}
+              onClick={() => set("backgroundMode", b.value)}
+              className={`puce-choix ${options.backgroundMode === b.value ? "is-on" : ""}`}
+            >
+              {b.value === "none" ? "Habituel" : b.label}
+            </button>
+          ))}
         </div>
         {options.backgroundMode !== "none" && (
-          <ColorField
-            label={options.backgroundMode === "gradient" ? "Couleur 1" : "Couleur de fond"}
-            value={options.backgroundColor}
-            onChange={(v) => set("backgroundColor", v)}
-          />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <ColorField
+              label={options.backgroundMode === "gradient" ? "Couleur 1" : "Couleur"}
+              value={options.backgroundColor}
+              onChange={(v) => set("backgroundColor", v)}
+            />
+            {options.backgroundMode === "gradient" && (
+              <>
+                <ColorField label="Couleur 2" value={options.gradientColor} onChange={(v) => set("gradientColor", v)} />
+                <SliderField label="Angle du dégradé" value={options.gradientAngle} min={0} max={360} unit="°" onChange={(v) => set("gradientAngle", v)} />
+              </>
+            )}
+          </div>
         )}
-        {options.backgroundMode === "gradient" && (
-          <>
-            <ColorField label="Couleur 2" value={options.gradientColor} onChange={(v) => set("gradientColor", v)} />
-            <SliderField label="Angle du dégradé" value={options.gradientAngle} min={0} max={360} unit="°" onChange={(v) => set("gradientAngle", v)} />
-          </>
-        )}
-      </div>
+      </fieldset>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <label className="flex items-center gap-2 font-mono text-xs sm:col-span-2">
-          <input type="checkbox" className="accent-blue" checked={options.glowEnabled} onChange={(e) => set("glowEnabled", e.target.checked)} />
+      <fieldset className="editeur-groupe">
+        <legend className="reglage-sous-titre">Lueur et accent</legend>
+        <label className="flex items-center gap-2 text-sm font-semibold">
+          <input type="checkbox" className="h-4 w-4 accent-blue" checked={options.glowEnabled} onChange={(e) => set("glowEnabled", e.target.checked)} />
           Lueur autour de la carte
         </label>
-        {options.glowEnabled && (
-          <>
-            <ColorField label="Couleur de la lueur" value={options.glowColor} onChange={(v) => set("glowColor", v)} />
-            <SliderField label="Intensité" value={options.glowIntensity} min={0} max={100} unit="%" onChange={(v) => set("glowIntensity", v)} />
-          </>
-        )}
-      </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {options.glowEnabled && (
+            <>
+              <ColorField label="Couleur de la lueur" value={options.glowColor} onChange={(v) => set("glowColor", v)} />
+              <SliderField label="Intensité" value={options.glowIntensity} min={0} max={100} unit="%" onChange={(v) => set("glowIntensity", v)} />
+            </>
+          )}
+          <ColorField label={`Accent (${accentLabel})`} value={options.accentColor} onChange={(v) => set("accentColor", v)} />
+        </div>
+      </fieldset>
 
-      <ColorField label={`Couleur d'accent (${accentLabel})`} value={options.accentColor} onChange={(v) => set("accentColor", v)} />
-
-      <div className="space-y-2 border-t border-white/10 pt-4">
-        <label className={labelClass}><SidIcon name="sparkle" /> Animation</label>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+      <fieldset className="editeur-groupe">
+        <legend className="reglage-sous-titre">
+          <SidIcon name="sparkle" /> Animation
+        </legend>
+        <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Animation">
           {ANIMATION_ORDER.map((a) => (
             <button
               key={a}
               type="button"
+              role="radio"
+              aria-checked={options.animation === a}
               onClick={() => set("animation", a)}
-              className={`rounded-lg border px-3 py-2 text-left font-mono text-[11px] uppercase tracking-wide transition ${
-                options.animation === a
-                  ? "border-blue bg-blue/20 text-blue-light"
-                  : "border-white/15 text-paper/70 hover:border-blue/50 hover:text-paper"
-              }`}
+              className={`puce-choix ${options.animation === a ? "is-on" : ""}`}
             >
               {ANIMATION_LABELS[a]}
             </button>
           ))}
         </div>
         {options.animation !== "none" && (
-          <div className="max-w-xs space-y-1">
-            <label className={labelClass}>Vitesse</label>
-            <select className={inputClass} value={options.animationSpeed} onChange={(e) => set("animationSpeed", e.target.value as CssBuilderOptions["animationSpeed"])}>
-              <option value="slow">Lente</option>
-              <option value="normal">Normale</option>
-              <option value="fast">Rapide</option>
-            </select>
+          <div className="seg-reglage" role="radiogroup" aria-label="Vitesse">
+            {(["slow", "normal", "fast"] as const).map((v) => (
+              <button key={v} type="button" role="radio" aria-checked={options.animationSpeed === v} onClick={() => set("animationSpeed", v)} className={options.animationSpeed === v ? "is-on" : ""}>
+                {v === "slow" ? "Lente" : v === "normal" ? "Normale" : "Rapide"}
+              </button>
+            ))}
           </div>
         )}
         {options.animation === "neon-flicker" && (
-          <p className="font-mono text-[10px] text-paper/65">
-            S&apos;applique à la couleur d&apos;accent ci-dessus, pas au reste de la carte.
-          </p>
+          <p className="text-xs opacity-70">S&apos;applique à la couleur d&apos;accent, pas au reste de la carte.</p>
         )}
-      </div>
+      </fieldset>
     </div>
   );
 }
