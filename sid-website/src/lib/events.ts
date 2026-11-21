@@ -119,7 +119,7 @@ export const EVENT_LIST: EventInfo[] = [
     period: "du début à la fin réglés ci-dessous",
     color: "#f0c27a",
     description:
-      "Dossier : fond pourpre à étoiles, cocardes et bulletins, confettis, fanions pourpre et or, compte à rebours sur l'accueil, puis la cérémonie de proclamation (une fois pour chaque membre) et le portrait du nouveau Dictateur. Carte et wiki : fanions et confettis. L'élu reçoit le titre « Dictateur », aucun grade.",
+      "Dossier : fond pourpre à étoiles, cocardes et bulletins, confettis, fanions pourpre et or, compte à rebours sur l'accueil, puis la cérémonie de proclamation (une fois pour chaque membre) et le portrait du nouveau Dictateur. Carte et wiki : fanions et confettis. Variante « par la force » (coup d'État, secrète jusqu'à la proclamation) : fond rouge sang à panneaux d'alerte, alarme sur les bords, bande d'alerte sous la barre du haut, cérémonie de coup d'État ; l'annonce envoyée à tous devient une alerte. L'élu reçoit le titre « Dictateur », aucun grade, dans les deux cas.",
   },
   {
     key: "halloween",

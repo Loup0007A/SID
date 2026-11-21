@@ -68,7 +68,11 @@ const loadDecor = unstable_cache(
     try {
       const sb = createClient(url, anonKey, { auth: { persistSession: false } });
       const { data, error } = await sb.rpc("site_decor");
-      return error ? "sid" : themeFromDecor(data as Record<string, unknown> | null);
+      const t = error ? "sid" : themeFromDecor(data as Record<string, unknown> | null);
+      if (t !== "election") return t;
+      // Élection prise par la force : rouge sang, dès la proclamation.
+      const e = await sb.rpc("election_status");
+      return (e.data as { mode?: string } | null)?.mode === "force" ? "election_force" : t;
     } catch {
       return "sid";
     }

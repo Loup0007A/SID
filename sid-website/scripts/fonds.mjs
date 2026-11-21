@@ -100,6 +100,10 @@ const SHAPES = {
   ballot: (c) => P("M-40 -28H40V32H-40ZM-40 -28L0 4L40 -28", c, ` stroke="${c}"`) + P("M-14 -6L-4 6L16 -16", "none", ` stroke="#ffffff" stroke-opacity="0.6" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"`),
   dot: (c) => P(circle(0, 0, 50), c),
   cocarde: (c) => P(circle(0, 0, 50) + circle(0, 0, 36) + circle(0, 0, 22), c, ' fill-rule="evenodd"'),
+  // Coup d'État : panneau d'alerte, goutte, bande de chevrons.
+  alerte: (c) => P("M0 -46L48 40H-48ZM-5 -14H5L3 16H-3ZM0 22A5 5 0 1 1 -0.1 22Z", c, ' fill-rule="evenodd"'),
+  goutte: (c) => P("M0 -50C14 -26 32 -6 32 16A32 32 0 0 1 -32 16C-32 -6 -14 -26 0 -50Z", c),
+  chevrons: (c) => P("M-50 -14L-30 -14L-10 14L-30 14ZM-14 -14L6 -14L26 14L6 14ZM22 -14L42 -14L62 14L42 14Z", c),
 };
 
 // Formes qui ont un haut et un bas : peu tournées.
@@ -263,6 +267,17 @@ const THEMES = {
     particle: "confetti", sens: 1, pcolors: ["#F0C27A", "#FFF6E8", "#E2577A", "#F0C27A"],
   },
 };
+
+// Élection par la force (Lot 91) : rouge sang, alertes. Thème posé à la
+// proclamation quand l'élu a pris le pouvoir par la force.
+THEMES.election_force = {
+  fond: "#8E0B14", haut: "#E0303A", bas: "#1A0204", encre: "#14030A", creme: "#FFF1EC", creme2: "#F8E1DC",
+  accent: "#FF2D2D", accent2: "#F2C94C", accentCarte: "#A30F1B",
+  colors: ["#14030A", "#FF3B3B", "#F2C94C", "#FFF1EC"], shapes: [["alerte", 3], ["goutte", 2], ["chevrons", 2]],
+  particle: "goutte", sens: 1, pcolors: ["#FF3B3B", "#14030A", "#C1121F", "#FF3B3B"], opacity: [0.16, 0.3],
+};
+UPRIGHT.alerte = 12;
+UPRIGHT.goutte = 8;
 
 // ─── Écriture ──────────────────────────────────────────────────────────
 mkdirSync(join(ROOT, "public/fonds"), { recursive: true });

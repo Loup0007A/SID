@@ -6,9 +6,11 @@ import { createClient } from "@/lib/supabase/client";
 /**
  * Modération → Affichage événementiel → Élection du Dictateur (Lot 80) :
  * l'élu (secret jusqu'à la proclamation), le début, la proclamation et la fin.
+ * Lot 91 : la manière, proclamé ou pris par la force (secrète aussi).
  */
 
-type Admin = { winner: string | null; starts_at: string | null; reveal_at: string | null; ends_at: string | null; awarded: boolean; now: string };
+type Mode = "election" | "force";
+type Admin = { winner: string | null; starts_at: string | null; reveal_at: string | null; ends_at: string | null; mode?: Mode; awarded: boolean; now: string };
 
 /** ISO → valeur d'un champ datetime-local (heure de l'appareil). */
 function toLocal(iso: string | null) {
@@ -36,6 +38,7 @@ export function ElectionAdmin({ onSaved }: { onSaved?: () => void }) {
   const [starts, setStarts] = useState("");
   const [reveal, setReveal] = useState("");
   const [ends, setEnds] = useState("");
+  const [mode, setMode] = useState<Mode>("election");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -45,6 +48,7 @@ export function ElectionAdmin({ onSaved }: { onSaved?: () => void }) {
     setStarts(toLocal(a.starts_at));
     setReveal(toLocal(a.reveal_at));
     setEnds(toLocal(a.ends_at));
+    setMode(a.mode === "force" ? "force" : "election");
   }
 
   useEffect(() => {
@@ -86,6 +90,7 @@ export function ElectionAdmin({ onSaved }: { onSaved?: () => void }) {
       p_starts: fromLocal(starts),
       p_reveal: fromLocal(reveal),
       p_ends: fromLocal(ends),
+      p_mode: mode,
     });
     setBusy(false);
     if (error) return setMsg({ ok: false, text: error.message });
@@ -94,7 +99,7 @@ export function ElectionAdmin({ onSaved }: { onSaved?: () => void }) {
     onSaved?.();
   }
 
-  if (missing) return <p className="font-mono text-xs text-red">Migration 0098 à lancer dans Supabase.</p>;
+  if (missing) return <p className="font-mono text-xs text-red">Migrations 0098 et 0111 à lancer dans Supabase.</p>;
   if (!cfg) return <p className="font-body text-xs text-paper/60">Chargement…</p>;
 
   const revealed = !!cfg.reveal_at && new Date(cfg.reveal_at) <= new Date(cfg.now);
@@ -111,6 +116,30 @@ export function ElectionAdmin({ onSaved }: { onSaved?: () => void }) {
             ))}
           </datalist>
         </label>
+        <fieldset className="space-y-1 sm:col-span-2">
+          <legend className="font-mono text-[11px] uppercase text-paper/60">Arrivée au pouvoir (secrète jusqu&apos;à la proclamation)</legend>
+          <div className="flex flex-wrap gap-2">
+            {(
+              [
+                ["election", "Proclamé", "Confettis, fanions pourpre et or, cérémonie."],
+                ["force", "Par la force", "Coup d'État : rouge sang, alarme, bandes d'alerte."],
+              ] as [Mode, string, string][]
+            ).map(([k, label, hint]) => (
+              <button
+                key={k}
+                type="button"
+                aria-pressed={mode === k}
+                onClick={() => setMode(k)}
+                className={`min-w-[12rem] flex-1 rounded-xl border-2 px-3 py-2 text-left transition ${
+                  mode === k ? (k === "force" ? "border-encre bg-[#8e0b14] text-[#fff1ec]" : "border-encre bg-encre text-creme") : "border-white/20 hover:border-white/50"
+                }`}
+              >
+                <span className="block font-display text-sm uppercase tracking-wide">{label}</span>
+                <span className="block font-body text-xs opacity-80">{hint}</span>
+              </button>
+            ))}
+          </div>
+        </fieldset>
         <label className="space-y-1">
           <span className="font-mono text-[11px] uppercase text-paper/60">Début (compte à rebours)</span>
           <input type="datetime-local" value={starts} onChange={(e) => setStarts(e.target.value)} className={input} style={{ colorScheme: "dark" }} />
@@ -144,10 +173,12 @@ export function ElectionAdmin({ onSaved }: { onSaved?: () => void }) {
         {revealed
           ? cfg.winner
             ? cfg.awarded
-              ? `Proclamé : ${cfg.winner} a reçu le titre « Dictateur », et tout le S.I.D. a été prévenu.`
+              ? cfg.mode === "force"
+                ? `Coup d'État : ${cfg.winner} a pris le pouvoir et reçu le titre « Dictateur » ; tout le S.I.D. a reçu l'alerte.`
+                : `Proclamé : ${cfg.winner} a reçu le titre « Dictateur », et tout le S.I.D. a été prévenu.`
               : `Proclamation passée : ${cfg.winner} recevra le titre à la prochaine visite d'un membre.`
             : "Proclamation passée sans élu : la page annonce que le Conseil délibère encore. Choisis l'élu pour la terminer."
-          : "Avant la proclamation, les membres voient le compte à rebours ; personne ne voit le nom. À l'heure dite, la cérémonie s'ouvre une fois pour chacun et l'élu reçoit le titre « Dictateur » (aucun grade, aucun droit)."}{" "}
+          : "Avant la proclamation, les membres voient le compte à rebours ; personne ne voit le nom ni la manière. À l'heure dite, la cérémonie s'ouvre une fois pour chacun et l'élu reçoit le titre « Dictateur » (aucun grade, aucun droit). Par la force, tout passe au rouge sang : alarme, bandes d'alerte, cérémonie de coup d'État."}{" "}
         Une nouvelle date de proclamation compte comme une nouvelle élection.
       </p>
     </div>

@@ -84,6 +84,13 @@ html[data-theme="election"] {
   --motif: url(/fonds/election.svg); --particule: url(/fonds/p-confetti.svg); 
   --p1: 240 194 122; --p2: 255 246 232; --p3: 226 87 122; --p4: 240 194 122;
 }
+html[data-theme="election_force"] {
+  --fond: 142 11 20; --fond-haut: 224 48 58; --fond-bas: 26 2 4;
+  --encre: 20 3 10; --creme: 255 241 236; --creme-2: 248 225 220;
+  --accent: 255 45 45; --accent-2: 242 201 76; --accent-on-card: 163 15 27;
+  --motif: url(/fonds/election_force.svg); --particule: url(/fonds/p-goutte.svg); 
+  --p1: 255 59 59; --p2: 20 3 10; --p3: 193 18 31; --p4: 255 59 59;
+}
 /* Particules qui montent (bulles, cœurs, notes, braises). */
 html[data-theme="saint_valentin"] .fond-particules i { top: auto; bottom: -40px; animation-name: fond-monte; }
 html[data-theme="poisson_avril"] .fond-particules i { top: auto; bottom: -40px; animation-name: fond-monte; }

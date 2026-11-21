@@ -13,6 +13,10 @@ import { SidIcon } from "@/components/icons/SidIcon";
  * rebours, puis la proclamation (une fois pour chaque membre) et le portrait
  * du nouveau Dictateur. Pas de vote : le S.I.D. désigne l'élu (Modération).
  * Le serveur ne donne le nom qu'à l'heure de la proclamation.
+ *
+ * Lot 91 (migration 0111) : l'élu peut aussi prendre le pouvoir par la
+ * force (mode « force », secret jusqu'à la proclamation). Même titre ;
+ * tout passe au rouge sang : alarme, bande d'alerte, cérémonie de coup d'État.
  */
 
 export type Winner = { id: string; nickname: string; avatar_url: string | null };
@@ -23,8 +27,13 @@ export type ElectionState = {
   reveal_at: string | null;
   ends_at: string | null;
   revealed: boolean;
+  /** Connu seulement après la proclamation : « election » ou « force ». */
+  mode?: "election" | "force" | null;
   winner: Winner | null;
 };
+
+/** L'élu a pris le pouvoir par la force (et c'est proclamé). */
+export const isForce = (s: ElectionState | null | undefined) => !!s?.revealed && s.mode === "force";
 
 export const ELECTION_REPLAY_EVENT = "sid:election-replay";
 const seenKey = (reveal: string) => `sid-election-seen-${new Date(reveal).getTime()}`;
@@ -171,19 +180,50 @@ function Portrait({ w, size = 96 }: { w: Winner; size?: number }) {
 
 export function ElectionDecor() {
   const [mounted, setMounted] = useState(false);
+  const { state } = useElection();
+  const force = isForce(state);
   useEffect(() => {
     setMounted(true);
     document.documentElement.classList.add("decor-election");
     return () => document.documentElement.classList.remove("decor-election");
   }, []);
+  // Par la force : thème rouge sang (fonds.css) et alarme sur les bords.
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle("election-force", force);
+    if (force) {
+      root.dataset.electionMode = "force";
+      root.dataset.theme = "election_force";
+    } else {
+      delete root.dataset.electionMode;
+      if (root.dataset.theme === "election_force") root.dataset.theme = "election";
+    }
+    return () => {
+      root.classList.remove("election-force");
+      delete root.dataset.electionMode;
+    };
+  }, [force]);
   if (!mounted) return null;
   return createPortal(
-    <>
-      <div className="hd-front" aria-hidden>
-        <Confetti count={22} className="el-confetti-soft" />
-      </div>
-    </>,
+    <div className="hd-front" aria-hidden>
+      {force ? <div className="el-alarm" /> : <Confetti count={22} className="el-confetti-soft" />}
+    </div>,
     document.body,
+  );
+}
+
+const TAPE = "ALERTE · COUP D'ÉTAT · LE CONSEIL EST DISSOUS · COUVRE-FEU EN VIGUEUR · ";
+
+/** Bande d'alerte, à la place des fanions, quand le pouvoir est pris par la force. */
+function AlertTape() {
+  return (
+    <div className="el-tape" aria-hidden>
+      <div className="el-tape-track">
+        {[0, 1, 2, 3].map((i) => (
+          <span key={i}>{TAPE}</span>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -191,6 +231,8 @@ export function ElectionDecor() {
 export function ElectionGarland() {
   const box = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
+  const { state } = useElection();
+  const force = isForce(state);
   useEffect(() => {
     const el = box.current;
     if (!el) return;
@@ -199,7 +241,8 @@ export function ElectionGarland() {
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [force]);
+  if (force) return <AlertTape />;
   if (!width) return <div ref={box} className="nl-garland-box" aria-hidden />;
   const small = width < 640;
   const swag = small ? 120 : 170;
@@ -239,7 +282,12 @@ export function ElectionGreeting() {
   const { state } = useElection();
   if (!state?.on) return null;
   let text = "Le S.I.D. s'apprête à proclamer son Dictateur.";
-  if (state.revealed) text = state.winner ? `Vive ${state.winner.nickname}, Dictateur du S.I.D. !` : "Le Conseil du S.I.D. délibère encore…";
+  if (state.revealed)
+    text = state.winner
+      ? isForce(state)
+        ? `Coup d'État : ${state.winner.nickname} a pris le pouvoir par la force. Couvre-feu en vigueur.`
+        : `Vive ${state.winner.nickname}, Dictateur du S.I.D. !`
+      : "Le Conseil du S.I.D. délibère encore…";
   else if (state.reveal_at) text = `Le S.I.D. attend son nouveau Dictateur. Proclamation ${fmtDay(state.reveal_at)}.`;
   return <p className="el-greeting mt-1 font-body text-sm italic">{text}</p>;
 }
@@ -249,10 +297,31 @@ export function ElectionBoard() {
   const now = useNow(skew);
   if (!state?.on) return null;
 
+  if (state.revealed && state.winner && isForce(state)) {
+    const w = state.winner;
+    return (
+      <section className="el-board is-force glass-card nuit" aria-label="Coup d'État">
+        <div className="relative z-[1] flex flex-wrap items-center gap-5">
+          <Portrait w={w} size={88} />
+          <div className="min-w-0 flex-1">
+            <p className="el-kicker">⚠ Coup d&apos;État</p>
+            <p className="el-name wrap-any">{w.nickname}</p>
+            <p className="font-body text-sm text-paper/80">
+              A pris le pouvoir par la force {state.reveal_at ? fmtDay(state.reveal_at) : "cette nuit"}. Le Conseil est dissous. Dictateur du S.I.D.
+            </p>
+          </div>
+          <button type="button" onClick={() => window.dispatchEvent(new Event(ELECTION_REPLAY_EVENT))} className="el-btn">
+            Revoir la prise du pouvoir
+          </button>
+        </div>
+      </section>
+    );
+  }
+
   if (state.revealed && state.winner) {
     const w = state.winner;
     return (
-      <section className="el-board glass-card" aria-label="Le nouveau Dictateur">
+      <section className="el-board glass-card nuit" aria-label="Le nouveau Dictateur">
         <Confetti count={18} className="el-confetti-card" />
         <div className="relative z-[1] flex flex-wrap items-center gap-5">
           <Portrait w={w} size={88} />
@@ -273,7 +342,7 @@ export function ElectionBoard() {
 
   if (state.revealed) {
     return (
-      <section className="el-board glass-card" aria-label="Élection du Dictateur">
+      <section className="el-board glass-card nuit" aria-label="Élection du Dictateur">
         <p className="el-kicker">Élection du Dictateur</p>
         <p className="font-body text-paper/80">Le Conseil du S.I.D. délibère encore. Le nom tombera dans un instant.</p>
       </section>
@@ -282,7 +351,7 @@ export function ElectionBoard() {
 
   const t = state.reveal_at ? left(new Date(state.reveal_at).getTime() - now) : null;
   return (
-    <section className="el-board glass-card" aria-label="Élection du Dictateur">
+    <section className="el-board glass-card nuit" aria-label="Élection du Dictateur">
       <div className="relative z-[1] flex flex-wrap items-center gap-5">
         <CrownArt className="el-board-crown" />
         <div className="min-w-0 flex-1">
@@ -321,16 +390,26 @@ const FOOTER_LINES = [
   "Applaudissements obligatoires.",
 ];
 
+const FORCE_LINES = [
+  "Toute résistance est inutile.",
+  "Le Conseil n'a pas eu le temps de voter.",
+  "Couvre-feu à 22 h. Pour tout le monde.",
+  "Les urnes ont été confisquées.",
+  "Le S.I.D. obéit.",
+];
+
 export function ElectionFooter() {
   const [msg, setMsg] = useState<string | null>(null);
   const [burst, setBurst] = useState(0);
+  const { state } = useElection();
+  const lines = isForce(state) ? FORCE_LINES : FOOTER_LINES;
   return (
     <span className="relative inline-flex normal-case tracking-normal">
       <button
         type="button"
         aria-label="Couronne du Dictateur"
         onClick={() => {
-          setMsg(FOOTER_LINES[Math.floor(Math.random() * FOOTER_LINES.length)]);
+          setMsg(lines[Math.floor(Math.random() * lines.length)]);
           setBurst((b) => b + 1);
           setTimeout(() => setMsg(null), 2800);
         }}
@@ -407,7 +486,41 @@ export function ElectionCeremony() {
   }, [open]);
 
   const w = state?.winner;
+  const force = isForce(state);
   if (!open || !w) return null;
+  // Par la force : alarme, gyrophares rouges, bandes d'alerte ; pas de confettis.
+  if (force)
+    return createPortal(
+      <div className="el-ceremony is-force" role="alertdialog" aria-modal="true" aria-label="Coup d'État">
+        <AlertTape />
+        <span className="el-beam el-beam-l is-strong" aria-hidden />
+        <span className="el-beam el-beam-r is-strong" aria-hidden />
+        <div className="el-stage">
+          {stage === "council" && <p className="el-line el-line-alert">Alerte. Alerte.</p>}
+          {stage === "suspense" && <p className="el-line">Le Conseil du S.I.D. vient d&apos;être renversé.</p>}
+          {stage === "reveal" && (
+            <div className="el-reveal">
+              <Portrait w={w} size={132} />
+              <p className="el-reveal-name wrap-any">{w.nickname}</p>
+              <p className="el-reveal-force">a pris le pouvoir par la force</p>
+              <p className="el-reveal-sub">Dictateur du S.I.D.</p>
+              <button type="button" autoFocus onClick={() => setOpen(false)} className="el-btn el-btn-lg">
+                <SidIcon name="crown" /> Se soumettre
+              </button>
+            </div>
+          )}
+        </div>
+        <div className="el-tape-bottom">
+          <AlertTape />
+        </div>
+        {stage !== "reveal" && (
+          <button type="button" onClick={() => setStage("reveal")} className="el-skip">
+            Passer
+          </button>
+        )}
+      </div>,
+      document.body,
+    );
   return createPortal(
     <div className="el-ceremony" role="dialog" aria-modal="true" aria-label="Proclamation du Dictateur">
       <span className="el-beam el-beam-l is-strong" aria-hidden />

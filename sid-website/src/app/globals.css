@@ -40,7 +40,7 @@
 }
 
 /* Jetons « sur le fond » */
-:root, .nuit, .shop-frame, .quest-hero, .rc, .chat-main {
+:root, .nuit, .nuit.glass-card, .shop-frame, .quest-hero, .rc, .chat-main {
   --titre-ombre: 0.06em 0.06em 0 rgb(var(--encre));
   --titre-trait: 0.045em;
   --c-paper: var(--creme);

@@ -188,7 +188,7 @@ export function describe(row: { action: string; details: Record<string, unknown>
       return `« ${d.poste} »${Number(d.sous_postes_remontes) > 0 ? ` · ${d.sous_postes_remontes} sous-poste(s) remonté(s)` : ""}`;
     case "election_set": {
       const fmt = (v: unknown) => (typeof v === "string" ? new Date(v).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Paris" }) : "?");
-      return `Élu : ${(d.elu as string) || "à choisir"} · proclamation ${fmt(d.proclamation)} (du ${fmt(d.debut)} au ${fmt(d.fin)})`;
+      return `Élu : ${(d.elu as string) || "à choisir"}${d.maniere === "force" ? " (par la force)" : ""} · proclamation ${fmt(d.proclamation)} (du ${fmt(d.debut)} au ${fmt(d.fin)})`;
     }
     case "sites": {
       const a = (d.apres ?? {}) as { carte?: string; wiki?: string };

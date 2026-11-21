@@ -5,7 +5,8 @@
  */
 import type { EventKey } from "@/lib/events";
 
-export type FondTheme = "sid" | EventKey;
+/** election_force : l'élection, quand l'élu a pris le pouvoir par la force (Lot 91). */
+export type FondTheme = "sid" | EventKey | "election_force";
 
 export const THEME_ORDER: EventKey[] = [
   "election",

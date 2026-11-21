@@ -9,8 +9,10 @@ export function FondThemeSync() {
   const decor = useSiteDecor();
   useEffect(() => {
     if (!decor) return;
-    const t = themeFromDecor(decor);
+    let t: string = themeFromDecor(decor);
     const root = document.documentElement;
+    // Élection prise par la force : posé par le décor de l'élection.
+    if (t === "election" && root.dataset.electionMode === "force") t = "election_force";
     if (t === "sid") delete root.dataset.theme;
     else root.dataset.theme = t;
   }, [decor]);

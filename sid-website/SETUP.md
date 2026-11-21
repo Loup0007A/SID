@@ -5,7 +5,7 @@ renommer : nom du RP, des trois sites, de la monnaie, adresses, sites et
 rubriques ouverts, adresses des simulations. L'installation elle-même (Supabase, Vercel, compte Fondateur) est
 dans [README.md](README.md).
 
-Prérequis : migrations passées jusqu'à `0110_devlog_refonte.sql` (Dossier
+Prérequis : migrations passées jusqu'à `0112_devlog_force_wiki.sql` (Dossier
 Central), celles du Wiki (jusqu'à `0212_wiki_nouvelles_fiches.sql`), puis celles de
 la Cartographie (jusqu'à `0119_meteo_incursions.sql`). La 0118 de la
 Cartographie utilise les tables du Wiki : passer le Wiki avant.
@@ -354,7 +354,9 @@ update public.app_config set value = 'https://mes-donjons.vercel.app/' where key
 
 Les couleurs du site, le motif du fond et les particules qui tombent sont
 générés par `scripts/fonds.mjs`, une entrée par thème : `sid` (hors évents)
-puis un thème par évent (`noel`, `halloween`…).
+puis un thème par évent (`noel`, `halloween`…) et `election_force`
+(élection prise par la force). Le Wiki a son propre `scripts/fonds.mjs`,
+mêmes champs, thème de base `wiki`.
 
 | Champ | Rôle |
 | --- | --- |
@@ -423,7 +425,7 @@ Déjà modifiables depuis le site :
 | Annonces, maintenance, décors des fêtes, pages en aperçu | Administration → Modération |
 | Cartographie et Wiki ouverts, rubriques présentes | Administration → Modération → Sites et rubriques |
 | Farces | Administration → Titres & farces |
-| Élection du Dictateur : élu, début, proclamation, fin | Administration → Modération → Affichage événementiel |
+| Élection du Dictateur : élu, manière (proclamé ou par la force), début, proclamation, fin | Administration → Modération → Affichage événementiel |
 
 Le reste se règle en SQL. Liste complète :
 
