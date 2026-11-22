@@ -227,6 +227,51 @@ begin
   reset role;
 end $$;
 
+-- 10. Banque isolée (Lot 101) : un membre ordinaire ne dirige rien, ne lit
+-- pas les tables, ne se désigne pas directeur.
+do $$
+declare
+  v_m uuid; v_n bigint;
+begin
+  if to_regclass('public.banque_isolee_comptes') is null then
+    insert into audit_resultat values ('ATTENTION', 'migration 0129 (banque isolée) pas encore lancée');
+    return;
+  end if;
+  select p.id into v_m from public.profiles p
+  where p.status = 'active' and not p.is_founder and p.id is distinct from public._banque_directeur_id()
+  order by p.created_at limit 1;
+  if v_m is null then return; end if;
+  update public.profiles set is_frozen = false where id = v_m;
+  perform set_config('request.jwt.claims', json_build_object('role', 'authenticated', 'sub', v_m)::text, true);
+  set local role authenticated;
+  begin
+    perform public.banque_isolee_designer_directeur(null);
+    insert into audit_resultat values ('ÉCHEC', 'un membre peut désigner le directeur de la banque isolée');
+  exception when insufficient_privilege or raise_exception then null;
+  end;
+  begin
+    perform public.banque_isolee_donner_acces(v_m, 1000000);
+    insert into audit_resultat values ('ÉCHEC', 'un membre se donne accès à la banque isolée');
+  exception when insufficient_privilege or raise_exception then null;
+  end;
+  begin
+    perform public.banque_isolee_direction();
+    insert into audit_resultat values ('ÉCHEC', 'un membre lit la direction de la banque isolée');
+  exception when insufficient_privilege or raise_exception then null;
+  end;
+  begin
+    perform public.banque_isolee_verser_dus();
+    insert into audit_resultat values ('ÉCHEC', 'un membre déclenche les versements de la banque isolée');
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    select count(*) into v_n from public.banque_isolee_retraits;
+    insert into audit_resultat values ('ÉCHEC', 'un membre lit les retraits de la banque isolée');
+  exception when insufficient_privilege then null;
+  end;
+  reset role;
+end $$;
+
 select niveau || ' : ' || message from audit_resultat order by niveau desc, message;
 select 'BILAN ' || count(*) filter (where niveau = 'ÉCHEC') || ' échec(s), ' || count(*) filter (where niveau = 'ATTENTION') || ' attention(s)' from audit_resultat;
 rollback;

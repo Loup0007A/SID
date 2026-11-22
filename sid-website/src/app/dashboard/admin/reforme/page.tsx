@@ -28,7 +28,14 @@ type Cat = {
   note?: string | null;
   examples?: { label: string; before: number; after: number }[] | null;
 };
-type Preview = { factor: number; categories: Cat[]; index_now: number | null; index_after: number | null; members: number };
+type Preview = {
+  factor: number;
+  categories: Cat[];
+  index_now: number | null;
+  index_after: number | null;
+  members: number;
+  banque_isolee?: { convertie: boolean; avant: number | null; apres: number | null };
+};
 type Status = "draft" | "pending" | "applied" | "rejected" | "cancelled";
 type Reform = {
   id: string;
@@ -54,6 +61,13 @@ type Reform = {
   mine: boolean;
   can_edit: boolean;
   can_review: boolean;
+  // Lot 101 : validation du directeur de la banque isolée.
+  directeur_requis?: boolean;
+  directeur?: string | null;
+  directeur_le?: string | null;
+  directeur_note?: string | null;
+  banque_isolee_convertir?: boolean | null;
+  can_directeur?: boolean;
 };
 
 const CAT_KEYS = ["portefeuilles", "epargne", "dettes", "entreprises", "salaires", "objets", "autres", "encheres", "quetes", "population", "caisse", "en_cours", "reglages"];
@@ -200,6 +214,7 @@ export default function ReformePage() {
                     {r.author ?? "—"} · {when(r.applied_at ?? r.submitted_at ?? r.created_at)}
                   </span>
                   {r.can_review && <span className="font-mono text-[11px] uppercase text-yellow-300">à toi de vérifier</span>}
+                  {r.can_directeur && <span className="font-mono text-[11px] uppercase text-yellow-300">à toi de valider (banque isolée)</span>}
                 </button>
               </li>
             ))}
@@ -564,13 +579,26 @@ function Detail({ r, say, onClose, onChanged, onEdit }: { r: Reform; say: (ok: b
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [r.id, r.updated_at]);
 
+  const attendDirecteur = !!r.directeur_requis && !r.directeur_le;
+
   async function review(approve: boolean) {
-    if (approve && !confirm(`Appliquer la réforme n° ${r.number} (${pctOf(r.factor)}) maintenant ? Tous les montants concernés changent d'un coup.`)) return;
+    const question = attendDirecteur
+      ? `Valider la réforme n° ${r.number} (${pctOf(r.factor)}) ? Elle s'appliquera dès que le directeur de la banque isolée l'aura validée aussi.`
+      : `Appliquer la réforme n° ${r.number} (${pctOf(r.factor)}) maintenant ? Tous les montants concernés changent d'un coup.`;
+    if (approve && !confirm(question)) return;
     setBusy(true);
-    const { error } = await supabase.rpc("reform_review", { p_id: r.id, p_approve: approve, p_note: note || null, p_version: r.updated_at });
+    const { data, error } = await supabase.rpc("reform_review", { p_id: r.id, p_approve: approve, p_note: note || null, p_version: r.updated_at });
     setBusy(false);
     if (error) return say(false, error.message);
-    say(true, approve ? `Réforme n° ${r.number} appliquée. Les membres sont prévenus.` : "Réforme refusée : son auteur est prévenu.");
+    const attente = (data as { attente_directeur?: boolean } | null)?.attente_directeur;
+    say(
+      true,
+      !approve
+        ? "Réforme refusée : son auteur est prévenu."
+        : attente
+          ? `Réforme n° ${r.number} vérifiée : elle attend la validation du directeur de la banque isolée (${r.directeur ?? "prévenu"}).`
+          : `Réforme n° ${r.number} appliquée. Les membres sont prévenus.`,
+    );
     await onChanged(r.id);
   }
 
@@ -600,8 +628,15 @@ function Detail({ r, say, onClose, onChanged, onEdit }: { r: Reform; say: (ok: b
 
       {r.status === "pending" && (
         <p className="rounded-lg border border-yellow-400/50 bg-yellow-400/5 px-4 py-2 font-body text-sm text-yellow-200">
-          <SidIcon name="hourglass" size={15} /> Rien n&apos;est appliqué tant qu&apos;un admin « Économie » n&apos;a pas vérifié et validé.
-          {r.mine && !r.can_review && " Un autre admin doit le faire : il a été prévenu."}
+          <SidIcon name="hourglass" size={15} /> Rien n&apos;est appliqué tant qu&apos;un admin « Économie » n&apos;a pas vérifié et validé
+          {r.directeur_requis ? ", et que le directeur de la banque isolée n'a pas validé aussi." : "."}
+          {r.mine && !r.can_review && !r.reviewed_at && " Un autre admin doit vérifier : il a été prévenu."}
+          {r.directeur_requis && (
+            <span className="mt-1 block font-mono text-xs">
+              Vérification : {r.reviewed_at ? `faite par ${r.reviewer ?? "—"}` : "à faire"} · Directeur ({r.directeur ?? "—"}) :{" "}
+              {r.directeur_le ? (r.banque_isolee_convertir ? "validée, banque isolée convertie" : "validée, banque isolée non convertie") : "à faire"}
+            </span>
+          )}
         </p>
       )}
       {r.status === "applied" && (
@@ -609,6 +644,15 @@ function Detail({ r, say, onClose, onChanged, onEdit }: { r: Reform; say: (ok: b
           Appliquée le {when(r.applied_at!)}, vérifiée par {r.reviewer ?? "—"}
           {r.index_before != null && r.index_after != null && ` · indice des prix ${px(r.index_before)} → ${px(r.index_after)}`}
           {r.review_note && ` · « ${r.review_note} »`}
+          {r.report?.banque_isolee && (
+            <span className="mt-1 block">
+              Banque isolée :{" "}
+              {r.report.banque_isolee.convertie
+                ? `convertie (${z(Number(r.report.banque_isolee.avant ?? 0), 0)} → ${z(Number(r.report.banque_isolee.apres ?? 0), 0)})`
+                : "non convertie"}
+              {r.directeur && `, décision de ${r.directeur}`}.
+            </span>
+          )}
         </p>
       )}
 
@@ -649,7 +693,7 @@ function Detail({ r, say, onClose, onChanged, onEdit }: { r: Reform; say: (ok: b
           <textarea rows={2} maxLength={500} className={inputClass} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Note (obligatoire pour refuser)" />
           <div className="flex flex-wrap gap-2">
             <button type="button" disabled={busy || !allChecked || !preview} onClick={() => review(true)} className="rounded-lg bg-[#f0c27a] px-4 py-2 font-display text-sm uppercase tracking-wide text-ink hover:brightness-110 disabled:opacity-40">
-              Valider et appliquer
+              {attendDirecteur ? "Valider" : "Valider et appliquer"}
             </button>
             <button type="button" disabled={busy || note.trim().length === 0} onClick={() => review(false)} className="rounded-lg border border-red/70 px-4 py-2 font-mono text-xs uppercase text-red hover:bg-red hover:text-ink disabled:opacity-40">
               Refuser
@@ -657,6 +701,8 @@ function Detail({ r, say, onClose, onChanged, onEdit }: { r: Reform; say: (ok: b
           </div>
         </div>
       )}
+
+      {r.can_directeur && <DirecteurPanel r={r} say={say} onChanged={onChanged} pret={!!preview} />}
 
       <div className="flex flex-wrap gap-2">
         {r.can_edit && (
@@ -717,5 +763,78 @@ function Detail({ r, say, onClose, onChanged, onEdit }: { r: Reform; say: (ok: b
         </Link>
       </div>
     </section>
+  );
+}
+
+/** Lot 101 : décision du directeur de la banque isolée sur une réforme. */
+function DirecteurPanel({ r, say, onChanged, pret }: { r: Reform; say: (ok: boolean, t: string) => void; onChanged: (id?: string) => Promise<void>; pret: boolean }) {
+  const supabase = useMemo(() => createClient(), []);
+  const [convertir, setConvertir] = useState<boolean | null>(null);
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [total, setTotal] = useState<number | null>(null);
+  useEffect(() => {
+    supabase.rpc("banque_isolee_direction").then(({ data, error }) => !error && data && setTotal(Number((data as { total: number }).total)));
+  }, [supabase]);
+
+  async function decider(valider: boolean) {
+    if (valider && !confirm(`Valider la réforme n° ${r.number} (${pctOf(r.factor)}), banque isolée ${convertir ? "convertie" : "non convertie"} ?`)) return;
+    setBusy(true);
+    const { data, error } = await supabase.rpc("reform_directeur_decider", {
+      p_id: r.id,
+      p_valider: valider,
+      p_convertir: valider ? convertir : null,
+      p_note: note || null,
+      p_version: r.updated_at,
+    });
+    setBusy(false);
+    if (error) return say(false, error.message);
+    const x = data as { status?: string; attente_verification?: boolean } | null;
+    say(
+      true,
+      !valider
+        ? "Réforme refusée : son auteur est prévenu."
+        : x?.attente_verification
+          ? "Validation enregistrée : la réforme s'appliquera après la vérification d'un admin « Économie »."
+          : `Réforme n° ${r.number} appliquée. Les membres sont prévenus.`,
+    );
+    await onChanged(r.id);
+  }
+
+  return (
+    <div className="space-y-3 rounded-xl border border-blue/50 bg-blue/5 p-4">
+      <p className="font-display uppercase text-blue-light">
+        <SidIcon name="padlock" /> Directeur de la banque isolée
+      </p>
+      <p className="font-body text-sm text-paper/85">Cette réforme ne s&apos;applique pas sans ta validation. Décide d&apos;abord ce que devient la banque isolée.</p>
+      {total != null && (
+        <p className="font-mono text-xs text-paper/80">
+          Total isolé aujourd&apos;hui : {z(total, 0)} · converti : {z(total * r.factor, 0)}
+        </p>
+      )}
+      <fieldset className="space-y-2">
+        <legend className="sr-only">Banque isolée</legend>
+        {(
+          [
+            [true, `Convertir aussi la banque isolée (soldes, retraits en cours et plafonds × ${fx(r.factor)})`],
+            [false, "Ne pas la convertir : ses montants restent tels quels"],
+          ] as const
+        ).map(([v, t]) => (
+          <label key={String(v)} className="flex items-start gap-2 font-body text-sm text-paper/90">
+            <input type="radio" name={`bi-${r.id}`} className="mt-1" checked={convertir === v} onChange={() => setConvertir(v)} />
+            {t}
+          </label>
+        ))}
+      </fieldset>
+      <textarea rows={2} maxLength={500} className={inputClass} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Note (obligatoire pour refuser)" />
+      <div className="flex flex-wrap gap-2">
+        <button type="button" disabled={busy || convertir === null || !pret} onClick={() => decider(true)} className="rounded-lg bg-blue px-4 py-2 font-display text-sm uppercase tracking-wide text-ink hover:bg-blue-light disabled:opacity-40">
+          Valider
+        </button>
+        <button type="button" disabled={busy || note.trim().length === 0} onClick={() => decider(false)} className="rounded-lg border border-red/70 px-4 py-2 font-mono text-xs uppercase text-red hover:bg-red hover:text-ink disabled:opacity-40">
+          Refuser
+        </button>
+      </div>
+    </div>
   );
 }

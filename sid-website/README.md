@@ -392,3 +392,13 @@ pour rester sur une base stable et connue).
 - `createClient()` serveur asynchrone, `middleware.ts` devient `proxy.ts`,
   build avec `--webpack`, `npm run lint` passe par ESLint.
 - Node 20.9 minimum sur Vercel. Détails : `CHANGELOG_LOT100_NEXT16.md`.
+
+## Lot 101 — Banque isolée
+
+- Migration 0129 : `banque_isolee_*` (comptes, retraits, mouvements,
+  réglages), directeur unique désigné en SQL
+  (`banque_isolee_designer_directeur`), validation du directeur dans les
+  réformes monétaires (`reform_directeur_decider`).
+- `src/components/bank/BanqueIsolee.tsx` (page Banque) et
+  `src/app/dashboard/admin/banque-isolee/page.tsx` (direction).
+- Détails : `CHANGELOG_LOT101_BANQUE_ISOLEE.md`.

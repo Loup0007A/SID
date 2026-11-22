@@ -148,6 +148,8 @@ sid-map/sid-map/supabase/migrations/0105_travel_mounts_layers.sql
 sid-map/sid-map/supabase/migrations/0106_blackmarket_crystals_questfix.sql
 sid/sid-website/supabase/migrations/0127_audit_securite_correctifs.sql
 sid/sid-website/supabase/migrations/0128_devlog_audit_securite.sql
+sid/sid-website/supabase/migrations/0129_banque_isolee.sql
+sid/sid-website/supabase/migrations/0130_devlog_banque_isolee.sql
 sid-map/sid-map/supabase/migrations/0107_textures.sql
 sid-map/sid-map/supabase/migrations/0108_texture_drawing.sql
 sid-map/sid-map/supabase/migrations/0109_scale_flight.sql

@@ -13,6 +13,7 @@ import { MyWithdrawals } from "@/components/bank/Withdrawals";
 import { inputClass, labelClass } from "@/lib/ui";
 import { SidIcon } from "@/components/icons/SidIcon";
 import { Absences } from "@/components/bank/Absences";
+import { BanqueIsolee } from "@/components/bank/BanqueIsolee";
 
 export default function BankPage() {
   const supabase = createClient();
@@ -169,6 +170,8 @@ export default function BankPage() {
         </div>
         <MyWithdrawals kind="bank" version={withdrawVersion} onChanged={refresh} />
       </div>
+
+      <BanqueIsolee onChanged={refresh} />
 
       <div data-tuto="banque-emprunt" className="glass-card space-y-4 p-6">
         <h2 className="font-display text-lg uppercase">Emprunt</h2>

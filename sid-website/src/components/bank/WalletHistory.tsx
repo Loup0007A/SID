@@ -126,7 +126,7 @@ export function WalletHistory({ userId, balance }: { userId: string; balance: nu
               <div key={title}>
                 <p className="mb-2 flex justify-between font-mono text-[11px] uppercase tracking-wide text-paper/70">
                   <span>{title}</span>
-                  <span style={{ color }}>{z(total)}</span>
+                  <span className={title === "Rentrées" ? "text-ok" : "text-red"}>{z(total)}</span>
                 </p>
                 {rows.length === 0 ? (
                   <p className="font-body text-xs text-paper/65">Rien sur la période.</p>
