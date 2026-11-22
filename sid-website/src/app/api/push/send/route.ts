@@ -1,3 +1,4 @@
+import { createHash, timingSafeEqual } from "crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import webpush from "web-push";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -20,13 +21,21 @@ if (vapidPublicKey && vapidPrivateKey) {
  * (via pg_net), jamais directement par le navigateur — protégée par un
  * secret partagé (`x-push-secret`), pas par une session utilisateur.
  */
+/** Comparaison en temps constant (la durée ne renseigne pas sur le secret). */
+function memeSecret(a: string, b: string | undefined) {
+  if (!b) return false;
+  const x = createHash("sha256").update(a).digest();
+  const y = createHash("sha256").update(b).digest();
+  return timingSafeEqual(x, y);
+}
+
 export async function POST(request: NextRequest) {
   if (!vapidPublicKey || !vapidPrivateKey) {
     return NextResponse.json({ error: "Push non configuré (clés VAPID manquantes)." }, { status: 501 });
   }
 
   const secret = request.headers.get("x-push-secret");
-  if (!secret || secret !== process.env.PUSH_WEBHOOK_SECRET) {
+  if (!secret || !memeSecret(secret, process.env.PUSH_WEBHOOK_SECRET)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 

@@ -15,8 +15,8 @@ export async function POST(request: NextRequest) {
   }
 
   const { userId } = body;
-  if (!userId) {
-    return NextResponse.json({ error: "userId manquant." }, { status: 400 });
+  if (!userId || !/^[0-9a-f-]{36}$/i.test(userId)) {
+    return NextResponse.json({ error: "userId manquant ou invalide." }, { status: 400 });
   }
 
   const supabase = createClient();
@@ -28,13 +28,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Non authentifié." }, { status: 401 });
   }
 
-  const { data: allowed, error: permError } = await supabase.rpc("has_permission", {
-    uid: user.id,
-    perm: "manage_users",
-  });
-
-  if (permError || !allowed) {
-    return NextResponse.json({ error: "Permission refusée." }, { status: 403 });
+  // Gestion des comptes, et jamais sur un fondateur ni un autre
+  // administrateur sauf par un fondateur ; jamais depuis un compte de test
+  // (admin_peut_gerer_compte, migration 0127).
+  const { data: allowed, error: permError } = await supabase.rpc("admin_peut_gerer_compte", { p_cible: userId });
+  if (permError) {
+    return NextResponse.json(
+      { error: /admin_peut_gerer_compte|PGRST202/.test(`${permError.message} ${permError.code}`) ? "Lance d'abord la migration 0127." : permError.message },
+      { status: 503 }
+    );
+  }
+  if (!allowed) {
+    return NextResponse.json({ error: "Permission refusée : ce compte ne se gère que par un fondateur." }, { status: 403 });
   }
 
   let adminClient;

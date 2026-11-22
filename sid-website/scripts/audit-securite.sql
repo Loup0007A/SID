@@ -1,4 +1,4 @@
--- Contrôle des droits de la base commune aux trois sites (Lot 96).
+-- Contrôle des droits de la base commune aux trois sites (Lot 96, complété au Lot 99).
 -- Lancé par scripts/audit-securite.sh. Ne modifie rien : les essais se
 -- font dans une transaction annulée à la fin.
 --
@@ -170,6 +170,62 @@ select 'ÉCHEC', 'tâche appelable sans session : ' || p.oid::regprocedure
 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
 where n.nspname = 'public' and p.proname ~ '^(process_|run_scheduled|expire_)'
   and has_function_privilege('anon', p.oid, 'execute');
+
+-- 8. Fonctions SECURITY DEFINER qui testent current_user : dans une telle
+-- fonction, current_user est son propriétaire, le test ne protège rien (Lot 99).
+insert into audit_resultat
+select 'ÉCHEC', 'test de current_user sans effet (SECURITY DEFINER) : ' || p.oid::regprocedure
+from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+where n.nspname = 'public' and p.prosecdef and p.prosrc ~ 'current_user\s+(not\s+)?in\s*\(\s*''authenticated''';
+
+-- 9. Essais d'intrusion (Lot 99) : conversation des autres, mission déjà
+-- validée, recrutement sur une fiche active, CSS qui charge une image.
+do $$
+declare
+  v_m uuid; v_a uuid; v_b uuid; v_q uuid; v_canal uuid := gen_random_uuid(); v_st text;
+begin
+  select p.id into v_m from public.profiles p
+  where p.status = 'active' and not p.is_founder
+    and not public.has_permission(p.id, 'manage_users') and not public.has_permission(p.id, 'manage_quests')
+  order by p.created_at limit 1;
+  select p.id into v_a from public.profiles p where p.status = 'active' and p.id <> v_m order by p.created_at limit 1;
+  select p.id into v_b from public.profiles p where p.status = 'active' and p.id not in (v_m, v_a) order by p.created_at limit 1;
+  if v_m is null or v_a is null or v_b is null then
+    insert into audit_resultat values ('ATTENTION', 'essais d''intrusion sautés : il faut trois fiches actives');
+    return;
+  end if;
+  -- La partie 6 a gelé ce membre : on le dégèle pour ces essais.
+  update public.profiles set is_frozen = false, freeze_until = null, ban_until = null, mute_until = null where id = v_m;
+  insert into public.chat_channels (id, type, name, created_by) values (v_canal, 'dm', 'audit', v_a);
+  insert into public.chat_participants (channel_id, user_id) values (v_canal, v_a), (v_canal, v_b);
+  select q.id into v_q from public.quests q where q.visibility in ('public', 'members') order by q.created_at limit 1;
+  if v_q is not null then
+    update public.quests set status = 'completed', min_intelligence = 0, min_strength = 0, min_technique = 0, min_power = 0,
+           place_id = null, max_participants = null where id = v_q;
+    delete from public.quest_participants where quest_id = v_q and user_id = v_m;
+  end if;
+
+  perform set_config('request.jwt.claims', json_build_object('role', 'authenticated', 'sub', v_m)::text, true);
+  set local role authenticated;
+  begin
+    insert into public.chat_participants (channel_id, user_id) values (v_canal, v_m);
+    insert into audit_resultat values ('ÉCHEC', 'un membre rejoint une conversation privée des autres');
+  exception when insufficient_privilege or raise_exception or check_violation then null;
+  end;
+  if v_q is not null then
+    begin
+      insert into public.quest_participants (quest_id, user_id, status) values (v_q, v_m, 'validated') returning status into v_st;
+      insert into audit_resultat values ('ÉCHEC', 'un membre s''inscrit sur une quête close (statut ' || v_st || ')');
+    exception when insufficient_privilege or raise_exception then null;
+    end;
+  end if;
+  begin
+    perform public.set_profile_css('profile', 'background: u\72l(https://exemple.invalid/x.png)');
+    insert into audit_resultat values ('ÉCHEC', 'CSS de fiche : url() échappé accepté');
+  exception when raise_exception then null;
+  end;
+  reset role;
+end $$;
 
 select niveau || ' : ' || message from audit_resultat order by niveau desc, message;
 select 'BILAN ' || count(*) filter (where niveau = 'ÉCHEC') || ' échec(s), ' || count(*) filter (where niveau = 'ATTENTION') || ' attention(s)' from audit_resultat;

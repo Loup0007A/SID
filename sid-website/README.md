@@ -374,3 +374,14 @@ pour rester sur une base stable et connue).
 - **Contraste renforcé** : `contraste` dans `comfortPrefs.ts` et
   `display_prefs_set`, classe `contraste-fort`, `--attenue` dans
   `tailwind.config.ts`.
+
+## Lot 99 — Audit de sécurité
+
+- Migration 0127 : participants des conversations, inscription aux
+  missions, `admin_peut_gerer_compte(cible)` (routes /api/admin), fiches
+  des fondateurs et recrutement, CSS des fiches, stockage, étals, débit des
+  messages.
+- `src/lib/profileCss.ts` : échappements, image-set(), sélecteurs `~`/`+`,
+  règles imbriquées, `contain: paint` sur la carte.
+- `scripts/audit-securite.sql` : essais d'intrusion ajoutés.
+- Détails et points à décider : `CHANGELOG_LOT99_AUDIT_SECURITE.md`.

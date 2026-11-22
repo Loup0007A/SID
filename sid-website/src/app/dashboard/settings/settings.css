@@ -293,3 +293,7 @@
 .mini-contraste.is-fort { color: rgb(var(--creme)); background: rgb(var(--encre)); box-shadow: 0 0 0 2px rgb(var(--creme)); }
 .mini-contraste.is-auto { color: rgb(var(--creme)); background: linear-gradient(90deg, transparent 50%, rgb(var(--encre)) 50%); }
 :root.contraste-fort .choix-aide { opacity: 1; }
+/* Contraste renforcé : état « Personnalisé » à la couleur du texte (la pastille garde le vert). */
+:root.contraste-fort .place-etat { opacity: 1; }
+:root.contraste-fort .place-etat.is-perso { color: inherit; }
+:root.contraste-fort .place-etat.is-perso::before { color: rgb(var(--c-ok)); }

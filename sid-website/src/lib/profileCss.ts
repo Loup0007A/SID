@@ -30,9 +30,55 @@
  * C'est un nettoyeur "au mieux", pas un vrai parseur CSS conforme à la
  * spec — suffisant pour un site communautaire privé, pas pour exposer ça
  * au grand public sans revue supplémentaire.
+ *
+ * Audit de sécurité (Lot 99) :
+ *  - les échappements CSS (`u\72l(`) ne servent plus à contourner la liste :
+ *    une déclaration avec un « \ » hors des guillemets est retirée, et la
+ *    liste est vérifiée sur le texte décodé ;
+ *  - image-set(), image(), element(), src() sont refusés comme url() ;
+ *  - une déclaration qui contient { ou } (règle imbriquée) est retirée ;
+ *  - un sélecteur qui commence par ~ ou + (frères de la carte, donc hors
+ *    de la carte), qui contient &, @, ; ou des parenthèses déséquilibrées
+ *    est retiré ;
+ *  - sur la carte elle-même : ni position, ni décalage, ni transformation,
+ *    ni z-index, ni marge négative ; et `contain: paint` est imposé, pour
+ *    que rien de ce qu'elle contient ne déborde sur le reste de la page.
  */
 
-const BANNED_VALUE_RE = /url\s*\(|expression\s*\(|javascript\s*:|-moz-binding|behavior\s*:/i;
+const BANNED_VALUE_RE = /url\s*\(|image-set\s*\(|(^|[^a-z-])image\s*\(|element\s*\(|(^|[^a-z-])src\s*\(|expression\s*\(|javascript\s*:|-moz-binding|behavior\s*:/i;
+const PROP_RE = /^(--[a-z0-9_-]+|-?[a-z][a-z0-9-]*)$/;
+/** Propriétés refusées sur la carte elle-même (elle pourrait recouvrir la page). */
+const ROOT_BANNED_PROPS = /^(position|inset|top|left|right|bottom|transform|translate|scale|rotate|zoom|z-index|contain|overflow|overflow-x|overflow-y)$/;
+
+/** Texte sans ses chaînes entre guillemets. */
+function horsTextes(s: string): string {
+  return s.replace(/"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/g, "");
+}
+
+/** Décode les échappements CSS (\72, \l) pour vérifier ce que le navigateur lira. */
+function decode(s: string): string {
+  return s
+    .replace(/\\([0-9a-fA-F]{1,6})\s?/g, (_, h: string) => {
+      const n = parseInt(h, 16);
+      return n > 0 && n <= 0x10ffff ? String.fromCodePoint(n) : "";
+    })
+    .replace(/\\(.)/g, "$1");
+}
+
+function selecteurSur(sel: string): boolean {
+  const t = sel.trim();
+  if (!t || /^[~+]/.test(t) || /[&@;{}\\]/.test(t)) return false;
+  let p = 0;
+  let b = 0;
+  for (const c of t) {
+    if (c === "(") p++;
+    else if (c === ")") p--;
+    else if (c === "[") b++;
+    else if (c === "]") b--;
+    if (p < 0 || b < 0) return false;
+  }
+  return p === 0 && b === 0;
+}
 
 function findMatchingBrace(css: string, openIdx: number): number {
   let depth = 0;
@@ -126,20 +172,23 @@ function lastTopLevelSemicolon(text: string): number {
   return last;
 }
 
-function sanitizeDeclarations(body: string): string[] {
+function sanitizeDeclarations(body: string, racine = false): string[] {
   const decls = splitTopLevel(body, "(", ")", ";");
   const kept: string[] = [];
   for (const raw of decls) {
     const d = raw.trim();
     if (!d) continue;
-    if (BANNED_VALUE_RE.test(d)) continue;
+    const brut = horsTextes(d);
+    if (/[{}\\]/.test(brut)) continue;
+    if (BANNED_VALUE_RE.test(d) || BANNED_VALUE_RE.test(decode(d))) continue;
     const colonIdx = d.indexOf(":");
     if (colonIdx === -1) continue;
     const prop = d.slice(0, colonIdx).trim().toLowerCase();
     const value = d.slice(colonIdx + 1).trim();
-    if (!prop || !value) continue;
+    if (!prop || !value || !PROP_RE.test(prop)) continue;
     if (prop === "position" && /^(fixed|sticky)/i.test(value)) continue;
     if (prop.startsWith("-moz-binding")) continue;
+    if (racine && (ROOT_BANNED_PROPS.test(prop) || (/^margin/.test(prop) && /-/.test(value)))) continue;
     kept.push(`${prop}: ${value}`);
   }
   return kept;
@@ -160,7 +209,7 @@ interface Budget {
 /** Sanitize un bloc de déclarations "nues" (sans sélecteur) et l'émet comme règle appliquée à la racine du scope. */
 function emitLooseDeclarations(fragment: string, scope: string, budget: Budget): string {
   if (budget.n >= MAX_RULES) return "";
-  const decls = sanitizeDeclarations(fragment);
+  const decls = sanitizeDeclarations(fragment, true);
   if (decls.length === 0) return "";
   budget.n++;
   return `${scope} {\n  ${decls.join(";\n  ")};\n}\n`;
@@ -200,7 +249,7 @@ function scopeAndSanitizeCssInner(raw: string, scopeClass: string, depth: number
       }
       // toute autre règle @ (import, font-face, keyframes, page…) est ignorée en bloc
     } else if (prelude) {
-      const selectors = splitTopLevel(prelude, "([", ")]", ",");
+      const selectors = splitTopLevel(prelude, "([", ")]", ",").filter(selecteurSur);
       const scoped = selectors.map((s) => `${scope} ${lowercaseClassTokens(s)}`).join(", ");
       const decls = sanitizeDeclarations(body);
       if (scoped && decls.length > 0 && budget.n < MAX_RULES) {
@@ -231,7 +280,9 @@ function scopeAndSanitizeCssInner(raw: string, scopeClass: string, depth: number
 export function scopeAndSanitizeCss(raw: string | null | undefined, scopeClass: string): string {
   if (!raw || !raw.trim()) return "";
   try {
-    return scopeAndSanitizeCssInner(raw.slice(0, 8000), scopeClass, 0, { n: 0 });
+    const out = scopeAndSanitizeCssInner(raw.slice(0, 8000), scopeClass, 0, { n: 0 });
+    // La carte garde tout son contenu chez elle (Lot 99).
+    return out ? `${out}.${scopeClass} { contain: paint !important; }\n` : "";
   } catch {
     return "";
   }
