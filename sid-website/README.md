@@ -348,3 +348,13 @@ pour rester sur une base stable et connue).
   clé étrangère.
 - **Dépendances** : `npm audit` signale des failles de Next 14 corrigées
   seulement en Next 15 ou 16 (voir le CHANGELOG du lot).
+
+## Lot 97 — La Gazette, le Calendrier
+
+- **Gazette** (`/dashboard/gazette`, `?semaine=AAAA-MM-JJ` pour une ancienne
+  édition) : `gazette(p_jour)` (migration 0123) calcule l'édition de la
+  semaine à la demande, sans table. Comptes invisibles exclus ; lieux de la
+  Carto masqués s'ils sont sous le brouillard du lecteur.
+- **Calendrier** (`/dashboard/calendrier`) : `calendrier(p_debut, p_fin)`
+  (100 jours au plus). Les périodes d'événements viennent de `_decor_window`.
+  « Ajouter à mon agenda » fabrique un fichier .ics dans le navigateur.

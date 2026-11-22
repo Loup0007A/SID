@@ -66,6 +66,8 @@ export const NAV_ENTRIES: NavEntry[] = [
   { key: "map", href: "/dashboard/map", label: "Carte", description: "Ta position et tes trajets", emoji: "🗺️", icon: "map", group: "jeu" },
   { key: "leaderboard", href: "/dashboard/leaderboard", label: "Classement", description: "Puissance, argent, renommée", emoji: "🏆", icon: "trophy", group: "jeu" },
   { key: "org-chart", href: "/dashboard/org-chart", label: "Organigramme", description: "La hiérarchie du S.I.D.", emoji: "🏛️", icon: "orgchart", group: "jeu" },
+  { key: "gazette", href: "/dashboard/gazette", label: "La Gazette", description: "Ce qui s'est passé cette semaine", emoji: "📰", icon: "quill", group: "jeu" },
+  { key: "calendrier", href: "/dashboard/calendrier", label: "Calendrier", description: "Échéances, enchères, anniversaires, événements", emoji: "📅", icon: "calendar", group: "jeu" },
   { key: "polls", href: "/dashboard/polls", label: "Sondages", description: "Les votes ouverts par l'administration", emoji: "🗳️", icon: "ballot", group: "jeu" },
   { key: "mariage", href: "/dashboard/mariage", label: "Mariages", description: "Le registre des unions", emoji: "💍", icon: "rings", group: "jeu", perm: ["manage_users"], reveal: "wedding" },
   { key: "members", href: "/dashboard/members", label: "Trombinoscope", description: "Tous les membres", emoji: "👥", icon: "people", group: "jeu" },

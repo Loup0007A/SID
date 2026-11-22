@@ -655,3 +655,10 @@ html.calme *::after {
 /* Un mot très long (pseudo, titre, lien) passe à la ligne plutôt que de
    faire déborder la page sur téléphone (Lot 95). */
 body { overflow-wrap: break-word; } /* Lot 95 */
+
+/* --- Calendrier (Lot 97) --- */
+.cal-jour { border: 1.5px solid transparent; }
+.cal-jour.is-today { border-color: rgb(var(--c-red)); }
+.cal-jour.is-choisi { background: rgb(var(--c-white) / 0.12); }
+.cal-jour:disabled { cursor: default; }
+.cal-section-choisie > h3 { color: rgb(var(--c-paper)); }

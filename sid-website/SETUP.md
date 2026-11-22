@@ -5,10 +5,10 @@ renommer : nom du RP, des trois sites, de la monnaie, adresses, sites et
 rubriques ouverts, adresses des simulations. L'installation elle-même (Supabase, Vercel, compte Fondateur) est
 dans [README.md](README.md).
 
-Prérequis : migrations passées jusqu'à `0122_devlog_securite_recherche.sql` (Dossier
-Central), celles du Wiki (jusqu'à `0212_wiki_nouvelles_fiches.sql`), puis celles de
-la Cartographie (jusqu'à `0121_batiments_proprietaire.sql`). Sur une base déjà en
-service, lancer les 0120 à 0122 du Dossier Central **après** toutes les autres. La 0118 de la
+Prérequis : migrations passées jusqu'à `0124_devlog_gazette_calendrier_carnet.sql`
+(Dossier Central), celles du Wiki (jusqu'à `0212_wiki_nouvelles_fiches.sql`), puis
+celles de la Cartographie (jusqu'à `0122_carnet_de_voyage.sql`). Sur une base déjà
+en service, lancer les 0120 à 0124 du Dossier Central **après** toutes les autres. La 0118 de la
 Cartographie utilise les tables du Wiki : passer le Wiki avant. Installation neuve des trois sites :
 suivre `supabase/ORDRE_MIGRATIONS.txt` (vérifié par `scripts/rejouer-migrations.sh`).
 

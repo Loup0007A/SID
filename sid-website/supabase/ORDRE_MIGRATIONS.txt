@@ -139,6 +139,8 @@ sid/sid-website/supabase/migrations/0119_devlog_lisibilite.sql
 sid/sid-website/supabase/migrations/0120_securite_droits.sql
 sid/sid-website/supabase/migrations/0121_recherche_appareils_export.sql
 sid/sid-website/supabase/migrations/0122_devlog_securite_recherche.sql
+sid/sid-website/supabase/migrations/0123_gazette_calendrier.sql
+sid/sid-website/supabase/migrations/0124_devlog_gazette_calendrier_carnet.sql
 sid-map/sid-map/supabase/migrations/0104_territory_and_quests.sql
 sid-map/sid-map/supabase/migrations/0105_travel_mounts_layers.sql
 sid-map/sid-map/supabase/migrations/0106_blackmarket_crystals_questfix.sql
@@ -158,3 +160,4 @@ sid-map/sid-map/supabase/migrations/0118_exploration.sql
 sid-map/sid-map/supabase/migrations/0119_meteo_incursions.sql
 sid-map/sid-map/supabase/migrations/0120_creatures_meteo_lieux_proprietes.sql
 sid-map/sid-map/supabase/migrations/0121_batiments_proprietaire.sql
+sid-map/sid-map/supabase/migrations/0122_carnet_de_voyage.sql
