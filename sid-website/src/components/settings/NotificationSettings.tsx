@@ -25,8 +25,9 @@ const GROUPS: { key: string; icon: IconName; label: string; hint: string; types:
   { key: "voyages", icon: "compass", label: "Trajets et exploration", hint: "Arrivées, lieux découverts", types: ["travel_arrived", "exploration"] },
   { key: "creatures", icon: "claws", label: "Créatures et Wiki", hint: "Signalements, fiches découvertes", types: ["incursion", "wiki"] },
   { key: "proprietes", icon: "home", label: "Propriétés", hint: "Bâtiment reçu sur la carte", types: ["propriete"] },
+  { key: "rappels", icon: "clock", label: "Mes rappels", hint: "Rappels ajoutés dans le Calendrier", types: ["rappel"] },
 ];
-const ALWAYS = "Quêtes (validation, échec, rapports), candidatures, appels de raid, annonces, sanctions, impôts, litiges et absences";
+const ALWAYS = "Quêtes (validation, échec, rapports), candidatures, appels de raid, annonces, sanctions, impôts, litiges, absences et connexions depuis un nouvel appareil";
 
 const LEVELS: { v: Level; label: string; title: string }[] = [
   { v: "all", label: "Partout", title: "Dans la cloche et en notification push" },

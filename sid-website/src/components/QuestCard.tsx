@@ -45,8 +45,8 @@ export function QuestCard({ quest, participantCount, progress }: { quest: Quest;
       style={{ transform: `rotate(${tiltFor(quest.id)}deg)` }}
     >
       <div
-        className="-mx-4 mb-3 flex items-center justify-center px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.15em]"
-        style={{ backgroundColor: type.color, color: readableTextColor(type.color), borderRadius: "0.5rem 1rem 0 0" }}
+        className="quest-type-bandeau -mx-4 mb-3 flex items-center justify-center px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.15em]"
+        style={{ backgroundColor: type.color, color: readableTextColor(type.color), borderRadius: "0.5rem 1rem 0 0", ["--type-couleur" as string]: type.color }}
       >
         {type.label}
       </div>

@@ -28,6 +28,7 @@ const COMMUNS = {
   "lib/comfortCookie.ts": ALL,
   "components/ComfortSync.tsx": ALL,
   "components/RechercheCommune.tsx": ALL,
+  "components/Epingles.tsx": ALL,
   "lib/brand.ts": ALL,
   "lib/glitch.ts": ALL,
   "brand/glitch.ts": ALL,

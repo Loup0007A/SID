@@ -358,3 +358,19 @@ pour rester sur une base stable et connue).
 - **Calendrier** (`/dashboard/calendrier`) : `calendrier(p_debut, p_fin)`
   (100 jours au plus). Les périodes d'événements viennent de `_decor_window`.
   « Ajouter à mon agenda » fabrique un fichier .ics dans le navigateur.
+
+## Lot 98 — Journal du compte, rappels, épingles, contraste
+
+- **Journal du compte** (Mes données) : `journal_mon_compte()` (migration
+  0125) ; table `journal_compte`, déclencheur sur `profiles`, événements de
+  `auth.audit_log_entries` s'il existe.
+- **Nouvel appareil** : `_appareils_scanner()` dans `run_scheduled_jobs`,
+  tables `appareils_connus` et `sessions_vues`, notification `securite`.
+- **Rappels** : table `rappels`, `rappel_enregistrer`, `rappel_supprimer`,
+  `rappels_envoyer_dus()` (tâches de fond), renvoyés par `calendrier()`.
+- **Épingles** : table `epingles`, `epingle_basculer(kind, ref)`,
+  `mes_epingles()` ; `src/components/Epingles.tsx` (identique sur les trois
+  sites), `EpinglesAccueil.tsx`, palette Ctrl+K.
+- **Contraste renforcé** : `contraste` dans `comfortPrefs.ts` et
+  `display_prefs_set`, classe `contraste-fort`, `--attenue` dans
+  `tailwind.config.ts`.

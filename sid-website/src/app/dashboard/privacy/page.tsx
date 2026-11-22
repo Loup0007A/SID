@@ -8,6 +8,7 @@ import type { Profile } from "@/types/database";
 import { inputClass, buttonPrimary, buttonOutline, buttonGhostRed } from "@/lib/ui";
 import { TERMS_VERSION, TERMS_DATE } from "@/components/legal/LegalContent";
 import { ConnectedDevices } from "@/components/settings/ConnectedDevices";
+import { AccountJournal } from "@/components/settings/AccountJournal";
 import { myProfile } from "@/lib/profileColumns";
 
 type PrivacyRequest = { id: number; status: string; created_at: string; reason: string | null; note: string | null; handled_at: string | null };
@@ -140,6 +141,7 @@ export default function PrivacyPage() {
       </section>
 
       <ConnectedDevices />
+      <AccountJournal />
 
       <section className="glass-card space-y-3 p-6">
         <h2 className="font-display text-lg uppercase">Qui voit quoi</h2>

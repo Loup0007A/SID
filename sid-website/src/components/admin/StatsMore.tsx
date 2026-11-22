@@ -50,6 +50,8 @@ const NOTIF_LABELS: Record<string, string> = {
   market: "Bourse",
   push_test: "Tests push",
   propriete: "Propriétés",
+  securite: "Sécurité",
+  rappel: "Rappels",
   incursion: "Créatures",
   exploration: "Exploration",
   wiki: "Wiki",

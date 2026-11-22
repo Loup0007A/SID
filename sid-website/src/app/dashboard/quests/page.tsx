@@ -1,5 +1,6 @@
 "use client";
 
+import { BoutonEpingle } from "@/components/Epingles";
 import { useEffect, useState } from "react";
 import { useDeepLink } from "@/lib/deeplink";
 import { Chronicles, QuestReports, ReportButton, type MyReport } from "@/components/quests/QuestRp";
@@ -664,6 +665,7 @@ export default function QuestsPage() {
               />
               <div className="quest-dock">
               <div className="quest-dock-meta">
+              <BoutonEpingle kind="quete" cible={q.id} ici="main" nom={q.title} className="quest-chip epingle-chip" />
               {!q.funded_by_creator && <span className="quest-chip">Financée par le S.I.D.</span>}
               <span
                 className="quest-chip is-rep"

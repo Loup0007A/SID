@@ -14,6 +14,7 @@ import { useTuto } from "@/components/tuto/TutoProvider";
 import { announceDeepLink } from "@/lib/deeplink";
 import { BRAND, isTabHidden } from "@/lib/brand";
 import { useRechercheCommune } from "@/components/RechercheCommune";
+import { useEpingles } from "@/components/Epingles";
 
 /**
  * Palette de recherche (Lot 59) : Ctrl+K (ou ⌘K, ou « / ») depuis n'importe
@@ -237,6 +238,23 @@ export function CommandPalette({ perms, onLogout }: { perms: Set<PermissionKey>;
   );
   const all = useMemo(() => [...staticItems, ...(data ?? []), ...remote], [staticItems, data, remote]);
 
+  // Épingles (Lot 98) : en tête quand rien n'est tapé.
+  const { epingles } = useEpingles("main", open);
+  const pinned = useMemo<Item[]>(
+    () =>
+      (epingles ?? []).map((e) => ({
+        id: `e:${e.kind}:${e.id}`,
+        kind: e.site === "wiki" ? "wiki" : e.site === "map" ? "carto" : e.kind === "membre" ? "membre" : "quete",
+        label: e.label,
+        hint: e.hint,
+        icon: e.kind === "membre" ? "profile" : e.kind === "quete" ? "scroll" : e.kind === "fiche" ? "book" : "compass",
+        href: e.href,
+        external: e.external,
+        avatar: e.kind === "membre" || e.kind === "fiche" ? e.image ?? null : null,
+      })),
+    [epingles],
+  );
+
   // Résultats regroupés ; sans recherche : les récents puis les pages.
   const sections = useMemo(() => {
     const q = query.trim();
@@ -244,6 +262,7 @@ export function CommandPalette({ perms, onLogout }: { perms: Set<PermissionKey>;
       const byId = new Map(all.map((i) => [i.id, i]));
       const rec = recent.map((id) => byId.get(id)).filter(Boolean) as Item[];
       const out: { label: string; items: Item[] }[] = [];
+      if (pinned.length) out.push({ label: "Épingles", items: pinned });
       if (rec.length) out.push({ label: "Récemment", items: rec });
       out.push({ label: "Pages", items: staticItems.filter((i) => i.kind === "page" && !recent.includes(i.id)).slice(0, 8) });
       return out;
@@ -262,7 +281,7 @@ export function CommandPalette({ perms, onLogout }: { perms: Set<PermissionKey>;
     })
       .filter((s) => s.items.length > 0)
       .sort((a, b) => b.best - a.best);
-  }, [query, all, recent, staticItems]);
+  }, [query, all, recent, staticItems, pinned]);
 
   const flat = useMemo(() => sections.flatMap((s) => s.items), [sections]);
   useEffect(() => setActive(0), [query]);

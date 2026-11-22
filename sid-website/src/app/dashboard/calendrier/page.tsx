@@ -13,10 +13,30 @@ import { EVENTS, type EventKey } from "@/lib/events";
  * clôtures de sondages, anniversaires, impôts du membre, événements du jeu.
  * Chaque date peut partir dans l'agenda du membre (fichier .ics, fabriqué
  * dans le navigateur : rien n'est envoyé ailleurs).
+ *
+ * Rappels personnels (Lot 98, migration 0125) : le membre ajoute ses
+ * propres dates (heure précise ou toute la journée), avec notification à
+ * l'heure dite (8 h pour un rappel sur la journée). ?jour=AAAA-MM-JJ ouvre
+ * le calendrier sur ce jour (lien des notifications).
  */
 
-type Kind = "quete" | "enchere" | "sondage" | "anniversaire" | "impot" | "evenement";
-type Item = { kind: Kind; id: string; titre: string; debut: string; fin?: string; jour?: boolean; detail?: string; lien?: string; image?: string | null; moi?: boolean };
+type Kind = "quete" | "enchere" | "sondage" | "anniversaire" | "impot" | "evenement" | "rappel";
+type Item = {
+  kind: Kind;
+  id: string;
+  titre: string;
+  debut: string;
+  fin?: string;
+  jour?: boolean;
+  detail?: string | null;
+  lien?: string;
+  image?: string | null;
+  moi?: boolean;
+  notifier?: boolean;
+  envoye?: boolean;
+};
+/** Rappel en cours d'écriture. */
+type Brouillon = { id: string | null; titre: string; date: string; heure: string; jour: boolean; note: string; notifier: boolean };
 
 const KINDS: Record<Kind, { label: string; emoji: string; color: string }> = {
   quete: { label: "Quêtes", emoji: "📜", color: "#c7d8ff" },
@@ -25,6 +45,7 @@ const KINDS: Record<Kind, { label: string; emoji: string; color: string }> = {
   anniversaire: { label: "Anniversaires", emoji: "🎂", color: "#ffc6d9" },
   impot: { label: "Mes impôts", emoji: "🧾", color: "#f3c08a" },
   evenement: { label: "Événements", emoji: "🎉", color: "#bdf0cc" },
+  rappel: { label: "Mes rappels", emoji: "⏰", color: "#a8e6f0" },
 };
 const JOURS = ["lun.", "mar.", "mer.", "jeu.", "ven.", "sam.", "dim."];
 
@@ -95,7 +116,21 @@ export default function CalendrierPage() {
   const [error, setError] = useState<string | null>(null);
   const [off, setOff] = useState<Set<Kind>>(new Set());
   const [choisi, setChoisi] = useState<string | null>(null);
+  const [tour, setTour] = useState(0);
+  const [brouillon, setBrouillon] = useState<Brouillon | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [occupe, setOccupe] = useState(false);
   const aujourdhui = iso(new Date());
+
+  // ?jour=AAAA-MM-JJ (notification d'un rappel) : ce mois-là, ce jour choisi.
+  useEffect(() => {
+    const j = new URLSearchParams(window.location.search).get("jour");
+    if (!j || !/^\d{4}-\d{2}-\d{2}$/.test(j)) return;
+    const d = new Date(`${j}T12:00:00`);
+    if (Number.isNaN(d.getTime())) return;
+    setMois(new Date(d.getFullYear(), d.getMonth(), 1));
+    setChoisi(j);
+  }, []);
 
   // Grille : du lundi avant le 1er au dimanche après le dernier jour.
   const grille = useMemo(() => {
@@ -119,7 +154,70 @@ export default function CalendrierPage() {
     return () => {
       vivant = false;
     };
-  }, [supabase, grille]);
+  }, [supabase, grille, tour]);
+
+  // Jour choisi par le lien : on y descend une fois la liste affichée.
+  useEffect(() => {
+    if (!items || !choisi) return;
+    document.getElementById(`cal-${choisi}`)?.scrollIntoView({ block: "start" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items]);
+
+  function nouveauRappel(date?: string) {
+    setMessage(null);
+    setBrouillon({ id: null, titre: "", date: date ?? choisi ?? aujourdhui, heure: "09:00", jour: false, note: "", notifier: true });
+    requestAnimationFrame(() => document.getElementById("rappel-titre")?.focus());
+  }
+
+  function modifierRappel(it: Item) {
+    setMessage(null);
+    const d = new Date(it.jour ? `${jourDe(it.debut)}T09:00:00` : it.debut);
+    setBrouillon({
+      id: it.id,
+      titre: it.titre,
+      date: jourDe(it.debut),
+      heure: `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`,
+      jour: !!it.jour,
+      note: it.detail ?? "",
+      notifier: it.notifier !== false,
+    });
+    requestAnimationFrame(() => document.getElementById("rappel-titre")?.focus());
+  }
+
+  async function enregistrerRappel(e: React.FormEvent) {
+    e.preventDefault();
+    if (!brouillon) return;
+    const b = brouillon;
+    const at = new Date(`${b.date}T${b.jour ? "12:00" : b.heure}:00`);
+    if (Number.isNaN(at.getTime())) return setMessage("Date invalide.");
+    setOccupe(true);
+    const { error: err } = await supabase.rpc("rappel_enregistrer", {
+      p_id: b.id,
+      p_titre: b.titre,
+      p_at: at.toISOString(),
+      p_jour: b.jour,
+      p_note: b.note || null,
+      p_notifier: b.notifier,
+    });
+    setOccupe(false);
+    if (err) return setMessage(/rappel_enregistrer|PGRST202/.test(`${err.message} ${err.code}`) ? "Les rappels arrivent avec la migration 0125." : err.message);
+    setBrouillon(null);
+    setMessage(b.id ? "Rappel modifié." : `Rappel ajouté${b.notifier ? " : tu recevras une notification" + (b.jour ? " à 8 h ce jour-là." : " à l'heure dite.") : "."}`);
+    const d = new Date(`${b.date}T12:00:00`);
+    setMois(new Date(d.getFullYear(), d.getMonth(), 1));
+    setChoisi(b.date);
+    setTour((t) => t + 1);
+  }
+
+  async function supprimerRappel(it: Item) {
+    setOccupe(true);
+    const { error: err } = await supabase.rpc("rappel_supprimer", { p_id: it.id });
+    setOccupe(false);
+    if (err) return setMessage(err.message);
+    setMessage(`Rappel « ${it.titre} » supprimé.`);
+    if (brouillon?.id === it.id) setBrouillon(null);
+    setTour((t) => t + 1);
+  }
 
   const visibles = useMemo(() => (items ?? []).filter((it) => !off.has(it.kind)), [items, off]);
   const parJour = useMemo(() => {
@@ -172,8 +270,88 @@ export default function CalendrierPage() {
           >
             Aujourd&apos;hui
           </button>
+          <button onClick={() => nouveauRappel()} className="rounded-lg border-2 border-transparent bg-paper px-3 py-2 font-mono text-xs uppercase text-encre hover:brightness-95">
+            + Rappel
+          </button>
         </div>
       </header>
+
+      {message && (
+        <p role="status" className="glass-card px-4 py-3 font-body text-sm">
+          {message}
+        </p>
+      )}
+
+      {brouillon && (
+        <form onSubmit={enregistrerRappel} className="glass-card space-y-3 p-4 sm:p-5" aria-labelledby="rappel-form-titre">
+          <h2 id="rappel-form-titre" className="font-display text-lg uppercase">
+            {brouillon.id ? "Modifier le rappel" : "Nouveau rappel"}
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-[1fr_auto_auto]">
+            <label className="block">
+              <span className="font-mono text-[11px] uppercase">Titre</span>
+              <input
+                id="rappel-titre"
+                required
+                maxLength={120}
+                value={brouillon.titre}
+                onChange={(e) => setBrouillon({ ...brouillon, titre: e.target.value })}
+                placeholder="Payer le loyer, rendez-vous de guilde…"
+                className="mt-1 w-full rounded-lg border-2 border-encre bg-creme px-3 py-2 font-body text-encre"
+              />
+            </label>
+            <label className="block">
+              <span className="font-mono text-[11px] uppercase">Date</span>
+              <input
+                type="date"
+                required
+                value={brouillon.date}
+                onChange={(e) => setBrouillon({ ...brouillon, date: e.target.value })}
+                className="mt-1 w-full rounded-lg border-2 border-encre bg-creme px-3 py-2 font-body text-encre"
+              />
+            </label>
+            <label className="block">
+              <span className="font-mono text-[11px] uppercase">Heure</span>
+              <input
+                type="time"
+                required={!brouillon.jour}
+                disabled={brouillon.jour}
+                value={brouillon.heure}
+                onChange={(e) => setBrouillon({ ...brouillon, heure: e.target.value })}
+                className="mt-1 w-full rounded-lg border-2 border-encre bg-creme px-3 py-2 font-body text-encre disabled:opacity-50"
+              />
+            </label>
+          </div>
+          <label className="block">
+            <span className="font-mono text-[11px] uppercase">Note (facultatif)</span>
+            <textarea
+              maxLength={500}
+              rows={2}
+              value={brouillon.note}
+              onChange={(e) => setBrouillon({ ...brouillon, note: e.target.value })}
+              className="mt-1 w-full rounded-lg border-2 border-encre bg-creme px-3 py-2 font-body text-encre"
+            />
+          </label>
+          <div className="flex flex-wrap gap-x-5 gap-y-2 font-body text-sm">
+            <label className="flex items-center gap-2">
+              <input type="checkbox" checked={brouillon.jour} onChange={(e) => setBrouillon({ ...brouillon, jour: e.target.checked })} />
+              Toute la journée
+            </label>
+            <label className="flex items-center gap-2">
+              <input type="checkbox" checked={brouillon.notifier} onChange={(e) => setBrouillon({ ...brouillon, notifier: e.target.checked })} />
+              M&apos;envoyer une notification {brouillon.jour ? "(à 8 h)" : "à l'heure dite"}
+            </label>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button type="submit" disabled={occupe} className="rounded-lg border-2 border-encre bg-encre px-4 py-2 font-mono text-xs uppercase text-creme disabled:opacity-60">
+              {occupe ? "…" : "Enregistrer"}
+            </button>
+            <button type="button" onClick={() => setBrouillon(null)} className="rounded-lg border-2 border-encre px-4 py-2 font-mono text-xs uppercase">
+              Annuler
+            </button>
+          </div>
+        </form>
+      )}
 
       <div role="group" aria-label="Afficher" className="flex flex-wrap gap-1.5">
         {(Object.keys(KINDS) as Kind[]).map((k) => (
@@ -214,16 +392,16 @@ export default function CalendrierPage() {
                 key={k}
                 onClick={() => {
                   setChoisi(k);
+                  if (!its.length) return nouveauRappel(k);
                   document.getElementById(`cal-${k}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
                 }}
-                disabled={!its.length}
-                aria-label={`${d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })} : ${its.length ? `${its.length} élément${its.length > 1 ? "s" : ""}` : "rien"}`}
+                aria-label={`${d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })} : ${its.length ? `${its.length} élément${its.length > 1 ? "s" : ""}` : "rien, ajouter un rappel"}`}
                 className={clsx(
                   "cal-jour flex min-h-[3.25rem] flex-col items-stretch gap-0.5 rounded-lg p-1 text-left sm:min-h-[5.5rem]",
-                  horsMois && "opacity-55",
+                  horsMois && "hors-mois opacity-55",
                   k === aujourdhui && "is-today",
                   choisi === k && "is-choisi",
-                  its.length > 0 && "hover:bg-white/10",
+                  "hover:bg-white/10",
                 )}
               >
                 <span className="font-mono text-xs">{d.getDate()}</span>
@@ -280,7 +458,7 @@ export default function CalendrierPage() {
                       ) : (
                         titreDe(it)
                       )}
-                      {it.moi && it.kind !== "impot" && it.kind !== "anniversaire" && (
+                      {it.moi && it.kind !== "impot" && it.kind !== "anniversaire" && it.kind !== "rappel" && (
                         <span className="ml-2 rounded-full px-2 py-0.5 font-mono text-[10px] uppercase text-encre" style={{ background: "#f2d27a" }}>
                           {it.kind === "sondage" ? "À voter" : "Te concerne"}
                         </span>
@@ -291,10 +469,31 @@ export default function CalendrierPage() {
                         ? it.fin && it.fin !== jourDe(it.debut)
                           ? `Du ${new Date(`${jourDe(it.debut)}T12:00:00`).toLocaleDateString("fr-FR", { day: "numeric", month: "long" })} au ${new Date(`${it.fin}T12:00:00`).toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}`
                           : "Toute la journée"
-                        : `${it.kind === "quete" ? "Échéance" : it.kind === "enchere" ? "Fin" : it.kind === "sondage" ? "Clôture" : "À payer avant"} ${new Date(it.debut).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`}
+                        : `${it.kind === "quete" ? "Échéance" : it.kind === "enchere" ? "Fin" : it.kind === "sondage" ? "Clôture" : it.kind === "rappel" ? "À" : "À payer avant"} ${new Date(it.debut).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`}
                       {it.detail && it.kind !== "anniversaire" ? ` · ${it.detail}` : ""}
+                      {it.kind === "rappel" && it.notifier && (it.envoye ? " · notification envoyée" : " · notification prévue")}
                     </p>
                   </div>
+                  {it.kind === "rappel" && (
+                    <>
+                      <button
+                        onClick={() => modifierRappel(it)}
+                        disabled={occupe}
+                        className="rounded-lg border border-white/20 px-3 py-2 font-mono text-[11px] uppercase hover:bg-white/10"
+                        aria-label={`Modifier le rappel ${it.titre}`}
+                      >
+                        Modifier
+                      </button>
+                      <button
+                        onClick={() => supprimerRappel(it)}
+                        disabled={occupe}
+                        className="rounded-lg border border-white/20 px-3 py-2 font-mono text-[11px] uppercase hover:bg-white/10"
+                        aria-label={`Supprimer le rappel ${it.titre}`}
+                      >
+                        Supprimer
+                      </button>
+                    </>
+                  )}
                   <button
                     onClick={() => telecharger([it], `${it.kind}-${jourDe(it.debut)}`)}
                     className="rounded-lg border border-white/20 px-3 py-2 font-mono text-[11px] uppercase hover:bg-white/10"

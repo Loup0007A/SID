@@ -662,3 +662,50 @@ body { overflow-wrap: break-word; } /* Lot 95 */
 .cal-jour.is-choisi { background: rgb(var(--c-white) / 0.12); }
 .cal-jour:disabled { cursor: default; }
 .cal-section-choisie > h3 { color: rgb(var(--c-paper)); }
+
+/* =========================================================
+   Réglages → Affichage : contraste renforcé (Lot 98). Textes estompés
+   pleins (--attenue, tailwind.config.ts), bordures marquées, fond uni
+   (ni motif ni particules), cartes pleines, cadre de focus épais. Les
+   couleurs choisies par un membre ou un admin ([data-contraste-libre])
+   prennent la couleur du texte, sauf dans les aperçus de style.
+   ========================================================= */
+:root.contraste-fort { --attenue: 1; }
+:root.contraste-fort body::before, :root.contraste-fort .fond-particules { display: none; }
+:root.contraste-fort:not(.sombre) :is(.glass-card, .grain-panel) { background: rgb(var(--creme)); }
+:root.contraste-fort.sombre :is(.glass-card, .grain-panel):not(.nuit) { background: rgb(var(--surface)); }
+:root.contraste-fort .site-bar { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgb(var(--fond)); }
+:root.contraste-fort :is([class*="border-white/"], [class*="border-paper/"]) { border-color: rgb(var(--c-paper) / 0.7); }
+:root.contraste-fort :is([class*="divide-white/"]) > * + * { border-color: rgb(var(--c-paper) / 0.45); }
+:root.contraste-fort :focus-visible { outline: 3px solid rgb(var(--c-paper)) !important; outline-offset: 2px; }
+:root.contraste-fort ::placeholder { color: currentColor; opacity: 0.8; }
+:root.contraste-fort [data-contraste-libre]:not(.apercu-scene) { color: inherit !important; text-shadow: none !important; }
+:root.contraste-fort .journal-alerte { outline: 2px solid rgb(var(--c-red)); }
+:root.contraste-fort :is([class*="text-paper-text/"]) { color: rgb(var(--c-paper-text)); }
+:root.contraste-fort :is([class*="text-red/"]) { color: rgb(var(--c-red)); }
+:root.contraste-fort :is([class*="text-blue/"], [class*="text-blue-light/"]) { color: rgb(var(--c-blue-light)); }
+/* Pastilles sur fond teinté (« Nouveau »…) : texte sur le fond de la carte, contour plein. */
+:root.contraste-fort [class*="bg-red/"] { background-color: transparent; box-shadow: inset 0 0 0 1.5px currentColor; }
+/* Bandeau du type de quête : couleur choisie gardée en liseré, texte crème sur encre. */
+:root.contraste-fort .quest-type-bandeau { background-color: rgb(var(--encre)) !important; color: rgb(var(--creme)) !important; box-shadow: inset 0 -4px 0 var(--type-couleur); }
+:root.contraste-fort .visit-value { font-weight: 800; }
+:root.contraste-fort .quest-chip { color: rgb(var(--c-paper)); }
+/* Calendrier : jours des mois voisins en pointillés au lieu d'être estompés. */
+:root.contraste-fort .cal-jour.hors-mois { opacity: 1; border-style: dashed; border-color: rgb(var(--c-paper) / 0.5); }
+
+/* --- Journal du compte (Lot 98) --- */
+.journal-alerte { background: rgb(var(--c-red) / 0.14); border-radius: 10px; padding-inline: 0.4rem; }
+
+/* --- Épingles (Lot 98) --- */
+.epingle-bouton {
+  display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.7rem; border-radius: 999px;
+  border: 2px solid currentColor; font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.epingle-bouton:hover:not(:disabled) { background: rgb(var(--c-paper) / 0.12); }
+.epingle-bouton[aria-pressed="true"] { background: rgb(var(--c-paper) / 0.16); }
+.epingle-bouton:disabled { opacity: 0.6; }
+.epingle-chip { display: inline-flex; align-items: center; gap: 0.3rem; cursor: pointer; }
+.epingle-chip[aria-pressed="true"] { outline: 2px solid currentColor; }
+.epingle-erreur { display: block; margin-top: 0.25rem; font-family: var(--font-mono); font-size: 0.72rem; color: rgb(var(--c-red)); }
+.epingles-accueil { display: flex; flex-direction: column; gap: 0.5rem; }
+.epingle-ailleurs { opacity: 0.85; }

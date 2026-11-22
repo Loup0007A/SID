@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
-import { BRAND } from "@/lib/brand";
+import { ICONES_KIND, adresse, siteOuvert, useEpingles, type SiteSid } from "@/components/Epingles";
 
 /**
  * Recherche commune aux trois sites (Lot 96). Fichier identique dans les
@@ -20,10 +20,11 @@ import { BRAND } from "@/lib/brand";
  *    Wiki et la Cartographie. Le Dossier Central garde sa palette, qui
  *    reçoit les résultats des deux autres sites ;
  *  - <BoutonRechercheCommune /> : le bouton qui l'ouvre.
+ * Sans texte, la fenêtre montre les épingles du membre (Epingles.tsx).
  * Styles : classes rc-* de chaque globals.css.
  */
 
-export type SiteSid = "main" | "wiki" | "map";
+export type { SiteSid };
 export type ResultatCommun = {
   site: SiteSid;
   kind: "membre" | "quete" | "objet" | "fiche" | "lieu" | "batiment";
@@ -43,17 +44,6 @@ const OPEN_EVENT = "sid:recherche-commune";
 /** Ouvre la fenêtre de recherche commune (Wiki, Cartographie). */
 export function ouvrirRechercheCommune() {
   window.dispatchEvent(new Event(OPEN_EVENT));
-}
-
-function siteOuvert(s: SiteSid, ici: SiteSid) {
-  if (s === ici || s === "main") return true;
-  return s === "wiki" ? !!BRAND.sites.wiki : !!BRAND.sites.map;
-}
-
-function adresse(site: SiteSid, path: string, ici: SiteSid) {
-  if (site === ici) return path;
-  const base = site === "main" ? BRAND.urls.site : site === "wiki" ? BRAND.urls.wiki : BRAND.urls.map;
-  return `${base.replace(/\/$/, "")}${path}`;
 }
 
 /** Résultats pour un texte (au moins 2 lettres), demandés 200 ms après la dernière frappe. */
@@ -95,7 +85,6 @@ export function useRechercheCommune(texte: string, ici: SiteSid, actif = true) {
   return { resultats, chargement, erreur };
 }
 
-const ICONES: Record<ResultatCommun["kind"], string> = { membre: "👤", quete: "📜", objet: "🛒", fiche: "📖", lieu: "📍", batiment: "🏛" };
 
 export function BoutonRechercheCommune({ className = "rc-bouton", children }: { className?: string; children?: React.ReactNode }) {
   const [mac, setMac] = useState(false);
@@ -130,6 +119,8 @@ export default function RechercheCommune({ ici }: { ici: SiteSid }) {
   const listRef = useRef<HTMLDivElement>(null);
   const returnFocus = useRef<HTMLElement | null>(null);
   const { resultats, chargement, erreur } = useRechercheCommune(texte, ici, open);
+  const { epingles } = useEpingles(ici, open);
+  const sansTexte = texte.trim().length < 2;
 
   // Ouverture : seulement avec une session (pas sur la page de connexion).
   const ouvrir = useCallback(async () => {
@@ -168,13 +159,14 @@ export default function RechercheCommune({ ici }: { ici: SiteSid }) {
     requestAnimationFrame(() => returnFocus.current?.focus?.());
   }, []);
 
-  // Le site courant d'abord, puis les deux autres.
+  // Le site courant d'abord, puis les deux autres. Sans texte : les épingles.
   const groupes = useMemo(() => {
+    if (sansTexte) return epingles?.length ? [{ site: "epingles" as const, items: epingles as ResultatCommun[] }] : [];
     const ordre = [ici, ...ORDRE.filter((s) => s !== ici)];
     return ordre.map((s) => ({ site: s, items: resultats.filter((r) => r.site === s) })).filter((g) => g.items.length > 0);
-  }, [resultats, ici]);
+  }, [resultats, ici, sansTexte, epingles]);
   const flat = useMemo(() => groupes.flatMap((g) => g.items), [groupes]);
-  useEffect(() => setActive(0), [resultats]);
+  useEffect(() => setActive(0), [resultats, sansTexte]);
   useEffect(() => {
     listRef.current?.querySelector(`[data-idx="${active}"]`)?.scrollIntoView({ block: "nearest" });
   }, [active]);
@@ -235,10 +227,10 @@ export default function RechercheCommune({ ici }: { ici: SiteSid }) {
         </div>
         <div ref={listRef} id="rc-liste" role="listbox" aria-label="Résultats" className="rc-liste">
           {groupes.map((g) => (
-            <div key={g.site} role="group" aria-label={NOMS_SITES[g.site]}>
+            <div key={g.site} role="group" aria-label={g.site === "epingles" ? "Tes épingles" : NOMS_SITES[g.site]}>
               <p className="rc-groupe" aria-hidden>
-                {NOMS_SITES[g.site]}
-                {g.site !== ici && <span className="rc-ailleurs"> · nouvel onglet</span>}
+                {g.site === "epingles" ? "Tes épingles" : NOMS_SITES[g.site]}
+                {g.site !== ici && g.site !== "epingles" && <span className="rc-ailleurs"> · nouvel onglet</span>}
               </p>
               {g.items.map((r) => {
                 idx++;
@@ -259,19 +251,29 @@ export default function RechercheCommune({ ici }: { ici: SiteSid }) {
                       <img src={r.image} alt="" className="rc-image" loading="lazy" />
                     ) : (
                       <span className="rc-icone" aria-hidden>
-                        {ICONES[r.kind]}
+                        {ICONES_KIND[r.kind]}
                       </span>
                     )}
                     <span className="rc-textes">
                       <span className="rc-titre">{r.label}</span>
-                      {r.hint && <span className="rc-detail">{r.hint}</span>}
+                      {(r.hint || (g.site === "epingles" && r.external)) && (
+                        <span className="rc-detail">
+                          {r.hint}
+                          {g.site === "epingles" && r.external && `${r.hint ? " · " : ""}${NOMS_SITES[r.site]}`}
+                        </span>
+                      )}
                     </span>
                   </div>
                 );
               })}
             </div>
           ))}
-          {q.length < 2 && <p className="rc-vide">Tape au moins deux lettres. La recherche couvre le Dossier Central, le Wiki et la Cartographie.</p>}
+          {q.length < 2 && (
+            <p className="rc-vide">
+              Tape au moins deux lettres. La recherche couvre le Dossier Central, le Wiki et la Cartographie.
+              {epingles && epingles.length === 0 && " Ce que tu épingles (membres, quêtes, fiches, lieux) apparaîtra ici."}
+            </p>
+          )}
           {q.length >= 2 && flat.length === 0 && (
             <p className="rc-vide" role="status">
               {erreur ?? (chargement ? "Recherche en cours…" : <>Rien ne correspond à « {q} ».</>)}

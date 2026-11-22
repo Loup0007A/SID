@@ -92,7 +92,7 @@ export function ConnectedDevices() {
   const autres = (list ?? []).filter((a) => !a.actuel);
 
   return (
-    <section className="glass-card space-y-3 p-6" aria-labelledby="appareils-titre">
+    <section id="appareils" className="glass-card scroll-mt-24 space-y-3 p-6" aria-labelledby="appareils-titre">
       <h2 id="appareils-titre" className="font-display text-lg uppercase">
         Appareils connectés
       </h2>

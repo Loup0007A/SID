@@ -26,6 +26,10 @@ create table auth.sessions (
   factor_id uuid, aal text, not_after timestamptz, refreshed_at timestamp,
   user_agent text, ip inet, tag text
 );
+create table auth.audit_log_entries (
+  instance_id uuid, id uuid primary key default gen_random_uuid(),
+  payload json, created_at timestamptz default now(), ip_address varchar(64) not null default ''
+);
 create function auth.uid() returns uuid language sql stable as $$
   select coalesce(nullif(current_setting('request.jwt.claim.sub', true), ''),
                   (nullif(current_setting('request.jwt.claims', true), '')::jsonb ->> 'sub'))::uuid $$;

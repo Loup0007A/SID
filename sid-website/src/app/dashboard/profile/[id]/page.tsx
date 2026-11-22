@@ -14,6 +14,7 @@ import { TitleAuraLayer, TitleBadge } from "@/components/titles/TitleVisuals";
 import { BirthdayGift } from "@/components/lazy/Seals";
 import { SidIcon } from "@/components/icons/SidIcon";
 import { GlitchWhere } from "@/components/glitch/GlitchName";
+import { BoutonEpingle } from "@/components/Epingles";
 
 type VisibleProfile = Partial<Profile> & { id: string; nickname: string };
 type MemberRole = { user_id: string; role_name: string; role_color: string; role_rank: number };
@@ -87,6 +88,9 @@ export default function MemberProfilePage() {
               <TitleBadge titleId={title.title_id} level={title.level} dragon={title.dragon} size="md" />
             </div>
           )}
+          <div className="my-1">
+            <BoutonEpingle kind="membre" cible={profile.id} ici="main" nom={profile.nickname} className="epingle-bouton" />
+          </div>
           {canTroll && (
             <Link href={`/dashboard/titles?target=${profile.id}`} className="mr-3 font-mono text-xs uppercase text-[#ffb15c] underline">
               <SidIcon name="masks" /> Lui faire une farce

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { readCursorMode, writeCursorMode, type CursorMode } from "@/lib/cursorPrefs";
-import { COMFORT_EVENT, DEFAULT_COMFORT, readComfort, writeComfort, type ComfortPrefs, type MotionPref, type TextPref, type ThemePref } from "@/lib/comfortPrefs";
+import { COMFORT_EVENT, DEFAULT_COMFORT, readComfort, writeComfort, type ComfortPrefs, type ContrastePref, type MotionPref, type TextPref, type ThemePref } from "@/lib/comfortPrefs";
 import { saveComfortToAccount } from "@/components/ComfortSync";
 import { Choices, SettingCard, Status, Toggle } from "./ui";
 
@@ -64,6 +64,19 @@ export function ComfortSettings() {
             { v: "normal", title: "Normale", visual: <span className="aa" style={{ fontSize: "1rem" }}>Aa</span> },
             { v: "large", title: "Grande", visual: <span className="aa" style={{ fontSize: "1.3rem" }}>Aa</span> },
             { v: "xlarge", title: "Très grande", visual: <span className="aa" style={{ fontSize: "1.6rem" }}>Aa</span> },
+          ]}
+        />
+      </SettingCard>
+
+      <SettingCard icon="bulb" title="Contraste" intro="Pour lire plus facilement : textes pleins, bordures marquées, sans motif derrière le texte.">
+        <Choices<ContrastePref>
+          label="Contraste"
+          value={comfort.contraste}
+          onChange={(v) => set({ contraste: v })}
+          options={[
+            { v: "normal", title: "Normal", hint: "Le site tel quel.", visual: <span className="aa mini-contraste">Aa</span> },
+            { v: "fort", title: "Renforcé", hint: "Textes et bordures pleins, fond uni.", visual: <span className="aa mini-contraste is-fort">Aa</span> },
+            { v: "auto", title: "Selon l'appareil", hint: "Renforcé si ton système demande plus de contraste.", visual: <span className="aa mini-contraste is-auto">Aa</span> },
           ]}
         />
       </SettingCard>

@@ -128,7 +128,7 @@ export default function RolesAdminPage() {
           <div className="space-y-4">
             {roles.map((role) => (
               <div key={role.id} className="glass-card p-4">
-                <p className="mb-2 font-display uppercase" style={{ color: role.color }}>{role.name}</p>
+                <p className="mb-2 font-display uppercase" style={{ color: role.color }} data-contraste-libre>{role.name}</p>
                 <div className="flex flex-wrap gap-3">
                   {ALL_PERMISSIONS.map((perm) => {
                     const checked = rolePerms.get(role.id)?.has(perm) ?? false;

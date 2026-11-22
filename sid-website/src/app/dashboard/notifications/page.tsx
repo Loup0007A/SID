@@ -36,6 +36,8 @@ const TYPE_ICON: Record<string, IconName> = {
   market: "candles",
   absence: "hourglass",
   propriete: "home",
+  securite: "shield",
+  rappel: "clock",
   incursion: "swords",
   exploration: "compass",
 };

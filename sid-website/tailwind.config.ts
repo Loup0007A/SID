@@ -31,8 +31,9 @@ const config: Config = {
       // Lisibilité (Lot 95) : un texte « paper » estompé (text-paper/60…)
       // garde au moins 80 % d'opacité, pour rester à 4,5:1 sur le fond et
       // sur les cartes. Les fonds et bordures gardent leur transparence.
+      // Contraste renforcé (Lot 98) : --attenue passe à 1, texte plein.
       textColor: {
-        paper: { DEFAULT: "rgb(var(--c-paper) / calc(0.8 + <alpha-value> * 0.2))" },
+        paper: { DEFAULT: "rgb(var(--c-paper) / calc(var(--attenue, 0.8) + <alpha-value> * (1 - var(--attenue, 0.8))))" },
       },
       fontFamily: {
         display: ["var(--font-display)", "Impact", "sans-serif"],

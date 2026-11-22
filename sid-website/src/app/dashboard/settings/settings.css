@@ -287,3 +287,9 @@
 :root.sombre .reglages .preset-nuancier, :root.sombre .reglages .puce-bord { border-color: rgb(255 255 255 / 0.6); }
 /* Mode épuré : aperçu sur fond uni. */
 :root.epure .apercu-scene { background: rgb(var(--fond)); }
+
+/* Contraste (Lot 98) : aperçus. */
+.mini-contraste { -webkit-text-stroke: 0; color: rgb(var(--creme) / 0.6); font-size: 1.5rem; padding: 0.1em 0.35em; border-radius: 8px; }
+.mini-contraste.is-fort { color: rgb(var(--creme)); background: rgb(var(--encre)); box-shadow: 0 0 0 2px rgb(var(--creme)); }
+.mini-contraste.is-auto { color: rgb(var(--creme)); background: linear-gradient(90deg, transparent 50%, rgb(var(--encre)) 50%); }
+:root.contraste-fort .choix-aide { opacity: 1; }

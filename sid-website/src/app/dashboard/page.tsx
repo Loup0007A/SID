@@ -22,6 +22,7 @@ import { SidIcon } from "@/components/icons/SidIcon";
 import { TutoInvite } from "@/components/tuto/TutoUi";
 import { SinceLastVisit } from "@/components/SinceLastVisit";
 import { PinnedShortcuts } from "@/components/PinnedShortcuts";
+import { EpinglesAccueil } from "@/components/EpinglesAccueil";
 import { PollSpotlight } from "@/components/polls/PollSpotlight";
 import { DailyWheel, useWheelAvailable } from "@/components/wheel/DailyWheel";
 
@@ -118,6 +119,7 @@ export default function DashboardHome() {
       </div>
 
       {profile && <PinnedShortcuts entries={entries} />}
+      {profile && <EpinglesAccueil />}
 
       <TutoInvite />
 

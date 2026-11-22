@@ -10,7 +10,7 @@
  *
  * Vérifie : les classes de <html> posées avant React (mémoire locale,
  * cookie, système), aucun texte sous 3:1 (les écarts entre 3 et 4,5 sont
- * listés sans faire échouer), aucune grande surface claire en mode sombre
+ * listés sans faire échouer ; en contraste renforcé, rien sous 4,5:1), aucune grande surface claire en mode sombre
  * (sauf [data-contraste-libre] : aperçus des styles choisis par les membres),
  * pas de défilement horizontal à 360 px.
  */
@@ -22,6 +22,9 @@ const MODES = {
   sombre: { prefs: { theme: "sombre" }, classes: ["sombre"] },
   epure: { prefs: { epure: true }, classes: ["epure", "sans-decor"] },
   "sombre-epure": { prefs: { theme: "sombre", epure: true }, classes: ["sombre", "epure", "sans-decor"] },
+  // Contraste renforcé (Lot 98) : aucun texte sous 4,5:1 (3:1 pour les grands titres).
+  contraste: { prefs: { contraste: "fort" }, classes: ["contraste-fort"] },
+  "sombre-contraste": { prefs: { theme: "sombre", contraste: "fort" }, classes: ["sombre", "contraste-fort"] },
 };
 type Mode = keyof typeof MODES;
 
@@ -120,6 +123,14 @@ test.describe("classes posées avant React", () => {
     expect(await page.evaluate(() => document.documentElement.classList.contains("calme"))).toBe(true);
     await ctx.close();
   });
+  test("contraste selon l'appareil", async ({ browser }) => {
+    const ctx = await browser.newContext({ contrast: "more" });
+    await prepare(ctx, {});
+    const page = await ctx.newPage();
+    await open(page, PUBLIC_PAGES[0]);
+    expect(await page.evaluate(() => document.documentElement.classList.contains("contraste-fort"))).toBe(true);
+    await ctx.close();
+  });
 });
 
 test.describe("contraste et surfaces", () => {
@@ -132,10 +143,11 @@ test.describe("contraste et surfaces", () => {
         await open(page, path);
         await page.screenshot({ path: info.outputPath(`${mode}.png`) });
         const { low, light } = await page.evaluate(probe, mode.startsWith("sombre"));
-        const bad = low.filter((l) => l.ratio < 3);
-        const soft = low.filter((l) => l.ratio >= 3);
+        const strict = mode.includes("contraste");
+        const bad = strict ? low : low.filter((l) => l.ratio < 3);
+        const soft = strict ? [] : low.filter((l) => l.ratio >= 3);
         if (soft.length) info.annotations.push({ type: "contraste entre 3 et 4,5", description: soft.map((s) => `${s.ratio} ${s.el} « ${s.text} »`).join("\n") });
-        expect(bad, "textes sous 3:1").toEqual([]);
+        expect(bad, strict ? "textes sous 4,5:1 (3:1 en grand)" : "textes sous 3:1").toEqual([]);
         if (mode.startsWith("sombre")) expect(light, "grandes surfaces claires en mode sombre").toEqual([]);
         await ctx.close();
       });

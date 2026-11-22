@@ -10,7 +10,9 @@
  *    pleines, ni décors des fêtes ; un site plus simple à regarder ;
  *  - motion : vivantes, calmes, ou selon l'appareil (réglage « réduire les
  *    animations » du système) ;
- *  - text, decor : taille du texte, décors des fêtes.
+ *  - text, decor : taille du texte, décors des fêtes ;
+ *  - contraste (Lot 98) : normal, fort, ou selon l'appareil (réglage
+ *    « augmenter le contraste » du système) ; classe « contraste-fort ».
  * Sur un appareil neuf, le middleware recopie les réglages du compte dans le
  * cookie avant la première page (comfortCookie.ts) : pas de passage du clair
  * au sombre à l'ouverture.
@@ -19,12 +21,13 @@
 export type ThemePref = "clair" | "sombre" | "auto";
 export type MotionPref = "full" | "calm" | "auto";
 export type TextPref = "normal" | "large" | "xlarge";
-export type ComfortPrefs = { theme: ThemePref; epure: boolean; motion: MotionPref; text: TextPref; decor: boolean };
+export type ContrastePref = "normal" | "fort" | "auto";
+export type ComfortPrefs = { theme: ThemePref; epure: boolean; motion: MotionPref; text: TextPref; decor: boolean; contraste: ContrastePref };
 
 export const COMFORT_KEY = "sid-confort-v1";
 export const COMFORT_COOKIE = "sid-confort";
 export const COMFORT_EVENT = "sid:comfort-changed";
-export const DEFAULT_COMFORT: ComfortPrefs = { theme: "clair", epure: false, motion: "auto", text: "normal", decor: true };
+export const DEFAULT_COMFORT: ComfortPrefs = { theme: "clair", epure: false, motion: "auto", text: "normal", decor: true, contraste: "auto" };
 
 /** Réglages complets à partir de valeurs partielles (compte ou navigateur). */
 export function normalizeComfort(p: Partial<ComfortPrefs> | null | undefined): ComfortPrefs {
@@ -35,6 +38,7 @@ export function normalizeComfort(p: Partial<ComfortPrefs> | null | undefined): C
     motion: v.motion === "calm" || v.motion === "full" ? v.motion : "auto",
     text: v.text === "large" || v.text === "xlarge" ? v.text : "normal",
     decor: v.decor !== false,
+    contraste: v.contraste === "fort" || v.contraste === "normal" ? v.contraste : "auto",
   };
 }
 
@@ -68,6 +72,10 @@ export function isCalm(p: ComfortPrefs) {
   return p.motion === "calm" || (p.motion === "auto" && media("(prefers-reduced-motion: reduce)"));
 }
 
+export function isHighContrast(p: ComfortPrefs) {
+  return p.contraste === "fort" || (p.contraste === "auto" && media("(prefers-contrast: more)"));
+}
+
 /** Décors des fêtes affichés (coupés en mode épuré). */
 export const decorAllowed = (p: ComfortPrefs) => p.decor && !p.epure;
 
@@ -79,6 +87,7 @@ export function applyComfort(p: ComfortPrefs) {
   c.toggle("texte-grand", p.text === "large");
   c.toggle("texte-tres-grand", p.text === "xlarge");
   c.toggle("sans-decor", !decorAllowed(p));
+  c.toggle("contraste-fort", isHighContrast(p));
 }
 
 /** Cookie lu par le script du <head> quand la mémoire locale est vide. */
@@ -103,4 +112,4 @@ export function writeComfort(p: ComfortPrefs) {
 }
 
 /** Script du <head> : mêmes règles qu'applyComfort, avant le premier affichage. */
-export const COMFORT_BOOT = `try{var s=null;try{s=localStorage.getItem("${COMFORT_KEY}")}catch(e){}if(!s){var k=document.cookie.match(/(?:^|; )${COMFORT_COOKIE}=([^;]*)/);if(k)s=decodeURIComponent(k[1])}var p=JSON.parse(s||"{}"),c=document.documentElement.classList,m=function(q){return!!(window.matchMedia&&matchMedia(q).matches)};if(p.theme==="sombre"||(p.theme==="auto"&&m("(prefers-color-scheme: dark)")))c.add("sombre");if(p.epure===true)c.add("epure");if(p.motion==="calm"||(p.motion!=="full"&&m("(prefers-reduced-motion: reduce)")))c.add("calme");if(p.text==="large")c.add("texte-grand");if(p.text==="xlarge")c.add("texte-tres-grand");if(p.decor===false||p.epure===true)c.add("sans-decor")}catch(e){}`;
+export const COMFORT_BOOT = `try{var s=null;try{s=localStorage.getItem("${COMFORT_KEY}")}catch(e){}if(!s){var k=document.cookie.match(/(?:^|; )${COMFORT_COOKIE}=([^;]*)/);if(k)s=decodeURIComponent(k[1])}var p=JSON.parse(s||"{}"),c=document.documentElement.classList,m=function(q){return!!(window.matchMedia&&matchMedia(q).matches)};if(p.theme==="sombre"||(p.theme==="auto"&&m("(prefers-color-scheme: dark)")))c.add("sombre");if(p.epure===true)c.add("epure");if(p.motion==="calm"||(p.motion!=="full"&&m("(prefers-reduced-motion: reduce)")))c.add("calme");if(p.text==="large")c.add("texte-grand");if(p.text==="xlarge")c.add("texte-tres-grand");if(p.decor===false||p.epure===true)c.add("sans-decor");if(p.contraste==="fort"||(p.contraste!=="normal"&&m("(prefers-contrast: more)")))c.add("contraste-fort")}catch(e){}`;

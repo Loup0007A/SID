@@ -141,6 +141,8 @@ sid/sid-website/supabase/migrations/0121_recherche_appareils_export.sql
 sid/sid-website/supabase/migrations/0122_devlog_securite_recherche.sql
 sid/sid-website/supabase/migrations/0123_gazette_calendrier.sql
 sid/sid-website/supabase/migrations/0124_devlog_gazette_calendrier_carnet.sql
+sid/sid-website/supabase/migrations/0125_journal_rappels_epingles.sql
+sid/sid-website/supabase/migrations/0126_devlog_journal_rappels_epingles.sql
 sid-map/sid-map/supabase/migrations/0104_territory_and_quests.sql
 sid-map/sid-map/supabase/migrations/0105_travel_mounts_layers.sql
 sid-map/sid-map/supabase/migrations/0106_blackmarket_crystals_questfix.sql
