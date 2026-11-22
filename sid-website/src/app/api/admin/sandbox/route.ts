@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
   }
 
   // 1. L'appelant : connecté, gestion des comptes, et pas lui-même un compte de test.
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

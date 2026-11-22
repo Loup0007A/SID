@@ -385,3 +385,10 @@ pour rester sur une base stable et connue).
   règles imbriquées, `contain: paint` sur la carte.
 - `scripts/audit-securite.sql` : essais d'intrusion ajoutés.
 - Détails et points à décider : `CHANGELOG_LOT99_AUDIT_SECURITE.md`.
+
+## Lot 100 — Next 16
+
+- Next 16.4.6 et React 19 (Next 14 n'est plus corrigé).
+- `createClient()` serveur asynchrone, `middleware.ts` devient `proxy.ts`,
+  build avec `--webpack`, `npm run lint` passe par ESLint.
+- Node 20.9 minimum sur Vercel. Détails : `CHANGELOG_LOT100_NEXT16.md`.

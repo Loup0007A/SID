@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
 
   // 1. Vérifie que l'appelant est authentifié ET a la permission manage_users,
   // via le client "normal" (soumis au RLS / cookies de session).
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

@@ -18,7 +18,7 @@ import { withComfortCookie } from "@/lib/comfortCookie";
  */
 const SESSION_COOKIE = /^sb-.+-auth-token(\.\d+)?$/;
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const hasSession = request.cookies.getAll().some((c) => SESSION_COOKIE.test(c.name) && c.value.length > 0);
 
   // La page d'accueil publique : un membre connecté va directement à son

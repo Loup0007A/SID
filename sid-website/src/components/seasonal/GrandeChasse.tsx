@@ -343,7 +343,7 @@ export function ChasseFooter() {
   const on = useOn();
   const [msg, setMsg] = useState<string | null>(null);
   const [burst, setBurst] = useState(0);
-  const timer = useRef<ReturnType<typeof setTimeout>>();
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   if (!on) return null;
   return (
     <span className="relative inline-flex normal-case tracking-normal">

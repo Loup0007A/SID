@@ -13,7 +13,7 @@
  *  - text, decor : taille du texte, décors des fêtes ;
  *  - contraste (Lot 98) : normal, fort, ou selon l'appareil (réglage
  *    « augmenter le contraste » du système) ; classe « contraste-fort ».
- * Sur un appareil neuf, le middleware recopie les réglages du compte dans le
+ * Sur un appareil neuf, le proxy (src/proxy.ts) recopie les réglages du compte dans le
  * cookie avant la première page (comfortCookie.ts) : pas de passage du clair
  * au sombre à l'ouverture.
  */

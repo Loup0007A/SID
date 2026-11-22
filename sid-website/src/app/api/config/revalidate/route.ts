@@ -10,8 +10,8 @@ import { createClient } from "@/lib/supabase/server";
 export async function POST() {
   const {
     data: { user },
-  } = await createClient().auth.getUser();
+  } = await (await createClient()).auth.getUser();
   if (!user) return NextResponse.json({ error: "Non authentifié." }, { status: 401 });
-  revalidateTag("public-config");
+  revalidateTag("public-config", "max");
   return NextResponse.json({ ok: true });
 }

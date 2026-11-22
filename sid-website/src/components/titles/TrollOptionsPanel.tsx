@@ -766,7 +766,7 @@ function FlatteryPanel({ value: o, onChange, ctx }: Props<"flatterie">) {
 function MirrorPanel({ value: o, onChange, ctx }: Props<"miroir">) {
   const set = (p: Partial<TrollOptions["miroir"]>) => onChange({ ...o, ...p });
   const [flip, setFlip] = useState(false);
-  const flipT = useRef<ReturnType<typeof setTimeout>>();
+  const flipT = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => clearTimeout(flipT.current), []);
   return (
     <div className="grid gap-4 md:grid-cols-2">

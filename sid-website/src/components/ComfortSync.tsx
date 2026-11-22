@@ -14,7 +14,7 @@ export default function ComfortSync() {
   useEffect(() => {
     let off = false;
     const sb = createClient();
-    // Le cookie évite au middleware de relire le compte à chaque appareil.
+    // Le cookie évite au proxy (src/proxy.ts) de relire le compte à chaque appareil.
     writeComfortCookie(readComfort());
     sb.rpc("display_prefs_get").then(({ data, error }) => {
       if (off || error || !data || typeof data !== "object") return;

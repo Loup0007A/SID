@@ -95,7 +95,7 @@ export function BalanceVaryexis({ troll }: { troll: ActiveTroll }) {
   const box = useRef<HTMLDivElement>(null);
   const angleRef = useRef(0);
   const lastTilt = useRef(0);
-  const tiltTimer = useRef<ReturnType<typeof setTimeout>>();
+  const tiltTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const seq = useRef(1);
   const reduce = useRef(false);
   const diff = w.r - w.l;

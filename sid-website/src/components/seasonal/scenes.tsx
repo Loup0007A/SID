@@ -1,3 +1,4 @@
+import type * as React from "react";
 import "./scenes.css";
 import type { ReactNode } from "react";
 import { Daisy, Tulip } from "./drawings";
@@ -827,7 +828,7 @@ export function ArmisticeScene() {
   );
 }
 
-export const SCENES: Record<SceneKind, () => JSX.Element> = {
+export const SCENES: Record<SceneKind, () => React.JSX.Element> = {
   halloween: HalloweenScene,
   noel: NoelScene,
   saint_valentin: ValentinScene,
