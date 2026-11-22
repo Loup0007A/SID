@@ -156,16 +156,54 @@ test.describe("contraste et surfaces", () => {
 });
 
 test.describe("mobile 360 px", () => {
-  for (const path of pages) {
-    test(`pas de défilement horizontal ${path}`, async ({ browser }, info) => {
-      const ctx = await browser.newContext({ viewport: { width: 360, height: 780 }, isMobile: true, hasTouch: true });
-      await prepare(ctx, {});
-      const page = await ctx.newPage();
-      await open(page, path);
-      await page.screenshot({ path: info.outputPath("360.png"), fullPage: true });
-      const over = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-      expect(over, "largeur qui dépasse l'écran (px)").toBeLessThanOrEqual(1);
-      await ctx.close();
-    });
+  // Texte normal et texte très grand (réglage d'affichage), thème sombre épuré :
+  // ni défilement horizontal, ni élément coupé par le bord de l'écran (les sites
+  // rognent ce qui dépasse, le défilement seul ne le voit pas).
+  for (const [nom, prefs] of [
+    ["", {}],
+    [" (texte très grand)", { theme: "sombre", epure: true, text: "xlarge" }],
+  ] as const) {
+    for (const path of pages) {
+      test(`rien hors de l'écran${nom} ${path}`, async ({ browser }, info) => {
+        const ctx = await browser.newContext({ viewport: { width: 360, height: 780 }, isMobile: true, hasTouch: true });
+        await prepare(ctx, prefs);
+        const page = await ctx.newPage();
+        await open(page, path);
+        await page.screenshot({ path: info.outputPath("360.png"), fullPage: true });
+        const over = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+        expect(over, "largeur qui dépasse l'écran (px)").toBeLessThanOrEqual(1);
+        const coupes = await page.evaluate(() => {
+          const W = window.innerWidth;
+          const dehors = (el: Element) => {
+            const r = el.getBoundingClientRect();
+            return r.width > 0 && r.right > W + 1 && r.left < W - 1;
+          };
+          // Ignoré : ce qui est dans une zone qui défile, ou rogné exprès par un
+          // cadre plus étroit que l'écran (rubans en coin, par exemple).
+          const ignore = (el: Element) => {
+            for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {
+              const cs = getComputedStyle(a);
+              if (cs.overflowX === "auto" || cs.overflowX === "scroll") return true;
+              if ((cs.overflowX === "hidden" || cs.overflowX === "clip") && a.getBoundingClientRect().right <= W + 1 && a.getBoundingClientRect().width < W - 1) return true;
+            }
+            return false;
+          };
+          const out: string[] = [];
+          for (const el of document.querySelectorAll("body *")) {
+            if (el.closest("svg, [aria-hidden=true]")) continue;
+            const cs = getComputedStyle(el);
+            if (cs.visibility === "hidden" || cs.display === "none" || cs.position === "fixed") continue;
+            if (!dehors(el) || ignore(el)) continue;
+            if ([...el.children].some(dehors)) continue;
+            const t = ((el as HTMLElement).innerText || el.getAttribute("aria-label") || "").trim();
+            if (!t && !["IMG", "BUTTON", "INPUT", "SELECT"].includes(el.tagName)) continue;
+            out.push(`${Math.round(el.getBoundingClientRect().right - W)} px ${el.tagName.toLowerCase()} « ${t.replace(/\s+/g, " ").slice(0, 40)} »`);
+          }
+          return [...new Set(out)].slice(0, 8);
+        });
+        expect(coupes, "éléments coupés par le bord de l'écran").toEqual([]);
+        await ctx.close();
+      });
+    }
   }
 });
