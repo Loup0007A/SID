@@ -39,7 +39,9 @@
 @keyframes hw-fog { from { transform: translateX(-3%); } to { transform: translateX(3%); } }
 
 /* Premier plan : toile d'araignée et chauves-souris. */
-.hw-front { position: fixed; inset: 0; z-index: 21; pointer-events: none; overflow: hidden; }
+/* Premier plan des décors : sous la barre du haut (z 20) et les fenêtres,
+   au-dessus du contenu. Un décor ne doit jamais cacher un bouton. */
+.hw-front { position: fixed; inset: 0; z-index: 19; pointer-events: none; overflow: hidden; }
 .hw-web { position: absolute; top: 0; left: 0; width: clamp(78px, 9vw, 120px); height: auto; overflow: visible; }
 .hw-web line, .hw-web path { stroke: rgb(236 228 250 / 0.26); stroke-width: 0.7; fill: none; }
 .hw-spider { animation: hw-spider 1.6s cubic-bezier(.3, .7, .4, 1) 0.6s both; }
@@ -176,7 +178,7 @@
 .nl-socket { fill: #3b4a35; }
 
 /* Premier plan : traîneau et étoile filante. */
-.nl-front { position: fixed; inset: 0; z-index: 21; pointer-events: none; overflow: hidden; }
+.nl-front { position: fixed; inset: 0; z-index: 19; pointer-events: none; overflow: hidden; }
 .nl-sleigh { fill: #231d33; overflow: visible; filter: drop-shadow(0 0 2px rgb(255 214 120 / 0.75)); }
 .nl-sleigh .nl-stroke { fill: none; stroke: #231d33; stroke-width: 1.7; stroke-linecap: round; }
 .nl-sleigh .nl-antler { stroke-width: 0.9; }

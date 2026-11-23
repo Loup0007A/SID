@@ -197,7 +197,7 @@ export function TrollLayer({ nickname }: { nickname: string }) {
       {has("decret") && <Decree troll={has("decret")!} nickname={nickname} />}
 
       {active.filter((t) => t.power !== "defi_dragon").length > 0 && (
-        <div data-troll-ui className="troll-chip fixed bottom-3 left-3 z-[9450] max-w-[calc(100vw-1.5rem)] space-y-1">
+        <div data-troll-ui className="troll-chip pointer-events-none fixed bottom-3 left-3 z-[9450] max-w-[calc(100vw-1.5rem)] space-y-1">
           {active
             .filter((t) => t.power !== "defi_dragon")
             .map((t) => (
@@ -213,7 +213,7 @@ export function TrollLayer({ nickname }: { nickname: string }) {
       )}
 
       {toast && (
-        <div data-troll-ui className="fixed bottom-3 left-1/2 z-[9450] -translate-x-1/2 rounded-full border border-white/15 bg-black/85 px-4 py-2 font-mono text-xs text-paper shadow-lg">
+        <div data-troll-ui className="pointer-events-none fixed bottom-3 left-1/2 z-[9450] -translate-x-1/2 rounded-full border border-white/15 bg-black/85 px-4 py-2 font-mono text-xs text-paper shadow-lg">
           <GlyphText text={toast} />
         </div>
       )}

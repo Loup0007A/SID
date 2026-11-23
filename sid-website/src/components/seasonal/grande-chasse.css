@@ -5,7 +5,7 @@
 
 
 .gc-back { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
-.gc-front { position: fixed; inset: 0; z-index: 21; pointer-events: none; overflow: hidden; }
+.gc-front { position: fixed; inset: 0; z-index: 19; pointer-events: none; overflow: hidden; }
 
 /* Ciel du crépuscule */
 .gc-sky {

@@ -24,6 +24,7 @@ import { leaveSandbox } from "@/lib/sandbox";
 import { TermsBanner } from "@/components/TermsBanner";
 import { SiteFooter } from "@/components/SiteFooter";
 import { TrollLayer } from "@/components/trolls/TrollLayer";
+import { GardeBoutons } from "@/components/trolls/GardeBoutons";
 import { SeasonalCeremony, SeasonalGarland, anyHoliday } from "@/components/seasonal/Seasonal";
 import { useSiteDecor } from "@/components/seasonal/siteDecor";
 import { AfterIdle } from "@/components/lazy/AfterIdle";
@@ -382,6 +383,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <SiteFooter />
     </div>
     {profile && <TrollLayer nickname={profile.nickname} />}
+    <GardeBoutons />
     {profile && fresh && <PresenceTracker />}
     {profile && fresh && (
       <AfterIdle>

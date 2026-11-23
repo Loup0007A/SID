@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { readOptions } from "@/lib/trollOptions";
+import { placeLibre } from "@/components/trolls/placeLibre";
 import type { ActiveTroll } from "@/lib/titles";
 
 /* ---------------------------------------------------------------
@@ -86,14 +87,21 @@ export function BatSwarm({ troll }: { troll: ActiveTroll }) {
 
   // Les chauves-souris accrochées : une chassée revient s'accrocher un peu plus tard.
   useEffect(() => {
-    const spawn = (): Hanger => ({ id: next.current++, x: rand(4, 92), y: rand(1, 22), away: Math.random() < 0.5 ? -40 : 40, leaving: false });
-    setHangers(Array.from({ length: o.hanging }, spawn));
+    const spawn = (): Hanger | null => {
+      const pos = placeLibre(
+        () => ({ x: rand(4, 92), y: rand(1, 22) }),
+        (q) => [(q.x / 100) * window.innerWidth, (q.y / 100) * window.innerHeight, 46, 30],
+      );
+      return pos ? { id: next.current++, ...pos, away: Math.random() < 0.5 ? -40 : 40, leaving: false } : null;
+    };
+    setHangers(Array.from({ length: o.hanging }, spawn).filter((h): h is Hanger => h !== null));
     if (!o.hanging) return;
     let timer: ReturnType<typeof setTimeout>;
     const back = () => {
       setHangers((hs) => {
         const staying = hs.filter((h) => !h.leaving);
-        return staying.length < o.hanging ? [...staying, spawn()] : staying;
+        const n = staying.length < o.hanging ? spawn() : null;
+        return n ? [...staying, n] : staying;
       });
       timer = setTimeout(back, rand(12_000, 35_000));
     };

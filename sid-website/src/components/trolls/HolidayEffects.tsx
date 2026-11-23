@@ -7,6 +7,7 @@ import type { ActiveTroll } from "@/lib/titles";
 import { Bells, BleuetStem, Dove, Egg, PaperFish, Patrouille } from "@/components/seasonal/drawings";
 import { Mini, type MiniKind } from "@/components/seasonal/minis";
 import { SidIcon } from "@/components/icons/SidIcon";
+import { GREVE_EPARGNE, placeLibre, zoneLibre } from "@/components/trolls/placeLibre";
 
 /**
  * Farces des titres de fête (Lot 44). Tout est posé dans des calques fixes ;
@@ -105,12 +106,19 @@ export function AprilFools({ troll }: { troll: ActiveTroll }) {
   const [fake, setFake] = useState<{ id: number; text: string; revealed: boolean } | null>(null);
 
   useEffect(() => {
-    const make = (id: number): Stuck => ({ id, x: rand(4, 88), y: rand(10, 82), r: rand(-25, 25), color: pickOne(FISH_COLORS), peeling: false });
-    fish.setItems(Array.from({ length: o.count }, () => make(fish.next.current++)));
+    const make = (id: number): Stuck | null => {
+      const pos = placeLibre(
+        () => ({ x: rand(4, 88), y: rand(10, 82) }),
+        (q) => [(q.x / 100) * window.innerWidth, (q.y / 100) * window.innerHeight, 74, 44],
+      );
+      return pos ? { id, ...pos, r: rand(-25, 25), color: pickOne(FISH_COLORS), peeling: false } : null;
+    };
+    fish.setItems(Array.from({ length: o.count }, () => make(fish.next.current++)).filter((f): f is Stuck => f !== null));
     const refill = setInterval(() => {
       fish.setItems((xs) => {
         const live = xs.filter((x) => !x.peeling);
-        return live.length < o.count ? [...xs, make(fish.next.current++)] : xs;
+        const n = live.length < o.count ? make(fish.next.current++) : null;
+        return n ? [...xs, n] : xs;
       });
     }, 20_000);
     let t: ReturnType<typeof setTimeout>;
@@ -184,9 +192,18 @@ export function EasterBells({ troll }: { troll: ActiveTroll }) {
       const n = 2 + o.amount;
       for (let i = 0; i < n; i++) {
         setTimeout(() => {
-          const col = Math.floor(rand(1, 24));
+          const libre = (c: number) => {
+            const hh = cols.current.get(c) ?? 0;
+            const b = 4 + hh * 20;
+            return hh <= 7 && zoneLibre((c * 4 / 100) * window.innerWidth, window.innerHeight - b - 30, 30, 30);
+          };
+          let col = -1;
+          for (let k = 0; k < 10 && col < 0; k++) {
+            const c = Math.floor(rand(1, 24));
+            if (libre(c)) col = c;
+          }
+          if (col < 0) return;
           const h = cols.current.get(col) ?? 0;
-          if (h > 7) return;
           cols.current.set(col, h + 1);
           eggs.add((id) => ({ id, x: col * 4, hue: Math.floor(rand(0, 6)), bottom: 4 + h * 20, landed: false, eaten: false }), 80);
         }, 1500 + i * rand(250, 700));
@@ -250,7 +267,7 @@ export function GeneralStrike({ troll }: { troll: ActiveTroll }) {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
       const cands = [...document.querySelectorAll("a[href], button, [role=button], input[type=submit]")].filter((el) => {
-        if (el.closest("[data-troll-ui]")) return false;
+        if (el.closest("[data-troll-ui]") || el.closest(GREVE_EPARGNE)) return false;
         const r = el.getBoundingClientRect();
         return r.width >= 28 && r.height >= 18 && r.top >= 0 && r.left >= 0 && r.bottom <= vh && r.right <= vw;
       });

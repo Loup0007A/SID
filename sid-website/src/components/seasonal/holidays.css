@@ -7,7 +7,7 @@
 /* Fond de chaque fête (comme Halloween et Noël). */
 
 .hd-back { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
-.hd-front { position: fixed; inset: 0; z-index: 21; pointer-events: none; overflow: hidden; }
+.hd-front { position: fixed; inset: 0; z-index: 19; pointer-events: none; overflow: hidden; }
 .hd-ground { position: absolute; left: 0; bottom: 0; width: 100%; height: 130px; }
 
 /* Particules : montent, tombent ou dérivent. */
