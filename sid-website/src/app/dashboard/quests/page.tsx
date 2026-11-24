@@ -43,6 +43,8 @@ export default function QuestsPage() {
     difficulty: "D" as QuestDifficulty,
     contractType: "autres" as ContractType,
     deadline: "",
+    // Publication programmée (vide : tout de suite).
+    publishAt: "",
     visibility: "members" as QuestVisibility,
     maxParticipants: "",
     fundedByCreator: true,
@@ -201,6 +203,7 @@ export default function QuestsPage() {
       difficulty: form.difficulty,
       contract_type: form.contractType,
       deadline: form.deadline ? new Date(form.deadline).toISOString() : null,
+      ...(form.publishAt ? { publish_at: new Date(form.publishAt).toISOString() } : {}),
       visibility: form.visibility,
       max_participants: form.maxParticipants ? Number(form.maxParticipants) : null,
       funded_by_creator: form.fundedByCreator,
@@ -219,7 +222,11 @@ export default function QuestsPage() {
       return;
     }
     setShowForm(false);
-    setForm({ title: "", description: "", giver: "", objectives: "", reward: "0", difficulty: "D", contractType: "autres", deadline: "", visibility: "members", maxParticipants: "", fundedByCreator: true, placeId: "", reputationReward: "", minIntelligence: "", minStrength: "", minTechnique: "", minPower: "", globalPower: false });
+    if (form.publishAt && new Date(form.publishAt).getTime() > Date.now())
+      setMessage(
+        `Quête programmée : publiée le ${new Date(form.publishAt).toLocaleString("fr-FR", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}, avec une notification aux membres.`,
+      );
+    setForm({ title: "", description: "", giver: "", objectives: "", reward: "0", difficulty: "D", contractType: "autres", deadline: "", publishAt: "", visibility: "members", maxParticipants: "", fundedByCreator: true, placeId: "", reputationReward: "", minIntelligence: "", minStrength: "", minTechnique: "", minPower: "", globalPower: false });
     await refresh();
   }
 
@@ -549,6 +556,23 @@ export default function QuestsPage() {
             <input type="date" className={inputClass} value={form.deadline} onChange={(e) => setForm({ ...form, deadline: e.target.value })} />
           </div>
           <div className="space-y-1">
+            <label className={labelClass} htmlFor="quete-publication">Publication (vide = tout de suite)</label>
+            <input
+              id="quete-publication"
+              type="datetime-local"
+              className={inputClass}
+              value={form.publishAt}
+              min={new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)}
+              onChange={(e) => setForm({ ...form, publishAt: e.target.value })}
+            />
+            {form.publishAt && (
+              <p className="font-mono text-[11px] text-paper/75">
+                Cachée aux membres jusqu&apos;au {new Date(form.publishAt).toLocaleString("fr-FR", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}, puis
+                publiée et annoncée.
+              </p>
+            )}
+          </div>
+          <div className="space-y-1">
             <label className={labelClass}>Nombre de places (vide = illimité)</label>
             <input
               type="number"
@@ -647,9 +671,18 @@ export default function QuestsPage() {
           const missing = q.global_power ? [] : unmetRequirements(q, me);
           // Une quête liée à un lieu ne se prend qu'une fois arrivé sur place.
           const notHere = !!q.place_id && (myPosition?.place_id !== q.place_id || !!myPosition?.travel_started_at);
+          // Programmée (0132) : visible seulement de l'auteur et des admins « Quêtes ».
+          const programmee = !!q.publish_at && new Date(q.publish_at).getTime() > Date.now();
 
           return (
             <div key={q.id} id={`quete-${q.id}`} data-tuto={qi === 0 ? "quete" : undefined} className={`scroll-mt-24 space-y-2 ${focusQuest === q.id ? "quest-focus" : ""}`}>
+              {programmee && (
+                <p className="rounded-lg border border-blue/50 bg-blue/10 px-3 py-1.5 font-mono text-[11px] text-blue-light">
+                  Programmée : publiée le{" "}
+                  {new Date(q.publish_at!).toLocaleString("fr-FR", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}. Cachée aux membres
+                  d&apos;ici là.
+                </p>
+              )}
               <QuestCard
                 quest={q}
                 participantCount={count}
@@ -726,7 +759,7 @@ export default function QuestsPage() {
                 </div>
               )}
 
-              {q.status === "open" && !alreadyIn && (
+              {q.status === "open" && !alreadyIn && !programmee && (
                 <div className="quest-dock-take">
                   <label className="quest-dock-label" htmlFor={`benef-${q.id}`}>Récompense pour</label>
                   <select

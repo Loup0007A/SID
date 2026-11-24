@@ -272,6 +272,63 @@ begin
   reset role;
 end $$;
 
+-- 11. Lot 102 : un membre ordinaire ne règle pas les frais des entreprises,
+-- ne liquide ni ne lance rien, ne lit pas les procédures ni les trajets
+-- programmés des autres.
+do $$
+declare
+  v_m uuid; v_n bigint;
+begin
+  if to_regprocedure('public.business_costs_set(numeric)') is null then
+    insert into audit_resultat values ('ATTENTION', 'migration 0131 (faillites) pas encore lancée');
+    return;
+  end if;
+  select p.id into v_m from public.profiles p
+  where p.status = 'active' and not p.is_founder and not public.has_permission(p.id, 'manage_economy')
+  order by p.created_at limit 1;
+  if v_m is null then return; end if;
+  perform set_config('request.jwt.claims', json_build_object('role', 'authenticated', 'sub', v_m)::text, true);
+  set local role authenticated;
+  begin
+    perform public.business_costs_set(0);
+    insert into audit_resultat values ('ÉCHEC', 'un membre change les frais des entreprises');
+  exception when insufficient_privilege or raise_exception then null;
+  end;
+  begin
+    perform public._business_liquidate(gen_random_uuid(), 'audit');
+    insert into audit_resultat values ('ÉCHEC', 'un membre appelle la liquidation judiciaire');
+  exception when insufficient_privilege or undefined_function then null;
+  end;
+  begin
+    perform public.businesses_check_bankruptcy();
+    insert into audit_resultat values ('ÉCHEC', 'un membre déclenche la vérification des faillites');
+  exception when insufficient_privilege or undefined_function then null;
+  end;
+  begin
+    select count(*) into v_n from public.business_procedures;
+    insert into audit_resultat values ('ÉCHEC', 'un membre lit la table des procédures');
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    perform public.quests_publish_due();
+    insert into audit_resultat values ('ÉCHEC', 'un membre déclenche la publication des quêtes');
+  exception when insufficient_privilege or undefined_function then null;
+  end;
+  if to_regclass('public.trajets_programmes') is not null then
+    begin
+      select count(*) into v_n from public.trajets_programmes;
+      insert into audit_resultat values ('ÉCHEC', 'un membre lit la table des trajets programmés');
+    exception when insufficient_privilege then null;
+    end;
+    begin
+      execute 'select public.trajets_programmes_lancer(null)';
+      insert into audit_resultat values ('ÉCHEC', 'un membre lance les trajets programmés de tous');
+    exception when insufficient_privilege or undefined_function then null;
+    end;
+  end if;
+  reset role;
+end $$;
+
 select niveau || ' : ' || message from audit_resultat order by niveau desc, message;
 select 'BILAN ' || count(*) filter (where niveau = 'ÉCHEC') || ' échec(s), ' || count(*) filter (where niveau = 'ATTENTION') || ' attention(s)' from audit_resultat;
 rollback;

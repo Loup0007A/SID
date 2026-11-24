@@ -544,7 +544,7 @@ export const PAGE_TIPS: Record<string, PageTip> = {
     icon: "office",
     points: [
       "Ta mise de départ crée la trésorerie et fixe le cours de l'action.",
-      "Sous l'objectif de ventes de la semaine : faillite. La trésorerie rembourse la dette, le reste va aux actionnaires.",
+      "Chaque semaine, la trésorerie paie des frais de fonctionnement. Sous zéro : 7 jours de redressement pour se renflouer, sinon liquidation.",
       "Un retrait de trésorerie doit être validé par un admin.",
       "Impôt sur les sociétés : un avis par semaine sur le bénéfice, payé depuis la trésorerie.",
       "Frais d'entreprise : un achat en boutique payé par la trésorerie, après validation d'un admin.",

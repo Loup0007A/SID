@@ -49,6 +49,8 @@ export default function BusinessPage() {
   const [employees, setEmployees] = useState<Record<string, BusinessEmployee[]>>({});
   const [ledger, setLedger] = useState<Record<string, BusinessTransaction[]>>({});
   const [weeks, setWeeks] = useState<Record<string, BusinessWeek>>({});
+  // Interdiction de gérer après une liquidation judiciaire (0131).
+  const [ban, setBan] = useState<{ until: string; reason: string } | null>(null);
   const [withdrawVersion, setWithdrawVersion] = useState(0);
   const [hireForm, setHireForm] = useState<Record<string, { userId: string; title: string; salary: string; frequency: SalaryFrequency }>>({});
 
@@ -67,6 +69,7 @@ export default function BusinessPage() {
       supabase.rpc("get_market_settings"),
       supabase.rpc("business_weeks", { p_all: false }),
     ]);
+    supabase.rpc("my_business_ban").then(({ data, error }) => setBan(error ? null : ((data as { until: string; reason: string } | null) ?? null)));
     setWeeks(Object.fromEntries(((wk ?? []) as BusinessWeek[]).map((w) => [w.business_id, w])));
     setMyBusinesses((data ?? []) as Business[]);
     setMembers(visibleMembers(m ?? [], user.id, can(permissions, "manage_users")));
@@ -186,13 +189,23 @@ export default function BusinessPage() {
     <div className="max-w-3xl space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="font-display text-2xl uppercase tracking-wide text-red">Entreprise</h1>
-        <button
-          onClick={() => setShowCreate((s) => !s)}
-          className="rounded-lg bg-red px-4 py-2 font-display text-sm uppercase text-ink hover:bg-red-light"
-        >
-          {showCreate ? "Annuler" : "Créer une entreprise"}
-        </button>
+        {!ban && (
+          <button
+            onClick={() => setShowCreate((s) => !s)}
+            className="rounded-lg bg-red px-4 py-2 font-display text-sm uppercase text-ink hover:bg-red-light"
+          >
+            {showCreate ? "Annuler" : "Créer une entreprise"}
+          </button>
+        )}
       </div>
+
+      {ban && (
+        <p role="status" className="rounded-xl border border-red/50 bg-red/10 p-3 font-body text-sm text-paper/90">
+          Interdiction de gérer jusqu&apos;au{" "}
+          {new Date(ban.until).toLocaleString("fr-FR", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })} ({ban.reason}) : tu ne peux pas
+          créer d&apos;entreprise d&apos;ici là.
+        </p>
+      )}
 
       <p className="font-body text-sm text-paper/70">
         Les actions s&apos;achètent et se vendent à la{" "}

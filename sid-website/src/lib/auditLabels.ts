@@ -42,6 +42,7 @@ export const ACTION_LABELS: Record<string, string> = {
   trolls_toggled: "Farces activées / coupées",
   decor_changed: "Affichage événementiel changé",
   business_min_set: "Objectif de ventes des entreprises",
+  business_costs_rate: "Frais de fonctionnement des entreprises",
   wheel_prize_saved: "Roue du jour : gain enregistré",
   wheel_prize_deleted: "Roue du jour : gain supprimé",
   wheel_settings: "Roue du jour : réglages",
@@ -201,6 +202,8 @@ export function describe(row: { action: string; details: Record<string, unknown>
     }
     case "inactivity_exempt":
       return d.until ? `jusqu'au ${new Date(String(d.until)).toLocaleDateString("fr-FR")}${d.reason ? ` (${d.reason})` : ""}` : "dispense levée";
+    case "business_costs_rate":
+      return `frais de fonctionnement : ${(Number(d.rate) * 100).toLocaleString("fr-FR")} % de la fortune moyenne`;
     case "business_min_set":
       return d.mode === "auto"
         ? `automatique (${Number(d.en_vigueur).toLocaleString("fr-FR")} z par semaine)`

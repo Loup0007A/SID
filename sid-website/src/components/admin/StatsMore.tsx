@@ -52,6 +52,7 @@ const NOTIF_LABELS: Record<string, string> = {
   propriete: "Propriétés",
   securite: "Sécurité",
   rappel: "Rappels",
+  quest_new: "Nouvelles quêtes",
   banque: "Banque isolée",
   incursion: "Créatures",
   exploration: "Exploration",

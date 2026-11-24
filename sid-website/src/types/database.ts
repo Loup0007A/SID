@@ -96,6 +96,8 @@ export interface Quest {
   difficulty: QuestDifficulty;
   contract_type: ContractType;
   deadline: string | null;
+  /** 0132 : date de publication programmée (null : publiée). */
+  publish_at?: string | null;
   status: QuestStatus;
   visibility: QuestVisibility;
   max_participants: number | null;

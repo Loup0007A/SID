@@ -38,6 +38,7 @@ const TYPE_ICON: Record<string, IconName> = {
   propriete: "home",
   securite: "shield",
   rappel: "clock",
+  quest_new: "scroll",
   banque: "padlock",
   incursion: "swords",
   exploration: "compass",

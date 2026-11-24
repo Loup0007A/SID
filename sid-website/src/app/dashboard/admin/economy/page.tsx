@@ -214,121 +214,84 @@ function TaxPool() {
 }
 
 /** Ventes de la semaine de chaque entreprise ouverte (Lot 67), les plus en retard d'abord. */
-type MinStatus = {
-  mode: "auto" | "fixe" | "off";
-  setting: number;
-  effective: number;
-  auto: { value: number; median: number; businesses: number; share: number; base: number; floor: number; cap: number; computed_at: string };
-};
-const MODES: { key: MinStatus["mode"]; label: string }[] = [
-  { key: "auto", label: "Automatique" },
-  { key: "fixe", label: "Fixe" },
-  { key: "off", label: "Aucun" },
-];
+type CostsStatus = { rate: number; money_supply: number; members: number; average: number; costs: number; in_procedure: number };
 
-/** Objectif de ventes hebdomadaire (Lot 75, migration 0092). */
-function WeeklyTarget({ onChange }: { onChange: () => void }) {
+/** Frais de fonctionnement des entreprises (Lot 102, migration 0131). */
+function CostsSettings({ onChange }: { onChange: () => void }) {
   const supabase = useMemo(() => createClient(), []);
-  const [st, setSt] = useState<MinStatus | null>(null);
+  const [st, setSt] = useState<CostsStatus | null>(null);
   const [missing, setMissing] = useState(false);
-  const [mode, setMode] = useState<MinStatus["mode"]>("auto");
-  const [amount, setAmount] = useState("");
+  const [pct, setPct] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const zz = (n: number) => `${Math.round(Number(n)).toLocaleString("fr-FR")} z`;
-
-  const take = (d: MinStatus) => {
+  const take = (d: CostsStatus) => {
     setSt(d);
-    setMode(d.mode);
-    setAmount(String(d.mode === "fixe" ? d.setting : d.auto.value));
+    setPct(String(Math.round(Number(d.rate) * 10000) / 100));
   };
   useEffect(() => {
-    supabase.rpc("business_min_status").then(({ data, error }) => (error ? setMissing(true) : take(data as MinStatus)));
+    supabase.rpc("business_costs_status").then(({ data, error }) => (error ? setMissing(true) : take(data as CostsStatus)));
   }, [supabase]);
 
   if (missing) {
     return (
       <p className="font-body text-sm text-paper/65">
-        Réglage de l&apos;objectif : lance la migration <code className="font-mono text-xs">0092_safeupdate_objectif_auto.sql</code>.
+        Frais de fonctionnement : lance la migration <code className="font-mono text-xs">0131_faillite_cessation_paiements.sql</code>.
       </p>
     );
   }
   if (!st) return null;
-  const a = st.auto;
-  const n = Number(amount);
-  const dirty = mode !== st.mode || (mode === "fixe" && n !== Number(st.setting));
-  const valid = mode !== "fixe" || (Number.isFinite(n) && n >= 1);
+  const n = Number(pct.replace(",", "."));
+  const valid = Number.isFinite(n) && n >= 0 && n <= 50;
+  const dirty = valid && Math.abs(n / 100 - Number(st.rate)) > 1e-9;
+  const apercu = valid ? (n > 0 ? Math.max(10, Math.round((n / 100) * st.average)) : 0) : null;
 
   return (
     <div className="glass-card space-y-3 p-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-wrap items-baseline justify-between gap-3">
         <div>
-          <p className="font-mono text-[10px] uppercase text-paper/60">Objectif de ventes par semaine</p>
-          <p className="font-display text-xl text-paper">{st.effective > 0 ? zz(st.effective) : "Aucun"}</p>
+          <p className="font-mono text-[10px] uppercase text-paper/70">Frais de fonctionnement par semaine</p>
+          <p className="font-display text-xl text-paper">{st.costs > 0 ? zz(st.costs) : "Aucun"}</p>
         </div>
-        <div className="flex rounded-lg border border-white/15 p-0.5" role="radiogroup" aria-label="Mode de l'objectif">
-          {MODES.map((m) => (
-            <button
-              key={m.key}
-              type="button"
-              role="radio"
-              aria-checked={mode === m.key}
-              onClick={() => {
-                setMode(m.key);
-                setMsg(null);
-              }}
-              className={clsx("rounded-md px-3 py-1.5 font-mono text-xs uppercase", mode === m.key ? "bg-blue text-ink" : "text-paper/70 hover:text-paper")}
-            >
-              {m.label}
-            </button>
-          ))}
-        </div>
+        {st.in_procedure > 0 && (
+          <p className="font-mono text-xs text-red-light">
+            {st.in_procedure} entreprise{st.in_procedure > 1 ? "s" : ""} en redressement
+          </p>
+        )}
       </div>
-
-      {mode === "auto" && (
-        <p className="font-body text-sm text-paper/70">
-          {a.businesses >= 3 ? (
-            <>
-              {Math.round(a.share * 100)} % des ventes hebdomadaires médianes ({zz(a.median)}, {a.businesses} entreprises ouvertes depuis au moins 7 jours, sur les 4
-              dernières semaines), entre {zz(a.floor)} et {zz(a.cap)}, arrondi à 50 z :{" "}
-            </>
-          ) : (
-            <>Moins de 3 entreprises ouvertes depuis 7 jours : objectif de base, indexé sur les prix : </>
-          )}
-          <b className="text-paper">{zz(a.value)}</b>. Recalculé chaque jour.
-        </p>
-      )}
-      {mode === "fixe" && (
-        <div className="flex flex-wrap items-center gap-3">
-          <label className="flex items-center gap-2 font-body text-sm text-paper/75">
-            Montant
-            <input
-              type="number"
-              min={1}
-              step={50}
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="w-32 rounded-lg border border-paper-dark bg-ink-soft px-3 py-1.5 font-mono text-sm text-paper outline-none focus:border-blue"
-            />
-            z
-          </label>
-          <span className="font-mono text-[11px] text-paper/55">en automatique : {zz(a.value)}</span>
-        </div>
-      )}
-      {mode === "off" && <p className="font-body text-sm text-paper/70">Aucune entreprise ne fait faillite faute de ventes.</p>}
-
+      <p className="font-body text-sm text-paper/80">
+        Le même montant pour chaque entreprise : {Math.round(Number(st.rate) * 10000) / 100} % de la fortune moyenne d&apos;un membre (masse monétaire{" "}
+        {zz(st.money_supply)} ÷ {st.members} membres actifs = {zz(st.average)}), 10 z au moins. Il suit l&apos;argent en circulation et part chez les
+        fournisseurs (la population simulée). Une trésorerie sous zéro ouvre un redressement judiciaire de 7 jours, puis la liquidation.
+      </p>
       <div className="flex flex-wrap items-center gap-3">
+        <label className="flex items-center gap-2 font-body text-sm text-paper/80">
+          Taux
+          <input
+            type="number"
+            min={0}
+            max={50}
+            step={0.5}
+            value={pct}
+            onChange={(e) => {
+              setPct(e.target.value);
+              setMsg(null);
+            }}
+            className="w-24 rounded-lg border border-paper-dark bg-ink-soft px-3 py-1.5 font-mono text-sm text-paper outline-none focus:border-blue"
+          />
+          %
+        </label>
+        {apercu != null && dirty && <span className="font-mono text-xs text-paper/75">soit {apercu > 0 ? zz(apercu) : "aucun frais"} par semaine</span>}
         <button
           type="button"
-          disabled={!dirty || !valid || busy}
+          disabled={!dirty || busy}
           onClick={async () => {
             setBusy(true);
-            setMsg(null);
-            const { data, error } = await supabase.rpc("business_min_set", { p_mode: mode, p_amount: mode === "fixe" ? n : null });
+            const { data, error } = await supabase.rpc("business_costs_set", { p_rate: n / 100 });
             setBusy(false);
             if (error) return setMsg({ ok: false, text: error.message });
-            take(data as MinStatus);
-            setMsg({ ok: true, text: "Objectif enregistré." });
+            take(data as CostsStatus);
+            setMsg({ ok: true, text: "Taux enregistré." });
             onChange();
           }}
           className="rounded-lg bg-blue px-4 py-1.5 font-mono text-xs uppercase text-ink hover:bg-blue-light disabled:opacity-40"
@@ -336,7 +299,6 @@ function WeeklyTarget({ onChange }: { onChange: () => void }) {
           Appliquer
         </button>
         {msg && <span className={clsx("font-mono text-xs", msg.ok ? "text-green-300" : "text-red")}>{msg.text}</span>}
-        <span className="font-body text-xs text-paper/50">Vérifié en fin de semaine de chaque entreprise ; ses propres achats ne comptent pas.</span>
       </div>
     </div>
   );
@@ -351,55 +313,51 @@ function BusinessWeeks() {
   useEffect(() => {
     load();
   }, [load]);
-  if (!rows) return <p className="font-body text-sm text-paper/60">Chargement…</p>;
-  const ratio = (w: BusinessWeek) => (Number(w.minimum) > 0 ? Number(w.revenue) / Number(w.minimum) : 1);
-  const sorted = [...rows].sort((a, b) => ratio(a) - ratio(b));
+  if (!rows) return <p className="font-body text-sm text-paper/70">Chargement…</p>;
   const zz = (n: number) => `${Math.round(Number(n)).toLocaleString("fr-FR")} z`;
-  const off = rows.length > 0 && !(Number(rows[0].minimum) > 0);
   return (
     <section className="space-y-3">
-      <h2 className="font-display text-lg uppercase text-paper">Ventes de la semaine</h2>
-      <WeeklyTarget onChange={load} />
-      {rows.length === 0 && <p className="glass-card p-4 font-body text-sm text-paper/60">Aucune entreprise ouverte.</p>}
-      {rows.length > 0 && <p className="font-body text-sm text-paper/65">Les plus en retard d&apos;abord.</p>}
+      <h2 className="font-display text-lg uppercase text-paper">Santé des entreprises</h2>
+      <CostsSettings onChange={load} />
+      {rows.length === 0 && <p className="glass-card p-4 font-body text-sm text-paper/70">Aucune entreprise ouverte.</p>}
+      {rows.length > 0 && <p className="font-body text-sm text-paper/75">Les redressements d&apos;abord, puis les trésoreries les plus basses.</p>}
       {rows.length > 0 && (
         <div className="glass-card overflow-x-auto p-2">
           <table className="w-full border-collapse font-mono text-xs sm:min-w-[640px]">
             <thead>
-              <tr className="border-b border-white/10 text-left uppercase text-paper/60">
+              <tr className="border-b border-white/10 text-left uppercase text-paper/70">
                 <th className="p-2 font-normal">Entreprise</th>
-                <th className="p-2 font-normal">Ventes / minimum</th>
-                <th className="hidden p-2 font-normal sm:table-cell">Fin de semaine</th>
                 <th className="p-2 text-right font-normal">Trésorerie</th>
+                <th className="p-2 font-normal">Couverture</th>
+                <th className="hidden p-2 font-normal sm:table-cell">Échéance</th>
               </tr>
             </thead>
             <tbody>
-              {sorted.map((w) => {
-                const done = !off && Number(w.revenue) >= Number(w.minimum);
-                const hours = (new Date(w.period_end).getTime() - Date.now()) / 3_600_000;
-                const danger = !off && !done && hours <= 48;
+              {rows.map((w) => {
+                const proc = !!w.procedure && !!w.procedure_until;
+                const sem = Number(w.weeks_covered ?? 0);
+                const danger = proc || Number(w.treasury) < Number(w.costs ?? 0);
                 return (
-                  <tr key={w.business_id} className="border-b border-white/5">
+                  <tr key={w.business_id} className={clsx("border-b border-white/5", proc && "bg-red/10")}>
                     <td className="p-2">
                       <span className="font-display text-sm uppercase text-paper">{w.name}</span>
-                      <span className="block text-[11px] text-paper/50">{w.founder ?? "—"}</span>
+                      <span className="block text-[11px] text-paper/70">{w.founder ?? "—"}</span>
+                      {proc && <span className="block text-[11px] uppercase text-red-light">redressement judiciaire</span>}
                     </td>
-                    <td className="w-[38%] p-2">
-                      <div className="flex items-baseline justify-between gap-2 whitespace-nowrap">
-                        <span className={done ? "text-green-300" : danger ? "text-red-light" : "text-paper"}>{zz(w.revenue)}</span>
-                        <span className="text-paper/50">/ {off ? "—" : zz(w.minimum)}</span>
-                      </div>
-                      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-white/10">
-                        <div className={clsx("h-full rounded-full", off ? "bg-white/25" : done ? "bg-green-400/80" : danger ? "bg-red" : "bg-blue")} style={{ width: `${off ? 100 : Math.max(2, Math.min(1, ratio(w)) * 100)}%` }} />
-                      </div>
-                    </td>
-                    <td className={clsx("hidden p-2 sm:table-cell", danger ? "text-red-light" : "text-paper/70")}>
-                      {new Date(w.period_end).toLocaleString("fr-FR", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
-                      {done && <span className="block text-[11px] text-green-300">objectif atteint</span>}
-                    </td>
-                    <td className="p-2 text-right text-paper/80">
+                    <td className={clsx("p-2 text-right", Number(w.treasury) < 0 ? "text-red-light" : "text-paper/85")}>
                       {zz(w.treasury)}
+                      {Number(w.debt ?? 0) > 0 && <span className="block text-[11px] text-paper/70">dette {zz(Number(w.debt))}</span>}
                       {Number(w.pending_withdrawals) > 0 && <span className="block text-[11px] text-gold">{zz(w.pending_withdrawals)} en retrait</span>}
+                    </td>
+                    <td className={clsx("p-2", danger ? "text-red-light" : sem < 3 ? "text-yellow-300" : "text-paper/85")}>
+                      {Number(w.costs ?? 0) > 0 ? (proc ? "—" : `${sem >= 52 ? "52+" : sem} sem.`) : "sans frais"}
+                    </td>
+                    <td className={clsx("hidden p-2 sm:table-cell", proc ? "text-red-light" : "text-paper/75")}>
+                      {proc
+                        ? `liquidation le ${new Date(w.procedure_until!).toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`
+                        : w.next_charge_at
+                          ? `frais le ${new Date(w.next_charge_at).toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`
+                          : "—"}
                     </td>
                   </tr>
                 );

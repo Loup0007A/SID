@@ -402,3 +402,14 @@ pour rester sur une base stable et connue).
 - `src/components/bank/BanqueIsolee.tsx` (page Banque) et
   `src/app/dashboard/admin/banque-isolee/page.tsx` (direction).
 - Détails : `CHANGELOG_LOT101_BANQUE_ISOLEE.md`.
+
+## Lot 102 — Faillites, quêtes programmées
+
+- Migration 0131 : frais de fonctionnement hebdomadaires
+  (`business_weekly_costs`, taux `business_weekly_costs_rate`), redressement
+  judiciaire de 7 jours, liquidation par ordre de créanciers
+  (`business_procedures`, `business_bans`). Réglage et santé des entreprises
+  dans Administration → Économie ; `WeekRevenue.tsx` devient le bloc santé.
+- Migration 0132 : `quests.publish_at`, notification `quest_new`,
+  `run_scheduled_jobs` lance aussi les trajets programmés de la Carto.
+- Détails : `CHANGELOG_LOT102_FAILLITE_QUETES_TRAJETS.md`.

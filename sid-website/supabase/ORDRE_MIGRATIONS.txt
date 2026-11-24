@@ -150,6 +150,9 @@ sid/sid-website/supabase/migrations/0127_audit_securite_correctifs.sql
 sid/sid-website/supabase/migrations/0128_devlog_audit_securite.sql
 sid/sid-website/supabase/migrations/0129_banque_isolee.sql
 sid/sid-website/supabase/migrations/0130_devlog_banque_isolee.sql
+sid/sid-website/supabase/migrations/0131_faillite_cessation_paiements.sql
+sid/sid-website/supabase/migrations/0132_quetes_programmees.sql
+sid/sid-website/supabase/migrations/0133_devlog_faillite_quetes_trajets.sql
 sid-map/sid-map/supabase/migrations/0107_textures.sql
 sid-map/sid-map/supabase/migrations/0108_texture_drawing.sql
 sid-map/sid-map/supabase/migrations/0109_scale_flight.sql
@@ -167,3 +170,4 @@ sid-map/sid-map/supabase/migrations/0119_meteo_incursions.sql
 sid-map/sid-map/supabase/migrations/0120_creatures_meteo_lieux_proprietes.sql
 sid-map/sid-map/supabase/migrations/0121_batiments_proprietaire.sql
 sid-map/sid-map/supabase/migrations/0122_carnet_de_voyage.sql
+sid-map/sid-map/supabase/migrations/0123_trajets_programmes.sql
