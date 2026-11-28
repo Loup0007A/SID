@@ -43,6 +43,11 @@ export const ACTION_LABELS: Record<string, string> = {
   decor_changed: "Affichage événementiel changé",
   business_min_set: "Objectif de ventes des entreprises",
   business_costs_rate: "Frais de fonctionnement des entreprises",
+  avent_config: "Calendrier de l'avent : réglages",
+  avent_case: "Calendrier de l'avent : jeu d'une case",
+  avent_recompense: "Calendrier de l'avent : récompense",
+  avent_recompense_suppr: "Calendrier de l'avent : récompense supprimée",
+  avent_distribution: "Calendrier de l'avent : distribution",
   wheel_prize_saved: "Roue du jour : gain enregistré",
   wheel_prize_deleted: "Roue du jour : gain supprimé",
   wheel_settings: "Roue du jour : réglages",
@@ -202,6 +207,10 @@ export function describe(row: { action: string; details: Record<string, unknown>
     }
     case "inactivity_exempt":
       return d.until ? `jusqu'au ${new Date(String(d.until)).toLocaleDateString("fr-FR")}${d.reason ? ` (${d.reason})` : ""}` : "dispense levée";
+    case "avent_case":
+      return `case ${d.jour} : ${d.jeu ?? "aucun jeu"}`;
+    case "avent_distribution":
+      return `${d.gagnants} gagnant(s), ${Number(d.zenis).toLocaleString("fr-FR")} z versés (édition ${d.edition})`;
     case "business_costs_rate":
       return `frais de fonctionnement : ${(Number(d.rate) * 100).toLocaleString("fr-FR")} % de la fortune moyenne`;
     case "business_min_set":

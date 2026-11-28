@@ -53,6 +53,7 @@ const NOTIF_LABELS: Record<string, string> = {
   securite: "Sécurité",
   rappel: "Rappels",
   quest_new: "Nouvelles quêtes",
+  avent: "Calendrier de l'avent",
   banque: "Banque isolée",
   incursion: "Créatures",
   exploration: "Exploration",

@@ -61,6 +61,7 @@ export const NAV_ENTRIES: NavEntry[] = [
 
   { key: "quests", href: "/dashboard/quests", label: "Quêtes", description: "Missions ouvertes et en cours", emoji: "📜", icon: "scroll", group: "jeu", section: "quests" },
   { key: "dex", href: "/dashboard/dex", label: "Dex", description: "Tes renforts et alliés tirés, à réutiliser", emoji: "🃏", icon: "dice", group: "jeu" },
+  { key: "avent", href: "/dashboard/avent", label: "Calendrier de l'avent", description: "Un mini-jeu par jour jusqu'au 24 décembre, un classement, des récompenses", emoji: "🎁", icon: "gift", group: "jeu" },
   { key: "roue", href: "/dashboard/roue", label: "Roue du jour", description: "Un tour par jour : plus ta série est longue, plus les gros lots sortent", emoji: "🎡", icon: "wheel", group: "jeu" },
   { key: "tech", href: "/dashboard/tech", label: "Arbre technologique", description: "Dépense tes points de simulation", emoji: "🌳", icon: "tree", group: "entrainement" },
   { key: "map", href: "/dashboard/map", label: "Carte", description: "Ta position et tes trajets", emoji: "🗺️", icon: "map", group: "jeu" },
@@ -97,6 +98,7 @@ export const NAV_ENTRIES: NavEntry[] = [
   { key: "applications", href: "/dashboard/admin/applications", label: "Recrutement", description: "Candidatures en attente", emoji: "📋", icon: "clipboard", group: "admin", perm: ["recruit"] },
   { key: "roles", href: "/dashboard/admin/roles", label: "Rôles & équipes", description: "Rôles, permissions, rangs", emoji: "🎖️", icon: "rank", group: "admin", perm: ["manage_roles", "manage_teams", "manage_users"] },
   { key: "economy", href: "/dashboard/admin/economy", label: "Économie", description: "Retraits, soldes, salaires, impôts", emoji: "💰", icon: "coins", group: "admin", perm: ["manage_economy"] },
+  { key: "admin-avent", href: "/dashboard/admin/avent", label: "Avent", description: "Cases, jeux et récompenses du calendrier de l'avent", emoji: "🎁", icon: "gift", group: "admin", perm: ["manage_economy"] },
   { key: "reforme", href: "/dashboard/admin/reforme", label: "Réforme monétaire", description: "Changer le cours du zéni", emoji: "🪙", icon: "zeni", group: "admin", perm: ["manage_economy"] },
   { key: "simulation", href: "/dashboard/admin/simulation", label: "Simulation", description: "La population simulée", emoji: "🧬", icon: "dna", group: "admin", perm: ["manage_economy"] },
   { key: "stats", href: "/dashboard/admin/stats", label: "Statistiques", description: "Activité du site", emoji: "📊", icon: "chart", group: "admin", perm: ["manage_users"] },

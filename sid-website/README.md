@@ -413,3 +413,20 @@ pour rester sur une base stable et connue).
 - Migration 0132 : `quests.publish_at`, notification `quest_new`,
   `run_scheduled_jobs` lance aussi les trajets programmés de la Carto.
 - Détails : `CHANGELOG_LOT102_FAILLITE_QUETES_TRAJETS.md`.
+
+## Lot 103 — Calendrier de l'avent
+
+- Migration 0134 : `avent_config`, `avent_jeux`, `avent_cases`,
+  `avent_parties`, `avent_scores`, `avent_recompenses`, `avent_gains`,
+  `avantages_temporaires` ; RPC `avent_etat`, `avent_classement`,
+  `avent_case_scores`, `avent_commencer`, `avent_terminer`, `mes_avantages`,
+  et côté admin `avent_admin`, `avent_config_set`, `avent_case_set`,
+  `avent_recompense_save`, `avent_recompense_delete`, `avent_distribuer`.
+  `_add_reputation` gère la renommée majorée, un déclencheur sur
+  `wheel_spins` la roue doublée.
+- Mini-jeux : `src/components/avent/jeux/` (moteur commun `moteur.ts`, un
+  fichier par jeu, liste dans `index.ts`) ; `MiniJeu.tsx` les fait tourner.
+  Un nouveau jeu = un fichier, une ligne dans `index.ts` et une ligne dans
+  `avent_jeux` (limites du contrôle des scores).
+- Pages : `/dashboard/avent`, `/dashboard/admin/avent`.
+- Détails : `CHANGELOG_LOT103_CALENDRIER_AVENT.md`.

@@ -709,3 +709,26 @@ body { overflow-wrap: break-word; } /* Lot 95 */
 .epingle-erreur { display: block; margin-top: 0.25rem; font-family: var(--font-mono); font-size: 0.72rem; color: rgb(var(--c-red)); }
 .epingles-accueil { display: flex; flex-direction: column; gap: 0.5rem; }
 .epingle-ailleurs { opacity: 0.85; }
+
+/* Calendrier de l'avent (Lot 103) : les 24 portes. */
+.porte-avent {
+  background: rgb(var(--creme));
+  color: rgb(var(--encre));
+  border: var(--trait) solid rgb(var(--encre));
+  border-radius: 16px;
+  box-shadow: var(--ombre-petite);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.porte-avent:hover:not(:disabled) { transform: translate(-2px, -2px); box-shadow: var(--ombre); }
+.porte-avent:focus-visible { outline: 3px solid rgb(var(--accent-2)); outline-offset: 3px; }
+.porte-avent--jour { background: rgb(var(--accent)); color: rgb(var(--creme)); }
+.porte-avent--jouee { background: linear-gradient(180deg, rgb(var(--creme)) 55%, rgb(var(--accent-2) / 0.6)); }
+.porte-avent--fermee {
+  background: transparent;
+  color: inherit;
+  border-color: currentColor;
+  border-style: dashed;
+  box-shadow: none;
+  cursor: default;
+}
+@media (prefers-reduced-motion: reduce) { .porte-avent { transition: none; } }

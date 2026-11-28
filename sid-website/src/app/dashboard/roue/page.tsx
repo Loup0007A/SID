@@ -20,12 +20,17 @@ export default function WheelPage() {
   const supabase = useMemo(() => createClient(), []);
   const [st, setSt] = useState<WheelStatus | null>(null);
   const [missing, setMissing] = useState(false);
+  // Avantage du calendrier de l'avent (0134) : gains en zénis doublés.
+  const [double, setDouble] = useState<string | null>(null);
   const [, tick] = useState(0);
 
   const load = useCallback(async () => {
     const { data, error } = await supabase.rpc("wheel_status");
     if (error) setMissing(true);
     else setSt(data as WheelStatus);
+    const av = await supabase.rpc("mes_avantages");
+    const d = ((av.data ?? []) as { kind: string; jusqu: string }[]).find((a) => a.kind === "roue_double");
+    setDouble(d ? d.jusqu : null);
   }, [supabase]);
   useEffect(() => {
     load();
@@ -50,6 +55,13 @@ export default function WheelPage() {
           manqué, et la série repart de 1.
         </p>
       </header>
+
+      {double && (
+        <p className="glass-card p-3 font-body text-sm text-paper">
+          Avantage du calendrier de l&apos;avent : tes gains en zénis sont doublés jusqu&apos;au{" "}
+          {new Date(double).toLocaleString("fr-FR", { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}.
+        </p>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
         <section className="glass-card space-y-5 p-4 sm:p-6">
@@ -117,8 +129,12 @@ export default function WheelPage() {
                 {st.history.map((h) => (
                   <li key={h.day} className="flex items-baseline gap-3 font-body text-sm">
                     <span className="w-14 shrink-0 font-mono text-[11px] text-paper/50">{new Date(h.day).toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" })}</span>
-                    <span className="min-w-0 flex-1 truncate" style={{ color: h.kind === "rien" ? "rgba(237,230,211,0.5)" : RARITY[h.rarity].ring }}>
+                    <span className={clsx("min-w-0 flex-1 truncate", h.kind === "rien" ? "text-paper/70" : "text-paper")}>
+                      {h.kind !== "rien" && (
+                        <span aria-hidden className="mr-1.5 inline-block h-2.5 w-2.5 rounded-full border border-encre align-middle" style={{ background: RARITY[h.rarity].fill }} />
+                      )}
                       {h.kind === "rien" ? "Rien" : prizeText({ ...h, detail: null })}
+                      {h.kind !== "rien" && h.rarity !== "commun" && <span className="sr-only"> ({RARITY[h.rarity].label})</span>}
                     </span>
                     <span className="shrink-0 font-mono text-[11px] text-paper/45">série {h.streak}</span>
                   </li>

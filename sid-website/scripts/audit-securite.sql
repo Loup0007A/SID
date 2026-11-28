@@ -329,6 +329,60 @@ begin
   reset role;
 end $$;
 
+-- 12. Lot 103 : calendrier de l'avent. Un membre ordinaire ne règle rien,
+-- ne distribue rien, ne lit pas les parties des autres.
+do $$
+declare
+  v_m uuid; v_n bigint;
+begin
+  if to_regprocedure('public.avent_distribuer()') is null then
+    insert into audit_resultat values ('ATTENTION', 'migration 0134 (calendrier de l''avent) pas encore lancée');
+    return;
+  end if;
+  select p.id into v_m from public.profiles p
+  where p.status = 'active' and not p.is_founder and not public.has_permission(p.id, 'manage_economy')
+  order by p.created_at limit 1;
+  if v_m is null then return; end if;
+  perform set_config('request.jwt.claims', json_build_object('role', 'authenticated', 'sub', v_m)::text, true);
+  set local role authenticated;
+  begin
+    perform public.avent_admin();
+    insert into audit_resultat values ('ÉCHEC', 'un membre ouvre l''administration de l''avent');
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    perform public.avent_recompense_save('{"rang_min":1,"rang_max":1,"zenis":1}'::jsonb);
+    insert into audit_resultat values ('ÉCHEC', 'un membre crée une récompense de l''avent');
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    perform public.avent_distribuer();
+    insert into audit_resultat values ('ÉCHEC', 'un membre distribue les récompenses de l''avent');
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    perform public.avent_annonces();
+    insert into audit_resultat values ('ÉCHEC', 'un membre déclenche les annonces de l''avent');
+  exception when insufficient_privilege or undefined_function then null;
+  end;
+  begin
+    select count(*) into v_n from public.avent_parties;
+    insert into audit_resultat values ('ÉCHEC', 'un membre lit les parties de l''avent');
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    select count(*) into v_n from public.avantages_temporaires;
+    insert into audit_resultat values ('ÉCHEC', 'un membre lit les avantages temporaires');
+  exception when insufficient_privilege then null;
+  end;
+  begin
+    insert into public.avent_scores (edition, user_id, jour, score) values (2026, v_m, 1, 999);
+    insert into audit_resultat values ('ÉCHEC', 'un membre écrit son score de l''avent');
+  exception when insufficient_privilege then null;
+  end;
+  reset role;
+end $$;
+
 select niveau || ' : ' || message from audit_resultat order by niveau desc, message;
 select 'BILAN ' || count(*) filter (where niveau = 'ÉCHEC') || ' échec(s), ' || count(*) filter (where niveau = 'ATTENTION') || ' attention(s)' from audit_resultat;
 rollback;

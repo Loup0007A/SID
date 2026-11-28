@@ -39,6 +39,7 @@ const TYPE_ICON: Record<string, IconName> = {
   securite: "shield",
   rappel: "clock",
   quest_new: "scroll",
+  avent: "gift",
   banque: "padlock",
   incursion: "swords",
   exploration: "compass",

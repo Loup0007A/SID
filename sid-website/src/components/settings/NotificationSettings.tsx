@@ -19,6 +19,7 @@ const GROUPS: { key: string; icon: IconName; label: string; hint: string; types:
   { key: "cadeaux", icon: "gift", label: "Cadeaux et souhaits", hint: "Cadeaux reçus, souhaits exaucés", types: ["gift", "wishlist"] },
   { key: "entreprises", icon: "office", label: "Entreprises", hint: "Frais, trésorerie, redressement, embauches", types: ["business"] },
   { key: "quetes", icon: "scroll", label: "Nouvelles quêtes", hint: "Quête publiée sur le panneau", types: ["quest_new"] },
+  { key: "avent", icon: "gift", label: "Calendrier de l'avent", hint: "Case du jour ouverte, récompense reçue", types: ["avent"] },
   { key: "renforts", icon: "dice", label: "Renforts", hint: "Recrues tirées pour tes missions", types: ["quest_gacha"] },
   { key: "titres", icon: "masks", label: "Titres et farces", hint: "Titre obtenu, farce reçue", types: ["title", "troll"] },
   { key: "sondages", icon: "ballot", label: "Sondages", hint: "Nouveaux sondages et résultats", types: ["poll"] },
