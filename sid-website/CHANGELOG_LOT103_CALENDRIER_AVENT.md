@@ -109,3 +109,9 @@ base).
   utilisant un objet de la boutique doté du nouvel effet « Essais
   d'entraînement (avent) » (1 à 50 essais par exemplaire, valables sur tous
   les jeux). La salle d'essai des admins reste sans limite.
+
+## Glouton : points divisés par 6 (migration 0138)
+
+Chocolat 4, étoile 20, lutins 80, 160, 320 et 640, niveau vidé 200 (au lieu
+de 25, 120, 500 à 4 000 et 1 200). Contrôle des scores : 25 000 au plus,
+140 par seconde.

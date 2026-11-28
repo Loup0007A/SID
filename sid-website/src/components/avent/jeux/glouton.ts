@@ -1,9 +1,9 @@
 import { assombrir, bandeau, bille, directionTouche, Effets, eclaircir, etoile, glissement, teinte, texte, type CreerJeu, type Saisie } from "./moteur";
 
 /**
- * Le Glouton du réveillon : labyrinthe, chocolats (25), étoiles (120) qui
- * retournent les lutins pendant 6 s (500, 1 000, 2 000, 4 000 points). Le
- * labyrinthe vidé (+1 200), on recommence plus vite : la vitesse croît de façon
+ * Le Glouton du réveillon : labyrinthe, chocolats (4), étoiles (20) qui
+ * retournent les lutins pendant 6 s (80, 160, 320, 640 points). Le
+ * labyrinthe vidé (+200), on recommence plus vite : la vitesse croît de façon
  * exponentielle (glouton ×1,10, lutins ×1,15 par niveau, peur ×0,82).
  * 3 vies. Flèches ou glissement.
  */
@@ -155,7 +155,7 @@ export const glouton: CreerJeu = ({ pal, rng }) => {
       if (ch === "." || ch === "*") {
         grille[moi.r][moi.c] = " ";
         restants--;
-        score += ch === "." ? 25 : 120;
+        score += ch === "." ? 4 : 20;
         if (ch === "*") {
           enchaine = 0;
           fx.gerbe(px(moi), py(moi), [pal.accent2, pal.neige], 14, 150, { forme: "etoile", taille: 3, gravite: 0 });
@@ -163,9 +163,9 @@ export const glouton: CreerJeu = ({ pal, rng }) => {
           for (const f of fantomes) if (!f.mange) f.peur = Math.max(1.5, 6.5 * 0.82 ** (niveau - 1));
         }
         if (restants <= 0) {
-          score += 1200;
+          score += 200;
           fx.flash(pal.accent2, 0.5);
-          fx.flotte(L / 2, OY + 7 * T, "+1200", pal.accent2, 26);
+          fx.flotte(L / 2, OY + 7 * T, "+200", pal.accent2, 26);
           niveau++;
           remplir();
           reinitPositions();
@@ -190,7 +190,7 @@ export const glouton: CreerJeu = ({ pal, rng }) => {
           if (f.peur > 0) {
             f.mange = true;
             f.peur = 0;
-            const gain = 500 * 2 ** Math.min(enchaine, 3);
+            const gain = 80 * 2 ** Math.min(enchaine, 3);
             score += gain;
             enchaine++;
             fx.flotte(px(f), py(f) - 8, `+${gain}`, pal.accent2, 18);

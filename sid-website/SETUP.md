@@ -5,10 +5,10 @@ renommer : nom du RP, des trois sites, de la monnaie, adresses, sites et
 rubriques ouverts, adresses des simulations. L'installation elle-même (Supabase, Vercel, compte Fondateur) est
 dans [README.md](README.md).
 
-Prérequis : migrations passées jusqu'à `0137_avent_jeux_entrainement.sql`
+Prérequis : migrations passées jusqu'à `0138_avent_glouton_points.sql`
 (Dossier Central), celles du Wiki (jusqu'à `0212_wiki_nouvelles_fiches.sql`), puis
 celles de la Cartographie (jusqu'à `0123_trajets_programmes.sql`). Sur une base déjà
-en service, lancer les 0120 à 0137 du Dossier Central **après** toutes les autres. La 0118 de la
+en service, lancer les 0120 à 0138 du Dossier Central **après** toutes les autres. La 0118 de la
 Cartographie utilise les tables du Wiki : passer le Wiki avant. Installation neuve des trois sites :
 suivre `supabase/ORDRE_MIGRATIONS.txt` (vérifié par `scripts/rejouer-migrations.sh`).
 
