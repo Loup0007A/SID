@@ -1,4 +1,4 @@
-import { bandeau, boite, directionTouche, glissement, rond, texte, type CreerJeu, type Saisie } from "./moteur";
+import { assombrir, bandeau, bille, directionTouche, Effets, eclaircir, etoile, glissement, teinte, texte, type CreerJeu, type Saisie } from "./moteur";
 
 /**
  * Le Glouton du réveillon : labyrinthe, chocolats (10), étoiles (50) qui
@@ -83,6 +83,10 @@ export const glouton: CreerJeu = ({ pal, rng }) => {
   let enchaine = 0;
   let pause = 1;
   let message = "Prêt ?";
+  const fx = new Effets(rng);
+  let temps = 0;
+  const px = (a: { c: number; dc: number }) => OX + (a.c + a.dc) * T + T / 2;
+  const py = (a: { r: number; dr: number }) => OY + (a.r + a.dr) * T + T / 2;
 
   function reinitPositions() {
     Object.assign(moi, { c: depart.c, r: depart.r, vers: null, p: 0, dc: 0, dr: 0 });
@@ -134,6 +138,8 @@ export const glouton: CreerJeu = ({ pal, rng }) => {
     score: 0,
     fini: false,
     maj(dt: number) {
+      fx.maj(dt);
+      temps += dt;
       if (jeu.fini) return;
       bouche += dt * 10;
       if (pause > 0) {
@@ -150,10 +156,14 @@ export const glouton: CreerJeu = ({ pal, rng }) => {
         score += ch === "." ? 10 : 50;
         if (ch === "*") {
           enchaine = 0;
+          fx.gerbe(px(moi), py(moi), [pal.accent2, pal.neige], 14, 150, { forme: "etoile", taille: 3, gravite: 0 });
+          fx.flash(pal.creme2, 0.18);
           for (const f of fantomes) if (!f.mange) f.peur = Math.max(2.5, 6.5 - niveau * 0.5);
         }
         if (restants <= 0) {
           score += 500;
+          fx.flash(pal.accent2, 0.5);
+          fx.flotte(L / 2, OY + 7 * T, "+500", pal.accent2, 26);
           niveau++;
           remplir();
           reinitPositions();
@@ -178,9 +188,16 @@ export const glouton: CreerJeu = ({ pal, rng }) => {
           if (f.peur > 0) {
             f.mange = true;
             f.peur = 0;
-            score += 200 * 2 ** Math.min(enchaine, 3);
+            const gain = 200 * 2 ** Math.min(enchaine, 3);
+            score += gain;
             enchaine++;
+            fx.flotte(px(f), py(f) - 8, `+${gain}`, pal.accent2, 18);
+            fx.gerbe(px(f), py(f), [f.couleur, pal.neige], 12, 160, { gravite: 0 });
+            fx.secouer(4);
           } else {
+            fx.gerbe(px(moi), py(moi), [pal.accent2, pal.neige, pal.accent], 26, 200, { gravite: 200 });
+            fx.secouer(10);
+            fx.flash(pal.accent, 0.35);
             vies--;
             if (vies <= 0) {
               jeu.fini = true;
@@ -196,62 +213,117 @@ export const glouton: CreerJeu = ({ pal, rng }) => {
       jeu.score = score;
     },
     dessiner(g: CanvasRenderingContext2D) {
+      const fondJeu = assombrir(pal.fond, 0.45);
       g.fillStyle = pal.fond;
       g.fillRect(0, 0, L, H);
+      g.save();
+      fx.decaler(g);
+      g.fillStyle = fondJeu;
+      g.beginPath();
+      g.roundRect(OX - 4, OY - 4, C * T + 8, R * T + 8, 12);
+      g.fill();
+      const estMur = (c: number, r: number) => r >= 0 && r < R && c >= 0 && c < C && grille[r][c] === "#";
+      // Murs : ombre, glaçage, contour seulement sur les bords libres
+      g.fillStyle = pal.encre;
+      for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) if (estMur(c, r)) g.fillRect(OX + c * T + 3, OY + r * T + 3, T, T);
+      const pain = "rgb(196, 128, 74)";
+      for (let r = 0; r < R; r++)
+        for (let c = 0; c < C; c++) {
+          if (!estMur(c, r)) continue;
+          const x = OX + c * T;
+          const y = OY + r * T;
+          g.fillStyle = pain;
+          g.fillRect(x, y, T, T);
+          if (!estMur(c, r - 1)) {
+            g.fillStyle = pal.neige;
+            g.fillRect(x, y, T, 5);
+            g.beginPath();
+            g.arc(x + T * 0.3, y + 5, 2.5, 0, Math.PI);
+            g.arc(x + T * 0.75, y + 5, 2, 0, Math.PI);
+            g.fill();
+          }
+        }
+      g.strokeStyle = pal.encre;
+      g.lineWidth = 2.5;
+      g.lineCap = "round";
+      g.beginPath();
+      for (let r = 0; r < R; r++)
+        for (let c = 0; c < C; c++) {
+          if (!estMur(c, r)) continue;
+          const x = OX + c * T;
+          const y = OY + r * T;
+          if (!estMur(c, r - 1)) { g.moveTo(x, y); g.lineTo(x + T, y); }
+          if (!estMur(c, r + 1)) { g.moveTo(x, y + T); g.lineTo(x + T, y + T); }
+          if (!estMur(c - 1, r)) { g.moveTo(x, y); g.lineTo(x, y + T); }
+          if (!estMur(c + 1, r)) { g.moveTo(x + T, y); g.lineTo(x + T, y + T); }
+        }
+      g.stroke();
+      g.lineCap = "butt";
+      // Porte, chocolats, étoiles
       for (let r = 0; r < R; r++)
         for (let c = 0; c < C; c++) {
           const ch = grille[r][c];
-          const x = OX + c * T;
-          const y = OY + r * T;
-          if (ch === "#") boite(g, pal, x + 1, y + 1, T - 2, T - 2, pal.creme2, { r: 4, ombre: 0, trait: 2 });
-          else if (ch === "-") {
-            g.fillStyle = pal.accent2;
-            g.fillRect(x, y + T / 2 - 2, T, 4);
+          const x = OX + c * T + T / 2;
+          const y = OY + r * T + T / 2;
+          if (ch === "-") {
+            g.fillStyle = pal.accent;
+            g.fillRect(x - T / 2, y - 2, T, 4);
+            g.fillStyle = pal.neige;
+            g.fillRect(x - 2, y - 2, 4, 4);
           } else if (ch === ".") {
-            g.fillStyle = "rgb(122, 72, 40)";
-            g.fillRect(x + T / 2 - 3, y + T / 2 - 3, 6, 6);
-            g.strokeStyle = pal.encre;
-            g.lineWidth = 1;
-            g.strokeRect(x + T / 2 - 3, y + T / 2 - 3, 6, 6);
-          } else if (ch === "*") {
-            const k = 1 + Math.sin(bouche) * 0.12;
-            g.save();
-            g.translate(x + T / 2, y + T / 2);
-            g.scale(k, k);
+            g.fillStyle = "rgb(236, 196, 140)";
             g.beginPath();
-            for (let i = 0; i < 10; i++) {
-              const a = (i * Math.PI) / 5 - Math.PI / 2;
-              const rr = i % 2 ? 3 : 7.5;
-              g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
-            }
-            g.closePath();
-            g.fillStyle = pal.accent2;
+            g.arc(x, y, 3.4, 0, Math.PI * 2);
             g.fill();
-            g.lineWidth = 1.5;
-            g.strokeStyle = pal.encre;
-            g.stroke();
-            g.restore();
+            g.fillStyle = "rgb(122, 70, 38)";
+            g.beginPath();
+            g.arc(x + 0.4, y + 0.4, 1.9, 0, Math.PI * 2);
+            g.fill();
+            g.fillStyle = "rgba(255, 245, 225, 0.9)";
+            g.beginPath();
+            g.arc(x - 1, y - 1.2, 1, 0, Math.PI * 2);
+            g.fill();
+          } else if (ch === "*") {
+            const k = 1 + Math.sin(temps * 6) * 0.15;
+            g.fillStyle = teinte(pal.accent2, 0.25);
+            g.beginPath();
+            g.arc(x, y, 11 * k, 0, Math.PI * 2);
+            g.fill();
+            etoile(g, x, y, 9.5 * k, 4.4 * k, pal.accent2, pal.encre, temps * 0.8);
           }
         }
+      fx.dessiner(g, pal);
+      // Lutins
       for (const f of fantomes) {
-        const x = OX + (f.c + f.dc) * T + T / 2;
-        const y = OY + (f.r + f.dr) * T + T / 2;
+        const x = px(f);
+        const y = py(f);
+        const regard = f.vers ? { haut: [0, -1.4], bas: [0, 1.4], gauche: [-1.4, 0], droite: [1.4, 0] }[f.vers] : [0, 0];
         if (f.mange) {
-          g.fillStyle = pal.neige;
-          g.beginPath();
-          g.arc(x - 3, y, 2.5, 0, Math.PI * 2);
-          g.arc(x + 3, y, 2.5, 0, Math.PI * 2);
-          g.fill();
+          for (const sens of [-1, 1]) {
+            g.fillStyle = pal.neige;
+            g.beginPath();
+            g.arc(x + sens * 3.2, y, 2.8, 0, Math.PI * 2);
+            g.fill();
+            g.fillStyle = pal.encre;
+            g.beginPath();
+            g.arc(x + sens * 3.2 + regard[0], y + regard[1], 1.3, 0, Math.PI * 2);
+            g.fill();
+          }
           continue;
         }
         const peur = f.peur > 0;
         const clignote = peur && f.peur < 1.5 && Math.floor(f.peur * 6) % 2 === 0;
-        const corps = peur ? (clignote ? pal.neige : pal.creme2) : f.couleur;
+        const corps = peur ? (clignote ? pal.neige : eclaircir(pal.fond, 0.35)) : f.couleur;
+        const ondule = Math.sin(temps * 14) * 1.2;
+        g.fillStyle = teinte(pal.encre, 0.9);
         g.beginPath();
-        g.arc(x, y - 1, 7.5, Math.PI, 0);
-        g.lineTo(x + 7.5, y + 7.5);
-        for (let i = 0; i < 3; i++) g.lineTo(x + 7.5 - (i + 0.5) * 5, y + (i % 2 ? 7.5 : 4.5));
-        g.lineTo(x - 7.5, y + 7.5);
+        g.ellipse(x + 2, y + 9, 7, 2.5, 0, 0, Math.PI * 2);
+        g.fill();
+        g.beginPath();
+        g.arc(x, y - 1, 8, Math.PI, 0);
+        g.lineTo(x + 8, y + 7.5);
+        for (let i = 0; i < 4; i++) g.lineTo(x + 8 - (i + 0.5) * 4, y + (i % 2 ? 7.5 + ondule : 4.5 - ondule));
+        g.lineTo(x - 8, y + 7.5);
         g.closePath();
         g.fillStyle = corps;
         g.fill();
@@ -260,34 +332,78 @@ export const glouton: CreerJeu = ({ pal, rng }) => {
         g.stroke();
         // Bonnet
         g.beginPath();
-        g.moveTo(x - 6, y - 6);
-        g.lineTo(x + 6, y - 6);
-        g.lineTo(x + 3, y - 14);
+        g.moveTo(x - 7, y - 5);
+        g.quadraticCurveTo(x, y - 16, x + 6, y - 15);
+        g.lineTo(x + 7, y - 5);
         g.closePath();
         g.fillStyle = peur ? pal.encre : pal.neige;
         g.fill();
-        g.fillStyle = pal.encre;
+        g.lineWidth = 1.5;
+        g.stroke();
+        if (peur) {
+          g.strokeStyle = pal.encre;
+          g.lineWidth = 1.4;
+          g.beginPath();
+          g.moveTo(x - 5, y + 3);
+          for (let i = 0; i < 5; i++) g.lineTo(x - 5 + (i + 1) * 2, y + (i % 2 ? 3 : 1.5));
+          g.stroke();
+          g.fillStyle = pal.encre;
+          g.fillRect(x - 3.5, y - 2.5, 2, 2);
+          g.fillRect(x + 1.5, y - 2.5, 2, 2);
+        } else {
+          for (const sens of [-1, 1]) {
+            g.fillStyle = pal.neige;
+            g.beginPath();
+            g.arc(x + sens * 3, y - 1, 2.6, 0, Math.PI * 2);
+            g.fill();
+            g.fillStyle = pal.encre;
+            g.beginPath();
+            g.arc(x + sens * 3 + regard[0], y - 1 + regard[1], 1.3, 0, Math.PI * 2);
+            g.fill();
+          }
+        }
+      }
+      // Glouton
+      const mx = px(moi);
+      const my = py(moi);
+      const ouv = moi.vers ? Math.abs(Math.sin(bouche)) * 0.75 : 0.25;
+      const rot = { droite: 0, bas: Math.PI / 2, gauche: Math.PI, haut: -Math.PI / 2 }[moi.vers ?? voulu ?? "droite"];
+      const puissant = fantomes.some((f) => f.peur > 0);
+      if (puissant) {
+        g.fillStyle = teinte(pal.accent2, 0.3 + 0.15 * Math.sin(temps * 10));
         g.beginPath();
-        g.arc(x - 2.8, y - 1, 1.6, 0, Math.PI * 2);
-        g.arc(x + 2.8, y - 1, 1.6, 0, Math.PI * 2);
+        g.arc(mx, my, 13, 0, Math.PI * 2);
         g.fill();
       }
-      const mx = OX + (moi.c + moi.dc) * T + T / 2;
-      const my = OY + (moi.r + moi.dr) * T + T / 2;
-      const ouv = moi.vers ? Math.abs(Math.sin(bouche)) * 0.7 : 0.25;
-      const rot = { droite: 0, bas: Math.PI / 2, gauche: Math.PI, haut: -Math.PI / 2 }[moi.vers ?? voulu ?? "droite"];
-      rond(g, pal, mx, my, 8, pal.accent2, { ombre: 2, trait: 0 });
+      g.fillStyle = teinte(pal.encre, 0.9);
+      g.beginPath();
+      g.moveTo(mx + 2, my + 2);
+      g.arc(mx + 2, my + 2, 8.5, rot + ouv, rot + Math.PI * 2 - ouv);
+      g.closePath();
+      g.fill();
+      const dg = g.createRadialGradient(mx - 3, my - 3, 1, mx, my, 9);
+      dg.addColorStop(0, eclaircir(pal.accent2, 0.5));
+      dg.addColorStop(1, pal.accent2);
+      g.fillStyle = dg;
       g.beginPath();
       g.moveTo(mx, my);
-      g.arc(mx, my, 8, rot + ouv, rot + Math.PI * 2 - ouv);
+      g.arc(mx, my, 8.5, rot + ouv, rot + Math.PI * 2 - ouv);
       g.closePath();
-      g.fillStyle = pal.accent2;
       g.fill();
       g.lineWidth = 2;
       g.strokeStyle = pal.encre;
       g.stroke();
-      bandeau(g, pal, L, `${score} pts · niv. ${niveau}`, "♥".repeat(Math.max(vies, 0)));
-      if (message) texte(g, pal, message, L / 2, OY + 9.5 * T, { taille: 22, couleur: pal.creme, contour: true });
+      // Œil
+      const oeil = rot - Math.PI / 2 + 0.35;
+      g.fillStyle = pal.encre;
+      g.beginPath();
+      g.arc(mx + Math.cos(oeil) * 4.2, my + Math.sin(oeil) * 4.2, 1.6, 0, Math.PI * 2);
+      g.fill();
+      g.restore();
+      bandeau(g, pal, L, `${score} pts · niv. ${niveau}`, "");
+      for (let i = 0; i < Math.max(vies, 0); i++) bille(g, pal, L - 26 - i * 18, 21, 6, pal.accent2, 1);
+      if (message) texte(g, pal, message, L / 2, OY + 9.5 * T, { taille: 24, couleur: pal.accent2, contour: true });
+      fx.voile(g, L, H);
     },
     saisie(e: Saisie) {
       if (e.type === "keydown") {

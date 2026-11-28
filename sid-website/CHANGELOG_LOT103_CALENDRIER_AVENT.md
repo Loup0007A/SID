@@ -54,3 +54,16 @@ score impossible est refusé et noté.
 Changer l'année de la date d'ouverture démarre une nouvelle édition :
 scores, annonces et distribution repartent de zéro (les anciens restent en
 base).
+
+## Ajouts (salle d'essai, graphismes)
+
+- **Salle d'essai** (Administration → Avent) : chaque mini-jeu se lance sans
+  passer par le serveur, même pour une case pas encore ouverte. Aucun essai
+  consommé, aucun score enregistré, aucun effet sur le classement. Le
+  meilleur score d'essai s'affiche à côté du jeu jusqu'au rechargement.
+- **Graphismes** : décors (ciel étoilé, collines, village, guirlande, toit),
+  sprites redessinés (lutins, bonshommes de neige, rennes, Père Noël,
+  paquets à nœud, glouton et lutins du labyrinthe), particules, textes de
+  points, secousses et éclairs aux moments forts. Moteur commun dans
+  `moteur.ts` (`Effets`, `ciel`, `collines`, `sapin`, `bille`, `etoile`).
+  Les règles et les scores ne changent pas.

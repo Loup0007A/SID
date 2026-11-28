@@ -1,4 +1,4 @@
-import { bandeau, borne, boite, cadeau, rond, texte, type CreerJeu, type Saisie } from "./moteur";
+import { bandeau, bille, borne, boite, cadeau, ciel, collines, Effets, flocons, majFlocons, dessinerFlocons, sapin, teinte, texte, type CreerJeu, type Saisie } from "./moteur";
 
 /**
  * Casse-cadeaux : la luge renvoie une boule de neige vers des rangées de
@@ -27,7 +27,11 @@ export const cassebriques: CreerJeu = ({ pal, rng }) => {
   let gauche = false;
   let droite = false;
   let message = "Touche pour lancer";
-  let eclats: { x: number; y: number; vx: number; vy: number; t: number; c: string }[] = [];
+  const fx = new Effets(rng);
+  const etoiles = flocons(26, L, 260, rng);
+  const neige = flocons(30, L, H, rng);
+  let temps = 0;
+  let serie = 0;
 
   function construire() {
     const couleurs = [pal.accent, pal.accent2, pal.sapin, pal.creme2, pal.accentCarte, pal.neige];
@@ -69,17 +73,14 @@ export const cassebriques: CreerJeu = ({ pal, rng }) => {
     score: 0,
     fini: false,
     maj(dt: number) {
+      fx.maj(dt);
+      temps += dt;
+      majFlocons(neige, dt, L, H);
       if (jeu.fini) return;
       if (gauche) cible -= 420 * dt;
       if (droite) cible += 420 * dt;
       cible = borne(cible, luge.w / 2 + 8, L - luge.w / 2 - 8);
       luge.x += borne(cible - luge.x, -900 * dt, 900 * dt);
-      eclats = eclats.filter((e) => (e.t -= dt) > 0);
-      for (const e of eclats) {
-        e.x += e.vx * dt;
-        e.y += e.vy * dt;
-        e.vy += 500 * dt;
-      }
       if (boule.collee) {
         boule.x = luge.x;
         boule.y = luge.y - 12;
@@ -110,6 +111,8 @@ export const cassebriques: CreerJeu = ({ pal, rng }) => {
           boule.vx = Math.sin(a) * v;
           boule.vy = -Math.cos(a) * v;
           boule.y = luge.y - 6 - boule.r;
+          serie = 0;
+          fx.gerbe(boule.x, luge.y - 6, [pal.neige], 6, 90, { gravite: 200, forme: "rond", taille: 2, vie: 0.4 });
         }
         // Paquets
         for (const p of paquets) {
@@ -124,13 +127,17 @@ export const cassebriques: CreerJeu = ({ pal, rng }) => {
             p.vie--;
             if (p.vie <= 0) {
               score += p.pts;
-              for (let i = 0; i < 6; i++)
-                eclats.push({ x: p.x + BW / 2, y: p.y + BH / 2, vx: (rng() - 0.5) * 220, vy: -rng() * 180, t: 0.7, c: p.couleur });
-            }
+              serie++;
+              fx.gerbe(p.x + BW / 2, p.y + BH / 2, [p.couleur, p.ruban, pal.neige], 12, 200, { gravite: 520, forme: "carre", taille: 3.5 });
+              fx.flotte(p.x + BW / 2, p.y, `+${p.pts}`, pal.accent2, serie > 3 ? 18 : 14);
+              fx.secouer(serie > 3 ? 4 : 2);
+            } else fx.gerbe(p.x + BW / 2, p.y + BH, [pal.neige], 5, 80, { gravite: 300, forme: "rond", taille: 2 });
             break;
           }
         }
         if (boule.y > H + 20) {
+          fx.secouer(8);
+          fx.flash(pal.accent, 0.3);
           vies--;
           if (vies <= 0) {
             jeu.fini = true;
@@ -144,41 +151,84 @@ export const cassebriques: CreerJeu = ({ pal, rng }) => {
       }
       if (paquets.every((p) => p.vie <= 0)) {
         score += 200;
+        fx.flash(pal.accent2, 0.45);
+        fx.gerbe(L / 2, H / 2, [pal.accent, pal.accent2, pal.neige, pal.sapin], 40, 300);
         niveau++;
         construire();
         coller();
         message = `Niveau ${niveau} : touche pour lancer`;
       }
       jeu.score = score;
+      if (!boule.collee) fx.trace(boule.x, boule.y, teinte(pal.neige, 0.55), boule.r * 0.9, 0.2);
     },
     dessiner(g: CanvasRenderingContext2D) {
-      g.fillStyle = pal.fond;
-      g.fillRect(0, 0, L, H);
-      boite(g, pal, 6, 40, L - 12, H - 46, pal.creme2, { r: 12, ombre: 4 });
+      ciel(g, pal, L, H, etoiles, temps);
+      g.save();
+      fx.decaler(g);
+      // Décor : lune, sapins, collines
+      g.fillStyle = teinte(pal.neige, 0.18);
+      g.beginPath();
+      g.arc(296, 290, 40, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = teinte(pal.neige, 0.75);
+      g.beginPath();
+      g.arc(296, 290, 24, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = teinte(pal.creme2, 0.8);
+      for (const [cx, cy, cr] of [[289, 284, 5], [303, 297, 4], [300, 280, 2.5]]) {
+        g.beginPath();
+        g.arc(cx, cy, cr, 0, Math.PI * 2);
+        g.fill();
+      }
+      sapin(g, pal, 40, H - 70, 70);
+      sapin(g, pal, 318, H - 62, 56);
+      collines(g, pal, L, H - 66, H);
+      dessinerFlocons(g, neige, "rgba(255,255,255,0.55)");
+      // Cadre de jeu
+      g.strokeStyle = pal.encre;
+      g.lineWidth = 3;
+      g.beginPath();
+      g.roundRect(6, 40, L - 12, H - 46, 12);
+      g.stroke();
       for (const p of paquets) {
         if (p.vie <= 0) continue;
         cadeau(g, pal, p.x, p.y, BW, BH, p.couleur, p.ruban, 2);
         if (p.vie > 1) {
-          g.fillStyle = "rgba(255,255,255,0.45)";
-          g.fillRect(p.x + 3, p.y + 3, BW - 6, 4);
+          // Paquet à deux coups : une couche de givre
+          g.fillStyle = "rgba(255,255,255,0.55)";
+          g.beginPath();
+          g.roundRect(p.x + 2, p.y + 2, BW - 4, 6, 3);
+          g.fill();
+          g.fillStyle = "rgba(255,255,255,0.8)";
+          for (let k = 0; k < 4; k++) g.fillRect(p.x + 6 + k * 10, p.y + 8, 2, 4 + (k % 2) * 3);
         }
       }
-      for (const e of eclats) {
-        g.fillStyle = e.c;
-        g.fillRect(e.x - 3, e.y - 3, 6, 6);
-      }
       // Luge
-      boite(g, pal, luge.x - luge.w / 2, luge.y - 6, luge.w, 12, pal.accent, { r: 6, ombre: 3 });
+      const lx = luge.x - luge.w / 2;
       g.strokeStyle = pal.encre;
       g.lineWidth = 3;
       g.beginPath();
-      g.moveTo(luge.x - luge.w / 2 + 6, luge.y + 12);
-      g.lineTo(luge.x + luge.w / 2 - 2, luge.y + 12);
-      g.quadraticCurveTo(luge.x + luge.w / 2 + 10, luge.y + 12, luge.x + luge.w / 2 + 6, luge.y + 2);
+      g.moveTo(lx + 4, luge.y + 13);
+      g.lineTo(lx + luge.w - 6, luge.y + 13);
+      g.quadraticCurveTo(lx + luge.w + 12, luge.y + 13, lx + luge.w + 6, luge.y - 2);
       g.stroke();
-      rond(g, pal, boule.x, boule.y, boule.r, pal.neige, { ombre: 2, trait: 2.5 });
-      bandeau(g, pal, L, `${score} pts · niv. ${niveau}`, "●".repeat(Math.max(vies, 0)));
-      if (message) texte(g, pal, message, L / 2, H - 120, { taille: 17, couleur: pal.creme, contour: true });
+      g.lineWidth = 2;
+      for (const k of [0.25, 0.75]) {
+        g.beginPath();
+        g.moveTo(lx + luge.w * k, luge.y + 5);
+        g.lineTo(lx + luge.w * k, luge.y + 13);
+        g.stroke();
+      }
+      boite(g, pal, lx, luge.y - 6, luge.w, 12, pal.accent, { r: 6, ombre: 3 });
+      g.fillStyle = "rgba(255,255,255,0.4)";
+      g.fillRect(lx + 6, luge.y - 4, luge.w - 12, 3);
+      fx.dessiner(g, pal);
+      bille(g, pal, boule.x, boule.y, boule.r, pal.neige, 2);
+      g.restore();
+      bandeau(g, pal, L, `${score} pts · niv. ${niveau}`, "");
+      for (let i = 0; i < Math.max(vies, 0); i++) bille(g, pal, L - 26 - i * 18, 21, 6, pal.neige, 1);
+      if (message) texte(g, pal, message, L / 2, H - 140, { taille: 17, couleur: pal.creme, contour: true });
+      fx.voile(g, L, H);
     },
     saisie(e: Saisie) {
       if (e.type === "down" || e.type === "move") {

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { SidIcon } from "@/components/icons/SidIcon";
+import { SalleEssai } from "@/components/avent/SalleEssai";
 import { buttonOutline, buttonPrimary, buttonSecondary, inputClass, labelClass } from "@/lib/ui";
 import { AVANTAGES, jourCourt, rangs, recompenseTexte, z, type AventAvantage, type AventRecompense } from "@/types/avent";
 
@@ -107,6 +108,8 @@ export default function AventAdminPage() {
           {msg.t}
         </p>
       )}
+
+      <SalleEssai jeux={d.jeux} />
 
       <section className="glass-card space-y-4 p-5">
         <h2 className="font-display text-lg uppercase">Réglages</h2>
