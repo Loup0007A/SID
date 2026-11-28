@@ -3,7 +3,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 import { createClient } from "@/lib/supabase/client";
+import Link from "next/link";
 import { MiniJeu } from "@/components/avent/MiniJeu";
+import { SalleEssai } from "@/components/avent/SalleEssai";
 import { buttonPrimary } from "@/lib/ui";
 import { AVANTAGES, jourCourt, rangs, recompenseTexte, z, type AventCase, type AventEtat, type AventLigne } from "@/types/avent";
 
@@ -12,6 +14,11 @@ import { AVANTAGES, jourCourt, rangs, recompenseTexte, z, type AventCase, type A
 type Partie = { partie: string; jeu: string; graine: number; essais_restants: number };
 type Resultat = { ok: boolean; motif?: string; score?: number; record?: boolean; meilleur?: number; bonus?: boolean; rang?: number | null; points?: number };
 type Podium = { rang: number; nickname: string; score: number; moi: boolean };
+type Entrainement = {
+  gratuits: number;
+  credits: number;
+  jeux: { jeu: string; nom: string; consigne: string; premiere_case: number; utilises: number; restants: number }[];
+};
 type Avantage = { kind: "bouclier" | "roue_double" | "renommee_bonus"; valeur: number | null; jusqu: string; source: string };
 
 const quand = (iso: string) =>
@@ -24,6 +31,15 @@ export default function AventPage() {
   const [classement, setClassement] = useState<AventLigne[]>([]);
   const [avantages, setAvantages] = useState<Avantage[]>([]);
   const [ouverte, setOuverte] = useState<number | null>(null);
+  const [entr, setEntr] = useState<Entrainement | null>(null);
+
+  const chargerEntrainement = useCallback(async () => {
+    const { data, error } = await supabase.rpc("avent_entrainement_etat");
+    if (!error) setEntr(data as Entrainement);
+  }, [supabase]);
+  useEffect(() => {
+    chargerEntrainement();
+  }, [chargerEntrainement]);
 
   const charger = useCallback(async () => {
     const [e, c, a] = await Promise.all([supabase.rpc("avent_etat"), supabase.rpc("avent_classement", { p_limite: 50 }), supabase.rpc("mes_avantages")]);
@@ -164,6 +180,43 @@ export default function AventPage() {
           </section>
         </aside>
       </div>
+
+      {entr && entr.jeux.length > 0 && etat.actif && (
+        <SalleEssai
+          titre="Entraînement"
+          intro={
+            <>
+              Essaie chaque jeu du calendrier, même avant l&apos;ouverture de sa case : {entr.gratuits} essai{entr.gratuits > 1 ? "s" : ""} par jeu,
+              hors classement, sans toucher à tes essais du jour.
+            </>
+          }
+          jeux={entr.jeux}
+          etiquettes={Object.fromEntries(
+            entr.jeux.map((j) => [j.jeu, j.restants > 0 ? `${j.restants} essai${j.restants > 1 ? "s" : ""}` : entr.credits > 0 ? "essai d'objet" : "épuisé"]),
+          )}
+          demarrer={async (jeu) => {
+            const { data, error } = await supabase.rpc("avent_entrainement_commencer", { p_jeu: jeu });
+            chargerEntrainement();
+            if (error) return { erreur: error.message };
+            return { graine: (data as { graine: number }).graine };
+          }}
+          bas={
+            <p className="font-body text-xs text-paper/85">
+              {entr.credits > 0
+                ? `Tu as aussi ${entr.credits} essai${entr.credits > 1 ? "s" : ""} d'entraînement en réserve, valables sur tous les jeux.`
+                : "Plus d'essais ? Les objets « Essais d'entraînement » de la "}
+              {entr.credits === 0 && (
+                <>
+                  <Link href="/dashboard/shop" className="underline">
+                    boutique
+                  </Link>{" "}
+                  en ajoutent, à utiliser depuis Mes achats.
+                </>
+              )}
+            </p>
+          }
+        />
+      )}
 
       {caseOuverte && <Fenetre c={caseOuverte} etat={etat} onFermer={() => setOuverte(null)} onChange={charger} />}
     </div>

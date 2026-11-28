@@ -6,6 +6,10 @@ import { cassebriques } from "./cassebriques";
 import { traineau } from "./traineau";
 import { boules } from "./boules";
 import { pile } from "./pile";
+import { cheminees } from "./cheminees";
+import { luge } from "./luge";
+import { memoire } from "./memoire";
+import { carillon } from "./carillon";
 
 /** Les mini-jeux du calendrier (clés = avent_jeux.jeu, migration 0134). */
 export const JEUX: Record<string, { creer: CreerJeu; commandes: string }> = {
@@ -16,4 +20,8 @@ export const JEUX: Record<string, { creer: CreerJeu; commandes: string }> = {
   traineau: { creer: traineau, commandes: "Glisse dans une direction ou flèches. Toucher à gauche ou à droite tourne aussi." },
   boules: { creer: boules, commandes: "Touche les lutins dès qu'ils sortent. Pas les bonshommes de neige." },
   pile: { creer: pile, commandes: "Touche (ou espace) pour lâcher le paquet." },
+  cheminees: { creer: cheminees, commandes: "Touche (ou espace) pour lâcher un cadeau. Vise la cheminée en tenant compte du défilement." },
+  luge: { creer: luge, commandes: "Touche (ou espace, ↑) pour sauter ; garde appuyé pour sauter plus haut." },
+  memoire: { creer: memoire, commandes: "Touche deux cartes pour les retourner." },
+  carillon: { creer: carillon, commandes: "Touche les cloches dans l'ordre entendu (ou touches 1 à 4). Monte le son." },
 };

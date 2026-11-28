@@ -86,3 +86,26 @@ base).
   rétrécit.
 - **Pile de cadeaux** : 25 points par paquet, 40 pour un dépôt parfait.
 - **Traîneau** : consigne de départ lisible (pastille sombre sur la neige).
+
+## Nouveaux jeux et entraînement (migration 0137)
+
+- **4 nouveaux jeux**, placés dans les cases 8 à 11 (si elles étaient
+  vides) :
+  - **Livraison par la cheminée** (60 s) : lâcher les cadeaux depuis le
+    traîneau dans les cheminées qui défilent ; 50 points + 10 par livraison
+    d'affilée ; une cheminée qui fume coûte 30 points.
+  - **Course de luge** : sauter (plus haut en gardant appuyé) par-dessus
+    rochers et bonshommes de neige ; 1 point tous les 12 px, 25 par étoile.
+  - **Mémoire des boules de Noël** (75 s) : paires de boules, 100 points
+    + 20 par paire d'affilée (+200 au plus), −10 par erreur, +200 par
+    plateau ; les plateaux grandissent.
+  - **Le Carillon** : rejouer la mélodie des cloches, une note de plus par
+    manche ; 25 points par note ; deux fausses notes permises. Avec du son.
+- **Glouton** : environ 2,5 fois plus de points (chocolat 25, étoile 120,
+  lutins 500 à 4 000, niveau 1 200).
+- **Entraînement des membres** (page du calendrier) : 3 essais hors
+  classement par jeu du calendrier (réglable dans Administration → Avent),
+  comptés par le serveur. Au-delà, des **essais d'entraînement** obtenus en
+  utilisant un objet de la boutique doté du nouvel effet « Essais
+  d'entraînement (avent) » (1 à 50 essais par exemplaire, valables sur tous
+  les jeux). La salle d'essai des admins reste sans limite.

@@ -380,6 +380,18 @@ begin
     insert into audit_resultat values ('ÉCHEC', 'un membre écrit son score de l''avent');
   exception when insufficient_privilege then null;
   end;
+  if to_regclass('public.avent_essais_bonus') is not null then
+    begin
+      execute 'insert into public.avent_essais_bonus (user_id, credits) values ($1, 99)' using v_m;
+      insert into audit_resultat values ('ÉCHEC', 'un membre se donne des essais d''entraînement');
+    exception when insufficient_privilege then null;
+    end;
+    begin
+      execute 'select count(*) from public.avent_entrainements' into v_n;
+      insert into audit_resultat values ('ÉCHEC', 'un membre lit les entraînements de l''avent');
+    exception when insufficient_privilege then null;
+    end;
+  end if;
   reset role;
 end $$;
 

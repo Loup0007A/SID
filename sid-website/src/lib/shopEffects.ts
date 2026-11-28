@@ -10,7 +10,7 @@ type Value = { label: string; unit: (n: number) => string; min: number; max: num
 
 export type ShopEffectInfo = {
   label: string;
-  icon: "hourglass" | "flask" | "shield" | "medal" | "padlock";
+  icon: "hourglass" | "flask" | "shield" | "medal" | "padlock" | "gift";
   /** Ce que fait un exemplaire, avec son réglage. */
   describe: (value: number) => string;
   /** Réglage demandé à la création de l'objet. */
@@ -44,6 +44,12 @@ export const SHOP_EFFECTS: Record<ShopItemEffect, ShopEffectInfo> = {
     label: "Clé de la faille",
     icon: "padlock",
     describe: () => "Ouvre L'Envers de la Cartographie, comme si tu venais de trouver la faille.",
+  },
+  avent_essais: {
+    label: "Essais d'entraînement (avent)",
+    icon: "gift",
+    describe: (n) => `Ajoute ${n} essai${n > 1 ? "s" : ""} d'entraînement aux mini-jeux du calendrier de l'avent, sur le jeu de ton choix.`,
+    value: { label: "Essais par exemplaire", unit: (n) => `+${n}`, min: 1, max: 50, def: 3 },
   },
 };
 

@@ -21,6 +21,7 @@ type Admin = {
     fin: string;
     essais_par_jour: number;
     bonus_jour: number;
+    entrainements_gratuits?: number;
     distribue_at: string | null;
   };
   edition: number;
@@ -49,7 +50,7 @@ export default function AventAdminPage() {
   const [d, setD] = useState<Admin | null>(null);
   const [refus, setRefus] = useState<string | null>(null);
   const [msg, setMsg] = useState<{ ok: boolean; t: string } | null>(null);
-  const [cfg, setCfg] = useState({ actif: true, debut: "", fin: "", essais: "3", bonus: "100" });
+  const [cfg, setCfg] = useState({ actif: true, debut: "", fin: "", essais: "3", bonus: "100", entr: "3" });
   const [b, setB] = useState<Brouillon>(VIDE);
   const [occupe, setOccupe] = useState(false);
 
@@ -61,7 +62,7 @@ export default function AventAdminPage() {
     }
     const a = data as Admin;
     setD(a);
-    setCfg({ actif: a.config.actif, debut: a.config.debut, fin: versChamp(a.config.fin), essais: String(a.config.essais_par_jour), bonus: String(a.config.bonus_jour) });
+    setCfg({ actif: a.config.actif, debut: a.config.debut, fin: versChamp(a.config.fin), essais: String(a.config.essais_par_jour), bonus: String(a.config.bonus_jour), entr: String(a.config.entrainements_gratuits ?? 3) });
   }, [supabase]);
   useEffect(() => {
     charger();
@@ -109,11 +110,20 @@ export default function AventAdminPage() {
         </p>
       )}
 
-      <SalleEssai jeux={d.jeux} />
+      <SalleEssai
+        jeux={d.jeux}
+        intro={
+          <>
+            Réservée aux admins : n&apos;importe quel jeu, sans limite et sans passer par le serveur (aucun score enregistré, aucun effet sur le classement).
+            Les membres ont leur propre entraînement, limité, sur la page du calendrier ; des objets « Essais d&apos;entraînement (avent) » en ajoutent
+            (effet à choisir à la création d&apos;un objet de la boutique).
+          </>
+        }
+      />
 
       <section className="glass-card space-y-4 p-5">
         <h2 className="font-display text-lg uppercase">Réglages</h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <label className="space-y-1">
             <span className={labelClass}>Case 1 ouverte le</span>
             <input type="date" className={field} value={cfg.debut} onChange={(e) => setCfg({ ...cfg, debut: e.target.value })} />
@@ -130,6 +140,10 @@ export default function AventAdminPage() {
             <span className={labelClass}>Bonus du jour (points)</span>
             <input type="number" min={0} max={1000} className={field} value={cfg.bonus} onChange={(e) => setCfg({ ...cfg, bonus: e.target.value })} />
           </label>
+          <label className="space-y-1">
+            <span className={labelClass}>Entraînements gratuits par jeu</span>
+            <input type="number" min={0} max={20} className={field} value={cfg.entr} onChange={(e) => setCfg({ ...cfg, entr: e.target.value })} />
+          </label>
         </div>
         <label className="flex items-center gap-2 font-body text-sm text-paper">
           <input type="checkbox" checked={cfg.actif} onChange={(e) => setCfg({ ...cfg, actif: e.target.checked })} />
@@ -142,7 +156,16 @@ export default function AventAdminPage() {
           onClick={() =>
             appel(
               "avent_config_set",
-              { p: { actif: cfg.actif, debut: cfg.debut, fin: new Date(cfg.fin).toISOString(), essais_par_jour: Number(cfg.essais), bonus_jour: Number(cfg.bonus) } },
+              {
+                p: {
+                  actif: cfg.actif,
+                  debut: cfg.debut,
+                  fin: new Date(cfg.fin).toISOString(),
+                  essais_par_jour: Number(cfg.essais),
+                  bonus_jour: Number(cfg.bonus),
+                  entrainements_gratuits: Number(cfg.entr),
+                },
+              },
               "Réglages enregistrés.",
             )
           }

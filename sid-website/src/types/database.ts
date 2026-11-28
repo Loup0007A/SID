@@ -166,7 +166,7 @@ export interface ShopItem {
 }
 
 /** Effets d'objets (Lot 51, élargis au Lot 84) : voir src/lib/shopEffects.ts. */
-export type ShopItemEffect = "reset_cooldowns" | "heal_injury" | "prank_shield" | "fame" | "envers_key";
+export type ShopItemEffect = "reset_cooldowns" | "heal_injury" | "prank_shield" | "fame" | "envers_key" | "avent_essais";
 
 export interface Wallet {
   user_id: string;
