@@ -91,7 +91,13 @@ export function MiniJeu({ jeu, graine, onFin }: { jeu: string; graine: number; o
     if (!j || !cv || decompte > 0) return;
     if (type === "down") cv.setPointerCapture?.(e.pointerId);
     const r = cv.getBoundingClientRect();
-    j.saisie({ type, x: ((e.clientX - r.left) * j.largeur) / r.width, y: ((e.clientY - r.top) * j.hauteur) / r.height });
+    j.saisie({
+      type,
+      x: ((e.clientX - r.left) * j.largeur) / r.width,
+      y: ((e.clientY - r.top) * j.hauteur) / r.height,
+      id: e.pointerId,
+      appui: e.pointerType !== "mouse" || e.buttons > 0 || type === "down",
+    });
   }
 
   if (!def) return <p className="font-body text-sm text-paper/80">Ce jeu n&apos;existe pas encore sur ton site : recharge la page.</p>;

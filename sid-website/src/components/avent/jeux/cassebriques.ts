@@ -2,7 +2,9 @@ import { bandeau, bille, borne, boite, cadeau, ciel, collines, Effets, flocons, 
 
 /**
  * Casse-cadeaux : la luge renvoie une boule de neige vers des rangées de
- * paquets. 3 vies ; un niveau vidé en amène un plus rapide (+200).
+ * paquets (2 à 12 points ; les rangées du haut demandent 2 ou 3 coups).
+ * La boule accélère à chaque renvoi ; un niveau vidé (+50) en amène un plus
+ * rapide, avec une luge plus étroite. 3 vies.
  * Doigt, souris ou flèches ; toucher ou espace pour lancer.
  */
 const L = 360;
@@ -17,7 +19,7 @@ const GY = 70;
 type Paquet = { x: number; y: number; vie: number; pts: number; couleur: string; ruban: string };
 
 export const cassebriques: CreerJeu = ({ pal, rng }) => {
-  const luge = { x: L / 2, w: 74, y: H - 46 };
+  const luge = { x: L / 2, w: 70, y: H - 46 };
   const boule = { x: L / 2, y: luge.y - 12, vx: 0, vy: 0, r: 7, collee: true };
   let paquets: Paquet[] = [];
   let niveau = 1;
@@ -39,12 +41,12 @@ export const cassebriques: CreerJeu = ({ pal, rng }) => {
     for (let r = 0; r < RANGS; r++)
       for (let c = 0; c < COLS; c++) {
         if (niveau > 1 && rng() < 0.12) continue;
-        const dur = niveau >= 3 && r === 0 ? 2 : 1;
+        const dur = r === 0 && niveau >= 3 ? 3 : r <= 1 ? 2 : niveau >= 2 && r === 2 ? 2 : 1;
         paquets.push({
           x: GX + c * (BW + 4),
           y: GY + r * (BH + 6),
           vie: dur,
-          pts: (RANGS - r) * 10,
+          pts: (RANGS - r) * 2,
           couleur: couleurs[r % couleurs.length],
           ruban: r % 2 ? pal.accent : pal.accent2,
         });
@@ -52,8 +54,11 @@ export const cassebriques: CreerJeu = ({ pal, rng }) => {
   }
   construire();
 
-  const vitesse = () => 290 + niveau * 35;
+  // La boule accélère à chaque renvoi (+2 %, jusqu'à +60 %) et d'un niveau à l'autre.
+  let elan = 1;
+  const vitesse = () => (320 + niveau * 45) * elan;
   function coller() {
+    elan = 1;
     boule.collee = true;
     boule.vx = 0;
     boule.vy = 0;
@@ -107,6 +112,7 @@ export const cassebriques: CreerJeu = ({ pal, rng }) => {
         if (boule.vy > 0 && boule.y + boule.r >= luge.y - 6 && boule.y < luge.y + 8 && Math.abs(boule.x - luge.x) < luge.w / 2 + boule.r) {
           const k = borne((boule.x - luge.x) / (luge.w / 2), -1, 1);
           const a = k * 1.05;
+          elan = Math.min(1.6, elan * 1.02);
           const v = vitesse();
           boule.vx = Math.sin(a) * v;
           boule.vy = -Math.cos(a) * v;
@@ -150,10 +156,11 @@ export const cassebriques: CreerJeu = ({ pal, rng }) => {
         }
       }
       if (paquets.every((p) => p.vie <= 0)) {
-        score += 200;
+        score += 50;
         fx.flash(pal.accent2, 0.45);
         fx.gerbe(L / 2, H / 2, [pal.accent, pal.accent2, pal.neige, pal.sapin], 40, 300);
         niveau++;
+        luge.w = Math.max(46, 70 - (niveau - 1) * 6);
         construire();
         coller();
         message = `Niveau ${niveau} : touche pour lancer`;
@@ -193,6 +200,12 @@ export const cassebriques: CreerJeu = ({ pal, rng }) => {
       for (const p of paquets) {
         if (p.vie <= 0) continue;
         cadeau(g, pal, p.x, p.y, BW, BH, p.couleur, p.ruban, 2);
+        if (p.vie > 2) {
+          g.fillStyle = "rgba(180, 210, 255, 0.55)";
+          g.beginPath();
+          g.roundRect(p.x + 2, p.y + 2, BW - 4, BH - 4, 3);
+          g.fill();
+        }
         if (p.vie > 1) {
           // Paquet à deux coups : une couche de givre
           g.fillStyle = "rgba(255,255,255,0.55)";

@@ -2,8 +2,12 @@ import { assombrir, bandeau, bille, borne, boite, ciel, eclaircir, Effets, floco
 
 /**
  * Baby-foot des lutins : terrain vertical, tu défends le but du bas et
- * tu tires vers le haut. Les trois barres se déplacent ensemble (doigt,
- * souris ou flèches). 90 secondes.
+ * tu tires vers le haut. Chacune de tes trois barres bouge seule :
+ * - doigt : pose le doigt près d'une barre et glisse (un doigt par barre,
+ *   plusieurs à la fois si tu veux) ;
+ * - souris : la barre la plus proche du pointeur le suit ;
+ * - clavier : ↑ ↓ (ou 1, 2, 3) choisissent la barre, ← → la déplacent.
+ * 90 secondes.
  */
 const L = 360;
 const H = 540;
@@ -24,7 +28,11 @@ export const babyfoot: CreerJeu = ({ pal, rng }) => {
     { y: BAS - 216, n: 3, ecart: 96, joueur: false, ox: 0, vx: 0 },
   ];
   const balle = { x: L / 2, y: (HAUT + BAS) / 2, vx: 0, vy: 0, r: 8 };
-  let cible = 0; // décalage voulu pour mes barres
+  // Décalage voulu pour chacune de mes barres (0 gardien, 1 défense, 2 attaque).
+  const cibles = [0, 0, 0];
+  let choisie = 2; // barre pilotée au clavier
+  const doigts = new Map<number, { barre: number; x0: number; ox0: number }>();
+  const barreProche = (y: number) => [0, 1, 2].reduce((m, i) => (Math.abs(barres[i].y - y) < Math.abs(barres[m].y - y) ? i : m), 0);
   let gauche = false;
   let droite = false;
   let reste = DUREE;
@@ -69,13 +77,14 @@ export const babyfoot: CreerJeu = ({ pal, rng }) => {
         jeu.fini = true;
         return;
       }
-      if (gauche) cible -= 260 * dt;
-      if (droite) cible += 260 * dt;
-      cible = borne(cible, -OX, OX);
+      if (gauche) cibles[choisie] -= 300 * dt;
+      if (droite) cibles[choisie] += 300 * dt;
+      for (let i = 0; i < 3; i++) cibles[i] = borne(cibles[i], -OX, OX);
       for (const b of barres) {
         const avant = b.ox;
         if (b.joueur) {
-          b.ox += borne(cible - b.ox, -520 * dt, 520 * dt);
+          const i = barres.indexOf(b);
+          b.ox += borne(cibles[i] - b.ox, -620 * dt, 620 * dt);
         } else if (balle.vy < 0) {
           // Les lutins visent la balle quand elle monte vers leur but, avec
           // une erreur tirée à chaque tir et une vitesse limitée.
@@ -250,8 +259,12 @@ export const babyfoot: CreerJeu = ({ pal, rng }) => {
         g.strokeStyle = pal.encre;
         g.lineWidth = 1.5;
         g.strokeRect(-1, b.y - 3, L + 2, 6);
-        // Poignée côté de son camp
-        boite(g, pal, b.joueur ? L - 10 : -4, b.y - 6, 14, 12, b.joueur ? pal.accent : pal.creme2, { r: 4, ombre: 0, trait: 2 });
+        // Poignée côté de son camp ; la barre pilotée au clavier est soulignée
+        if (b.joueur && ib === choisie) {
+          g.fillStyle = teinte(pal.accent2, 0.35 + 0.15 * Math.sin(temps * 6));
+          g.fillRect(14, b.y - 9, L - 28, 18);
+        }
+        boite(g, pal, b.joueur ? L - 10 : -4, b.y - 6, 14, 12, b.joueur ? (ib === choisie ? pal.accent2 : pal.accent) : pal.creme2, { r: 4, ombre: 0, trait: 2 });
         const coup = coups.get(ib) ?? 0;
         for (const f of figures(b)) {
           const maillot = b.joueur ? pal.accent : pal.creme2;
@@ -292,12 +305,30 @@ export const babyfoot: CreerJeu = ({ pal, rng }) => {
       fx.voile(g, L, H);
     },
     saisie(e: Saisie) {
-      if (e.type === "down" || e.type === "move") {
-        cible = borne(e.x - L / 2, -OX, OX);
+      if (e.type === "down") {
+        const i = barreProche(e.y);
+        choisie = i;
+        doigts.set(e.id ?? 0, { barre: i, x0: e.x, ox0: cibles[i] });
+      } else if (e.type === "move") {
+        const d = doigts.get(e.id ?? 0);
+        if (d && e.appui !== false) cibles[d.barre] = borne(d.ox0 + (e.x - d.x0), -OX, OX);
+        else if (!d && e.appui === false) {
+          // Souris sans clic : la barre la plus proche suit le pointeur.
+          const i = barreProche(e.y);
+          choisie = i;
+          const fig = figures({ ...barres[i], ox: 0 });
+          const proche = fig.reduce((m, f) => (Math.abs(f.x - e.x) < Math.abs(m.x - e.x) ? f : m), fig[0]);
+          cibles[i] = borne(e.x - proche.x, -OX, OX);
+        }
+      } else if (e.type === "up") {
+        doigts.delete(e.id ?? 0);
       } else if (e.type === "keydown" || e.type === "keyup") {
         const on = e.type === "keydown";
         if (e.key === "ArrowLeft" || e.key === "q" || e.key === "a") gauche = on;
         if (e.key === "ArrowRight" || e.key === "d") droite = on;
+        if (on && (e.key === "ArrowUp" || e.key === "z" || e.key === "w")) choisie = Math.min(2, choisie + 1);
+        if (on && (e.key === "ArrowDown" || e.key === "s")) choisie = Math.max(0, choisie - 1);
+        if (on && ["1", "2", "3"].includes(e.key)) choisie = Number(e.key) - 1;
       }
     },
   };

@@ -1,7 +1,9 @@
 import { assombrir, bandeau, bille, bonhomme, boite, ciel, collines, dessinerFlocons, eclaircir, Effets, flocons, lutin, majFlocons, sapin, teinte, texte, type CreerJeu, type Saisie } from "./moteur";
 
 /**
- * Bataille de boules de neige : 45 secondes. Des lutins sortent des congères
+ * Bataille de boules de neige : 45 secondes. Chaque lutin touché accélère
+ * le jeu (vitesse × 1,045 par touche, ×4 au plus) ; un bonhomme touché la
+ * fait redescendre un peu. Des lutins sortent des congères
  * (10 points × multiplicateur), parfois un bonhomme de neige (−30, série
  * perdue). Toutes les 5 touches d'affilée, le multiplicateur monte (×4 au
  * plus). Un tir dans le vide casse la série.
@@ -30,6 +32,10 @@ export const boules: CreerJeu = ({ pal, rng }) => {
   let tirs: { x: number; y: number; t: number; touche: boolean; bon: boolean }[] = [];
   const DUREE_TIR = 0.14;
   const mult = () => Math.min(4, 1 + Math.floor(serie / 5));
+  // Chaque lutin touché accélère le jeu de 4,5 % : croissance exponentielle
+  // (×1,5 après 9 touches, ×2,4 après 20, ×4 au plus).
+  let touches = 0;
+  const vitesse = () => Math.min(4, 1.045 ** touches);
 
   const jeu = {
     largeur: L,
@@ -56,15 +62,14 @@ export const boules: CreerJeu = ({ pal, rng }) => {
         jeu.fini = true;
         return;
       }
-      const avance = (DUREE - reste) / DUREE;
       prochain -= dt;
       if (prochain <= 0) {
         const libres = TROUS.map((_, i) => i).filter((i) => !cibles.some((c) => c.trou === i));
         if (libres.length) {
-          const vie = 1.5 - avance * 0.75 + rng() * 0.3;
+          const vie = Math.max(0.38, (1.5 + rng() * 0.3) / vitesse());
           cibles.push({ trou: libres[Math.floor(rng() * libres.length)], t: 0, vie, bon: rng() > 0.2, touche: -1 });
         }
-        prochain = 0.75 - avance * 0.38 + rng() * 0.25;
+        prochain = Math.max(0.16, (0.8 + rng() * 0.25) / vitesse());
       }
       for (const c of cibles) c.t += dt;
       cibles = cibles.filter((c) => (c.touche >= 0 ? c.t - c.touche < 0.25 : c.t < c.vie));
@@ -167,7 +172,7 @@ export const boules: CreerJeu = ({ pal, rng }) => {
       }
       fx.dessiner(g, pal);
       g.restore();
-      bandeau(g, pal, L, `${score} pts`, `${Math.ceil(reste)} s`);
+      bandeau(g, pal, L, `${score} pts · vitesse ×${vitesse().toLocaleString("fr-FR", { maximumFractionDigits: 1 })}`, `${Math.ceil(reste)} s`);
       // Multiplicateur
       const m = mult();
       const barre = m >= 4 ? 1 : (serie % 5) / 5;
@@ -196,6 +201,7 @@ export const boules: CreerJeu = ({ pal, rng }) => {
         const pts = 10 * mult();
         score += pts;
         serie++;
+        touches++;
         fx.flotte(e.x, e.y - 24, `+${pts}`, pal.accent2, 16 + mult() * 2);
         if (serie % 5 === 0 && mult() > 1) {
           fx.flotte(L / 2, H - 70, `×${mult()}`, pal.accent2, 30);
@@ -204,6 +210,7 @@ export const boules: CreerJeu = ({ pal, rng }) => {
       } else {
         score = Math.max(0, score - 30);
         serie = 0;
+        touches = Math.max(0, touches - 3);
         fx.flotte(e.x, e.y - 24, "−30", pal.accent, 18);
         fx.secouer(7);
       }

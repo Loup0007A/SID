@@ -155,6 +155,7 @@ sid/sid-website/supabase/migrations/0132_quetes_programmees.sql
 sid/sid-website/supabase/migrations/0133_devlog_faillite_quetes_trajets.sql
 sid/sid-website/supabase/migrations/0134_calendrier_avent.sql
 sid/sid-website/supabase/migrations/0135_devlog_calendrier_avent.sql
+sid/sid-website/supabase/migrations/0136_avent_reglages_jeux.sql
 sid-map/sid-map/supabase/migrations/0107_textures.sql
 sid-map/sid-map/supabase/migrations/0108_texture_drawing.sql
 sid-map/sid-map/supabase/migrations/0109_scale_flight.sql

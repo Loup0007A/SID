@@ -2,8 +2,9 @@ import { assombrir, bandeau, cadeau, boite, Effets, etoile, flocons, melange, ro
 
 /**
  * Pile de cadeaux : un paquet glisse de gauche à droite ; toucher le lâche
- * sur la pile. La partie qui dépasse tombe. Dépôt parfait (à 4 px près) :
- * +5 et le paquet reprend un peu de largeur. 10 points par paquet posé.
+ * sur la pile. La partie qui dépasse tombe. 25 points par paquet posé ;
+ * dépôt parfait (à 4 px près) : 40 points et le paquet reprend un peu de
+ * largeur.
  */
 const L = 360;
 const H = 540;
@@ -43,14 +44,14 @@ export const pile: CreerJeu = ({ pal, rng }) => {
     const dx = mobile.x - haut.x;
     if (Math.abs(dx) <= 4) {
       mobile.x = haut.x;
-      score += 15;
+      score += 40;
       parfaits++;
       const w = Math.min(200, haut.w + 6);
       pileB.push({ x: haut.x - (w - haut.w) / 2, w, couleur: mobile.couleur, ruban: mobile.ruban });
       message = "Parfait !";
       anneau = 0.5;
       fx.gerbe(L / 2, yDe(pileB.length - 1), [pal.accent2, pal.neige], 18, 200, { forme: "etoile", taille: 3.5, gravite: 200 });
-      fx.flotte(haut.x + haut.w / 2, yDe(pileB.length - 1) - 10, "+15", pal.accent2, 20);
+      fx.flotte(haut.x + haut.w / 2, yDe(pileB.length - 1) - 10, "+40", pal.accent2, 20);
       messageT = 0.7;
     } else {
       const g0 = Math.max(mobile.x, haut.x);
@@ -68,7 +69,7 @@ export const pile: CreerJeu = ({ pal, rng }) => {
       const reste = dx > 0 ? { x: d0, w: mobile.x + mobile.w - d0 } : { x: mobile.x, w: g0 - mobile.x };
       chutes.push({ ...reste, y, vy: 0, couleur: mobile.couleur, ruban: mobile.ruban, rot: 0 });
       pileB.push({ x: g0, w, couleur: mobile.couleur, ruban: mobile.ruban });
-      score += 10;
+      score += 25;
       fx.gerbe(g0 + w / 2, y + HP, [pal.neige], 6, 90, { gravite: 300, forme: "rond", taille: 2.5, vie: 0.4 });
       fx.secouer(2);
     }

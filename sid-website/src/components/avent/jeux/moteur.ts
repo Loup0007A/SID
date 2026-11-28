@@ -22,7 +22,7 @@ export type Palette = {
 };
 
 export type Saisie =
-  | { type: "down" | "move" | "up"; x: number; y: number }
+  | { type: "down" | "move" | "up"; x: number; y: number; id?: number; appui?: boolean }
   | { type: "keydown" | "keyup"; key: string };
 
 export interface Jeu {

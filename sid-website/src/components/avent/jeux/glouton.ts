@@ -3,7 +3,9 @@ import { assombrir, bandeau, bille, directionTouche, Effets, eclaircir, etoile, 
 /**
  * Le Glouton du réveillon : labyrinthe, chocolats (10), étoiles (50) qui
  * retournent les lutins pendant 6 s (200, 400, 800, 1 600 points). Le
- * labyrinthe vidé, on recommence plus vite. 3 vies. Flèches ou glissement.
+ * labyrinthe vidé, on recommence plus vite : la vitesse croît de façon
+ * exponentielle (glouton ×1,10, lutins ×1,15 par niveau, peur ×0,82).
+ * 3 vies. Flèches ou glissement.
  */
 const PLAN = [
   "###################",
@@ -147,7 +149,7 @@ export const glouton: CreerJeu = ({ pal, rng }) => {
         if (pause <= 0) message = "";
         return;
       }
-      const vMoi = 6.2 + niveau * 0.35;
+      const vMoi = Math.min(12, 6.4 * 1.1 ** (niveau - 1));
       avancer(moi, vMoi, dt, () => (voulu && !mur(moi.c + DV[voulu][0], moi.r + DV[voulu][1]) ? voulu : moi.vers));
       const ch = grille[moi.r]?.[moi.c];
       if (ch === "." || ch === "*") {
@@ -158,7 +160,7 @@ export const glouton: CreerJeu = ({ pal, rng }) => {
           enchaine = 0;
           fx.gerbe(px(moi), py(moi), [pal.accent2, pal.neige], 14, 150, { forme: "etoile", taille: 3, gravite: 0 });
           fx.flash(pal.creme2, 0.18);
-          for (const f of fantomes) if (!f.mange) f.peur = Math.max(2.5, 6.5 - niveau * 0.5);
+          for (const f of fantomes) if (!f.mange) f.peur = Math.max(1.5, 6.5 * 0.82 ** (niveau - 1));
         }
         if (restants <= 0) {
           score += 500;
@@ -176,7 +178,7 @@ export const glouton: CreerJeu = ({ pal, rng }) => {
           continue;
         }
         if (f.peur > 0) f.peur -= dt;
-        const v = f.mange ? 12 : f.peur > 0 ? 3.6 : 5 + niveau * 0.4;
+        const v = f.mange ? 14 : f.peur > 0 ? 3.6 : Math.min(12.5, 5.2 * 1.15 ** (niveau - 1));
         avancer(f, v, dt, () => choixFantome(f), true);
         if (f.mange && f.c === f.maison[0] && f.r === f.maison[1]) {
           f.mange = false;

@@ -67,3 +67,22 @@ base).
   points, secousses et éclairs aux moments forts. Moteur commun dans
   `moteur.ts` (`Effets`, `ciel`, `collines`, `sapin`, `bille`, `etoile`).
   Les règles et les scores ne changent pas.
+
+## Réglages de difficulté (migration 0136)
+
+- **Bowling** : trois appuis (départ, direction, puissance), verglas qui
+  fait dériver la boule à chaque lancer (flèche sur la piste), gestes plus
+  rapides à chaque manche, quilles qui ne tombent que si elles sont heurtées
+  assez fort. 10 points par quille, strike +100, spare +50 (1 000 au plus).
+- **Baby-foot** : chaque barre bouge seule (un doigt par barre, la barre la
+  plus proche de la souris, ou ↑ ↓ / 1 2 3 puis ← → au clavier).
+- **Bataille de boules de neige** : chaque lutin touché accélère le jeu de
+  4,5 % (croissance exponentielle, ×4 au plus) ; un bonhomme touché la fait
+  redescendre un peu.
+- **Glouton** : vitesse exponentielle d'un niveau à l'autre (glouton ×1,10,
+  lutins ×1,15, peur ×0,82).
+- **Casse-cadeaux** : 2 à 12 points par paquet (+50 par niveau), paquets à
+  2 ou 3 coups en haut, boule qui accélère à chaque renvoi, luge qui
+  rétrécit.
+- **Pile de cadeaux** : 25 points par paquet, 40 pour un dépôt parfait.
+- **Traîneau** : consigne de départ lisible (pastille sombre sur la neige).

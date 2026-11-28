@@ -3,8 +3,11 @@ import { assombrir, bandeau, bille, bonhomme, boite, ciel, eclaircir, Effets, fl
 /**
  * Bowling des bonshommes de neige : 5 manches de 2 lancers.
  * 1er appui : position de départ (la boule glisse de gauche à droite).
- * 2e appui : direction (la flèche balance). La boule part.
- * Strike : +10, spare : +5.
+ * 2e appui : direction (la flèche balance).
+ * 3e appui : puissance (la jauge monte et descend). La boule part.
+ * À chaque lancer, une plaque de verglas fait dériver la boule (la flèche
+ * indique le sens et la force) ; tout accélère au fil des manches.
+ * 10 points par quille, strike +100, spare +50 (1 000 au plus).
  */
 const L = 360;
 const H = 540;
@@ -16,7 +19,7 @@ const R_BOULE = 15;
 const TRAIT_PISTE = 3;
 
 type Quille = { x: number; y: number; vx: number; vy: number; tombee: boolean; x0: number; y0: number; retiree: boolean; rot: number; touchee: boolean };
-type Phase = "position" | "direction" | "roule" | "bilan" | "fin";
+type Phase = "position" | "direction" | "puissance" | "roule" | "bilan" | "fin";
 
 export const bowling: CreerJeu = ({ pal, rng }) => {
   const quilles: Quille[] = [];
@@ -48,6 +51,15 @@ export const bowling: CreerJeu = ({ pal, rng }) => {
   const etoiles = flocons(24, L, 60, rng);
   let temps = 0;
   let roulis = 0;
+  let puissance = 0;
+  // Verglas : accélération latérale pendant le roulement (px/s²), tirée à chaque lancer.
+  let derive = 0;
+  const tirerDerive = () => {
+    const force = 50 + 28 * (manche - 1);
+    derive = (rng() < 0.5 ? -1 : 1) * force * (0.4 + rng() * 0.6);
+  };
+  tirerDerive();
+  const rythme = () => 1 + 0.18 * (manche - 1);
 
   function abattues() {
     return quilles.filter((q) => q.tombee && !q.retiree).length;
@@ -59,7 +71,7 @@ export const bowling: CreerJeu = ({ pal, rng }) => {
   function compter(n: number) {
     if (lancer === 1) {
       if (n === 10) {
-        total += 20;
+        total += 200;
         message = "Strike !";
         fx.gerbe(L / 2, 150, [pal.accent, pal.accent2, pal.neige, pal.sapin], 46, 300, { gravite: 360 });
         fx.secouer(10);
@@ -69,14 +81,14 @@ export const bowling: CreerJeu = ({ pal, rng }) => {
         return;
       }
       premier = n;
-      total += n;
+      total += n * 10;
       message = n === 0 ? "Dans la rigole" : `${n} quille${n > 1 ? "s" : ""}`;
       for (const q of quilles) if (q.tombee) q.retiree = true;
       apres = "relancer";
     } else {
-      total += n;
+      total += n * 10;
       if (premier + n === 10) {
-        total += 5;
+        total += 50;
         message = "Spare !";
         fx.gerbe(L / 2, 150, [pal.accent2, pal.neige], 24, 220, { forme: "etoile", taille: 4 });
         tableau.push(`${premier}/`);
@@ -104,6 +116,7 @@ export const bowling: CreerJeu = ({ pal, rng }) => {
     boule.vx = 0;
     boule.vy = 0;
     t = rng() * 3;
+    tirerDerive();
     phase = "position";
   }
 
@@ -118,13 +131,16 @@ export const bowling: CreerJeu = ({ pal, rng }) => {
       if (jeu.fini) return;
       t += dt;
       if (phase === "position") {
-        boule.x = L / 2 + Math.sin(t * 2.2) * (PISTE_D - PISTE_G - 2 * R_BOULE) * 0.5;
+        boule.x = L / 2 + Math.sin(t * 2.4 * rythme()) * (PISTE_D - PISTE_G - 2 * R_BOULE) * 0.5;
       } else if (phase === "direction") {
-        angle = Math.sin(t * 2.6) * 0.32;
+        angle = Math.sin(t * 2.8 * rythme()) * 0.34;
+      } else if (phase === "puissance") {
+        puissance = 0.5 - 0.5 * Math.cos(t * 3.2 * rythme());
       } else if (phase === "roule") {
         const pas = 4;
         for (let s = 0; s < pas; s++) {
           const d = dt / pas;
+          if (boule.y > 40) boule.vx += derive * d;
           boule.x += boule.vx * d;
           boule.y += boule.vy * d;
           roulis += Math.hypot(boule.vx, boule.vy) * d / R_BOULE;
@@ -141,16 +157,18 @@ export const bowling: CreerJeu = ({ pal, rng }) => {
             if (dist < R_BOULE + R_QUILLE && dist > 0) {
               const nx = dx / dist;
               const ny = dy / dist;
-              const v = Math.max(260, Math.hypot(boule.vx, boule.vy));
-              q.vx = nx * v * 0.9;
-              q.vy = ny * v * 0.9;
+              // Choc boule (lourde) contre quille : la quille part selon la
+              // part de vitesse dirigée vers elle ; un choc de biais la pousse à peine.
+              const vn = Math.max(0, boule.vx * nx + boule.vy * ny);
+              q.vx += nx * vn * 1.35;
+              q.vy += ny * vn * 1.35;
+              boule.vx -= nx * vn * 0.32;
+              boule.vy -= ny * vn * 0.32;
               if (!q.touchee) {
                 q.touchee = true;
                 fx.gerbe(q.x, q.y, [pal.neige, pal.creme2], 8, 140, { gravite: 0, forme: "rond", taille: 3, vie: 0.5 });
                 fx.secouer(3);
               }
-              boule.vx -= nx * 30;
-              boule.vy *= 0.97;
               q.x = boule.x + nx * (R_BOULE + R_QUILLE + 0.5);
               q.y = boule.y + ny * (R_BOULE + R_QUILLE + 0.5);
             }
@@ -160,9 +178,10 @@ export const bowling: CreerJeu = ({ pal, rng }) => {
           if (q.retiree) continue;
           q.x += q.vx * dt;
           q.y += q.vy * dt;
-          q.vx *= 1 - 2.4 * dt;
-          q.vy *= 1 - 2.4 * dt;
-          if (Math.hypot(q.x - q.x0, q.y - q.y0) > 7) q.tombee = true;
+          q.vx *= 1 - 3.6 * dt;
+          q.vy *= 1 - 3.6 * dt;
+          // Une quille tombe si elle est heurtée assez fort.
+          if (Math.hypot(q.vx, q.vy) > 115) q.tombee = true;
           if (q.tombee) q.rot = Math.min(Math.PI / 2, q.rot + dt * 7) * (q.vx < 0 ? 1 : 1);
         }
         // Quilles entre elles
@@ -181,10 +200,10 @@ export const bowling: CreerJeu = ({ pal, rng }) => {
               const vb = b.vx * nx + b.vy * ny;
               const p = va - vb;
               if (p > 0) {
-                a.vx -= p * nx * 0.85;
-                a.vy -= p * ny * 0.85;
-                b.vx += p * nx * 0.85;
-                b.vy += p * ny * 0.85;
+                a.vx -= p * nx * 0.8;
+                a.vy -= p * ny * 0.8;
+                b.vx += p * nx * 0.8;
+                b.vy += p * ny * 0.8;
               }
               const chev = 2 * R_QUILLE - dist;
               a.x -= (nx * chev) / 2;
@@ -292,11 +311,11 @@ export const bowling: CreerJeu = ({ pal, rng }) => {
         }
       }
       // Visée
-      if (phase === "direction" || phase === "position") {
+      if (phase === "direction" || phase === "position" || phase === "puissance") {
         g.save();
         g.translate(boule.x, boule.y);
-        g.rotate(phase === "direction" ? angle : 0);
-        g.strokeStyle = phase === "direction" ? pal.accent : teinte(pal.encre, 0.35);
+        g.rotate(phase !== "position" ? angle : 0);
+        g.strokeStyle = phase !== "position" ? pal.accent : teinte(pal.encre, 0.35);
         g.lineWidth = 4;
         g.setLineDash([10, 8]);
         g.lineDashOffset = -temps * 30;
@@ -305,7 +324,7 @@ export const bowling: CreerJeu = ({ pal, rng }) => {
         g.lineTo(0, -170);
         g.stroke();
         g.setLineDash([]);
-        if (phase === "direction") {
+        if (phase !== "position") {
           g.fillStyle = pal.accent;
           g.beginPath();
           g.moveTo(0, -184);
@@ -318,6 +337,50 @@ export const bowling: CreerJeu = ({ pal, rng }) => {
           g.stroke();
         }
         g.restore();
+      }
+      // Verglas : reflets sur la piste et flèche de dérive
+      const force = Math.min(1, Math.abs(derive) / 160);
+      g.fillStyle = teinte(pal.creme2, 0.35);
+      for (let k = 0; k < 5; k++) {
+        g.beginPath();
+        g.ellipse(PISTE_G + 30 + k * 40, 250 + (k % 2) * 30, 22, 7, -0.3, 0, Math.PI * 2);
+        g.fill();
+      }
+      if (phase !== "bilan") {
+        const sens = Math.sign(derive);
+        const lg = 24 + force * 70;
+        const yv = 276;
+        g.strokeStyle = pal.encre;
+        g.fillStyle = pal.creme2;
+        g.lineWidth = 2;
+        g.beginPath();
+        g.moveTo(L / 2 - (sens * lg) / 2, yv - 5);
+        g.lineTo(L / 2 + (sens * lg) / 2 - sens * 10, yv - 5);
+        g.lineTo(L / 2 + (sens * lg) / 2 - sens * 10, yv - 11);
+        g.lineTo(L / 2 + (sens * lg) / 2 + sens * 6, yv);
+        g.lineTo(L / 2 + (sens * lg) / 2 - sens * 10, yv + 11);
+        g.lineTo(L / 2 + (sens * lg) / 2 - sens * 10, yv + 5);
+        g.lineTo(L / 2 - (sens * lg) / 2, yv + 5);
+        g.closePath();
+        g.fill();
+        g.stroke();
+        texte(g, pal, "verglas", L / 2, yv + 22, { taille: 11, mono: true, couleur: pal.encre, gras: false });
+      }
+      // Jauge de puissance
+      if (phase === "puissance" || phase === "roule") {
+        const gx = PISTE_D + 4;
+        const gy = 300;
+        const gh = 170;
+        boite(g, pal, gx, gy, 14, gh, pal.creme, { r: 7, ombre: 2, trait: 2 });
+        const p = phase === "puissance" ? puissance : (Math.hypot(boule.vx, boule.vy) - 280) / 380;
+        const remplie = Math.max(0, Math.min(1, p)) * (gh - 4);
+        const dg = g.createLinearGradient(0, gy + gh, 0, gy);
+        dg.addColorStop(0, pal.accent2);
+        dg.addColorStop(1, pal.accent);
+        g.fillStyle = dg;
+        g.beginPath();
+        g.roundRect(gx + 2, gy + gh - 2 - remplie, 10, remplie, 5);
+        g.fill();
       }
       fx.dessiner(g, pal);
       if (boule.y > -30) {
@@ -338,8 +401,9 @@ export const bowling: CreerJeu = ({ pal, rng }) => {
         boite(g, pal, 70, H - 34, L - 140, 24, teinte(pal.creme, 0.92), { r: 8, ombre: 2, trait: 2 });
         texte(g, pal, tableau.join("  "), L / 2, H - 22, { taille: 13, mono: true, couleur: pal.encre });
       }
-      const aide = phase === "position" ? "Touche pour choisir le départ" : phase === "direction" ? "Touche pour lancer" : "";
-      if (aide) texte(g, pal, aide, L / 2, 290, { taille: 15, couleur: pal.creme, contour: true });
+      const aide =
+        phase === "position" ? "Touche : point de départ" : phase === "direction" ? "Touche : direction" : phase === "puissance" ? "Touche : puissance" : "";
+      if (aide) texte(g, pal, aide, L / 2, 238, { taille: 15, couleur: pal.creme, contour: true });
       if (phase === "bilan" && message) {
         const k = 1 + Math.max(0, bilanT - 0.9) * 2;
         texte(g, pal, message, L / 2, 270, { taille: 32 * k, couleur: message.includes("!") ? pal.accent2 : pal.creme, contour: true });
@@ -353,7 +417,10 @@ export const bowling: CreerJeu = ({ pal, rng }) => {
         phase = "direction";
         t = 0;
       } else if (phase === "direction") {
-        const v = 520;
+        phase = "puissance";
+        t = 0;
+      } else if (phase === "puissance") {
+        const v = 280 + 380 * puissance;
         boule.vx = Math.sin(angle) * v;
         boule.vy = -Math.cos(angle) * v;
         phase = "roule";

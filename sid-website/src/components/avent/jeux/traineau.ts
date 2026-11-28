@@ -218,7 +218,14 @@ export const traineau: CreerJeu = ({ pal, rng }) => {
       fx.dessiner(g, pal);
       g.restore();
       bandeau(g, pal, L, `${score} pts`, `${corps.length - 1} renne${corps.length > 2 ? "s" : ""}`);
-      if (messageT > 0) texte(g, pal, message, L / 2, OY + R * T * 0.4, { taille: 18, couleur: pal.creme, contour: true });
+      if (messageT > 0) {
+        // Sur la neige, le message passe sur une pastille sombre pour rester lisible.
+        g.font = `800 17px "Archivo", system-ui, sans-serif`;
+        const w = g.measureText(message).width + 32;
+        const y = OY + R * T * 0.4;
+        boite(g, pal, L / 2 - w / 2, y - 18, w, 36, pal.encre, { r: 18, ombre: 3, trait: 0 });
+        texte(g, pal, message, L / 2, y, { taille: 17, couleur: pal.creme });
+      }
       fx.voile(g, L, H);
     },
     saisie(e: Saisie) {
